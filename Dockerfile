@@ -1,7 +1,7 @@
 FROM alpine:3.7
 LABEL maintainer="quentin.mcgaw@gmail.com" \
       description="Runs a DNS server connected to the secured Cloudflare DNS server 1.1.1.1" \
-      download="?MB" \
+      download="4.3MB" \
       size="9.58MB" \
       ram="6MB" \
       cpu_usage="Very Low" \

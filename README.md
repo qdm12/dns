@@ -11,7 +11,7 @@ Docker container running a DNS using the Cloudflare encrypted DNS
 
 | Download size | Image size | RAM usage | CPU usage |
 | --- | --- | --- | --- |
-| ?MB | 9.58MB | 6MB | Very Low |
+| 4.3MB | 9.58MB | 6MB | Very Low |
 
 It is based on:
 - Alpine 3.7
