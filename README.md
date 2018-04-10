@@ -19,9 +19,11 @@ It is based on:
 
 ## Testing it
 
+
 ```bash
 docker run -it --rm -p 53:53/udp qmcgaw/cloudflare-dns-server -vvv
 ```
+
 
 Note the `-vvv` to set the verbose level to 3. It defaults to 1 if no command is provided.
 
@@ -29,9 +31,11 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 
 ## Run it as a daemon
 
+
 ```bash
 docker run -d --name=cloudflareTlsDNS -p 53:53/udp qmcgaw/cloudflare-dns-server
 ```
+
 
 You can also download [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml), modify it and use it with **docker-compose**
 
@@ -54,27 +58,27 @@ Access your network configuration and change the DNS server to your Docker host 
 
 1. Open the control panel and follow the instructions shown on the screenshots below.
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows1.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows1.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows2.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows2.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows3.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows3.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows4.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows4.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows5.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows5.png?raw=true)
 
 Enter the IP Address of your Docker host as the **Preferred DNS server**.
 You can set the Cloudflare unencrypted IP address 1.1.1.1 as an alternate DNS server if you want.
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows6.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows6.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows7.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows7.png?raw=true)
 
 When closing, Windows should try to identify any potential problems. 
 If everything is fine, you should see the following message:
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows8.png)
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows8.png?raw=true)
 
 
 #### Mac OS
