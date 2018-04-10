@@ -1,5 +1,7 @@
 # Cloudflare DNS Docker container
 
+(Almost working, still a work in progress ! - 9 April 2018)
+
 Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS
 
 [![Docker Cloudflare DNS](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
