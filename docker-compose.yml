@@ -2,8 +2,8 @@ version: '3'
 services:
     cloudflare-dns:
         image: qmcgaw/cloudflare-dns-server
-        container_name: cloudflare-dns
+        container_name: cloudflare-dns-tls
         ports:
-            - 53:53/tcp
+            - 53:53/udp
         network_mode: bridge
         restart: always

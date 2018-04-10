@@ -6,8 +6,9 @@ LABEL maintainer="quentin.mcgaw@gmail.com" \
       ram="6MB" \
       cpu_usage="Very Low" \
       github="https://github.com/qdm12/cloudflare-dns-server"
-RUN apk add --update --no-cache -q --progress unbound ca-certificates && \
+RUN apk add --update --no-cache -q --progress unbound && \
     rm -r /etc/unbound/unbound.conf /var/cache/apk/*
 COPY unbound.conf /etc/unbound/unbound.conf
-EXPOSE 53
+EXPOSE 53/udp
 ENTRYPOINT unbound -d
+CMD [""]

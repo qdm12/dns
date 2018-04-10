@@ -1,6 +1,6 @@
 # Cloudflare DNS Docker container
 
-Docker container running a DNS using the Cloudflare encrypted DNS
+Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS
 
 [![Docker Cloudflare DNS](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -22,11 +22,8 @@ It is based on:
 1. Run it with:
 
     ```bash
-    docker run -d --name=cloudflare-dns -p 53:53 qmcgaw/cloudflare-dns-server
+    docker run -d --name=cloudflareTlsDNS -p 53:53/udp qmcgaw/cloudflare-dns-server
     ```
 
 1. Configure your router to use the LAN IP address of your Docker host as its primary DNS address.
 If a secondary DNS address is required, use cloudfare address directly as a fallback 1.1.1.1
-
-1. Note that this container connects to Cloudflare DNS on port TCP 853 for a secured HTTPS communication,
-and exchange DNS queries with port 53 TCP (and not **UDP**) for an encrypted communication of DNS queries.
