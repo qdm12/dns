@@ -2,6 +2,8 @@
 
 Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only)
 
+Diagrams are shown for router and client-by-client configuration in the [**Connect clients to it**](#connect-clients-to-it) section
+
 [![Docker Cloudflare DNS](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
 [![Build Status](https://travis-ci.org/qdm12/cloudflare-dns-server.svg?branch=master)](https://travis-ci.org/qdm12/cloudflare-dns-server)
@@ -45,7 +47,6 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 docker run -d --name=cloudflareTlsDNS -p 53:53/udp qmcgaw/cloudflare-dns-server
 ```
 
-
 You can also download [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml), modify it and use it with **docker-compose**
 
 ## Connect clients to it
@@ -59,9 +60,25 @@ Configure your router to use the LAN IP address of your Docker host as its prima
 - Change the DNS settings, which are usually located in *Connection settings / Advanced / DNS server*
 - If a secondary DNS address is required, use cloudfare address directly as a fallback 1.1.1.1 (without TLS)
 
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/diagram-router.png?raw=true)
+
 ### Option 2: Client, one by one
 
 Access your network configuration and change the DNS server to your Docker host LAN IP address.
+
+![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/diagram-clients.png?raw=true)
+
+#### Docker containers
+
+Connect other Docker containers by specifying the DNS to be 127.0.0.1.
+
+- Use the argument `--dns=127.0.0.1` with the `docker run` command
+- Or modify your *docker-compose.yml* by adding the following to your container description:
+
+```yml
+dns:
+    - 127.0.0.1
+```
 
 #### Windows
 
@@ -91,6 +108,10 @@ If everything is fine, you should see the following message:
 
 
 #### Mac OS
+
+(in progress)
+
+#### Linux
 
 (in progress)
 
