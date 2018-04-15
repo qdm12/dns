@@ -25,6 +25,8 @@ It is based on:
 - Alpine 3.7
 - Unbound 1.6.7
 
+[![GitHub issues](	https://img.shields.io/github/last-commit/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/issues)
+[![GitHub issues](	https://img.shields.io/github/commit-activity/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/issues)
 [![GitHub issues](https://img.shields.io/github/issues/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/issues)
 
 
