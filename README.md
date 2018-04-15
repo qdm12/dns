@@ -1,6 +1,6 @@
 # Cloudflare DNS Docker container
 
-Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only)
+Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only), with *healthcheck*
 
 Diagrams are shown for router and client-by-client configuration in the [**Connect clients to it**](#connect-clients-to-it) section
 
