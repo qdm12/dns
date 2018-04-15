@@ -23,8 +23,8 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 o
 | 4.3MB | 9.58MB | 6MB | Very Low |
 
 It is based on:
-- Alpine 3.7
-- Unbound 1.6.7
+- [Alpine 3.7](https://alpinelinux.org)
+- [Unbound 1.7.0-r2](https://pkgs.alpinelinux.org/package/edge/main/aarch64/unbound)
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section
 
