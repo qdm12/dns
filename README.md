@@ -1,6 +1,6 @@
-# Cloudflare DNS Docker container
+# Cloudflare DNS over TLS Docker container
 
-Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only), with *healthcheck*
+Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only), with a built-in *healthcheck*
 
 [![Docker Cloudflare DNS](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -30,7 +30,6 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 ## Testing it
 
-
 ```bash
 docker run -it --rm -p 53:53/udp qmcgaw/cloudflare-dns-server -vvv
 ```
@@ -41,7 +40,6 @@ Note the `-vvv` to set the verbose level to 3. It defaults to 1 if no command is
 See the [Connect clients to it](#connect-clients-to-it) section to finish testing.
 
 ## Run it as a daemon
-
 
 ```bash
 docker run -d --name=cloudflareTlsDNS -p 53:53/udp qmcgaw/cloudflare-dns-server
@@ -106,7 +104,6 @@ When closing, Windows should try to identify any potential problems.
 If everything is fine, you should see the following message:
 
 ![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows8.png?raw=true)
-
 
 #### Mac OS
 
