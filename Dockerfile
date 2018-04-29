@@ -9,7 +9,7 @@ LABEL maintainer="quentin.mcgaw@gmail.com" \
 EXPOSE 53/udp
 RUN apk add --update --no-cache -q --progress unbound && \
     rm -rf /etc/unbound/unbound.conf /var/cache/apk/*
-COPY unbound.conf /etc/unbound/unbound.conf
+COPY unbound.conf blocks-malicious.conf blocks.conf /etc/unbound/
 HEALTHCHECK --interval=10m --timeout=3s --start-period=3s --retries=1 CMD ping -W 1 -w 2 google.com &> /dev/null || exit 1
 # The container DNS is changed to localhost for the healthcheck
 ENTRYPOINT echo "nameserver 127.0.0.1" > /etc/resolv.conf && \

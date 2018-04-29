@@ -1,6 +1,6 @@
 # Cloudflare DNS over TLS Docker container
 
-Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only), with a built-in *healthcheck*
+Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only), with a built-in *healthcheck* and malicious websites blocking.
 
 [![Docker Cloudflare DNS](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -25,6 +25,9 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 o
 It is based on:
 - [Alpine 3.7](https://alpinelinux.org)
 - [Unbound 1.7.0-r2](https://pkgs.alpinelinux.org/package/edge/main/aarch64/unbound)
+- [Malicious websites blacklist](https://github.com/k0nsl/unbound-blocklist) - a bit modified
+
+You can also block domains of your choice, see the [Extra section](#Extra)
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section
 
@@ -121,3 +124,21 @@ See [this](http://xslab.com/2013/08/how-to-change-dns-settings-on-android/)
 #### iOS
 
 See [this](http://www.macinstruct.com/node/558)
+
+## Extra
+
+### Block domains of your choice
+
+1. Create a file on your host `/yourpath/blocks.conf`
+1. Enter the following to block Youtube and Facebook for example:
+
+	```
+	local-zone: "youtube.com" static
+	local-zone: "facebook.com" static
+	```
+	
+1. Launch the Docker container with:
+
+	```bash
+	docker run -it --rm -p 53:53/udp -v /yourpath/blocks.conf:/etc/unbound/blocks.conf qmcgaw/cloudflare-dns-server -vvv
+	```
