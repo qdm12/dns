@@ -20,7 +20,7 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 o
 
 | Download size | Image size | RAM usage | CPU usage |
 | --- | --- | --- | --- |
-| 4.3MB | 9.58MB | 6MB | Very Low |
+| 4.1MB | 10.2MB | 6MB | Very Low |
 
 It is based on:
 - [Alpine 3.7](https://alpinelinux.org)

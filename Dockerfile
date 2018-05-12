@@ -1,8 +1,8 @@
 FROM alpine:3.7
 LABEL maintainer="quentin.mcgaw@gmail.com" \
       description="Runs a DNS server connected to the secured Cloudflare DNS server 1.1.1.1" \
-      download="4.3MB" \
-      size="9.58MB" \
+      download="4.1MB" \
+      size="10.2MB" \
       ram="6MB" \
       cpu_usage="Very Low" \
       github="https://github.com/qdm12/cloudflare-dns-server"
