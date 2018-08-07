@@ -1,6 +1,7 @@
 .gitignore
 .travis.yml
-.git/
+.git
 docker-compose.yml
-readme.md
-readme/
+README.md
+readme
+Dockerfile

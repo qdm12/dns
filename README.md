@@ -20,11 +20,11 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 o
 
 | Download size | Image size | RAM usage | CPU usage |
 | --- | --- | --- | --- |
-| 4.1MB | 10.2MB | 6MB | Very Low |
+| 4.1MB | 12.2MB | 6MB | Very Low |
 
 It is based on:
-- [Alpine 3.7](https://alpinelinux.org)
-- [Unbound 1.7.0-r2](https://pkgs.alpinelinux.org/package/edge/main/aarch64/unbound)
+- [Alpine 3.8](https://alpinelinux.org)
+- [Unbound 1.7.3-r0](https://pkgs.alpinelinux.org/package/edge/main/aarch64/unbound)
 - [Malicious websites blacklist](https://github.com/k0nsl/unbound-blocklist) - a bit modified
 
 You can also block domains of your choice, see the [Extra section](#Extra)
