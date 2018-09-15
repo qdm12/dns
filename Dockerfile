@@ -15,5 +15,5 @@ ENV VERBOSITY=1
 # The container DNS is changed to localhost for the healthcheck
 ENTRYPOINT echo "nameserver 127.0.0.1" > /etc/resolv.conf && \
            echo "options ndots:0" >> /etc/resolv.conf && \
-		   sed -i 's/"  verbosity: 2"/"  verbosity: $VERBOSITY"/g' /etc/unbound/unbound.conf && \
+		   sed -i "s/verbosity: 2/verbosity: $VERBOSITY/g" /etc/unbound/unbound.conf && \
            unbound -d $1
