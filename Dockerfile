@@ -14,5 +14,4 @@ HEALTHCHECK --interval=10m --timeout=3s --start-period=3s --retries=1 CMD ping -
 # The container DNS is changed to localhost for the healthcheck
 ENTRYPOINT echo "nameserver 127.0.0.1" > /etc/resolv.conf && \
            echo "options ndots:0" >> /etc/resolv.conf && \
-           unbound -d
-CMD ["-v"]
+           unbound -d $1

@@ -1,10 +1,10 @@
 version: '3'
 services:
-    cloudflare-dns:
-        image: qmcgaw/cloudflare-dns-server
-        container_name: cloudflare-dns-tls
-        command: -vvv
-        ports:
-            - 53:53/udp
-        network_mode: bridge
-        restart: always
+  cloudflare-dns:
+    image: qmcgaw/cloudflare-dns-server
+    container_name: cloudflare-dns-tls
+    command: "-v -v"
+    ports:
+      - 53:53/udp
+    network_mode: bridge
+    restart: always
