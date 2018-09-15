@@ -24,7 +24,7 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 o
 
 It is based on:
 - [Alpine 3.8](https://alpinelinux.org)
-- [Unbound 1.7.3-r0](https://pkgs.alpinelinux.org/package/edge/main/aarch64/unbound)
+- [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
 - [Malicious websites blacklist](https://github.com/k0nsl/unbound-blocklist) - a bit modified
 
 You can also block domains of your choice, see the [Extra section](#Extra)
@@ -34,18 +34,24 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:53/udp qmcgaw/cloudflare-dns-server -v -v
+docker run -it --rm -p -e VERBOSITY=4 53:53/udp qmcgaw/cloudflare-dns-server -v -v
 ```
 
+- The `VERBOSITY` variable goes from 0 (no log) to 5 (full debug log), and defaults to 1. See [the unbound conf documentation](https://nlnetlabs.nl/documentation/unbound/unbound.conf/).
+- The command passed to *unbount* is `-v -v`, this is to increase verbosity. See [the unbound documentation](https://nlnetlabs.nl/documentation/unbound/unbound/).
 
-Note the `-v -v` to set the verbose level to 2. It defaults to 0 (no log) if no command is provided, and can go up to 5 `-v -v -v -v -v`.
+You can check the verbose output with:
+
+```bash
+docker logs cloudflare-dns-tls -f
+```
 
 See the [Connect clients to it](#connect-clients-to-it) section to finish testing.
 
 ## Run it as a daemon
 
 ```bash
-docker run -d --name=cloudflareTlsDNS -p 53:53/udp qmcgaw/cloudflare-dns-server -v
+docker run -d --name=cloudflare-dns-tls -p 53:53/udp qmcgaw/cloudflare-dns-server -v
 ```
 
 You can also download  and use [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml)
