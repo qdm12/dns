@@ -10,10 +10,8 @@ EXPOSE 53/udp
 RUN apk add --update --no-cache -q --progress unbound && \
     rm -rf /etc/unbound/unbound.conf /var/cache/apk/*
 COPY unbound.conf blocks-malicious.conf blocks.conf /etc/unbound/
-HEALTHCHECK --interval=10m --timeout=3s --start-period=3s --retries=1 CMD ping -W 1 -w 2 google.com &> /dev/null || exit 1
+HEALTHCHECK --interval=10m --timeout=4s --start-period=3s --retries=1 CMD wget -qO- duckduckgo.com &> /dev/null || exit 1
 ENV VERBOSITY=1
-# The container DNS is changed to localhost for the healthcheck
-ENTRYPOINT echo "nameserver 127.0.0.1" > /etc/resolv.conf && \
-           echo "options ndots:0" >> /etc/resolv.conf && \
-		   sed -i "s/verbosity: 2/verbosity: $VERBOSITY/g" /etc/unbound/unbound.conf && \
+ENTRYPOINT sed -i "s/verbosity: 2/verbosity: $VERBOSITY/g" /etc/unbound/unbound.conf && \
+           $(grep -Fq 127.0.0.1 /etc/resolv.conf) || echo "WARNING: The domain name is not set to 127.0.0.1 so the healthcheck will likely be irrelevant!" && \
            unbound -d $1

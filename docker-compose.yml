@@ -8,5 +8,8 @@ services:
       - VERBOSITY=1
     ports:
       - 53:53/udp
+    dns:
+      - 127.0.0.1
+      # The container DNS is changed to localhost for the healthcheck
     network_mode: bridge
     restart: always

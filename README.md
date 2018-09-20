@@ -20,7 +20,7 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 o
 
 | Download size | Image size | RAM usage | CPU usage |
 | --- | --- | --- | --- |
-| 4.1MB | 12.2MB | 6MB | Very Low |
+| 5MB | 12.2MB | 6MB | Very Low |
 
 It is based on:
 - [Alpine 3.8](https://alpinelinux.org)
@@ -34,16 +34,17 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p -e VERBOSITY=4 53:53/udp qmcgaw/cloudflare-dns-server -v -v
+docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=4 qmcgaw/cloudflare-dns-server -v -v
 ```
 
+- The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries to wget duckduckgo.com using Unbound)
 - The `VERBOSITY` variable goes from 0 (no log) to 5 (full debug log), and defaults to 1. See [the unbound conf documentation](https://nlnetlabs.nl/documentation/unbound/unbound.conf/).
-- The command passed to *unbount* is `-v -v`, this is to increase verbosity. See [the unbound documentation](https://nlnetlabs.nl/documentation/unbound/unbound/).
+- The command passed to *unbound* is `-v -v`, this is to increase verbosity. See [the unbound documentation](https://nlnetlabs.nl/documentation/unbound/unbound/).
 
 You can check the verbose output with:
 
 ```bash
-docker logs cloudflare-dns-tls -f
+docker logs -f cloudflare-dns-tls
 ```
 
 See the [Connect clients to it](#connect-clients-to-it) section to finish testing.
@@ -51,7 +52,7 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ## Run it as a daemon
 
 ```bash
-docker run -d --name=cloudflare-dns-tls -p 53:53/udp qmcgaw/cloudflare-dns-server -v
+docker run -d --name=cloudflare-dns-tls -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server -v
 ```
 
 You can also download  and use [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml)
