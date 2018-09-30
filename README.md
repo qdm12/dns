@@ -1,6 +1,6 @@
 # Cloudflare DNS over TLS Docker container
 
-Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 only), with a built-in *healthcheck* and malicious websites blocking.
+Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 and IPv6) with DNSSEC, with a built-in *healthcheck* and malicious websites blocking.
 
 [![Docker Cloudflare DNS](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -26,6 +26,8 @@ It is based on:
 - [Alpine 3.8](https://alpinelinux.org)
 - [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
 - [Malicious websites blacklist](https://github.com/k0nsl/unbound-blocklist) - a bit modified
+
+[![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
 You can also block domains of your choice, see the [Extra section](#Extra)
 
@@ -78,14 +80,14 @@ You have to configure each machine connected to your router to use the Docker ho
 
 #### Docker containers
 
-Connect other Docker containers by specifying the DNS to be **127.0.0.1**
+Connect other Docker containers by specifying the DNS to be the IP address of the cloudflare DNS container, say **172.178.7.4** as an example.
 
-- Use the argument `--dns=127.0.0.1` with the `docker run` command
+- Use the argument `--dns=172.178.7.4` with the `docker run` command
 - Or modify your *docker-compose.yml* by adding the following to your container description:
 
     ```yml
     dns:
-        - 127.0.0.1
+        - 172.178.7.4
     ```
 
 #### Windows
@@ -136,16 +138,15 @@ See [this](http://www.macinstruct.com/node/558)
 
 ### Block domains of your choice
 
-1. Create a file on your host `/yourpath/blocks.conf`
-1. Enter the following to block Youtube and Facebook for example:
+1. Create a file on your host `/yourpath/include.conf`
+1. Write the following to the file to block Youtube for example:
 
 	```
 	local-zone: "youtube.com" static
-	local-zone: "facebook.com" static
 	```
 	
 1. Launch the Docker container with:
 
 	```bash
-	docker run -it --rm -p 53:53/udp -v /yourpath/blocks.conf:/etc/unbound/blocks.conf qmcgaw/cloudflare-dns-server -vvv
+	docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server -vvv
 	```
