@@ -150,3 +150,10 @@ See [this](http://www.macinstruct.com/node/558)
 	```bash
 	docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server -vvv
 	```
+
+## TO DOs
+
+- [ ] wget http://www.internic.net/domain/named.root over HTTPS and checksum
+- [ ] automatic download and checksum https://data.iana.org/root-anchors/
+- [ ] Assemble malicious/spying domains
+- [ ] Build Unbound at image build stage
