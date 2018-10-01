@@ -3,7 +3,6 @@ services:
   cloudflare-dns:
     image: qmcgaw/cloudflare-dns-server
     container_name: cloudflare-dns-tls
-    command: "-v -v"
     environment:
       - VERBOSITY=1
     ports:

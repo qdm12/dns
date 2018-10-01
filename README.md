@@ -36,12 +36,11 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=4 qmcgaw/cloudflare-dns-server -v -v
+docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=4 qmcgaw/cloudflare-dns-server
 ```
 
 - The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries to wget duckduckgo.com using Unbound)
 - The `VERBOSITY` variable goes from 0 (no log) to 5 (full debug log), and defaults to 1. See [the unbound conf documentation](https://nlnetlabs.nl/documentation/unbound/unbound.conf/).
-- The command passed to *unbound* is `-v -v`, this is to increase verbosity. See [the unbound documentation](https://nlnetlabs.nl/documentation/unbound/unbound/).
 
 You can check the verbose output with:
 
@@ -54,7 +53,7 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ## Run it as a daemon
 
 ```bash
-docker run -d --name=cloudflare-dns-tls -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server -v
+docker run -d --name=cloudflare-dns-tls -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server
 ```
 
 You can also download  and use [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml)
@@ -148,12 +147,10 @@ See [this](http://www.macinstruct.com/node/558)
 1. Launch the Docker container with:
 
 	```bash
-	docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server -vvv
+	docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server
 	```
 
 ## TO DOs
 
-- [ ] wget http://www.internic.net/domain/named.root over HTTPS and checksum
-- [ ] automatic download and checksum https://data.iana.org/root-anchors/
 - [ ] Assemble malicious/spying domains
 - [ ] Build Unbound at image build stage
