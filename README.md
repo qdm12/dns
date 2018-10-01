@@ -36,11 +36,12 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=4 qmcgaw/cloudflare-dns-server
+docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=4 -e VERBOSITY_DETAILS=2 qmcgaw/cloudflare-dns-server
 ```
 
 - The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries to wget duckduckgo.com using Unbound)
-- The `VERBOSITY` variable goes from 0 (no log) to 5 (full debug log), and defaults to 1. See [the unbound conf documentation](https://nlnetlabs.nl/documentation/unbound/unbound.conf/).
+- The `VERBOSITY` variable goes from 0 (no log) to 5 (full debug log), and defaults to 1.
+- The `VERBOSITY_DETAILS` variable goes from 0 to 4, and defaults to 2. Higher means more details.
 
 You can check the verbose output with:
 
