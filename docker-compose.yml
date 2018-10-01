@@ -5,7 +5,7 @@ services:
     container_name: cloudflare-dns-tls
     environment:
       - VERBOSITY=1
-      - VERBOSITY_DETAILS=1
+      - VERBOSITY_DETAILS=0
     ports:
       - 53:53/udp
     dns:

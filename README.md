@@ -41,7 +41,7 @@ docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=3 -e VERBOSITY_DET
 
 - The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries to wget duckduckgo.com using Unbound)
 - The `VERBOSITY` variable goes from 0 (no log) to 5 (full debug log), and defaults to 1.
-- The `VERBOSITY_DETAILS` variable goes from 0 to 4, and defaults to 1. Higher means more details.
+- The `VERBOSITY_DETAILS` variable goes from 0 to 4, and defaults to 0. Higher means more details.
 
 You can check the verbose output with:
 
