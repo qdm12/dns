@@ -6,6 +6,7 @@ services:
     environment:
       - VERBOSITY=1
       - VERBOSITY_DETAILS=0
+      - BLOCK_MALICIOUS=on
     ports:
       - 53:53/udp
     dns:

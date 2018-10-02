@@ -20,7 +20,7 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 a
 
 | Download size | Image size | RAM usage | CPU usage |
 | --- | --- | --- | --- |
-| 5MB | 12.2MB | 6MB | Very Low |
+| 5MB | 12.1MB | 13.2MB to 82MB | Very low to low |
 
 It is based on:
 - [Alpine 3.8](https://alpinelinux.org)
@@ -60,6 +60,9 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ```bash
 docker run -d --name=cloudflare-dns-tls -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server
 ```
+
+Note that it will block malicious hostnames by default, you can change this with the environment variable
+`BLOCK_MALICIOUS` by setting it to `off` (defaults to `on`)
 
 You can also download  and use [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml)
 
@@ -157,5 +160,4 @@ See [this](http://www.macinstruct.com/node/558)
 
 ## TO DOs
 
-- [ ] Assemble malicious/spying domains
 - [ ] Build Unbound at image build stage

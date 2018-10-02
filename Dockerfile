@@ -52,24 +52,25 @@ RUN apk add -q --progress wget && \
     cat duplicateHostnames >> allHostnames && \
     sort -o allHostnames allHostnames && \
     sed -i '/\(psma01.com.\)\|\(psma02.com.\)\|\(psma03.com.\)\|\(MEZIAMUSSUCEMAQUEUE.SU\)/d' allHostnames && \
-    ENDPOINT="0.0.0.0" && \
-    while read line; do printf "local-zone: \"$line\" redirect\nlocal-data: \"$line A $ENDPOINT\"\n" >> blocks.conf; done < allHostnames;
+    while read line; do printf "local-zone: \"$line\" static\n" >> blocks-malicious.conf; done < allHostnames && \
+    tar -cjf blocks-malicious.conf.bz2 blocks-malicious.conf
 
 FROM alpine:3.8
 LABEL maintainer="quentin.mcgaw@gmail.com" \
-      description="Runs a DNS server connected to the secured Cloudflare DNS server 1.1.1.1" \
+      description="Runs a DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS" \
       download="5MB" \
-      size="12.2MB" \
-      ram="6MB" \
-      cpu_usage="Very Low" \
+      size="12.1MB" \
+      ram="13.2MB or 82MB" \
+      cpu_usage="Very low to low" \
       github="https://github.com/qdm12/cloudflare-dns-server"
 EXPOSE 53/udp
 ENV VERBOSITY=1 \
-    VERBOSITY_DETAILS=0
+    VERBOSITY_DETAILS=0 \
+    BLOCK_MALICIOUS=on
 HEALTHCHECK --interval=10m --timeout=4s --start-period=3s --retries=2 CMD wget -qO- duckduckgo.com &> /dev/null || exit 1
 COPY --from=downloader /named.root /etc/unbound/root.hints
 COPY --from=downloader /root.key /etc/unbound/root.key
-COPY --from=blocks /blocks.conf /etc/unbound/blocks-malicious.conf
+COPY --from=blocks /blocks-malicious.conf.bz2 /etc/unbound/blocks-malicious.conf.bz2
 RUN apk add --update --no-cache -q --progress unbound && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
     echo "#Add Unbound configuration below" > /etc/unbound/include.conf && \
