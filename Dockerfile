@@ -76,4 +76,5 @@ RUN apk add --update --no-cache -q --progress unbound && \
     echo "#Add Unbound configuration below" > /etc/unbound/include.conf && \
     chown unbound /etc/unbound/root.key
 COPY unbound.conf entrypoint.sh /etc/unbound/
+RUN chmod +x entrypoint.sh
 ENTRYPOINT /etc/unbound/entrypoint.sh
