@@ -25,11 +25,15 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 a
 It is based on:
 - [Alpine 3.8](https://alpinelinux.org)
 - [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
-- [Malicious websites blacklist](https://github.com/k0nsl/unbound-blocklist) - a bit modified
+- Hostnames block: **multiple** malicious hostnames lists downloaded, extracted and concatenated in one big one at build stage:
+  - [github.com/StevenBlack/hosts](https://github.com/StevenBlack/hosts)
+  - [github.com/CHEF-KOCH/NSABlocklist](https://github.com/CHEF-KOCH/NSABlocklist)
+  - [github.com/k0nsl/unbound-blocklist](https://github.com/k0nsl/unbound-blocklist)
+  - [github.com/notracking/hosts-blocklists](https://github.com/notracking/hosts-blocklists)
 
 [![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
-You can also block domains of your choice, see the [Extra section](#Extra)
+You can also block additional domains of your choice, see the [Extra section](#Extra)
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section
 

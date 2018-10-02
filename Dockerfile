@@ -20,6 +20,40 @@ RUN apk add -q --progress wget perl-xml-xpath && \
       echo ". IN DS $KEYTAG $ALGORITHM $DIGESTTYPE $DIGEST" >> /root.key; \
       i=`expr $i + 1`; \
     done;
+    
+FROM alpine:3.8 AS blocks
+RUN apk add -q --progress wget && \
+    wget -q https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts -O temp && \
+    sed -i '/\(^[ \|\t]*#\)\|\(^[ ]\+\)\|\(^$\)\|\(^[\n\|\r\|\r\n][ \|\t]*$\)\|\(^127.0.0.1\)\|\(^255.255.255.255\)\|\(^::1\)\|\(^fe80\)\|\(^ff00\)\|\(^ff02\)\|\(^0.0.0.0 0.0.0.0\)/d' temp && \
+    sed -i 's/\([ \|\t]*#.*$\)\|\(\r\)\|\(0.0.0.0 \)//g' temp && \
+    cat temp >> allHostnames && \
+    wget -q https://raw.githubusercontent.com/CHEF-KOCH/NSABlocklist/master/HOSTS -O temp && \
+    sed -i '/\(^[ \|\t]*#\)\|\(^[ ]\+\)\|\(^$\)\|\(^[\n\|\r\|\r\n][ \|\t]*$\)\|\(^127.0.0.1\)/d' temp && \
+    sed -i 's/\([ \|\t]*#.*$\)\|\(\r\)\|\(0.0.0.0 \)//g' temp && \
+    cat temp >> allHostnames && \
+    wget -q https://raw.githubusercontent.com/k0nsl/unbound-blocklist/master/blocks.conf -O temp && \
+    sed -i '/\(^[ \|\t]*#\)\|\(^[ ]\+\)\|\(^$\)\|\(^[\n\|\r\|\r\n][ \|\t]*$\)\|\(^local-data\)/d' temp && \
+    sed -i 's/\([ \|\t]*#.*$\)\|\(\r\)\|\(local-zone: \"\)\|\(\" redirect\)//g' temp && \
+    cat temp >> allHostnames && \
+    wget -q https://raw.githubusercontent.com/notracking/hosts-blocklists/master/domains.txt -O temp && \
+    sed -i '/\(^[ \|\t]*#\)\|\(^[ ]\+\)\|\(^$\)\|\(^[\n\|\r\|\r\n][ \|\t]*$\)\|\(::$\)/d' temp && \
+    sed -i 's/\([ \|\t]*#.*$\)\|\(\r\)\|\(address=\/\)\|\(\/0.0.0.0$\)//g' temp && \
+    cat temp >> allHostnames && \
+    wget -q https://raw.githubusercontent.com/notracking/hosts-blocklists/master/hostnames.txt -O temp && \
+    sed -i '/\(^[ \|\t]*#\)\|\(^[ ]\+\)\|\(^$\)\|\(^[\n\|\r\|\r\n][ \|\t]*$\)\|\(^::\)/d' temp && \
+    sed -i 's/\([ \|\t]*#.*$\)\|\(\r\)\|\(^0.0.0.0 \)//g' temp && \
+    cat temp >> allHostnames && \
+    sort -o allHostnames allHostnames && \
+    cat allHostnames | uniq -i -u > uniqueHostnames && \
+    cat allHostnames | uniq -i -d > duplicateHostnames && \
+    duplicates=$(($(wc -l < allHostnames)-$(wc -l < uniqueHostnames)-$(wc -l < duplicateHostnames))) && \
+    echo "Removed $duplicates duplicates in a total of $(wc -l < allHostnames) hostnames" && \
+    mv uniqueHostnames allHostnames && \
+    cat duplicateHostnames >> allHostnames && \
+    sort -o allHostnames allHostnames && \
+    sed -i '/\(psma01.com.\)\|\(psma02.com.\)\|\(psma03.com.\)\|\(MEZIAMUSSUCEMAQUEUE.SU\)/d' allHostnames && \
+    ENDPOINT="0.0.0.0" && \
+    while read line; do printf "local-zone: \"$line\" redirect\nlocal-data: \"$line A $ENDPOINT\"\n" >> blocks.conf; done < allHostnames;
 
 FROM alpine:3.8
 LABEL maintainer="quentin.mcgaw@gmail.com" \
@@ -35,9 +69,10 @@ ENV VERBOSITY=1 \
 HEALTHCHECK --interval=10m --timeout=4s --start-period=3s --retries=2 CMD wget -qO- duckduckgo.com &> /dev/null || exit 1
 COPY --from=downloader /named.root /etc/unbound/root.hints
 COPY --from=downloader /root.key /etc/unbound/root.key
+COPY --from=blocks /blocks.conf /etc/unbound/blocks-malicious.conf
 RUN apk add --update --no-cache -q --progress unbound && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
     echo "#Add Unbound configuration below" > /etc/unbound/include.conf && \
     chown unbound /etc/unbound/root.key
-COPY unbound.conf blocks-malicious.conf entrypoint.sh /etc/unbound/
+COPY unbound.conf entrypoint.sh /etc/unbound/
 ENTRYPOINT /etc/unbound/entrypoint.sh
