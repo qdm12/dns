@@ -67,7 +67,7 @@ EXPOSE 53/udp
 ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
     BLOCK_MALICIOUS=on
-HEALTHCHECK --interval=10m --timeout=4s --start-period=3s --retries=2 CMD wget -qO- duckduckgo.com &> /dev/null || exit 1
+HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 CMD if [[ "$(nslookup duckduckgo.com 2>nul)" == "" ]]; then echo "Can't resolve duckduckgo.com"; exit 1; fi
 COPY --from=downloader /named.root /etc/unbound/root.hints
 COPY --from=downloader /root.key /etc/unbound/root.key
 COPY --from=blocks /blocks-malicious.conf.bz2 /etc/unbound/blocks-malicious.conf.bz2
