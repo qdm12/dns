@@ -7,6 +7,7 @@ printf "\n ========================================="
 printf "\n ========================================="
 printf "\n == by github.com/qdm12 - Quentin McGaw ==\n\n"
 
+printf "\nUnbound version: $(unbound -h | grep "Version" | cut -d" " -f2)"
 printf "\nVerbosity level set to $VERBOSITY"
 printf "\nVerbosity details level set to $VERBOSITY_DETAILS"
 printf "\nMalicious hostnames blocking is $BLOCK_MALICIOUS\n"

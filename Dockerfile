@@ -1,4 +1,4 @@
-FROM alpine:3.8 AS downloader
+FROM alpine:3.8 AS rootanchors
 RUN apk add -q --progress wget perl-xml-xpath && \
     wget -q https://www.internic.net/domain/named.root -O named.root && \
     echo "602f28581292bf5e50c8137c955173e6  named.root" > hashes.md5 && \
@@ -20,7 +20,7 @@ RUN apk add -q --progress wget perl-xml-xpath && \
       echo ". IN DS $KEYTAG $ALGORITHM $DIGESTTYPE $DIGEST" >> /root.key; \
       i=`expr $i + 1`; \
     done;
-    
+
 FROM alpine:3.8 AS blocks
 RUN apk add -q --progress wget && \
     wget -q https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts -O temp && \
@@ -51,7 +51,7 @@ RUN apk add -q --progress wget && \
     mv uniqueHostnames allHostnames && \
     cat duplicateHostnames >> allHostnames && \
     sort -o allHostnames allHostnames && \
-    sed -i '/\(psma01.com.\)\|\(psma02.com.\)\|\(psma03.com.\)\|\(MEZIAMUSSUCEMAQUEUE.SU\)/d' allHostnames && \
+    sed -i '/\(psma01.com.\)\|\(psma02.com.\)\|\(psma03.com.\)\|\(MEZIAMUSSUCEMAQUEUE.SU\)\|\(maxmind\)/d' allHostnames && \
     while read line; do printf "local-zone: \"$line\" static\n" >> blocks-malicious.conf; done < allHostnames && \
     tar -cjf blocks-malicious.conf.bz2 blocks-malicious.conf
 
@@ -68,12 +68,13 @@ ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
     BLOCK_MALICIOUS=on
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 CMD if [[ "$(nslookup duckduckgo.com 2>nul)" == "" ]]; then echo "Can't resolve duckduckgo.com"; exit 1; fi
-COPY --from=downloader /named.root /etc/unbound/root.hints
-COPY --from=downloader /root.key /etc/unbound/root.key
+COPY --from=rootanchors /named.root /etc/unbound/root.hints
+COPY --from=rootanchors /root.key /etc/unbound/root.key
 COPY --from=blocks /blocks-malicious.conf.bz2 /etc/unbound/blocks-malicious.conf.bz2
-RUN apk add --update --no-cache -q --progress unbound && \
+RUN echo https://alpine.global.ssl.fastly.net/alpine/v3.8/main > /etc/apk/repositories && \
+	apk add --update --no-cache -q --progress unbound && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
-    echo "#Add Unbound configuration below" > /etc/unbound/include.conf && \
+    echo "# Add Unbound configuration below" > /etc/unbound/include.conf && \
     chown unbound /etc/unbound/root.key
 COPY unbound.conf entrypoint.sh /etc/unbound/
 RUN chmod +x /etc/unbound/entrypoint.sh
