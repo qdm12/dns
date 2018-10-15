@@ -43,7 +43,7 @@ RUN hostnames=$(wget -qO- https://raw.githubusercontent.com/StevenBlack/hosts/ma
     COUNT_AFTER=$(echo "$hostnames" | sed '/^\s*$/d' | wc -l) && \
     echo "Removed $((COUNT_BEFORE-$COUNT_AFTER)) duplicates from $COUNT_BEFORE hostnames" && \
     COUNT_BEFORE=$(echo "$hostnames" | sed '/^\s*$/d' | wc -l) && \
-    hostnames=$(echo "$hostnames" | sed '/\(maxmind.com\)/Id') && \
+    hostnames=$(echo "$hostnames" | sed '/\(maxmind.com\)\|\(ipinfo.io\)/Id') && \
     COUNT_AFTER=$(echo "$hostnames" | sed '/^\s*$/d' | wc -l) && \
     echo "Removed $((COUNT_BEFORE-$COUNT_AFTER)) entries manually (see Dockerfile)" && \
     for hostname in $hostnames; do echo "local-zone: \""$hostname"\" static" >> blocks-malicious.conf; done && \

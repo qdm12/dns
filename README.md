@@ -20,7 +20,7 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 a
 
 | Download size | Image size | RAM usage | CPU usage |
 | --- | --- | --- | --- |
-| 5MB | 12.1MB | 13.2MB to 82MB | Very low to low |
+| 5MB | 12.1MB | 13.2MB to 82MB | Low |
 
 It is based on:
 - [Alpine 3.8](https://alpinelinux.org)
@@ -31,11 +31,13 @@ It is based on:
   - [github.com/k0nsl/unbound-blocklist](https://github.com/k0nsl/unbound-blocklist)
   - [github.com/notracking/hosts-blocklists](https://github.com/notracking/hosts-blocklists)
 
+DNSSEC Validation:
+
 [![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
 You can also block additional domains of your choice, see the [Extra section](#Extra)
 
-Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section
+Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
 ## Testing it
 
@@ -70,12 +72,14 @@ You can also download  and use [*docker-compose.yml*](https://github.com/qdm12/c
 
 ### Option 1: Router (recommended)
 
+Block the UDP 53 outgoing port on your router firewall so that all DNS traffic must go through this container.
+
 *All machines connected to your router will use the 1.1.1.1 encrypted DNS by default*
 
 Configure your router to use the LAN IP address of your Docker host as its primary DNS address.
 - Access your router page, usually at [http://192.168.1.1](http://192.168.1.1) and login with your credentials
 - Change the DNS settings, which are usually located in *Connection settings / Advanced / DNS server*
-- If a secondary fallback DNS address is required, use Cloudflare address **1.1.1.1** without TLS
+- If a secondary fallback DNS address is required, use a dull ip address such as the router's IP 192.168.1.1 to force traffic to only go through this container
 
 ![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/diagram-router.png?raw=true)
 
