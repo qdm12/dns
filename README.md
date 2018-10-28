@@ -20,18 +20,16 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 a
 
 | Download size | Image size | RAM usage | CPU usage |
 | --- | --- | --- | --- |
-| 5MB | 12.1MB | 13.2MB to 82MB | Low |
+| 5MB | 12.1MB | 13.2MB to 70MB | Low |
 
 It is based on:
+
 - [Alpine 3.8](https://alpinelinux.org)
 - [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
-- Hostnames block: **multiple** malicious hostnames lists downloaded, extracted and concatenated in one big one at build stage:
-  - [github.com/StevenBlack/hosts](https://github.com/StevenBlack/hosts)
-  - [github.com/CHEF-KOCH/NSABlocklist](https://github.com/CHEF-KOCH/NSABlocklist)
-  - [github.com/k0nsl/unbound-blocklist](https://github.com/k0nsl/unbound-blocklist)
-  - [github.com/notracking/hosts-blocklists](https://github.com/notracking/hosts-blocklists)
+- Malicious hostnames list from [github.com/qdm12/malicious-hostnames-docker](https://github.com/qdm12/malicious-hostnames-docker)
+- Malicious IPs list from [github.com/qdm12/malicious-ips-docker](https://github.com/qdm12/malicious-ips-docker)
 
-DNSSEC Validation:
+It also uses DNS rebinding protection and DNSSEC Validation:
 
 [![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
@@ -42,7 +40,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 qmcgaw/cloudflare-dns-server
+docker run -it --rm -p 53:53/udp --dns=127.0.0.1 \
+-e VERBOSITY=3 -e VERBOSITY_DETAILS=3 qmcgaw/cloudflare-dns-server
 ```
 
 - The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries to wget duckduckgo.com using Unbound)
@@ -60,11 +59,12 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ## Run it as a daemon
 
 ```bash
-docker run -d --name=cloudflare-dns-tls -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server
+docker run -d --name=cloudflare-dns-tls -p 53:53/udp \
+--dns=127.0.0.1 qmcgaw/cloudflare-dns-server
 ```
 
-Note that it will block malicious hostnames by default, you can change this with the environment variable
-`BLOCK_MALICIOUS` by setting it to `off` (defaults to `on`)
+Note that it will block malicious hostnames and ips by default, you can change this with the environment variable
+`BLOCK_MALICIOUS` by setting it to `off` (defaults to `on`) to save on RAM usage.
 
 You can also download  and use [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml)
 
@@ -77,6 +77,7 @@ Block the UDP 53 outgoing port on your router firewall so that all DNS traffic m
 *All machines connected to your router will use the 1.1.1.1 encrypted DNS by default*
 
 Configure your router to use the LAN IP address of your Docker host as its primary DNS address.
+
 - Access your router page, usually at [http://192.168.1.1](http://192.168.1.1) and login with your credentials
 - Change the DNS settings, which are usually located in *Connection settings / Advanced / DNS server*
 - If a secondary fallback DNS address is required, use a dull ip address such as the router's IP 192.168.1.1 to force traffic to only go through this container
@@ -152,15 +153,21 @@ See [this](http://www.macinstruct.com/node/558)
 1. Create a file on your host `/yourpath/include.conf`
 1. Write the following to the file to block Youtube for example:
 
-	```
-	local-zone: "youtube.com" static
-	```
-	
+    ```txt
+    local-zone: "youtube.com" static
+    ```
+
 1. Launch the Docker container with:
 
-	```bash
-	docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server
-	```
+    ```bash
+    docker run -it --rm -p 53:53/udp --dns=127.0.0.1 \
+    -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server
+    ```
+
+### Firewall considerations
+
+- UDP 53 Inbound
+- TCP 853 Outbound
 
 ## TO DOs
 
