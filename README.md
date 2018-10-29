@@ -1,8 +1,8 @@
 # Cloudflare DNS over TLS Docker container
 
-Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 and IPv6) with DNSSEC, with a built-in *healthcheck* and malicious websites blocking.
+*DNS server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4 and ~~IPv6~~) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
 
-[![Docker Cloudflare DNS](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
+[![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
 [![Build Status](https://travis-ci.org/qdm12/cloudflare-dns-server.svg?branch=master)](https://travis-ci.org/qdm12/cloudflare-dns-server)
 [![Docker Build Status](https://img.shields.io/docker/build/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
@@ -15,12 +15,12 @@ Docker container running a DNS using Cloudflare **1.1.1.1** DNS over TLS (IPv4 a
 [![Docker Stars](https://img.shields.io/docker/stars/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 [![Docker Automated](https://img.shields.io/docker/automated/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
-[![](https://images.microbadger.com/badges/image/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
-[![](https://images.microbadger.com/badges/version/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
+[![Image size](https://images.microbadger.com/badges/image/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
+[![Image version](https://images.microbadger.com/badges/version/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
 
-| Download size | Image size | RAM usage | CPU usage |
-| --- | --- | --- | --- |
-| 5MB | 12.1MB | 13.2MB to 70MB | Low |
+| Image size | RAM usage | CPU usage |
+| --- | --- | --- |
+| 12.1MB | 13.2MB to 70MB | Low |
 
 It is based on:
 
@@ -41,12 +41,15 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 ```bash
 docker run -it --rm -p 53:53/udp --dns=127.0.0.1 \
--e VERBOSITY=3 -e VERBOSITY_DETAILS=3 qmcgaw/cloudflare-dns-server
+-e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off \
+qmcgaw/cloudflare-dns-server
 ```
 
-- The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries to wget duckduckgo.com using Unbound)
-- The `VERBOSITY` variable goes from 0 (no log) to 5 (full debug log), and defaults to 1.
-- The `VERBOSITY_DETAILS` variable goes from 0 to 4, and defaults to 0. Higher means more details.
+
+- The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries `nslookup duckduckgo.com`)
+- The `VERBOSITY` environment variable goes from 0 (no log) to 5 (full debug log) and defaults to 1
+- The `VERBOSITY_DETAILS` environment variable goes from 0 to 4 and defaults to 0 (higher means more details)
+- The `BLOCK_MALICIOUS` environment variable can be set to 'on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM). It blocks malicious IP addresses and malicious hostnames from being resolved.
 
 You can check the verbose output with:
 
@@ -59,14 +62,16 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ## Run it as a daemon
 
 ```bash
-docker run -d --name=cloudflare-dns-tls -p 53:53/udp \
---dns=127.0.0.1 qmcgaw/cloudflare-dns-server
+docker run -d -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server
 ```
 
-Note that it will block malicious hostnames and ips by default, you can change this with the environment variable
-`BLOCK_MALICIOUS` by setting it to `off` (defaults to `on`) to save on RAM usage.
 
-You can also download  and use [*docker-compose.yml*](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml)
+or use [docker-compose.yml](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml) with:
+
+
+```bash
+docker-compose up -d
+```
 
 ## Connect clients to it
 
@@ -164,6 +169,17 @@ See [this](http://www.macinstruct.com/node/558)
     -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server
     ```
 
+### Build it yourself
+
+```bash
+git clone https://github.com/qdm12/cloudflare-dns-server.git
+cd cloudflare-dns-server
+docker build -t qmcgaw/cloudflare-dns-server .
+```
+
+
+You might want to build the qmcgaw/malicious-ips, qmcgaw/malicious-hostnames and qmcgaw/dns-rootanchor images yourself too.
+
 ### Firewall considerations
 
 - UDP 53 Inbound
@@ -171,4 +187,5 @@ See [this](http://www.macinstruct.com/node/558)
 
 ## TO DOs
 
+- [ ] IPtables
 - [ ] Build Unbound at image build stage

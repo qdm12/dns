@@ -1,8 +1,9 @@
 version: '3'
 services:
   cloudflare-dns:
+    build: .
     image: qmcgaw/cloudflare-dns-server
-    container_name: cloudflare-dns-tls
+    container_name: dns
     environment:
       - VERBOSITY=1
       - VERBOSITY_DETAILS=0
@@ -11,6 +12,5 @@ services:
       - 53:53/udp
     dns:
       - 127.0.0.1
-      # The container DNS is changed to localhost for the healthcheck
     network_mode: bridge
     restart: always

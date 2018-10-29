@@ -36,5 +36,5 @@ fi
 unbound -d $ARGS
 status=$?
 printf "\n ========================================="
-printf "\n Unbound exited with status $status"
+printf "\n Unbound exit with status $status"
 printf "\n =========================================\n"
