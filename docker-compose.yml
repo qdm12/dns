@@ -9,7 +9,7 @@ services:
       - VERBOSITY_DETAILS=0
       - BLOCK_MALICIOUS=on
     ports:
-      - 53:53/udp
+      - 53:8053/udp
     dns:
       - 127.0.0.1
     network_mode: bridge

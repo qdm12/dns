@@ -17,21 +17,29 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
       image-size="12.7MB" \
       ram-usage="13.2MB to 70MB" \
       cpu-usage="Low"
-EXPOSE 53/udp
+EXPOSE 1053/udp
 ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
     BLOCK_MALICIOUS=on
 ENTRYPOINT /etc/unbound/entrypoint.sh
-RUN V_ALPINE="v$(cat /etc/alpine-release | grep -oE '[0-9]+\.[0-9]+')" && \
-    echo https://dl-3.alpinelinux.org/alpine/$V_ALPINE/main > /etc/apk/repositories && \
-	apk --update --no-cache --progress -q add unbound ca-certificates && \
+HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 CMD if [ "$(nslookup duckduckgo.com 2>nul)" = "" ]; then exit 1; fi
+RUN apk --update --no-cache --progress -q add unbound && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
-    echo "# Add Unbound configuration below" > /etc/unbound/include.conf
-HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 CMD if [[ "$(nslookup duckduckgo.com 2>nul)" == "" ]]; then echo "Can't resolve duckduckgo.com"; exit 1; fi
+    echo "# Add Unbound configuration below" > /etc/unbound/include.conf && \
+    addgroup nonrootgroup && \
+    adduser nonrootuser -G nonrootgroup -D -H
 COPY --from=qmcgaw/dns-trustanchor /root.key /etc/unbound/root.key
 COPY --from=qmcgaw/dns-trustanchor /named.root /etc/unbound/root.hints
 COPY --from=qmcgaw/malicious-hostnames /malicious-hostnames.bz2 /etc/unbound/malicious-hostnames.bz2
 COPY --from=qmcgaw/malicious-ips /malicious-ips.bz2 /etc/unbound/malicious-ips.bz2
 COPY unbound.conf entrypoint.sh /etc/unbound/
-RUN chown unbound /etc/unbound/root.key && \
-    chmod 700 /etc/unbound/entrypoint.sh
+RUN chown nonrootuser:nonrootgroup -R /etc/unbound && \
+    chmod 700 -R /etc/unbound && \
+    chmod 500 /etc/unbound/entrypoint.sh && \
+    chmod 400 \
+        /etc/unbound/root.hints \
+        /etc/unbound/root.key \
+        /etc/unbound/unbound.conf \
+        /etc/unbound/malicious-ips.bz2 \
+        /etc/unbound/malicious-hostnames.bz2
+USER nonrootuser

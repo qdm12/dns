@@ -1,6 +1,8 @@
 # Cloudflare DNS over TLS Docker container
 
-*DNS server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4 and ~~IPv6~~) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
+**Warning: The port binding is now `53:1053/udp` instead of `53:53/udp`**
+
+*DNS caching server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4 and ~~IPv6~~) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -40,7 +42,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:53/udp --dns=127.0.0.1 \
+docker run -it --rm -p 53:8053/udp --dns=127.0.0.1 \
 -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off \
 qmcgaw/cloudflare-dns-server
 ```
@@ -62,7 +64,7 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ## Run it as a daemon
 
 ```bash
-docker run -d -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server
+docker run -d -p 53:8053/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server
 ```
 
 
@@ -165,7 +167,7 @@ See [this](http://www.macinstruct.com/node/558)
 1. Launch the Docker container with:
 
     ```bash
-    docker run -it --rm -p 53:53/udp --dns=127.0.0.1 \
+    docker run -it --rm -p 53:8053/udp --dns=127.0.0.1 \
     -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server
     ```
 
