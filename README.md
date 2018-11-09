@@ -98,15 +98,23 @@ You have to configure each machine connected to your router to use the Docker ho
 
 #### Docker containers
 
-Connect other Docker containers by specifying the DNS to be the IP address of the cloudflare DNS container, say **172.178.7.4** as an example.
+Connect other Docker containers by specifying the DNS to be the host IP address `127.0.0.1`:
 
-- Use the argument `--dns=172.178.7.4` with the `docker run` command
-- Or modify your *docker-compose.yml* by adding the following to your container description:
+```bash
+docker run -it --rm --dns=127.0.0.1 alpine
+```
 
-    ```yml
+For *docker-compose.yml*:
+
+```yml
+version: '3'
+services:
+  test:
+    image: alpine
+    network_mode: bridge
     dns:
-        - 172.178.7.4
-    ```
+      - 127.0.0.1
+```
 
 #### Windows
 
@@ -156,11 +164,18 @@ See [this](http://www.macinstruct.com/node/558)
 
 ### Block domains of your choice
 
-1. Create a file on your host `/yourpath/include.conf`
-1. Write the following to the file to block Youtube for example:
+1. Create a file on your host `include.conf`
+1. Write the following to the file to block *youtube.com* for example:
 
     ```txt
     local-zone: "youtube.com" static
+    ```
+
+1. Change the ownership and permissions of `include.conf`:
+
+    ```bash
+    chown 1000:1000 include.conf
+    chmod 400 include.conf
     ```
 
 1. Launch the Docker container with:
@@ -173,9 +188,7 @@ See [this](http://www.macinstruct.com/node/558)
 ### Build it yourself
 
 ```bash
-git clone https://github.com/qdm12/cloudflare-dns-server.git
-cd cloudflare-dns-server
-docker build -t qmcgaw/cloudflare-dns-server .
+docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
 ```
 
 
@@ -183,10 +196,11 @@ You might want to build the qmcgaw/malicious-ips, qmcgaw/malicious-hostnames and
 
 ### Firewall considerations
 
+This container requires the following connections:
+
 - UDP 53 Inbound
 - TCP 853 Outbound
 
 ## TO DOs
 
-- [ ] IPtables
 - [ ] Build Unbound at image build stage
