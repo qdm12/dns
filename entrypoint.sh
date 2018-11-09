@@ -1,25 +1,39 @@
 #!/bin/sh
 
-printf " ========================================="
+printf " =========================================\n"
 printf " =========================================\n"
 printf " === CLOUDFLARE DNS OVER TLS CONTAINER ===\n"
 printf " =========================================\n"
 printf " =========================================\n"
 printf " == by github.com/qdm12 - Quentin McGaw ==\n\n"
 
-cat /etc/unbound/include.conf &> /dev/null
+test -r /etc/unbound/include.conf
 if [ $? != 0 ]; then
   printf "Can't access /etc/unbound/include.conf\n"
   printf "Please mount the file by setting its ownership and permissions with:\n"
   printf "  chown 1000:1000 include.conf && chmod 400 include.conf\n"
   exit 1
 fi
+if [ $LISTENINGPORT -lt 1024 ]; then
+  printf "Listening port $LISTENINGPORT must be higher than well known ports (1-1023)\n"
+  exit 1
+fi
+if [ $LISTENINGPORT -gt 65535 ]; then
+  printf "Listening port $LISTENINGPORT must be between port 1024 and port 65535\n"
+  exit 1
+fi
+[ ! -z $LISTENINGPORT ] || LISTENINGPORT=1053
+[ ! -z $VERBOSITY ] || VERBOSITY=1
+[ ! -z $VERBOSITY_DETAILS ] || VERBOSITY_DETAILS=0
+[ ! -z $BLOCK_MALICIOUS ] || BLOCK_MALICIOUS=on
 printf "Unbound version: $(unbound -h | grep "Version" | cut -d" " -f2)\n"
+printf "DNS listening port: $LISTENINGPORT\n"
+sed -i "s/port: 1053/port: $LISTENINGPORT/" /etc/unbound/unbound.conf
 printf "Verbosity level set to $VERBOSITY\n"
+sed -i "s/verbosity: 0/verbosity: $VERBOSITY/g" /etc/unbound/unbound.conf
 printf "Verbosity details level set to $VERBOSITY_DETAILS\n"
+[ $VERBOSITY_DETAILS = 0 ] || ARGS=-$(for i in `seq $VERBOSITY_DETAILS`; do printf "v"; done)
 printf "Malicious hostnames and ips blocking is $BLOCK_MALICIOUS\n"
-[[ "$VERBOSITY" == "" ]] || sed -i "s/verbosity: 0/verbosity: $VERBOSITY/g" /etc/unbound/unbound.conf
-[[ "$VERBOSITY_DETAILS" == "" ]] || [[ "$VERBOSITY_DETAILS" == "0" ]] || ARGS=-$(for i in `seq $VERBOSITY_DETAILS`; do printf "v"; done)
 if [ "$BLOCK_MALICIOUS" = "on" ] && [ ! -f /etc/unbound/blocks-malicious.conf ]; then
     printf "Extracting malicious hostnames archive...\n"
     tar -xjf /etc/unbound/malicious-hostnames.bz2 -C /etc/unbound/

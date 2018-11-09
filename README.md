@@ -42,12 +42,12 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:1053/udp \
+docker run -it --rm -p 53:1053/udp -e LISTENINGPORT=1053 \
 -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off \
 qmcgaw/cloudflare-dns-server
 ```
 
-
+- The `LISTENINGPORT`  environment variable sets the UDP port on which the Unbound DNS server should listen to, and defaults to 1053
 - The `VERBOSITY` environment variable goes from 0 (no log) to 5 (full debug log) and defaults to 1
 - The `VERBOSITY_DETAILS` environment variable goes from 0 to 4 and defaults to 0 (higher means more details)
 - The `BLOCK_MALICIOUS` environment variable can be set to 'on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM). It blocks malicious IP addresses and malicious hostnames from being resolved.

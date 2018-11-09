@@ -20,7 +20,8 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
 EXPOSE 1053/udp
 ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
-    BLOCK_MALICIOUS=on
+    BLOCK_MALICIOUS=on \
+    LISTENINGPORT=1053
 ENTRYPOINT /etc/unbound/entrypoint.sh
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 \
             CMD [ "$(nslookup duckduckgo.com 127.0.0.1 -port=1053 -timeout=1 | grep "no servers could be reached")" = "" ] || exit 1
