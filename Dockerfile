@@ -25,9 +25,9 @@ ENTRYPOINT /etc/unbound/entrypoint.sh
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 CMD if [ "$(nslookup duckduckgo.com 2>nul)" = "" ]; then exit 1; fi
 RUN apk --update --no-cache --progress -q add unbound && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
-    echo "# Add Unbound configuration below" > /etc/unbound/include.conf && \
-    addgroup nonrootgroup && \
-    adduser nonrootuser -G nonrootgroup -D -H
+    touch /etc/unbound/include.conf && \
+    addgroup nonrootgroup --gid 1000 && \
+    adduser nonrootuser -G nonrootgroup -D -H --uid 1000
 COPY --from=qmcgaw/dns-trustanchor /root.key /etc/unbound/root.key
 COPY --from=qmcgaw/dns-trustanchor /named.root /etc/unbound/root.hints
 COPY --from=qmcgaw/malicious-hostnames /malicious-hostnames.bz2 /etc/unbound/malicious-hostnames.bz2
@@ -40,6 +40,7 @@ RUN chown nonrootuser:nonrootgroup -R /etc/unbound && \
         /etc/unbound/root.hints \
         /etc/unbound/root.key \
         /etc/unbound/unbound.conf \
+        /etc/unbound/include.conf \
         /etc/unbound/malicious-ips.bz2 \
         /etc/unbound/malicious-hostnames.bz2
 USER nonrootuser

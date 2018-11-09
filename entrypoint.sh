@@ -7,6 +7,13 @@ printf "\n ========================================="
 printf "\n ========================================="
 printf "\n == by github.com/qdm12 - Quentin McGaw ==\n\n"
 
+cat /etc/unbound/include.conf &> /dev/null
+if [ $? != 0 ]; then
+  printf "Can't access /etc/unbound/include.conf\n"
+  printf "Please mount the file by setting its ownership and permissions with:\n"
+  printf "  chown 1000:1000 include.conf && chmod 400 include.conf\n"
+  exit 1
+fi
 printf "\nUnbound version: $(unbound -h | grep "Version" | cut -d" " -f2)"
 printf "\nVerbosity level set to $VERBOSITY"
 printf "\nVerbosity details level set to $VERBOSITY_DETAILS"
