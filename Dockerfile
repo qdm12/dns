@@ -11,8 +11,8 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
       org.label-schema.url="https://github.com/qdm12/cloudflare-dns-server" \
       org.label-schema.vcs-description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS" \
       org.label-schema.vcs-usage="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md#setup" \
-      org.label-schema.docker.cmd="docker run -d -p 53:53/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server" \
-      org.label-schema.docker.cmd.devel="docker run -it --rm -p 53:53/udp --dns=127.0.0.1 -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off qmcgaw/cloudflare-dns-server" \
+      org.label-schema.docker.cmd="docker run -d -p 53:1053/udp qmcgaw/cloudflare-dns-server" \
+      org.label-schema.docker.cmd.devel="docker run -it --rm -p 53:1053/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off qmcgaw/cloudflare-dns-server" \
       org.label-schema.docker.params="VERBOSITY=from 0 (no log) to 5 (full debug log) and defaults to 1,VERBOSITY_DETAILS=0 to 4 and defaults to 0 (higher means more details),BLOCK_MALICIOUS='on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM)" \
       image-size="12.7MB" \
       ram-usage="13.2MB to 70MB" \
@@ -22,8 +22,9 @@ ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
     BLOCK_MALICIOUS=on
 ENTRYPOINT /etc/unbound/entrypoint.sh
-HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 CMD if [ "$(nslookup duckduckgo.com 2>nul)" = "" ]; then exit 1; fi
-RUN apk --update --no-cache --progress -q add unbound && \
+HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=2 \
+            CMD [ "$(nslookup duckduckgo.com 127.0.0.1 -port=1053 -timeout=1 | grep "no servers could be reached")" = "" ] || exit 1
+RUN apk --update --no-cache --progress -q add unbound bind-tools && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
     touch /etc/unbound/include.conf && \
     addgroup nonrootgroup --gid 1000 && \

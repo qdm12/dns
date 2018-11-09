@@ -9,8 +9,6 @@ services:
       - VERBOSITY_DETAILS=0
       - BLOCK_MALICIOUS=on
     ports:
-      - 53:8053/udp
-    dns:
-      - 127.0.0.1
+      - 53:1053/udp
     network_mode: bridge
     restart: always

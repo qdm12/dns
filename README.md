@@ -42,13 +42,12 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:8053/udp --dns=127.0.0.1 \
+docker run -it --rm -p 53:1053/udp \
 -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off \
 qmcgaw/cloudflare-dns-server
 ```
 
 
-- The DNS is set to `127.0.0.1` for the healthcheck to be relevant (which tries `nslookup duckduckgo.com`)
 - The `VERBOSITY` environment variable goes from 0 (no log) to 5 (full debug log) and defaults to 1
 - The `VERBOSITY_DETAILS` environment variable goes from 0 to 4 and defaults to 0 (higher means more details)
 - The `BLOCK_MALICIOUS` environment variable can be set to 'on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM). It blocks malicious IP addresses and malicious hostnames from being resolved.
@@ -64,7 +63,7 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ## Run it as a daemon
 
 ```bash
-docker run -d -p 53:8053/udp --dns=127.0.0.1 qmcgaw/cloudflare-dns-server
+docker run -d -p 53:1053/udp qmcgaw/cloudflare-dns-server
 ```
 
 
@@ -167,7 +166,7 @@ See [this](http://www.macinstruct.com/node/558)
 1. Launch the Docker container with:
 
     ```bash
-    docker run -it --rm -p 53:8053/udp --dns=127.0.0.1 \
+    docker run -it --rm -p 53:1053/udp \
     -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server
     ```
 
