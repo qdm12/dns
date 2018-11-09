@@ -1,6 +1,7 @@
 # Cloudflare DNS over TLS Docker container
 
-**Warning: The port binding is now `53:1053/udp` instead of `53:53/udp`**
+**Warning: The port binding is now `53:1053/udp` instead of `53:53/udp` so that the container runs without root priviledges.**
+**If you need to bind to port 53 UDP INTERNALLY, see [the run as root section](#run-as-root)**
 
 *DNS caching server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4 and ~~IPv6~~) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
 
@@ -161,6 +162,34 @@ See [this](http://xslab.com/2013/08/how-to-change-dns-settings-on-android/)
 See [this](http://www.macinstruct.com/node/558)
 
 ## Extra
+
+### Run as root
+
+If you need to bind to ports lower than UDP 1024 **internally**, you must run the container as root.
+Unbound will however run with the user *nonrootuser* keeping you on the safe side.
+To do so, in example:
+
+```bash
+docker run -d --user=root -e LISTENINGPORT=53 qmcgaw/cloudflare-dns-server
+```
+
+
+```yml
+version: '3'
+services:
+  cloudflare-dns:
+    image: qmcgaw/cloudflare-dns-server
+    container_name: dns
+    user: root
+    environment:
+      - VERBOSITY=1
+      - VERBOSITY_DETAILS=0
+      - BLOCK_MALICIOUS=on
+      - LISTENINGPORT=53
+    network_mode: bridge
+    ports:
+      - 53:53/udp
+```
 
 ### Block domains of your choice
 

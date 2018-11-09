@@ -7,30 +7,35 @@ printf " =========================================\n"
 printf " =========================================\n"
 printf " == by github.com/qdm12 - Quentin McGaw ==\n\n"
 
+user=$(whoami)
+printf "Running as $user\n"
+if [ "$user" = "nonrootuser" ]; then 
+  sed -i 's/username: "nonrootuser"/username: ""/' /etc/unbound/unbound.conf
+fi
 test -r /etc/unbound/include.conf
-if [ $? != 0 ]; then
-  printf "Can't access /etc/unbound/include.conf\n"
+if [ $? != 0 ] && [ "$user" = "nonrootuser" ]; then
   printf "Please mount the file by setting its ownership and permissions with:\n"
   printf "  chown 1000:1000 include.conf && chmod 400 include.conf\n"
   exit 1
 fi
-if [ $LISTENINGPORT -lt 1024 ]; then
-  printf "Listening port $LISTENINGPORT must be higher than well known ports (1-1023)\n"
+if [ "$(echo $VERBOSITY | grep -E '^[0-9]+$')" = "" ]; then VERBOSITY=1; fi
+if [ "$(echo $VERBOSITY_DETAILS | grep -E '^[0-9]+$')" = "" ]; then VERBOSITY_DETAILS=0; fi
+if [ "$(echo $BLOCK_MALICIOUS | grep -E '^[0-9]+$')" = "" ]; then BLOCK_MALICIOUS=on; fi
+if [ "$(echo $LISTENINGPORT | grep -E '^[0-9]+$')" = "" ]; then LISTENINGPORT=1053; fi
+if [ $LISTENINGPORT -lt 1 ] || [ $LISTENINGPORT -gt 65535 ]; then
+  printf "Listening port $LISTENINGPORT must be between port 1 and port 65535\n"
   exit 1
 fi
-if [ $LISTENINGPORT -gt 65535 ]; then
-  printf "Listening port $LISTENINGPORT must be between port 1024 and port 65535\n"
+if [ $LISTENINGPORT -lt 1024 ] && [ "$user" = "nonrootuser" ]; then
+  printf "Listening port $LISTENINGPORT must be higher than well known ports (1-1023) for a non root user\n"
+  printf "You can either change the LISTENINGPORT or run the container with '--user=root' (risky)"
   exit 1
 fi
-[ ! -z $LISTENINGPORT ] || LISTENINGPORT=1053
-[ ! -z $VERBOSITY ] || VERBOSITY=1
-[ ! -z $VERBOSITY_DETAILS ] || VERBOSITY_DETAILS=0
-[ ! -z $BLOCK_MALICIOUS ] || BLOCK_MALICIOUS=on
 printf "Unbound version: $(unbound -h | grep "Version" | cut -d" " -f2)\n"
-printf "DNS listening port: $LISTENINGPORT\n"
+printf "Unbound listening UDP port: $LISTENINGPORT\n"
 sed -i "s/port: 1053/port: $LISTENINGPORT/" /etc/unbound/unbound.conf
 printf "Verbosity level set to $VERBOSITY\n"
-sed -i "s/verbosity: 0/verbosity: $VERBOSITY/g" /etc/unbound/unbound.conf
+sed -i "s/verbosity: 0/verbosity: $VERBOSITY/" /etc/unbound/unbound.conf
 printf "Verbosity details level set to $VERBOSITY_DETAILS\n"
 [ $VERBOSITY_DETAILS = 0 ] || ARGS=-$(for i in `seq $VERBOSITY_DETAILS`; do printf "v"; done)
 printf "Malicious hostnames and ips blocking is $BLOCK_MALICIOUS\n"

@@ -12,4 +12,3 @@ services:
     ports:
       - 53:1053/udp
     network_mode: bridge
-    restart: always
