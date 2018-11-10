@@ -11,10 +11,10 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
       org.label-schema.url="https://github.com/qdm12/cloudflare-dns-server" \
       org.label-schema.vcs-description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS" \
       org.label-schema.vcs-usage="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md#setup" \
-      org.label-schema.docker.cmd="docker run -d -p 53:1053/udp qmcgaw/cloudflare-dns-server" \
-      org.label-schema.docker.cmd.devel="docker run -it --rm -p 53:1053/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off qmcgaw/cloudflare-dns-server" \
+      org.label-schema.docker.cmd="docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server" \
+      org.label-schema.docker.cmd.devel="docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off qmcgaw/cloudflare-dns-server" \
       org.label-schema.docker.params="VERBOSITY=from 0 (no log) to 5 (full debug log) and defaults to 1,VERBOSITY_DETAILS=0 to 4 and defaults to 0 (higher means more details),BLOCK_MALICIOUS='on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM),LISTENING_PORT=1 to 65535 for internal Unbound listening port" \
-      image-size="12.7MB" \
+      image-size="19.4MB" \
       ram-usage="13.2MB to 70MB" \
       cpu-usage="Low"
 EXPOSE 53/udp
