@@ -24,7 +24,7 @@ ENV VERBOSITY=1 \
     LISTENINGPORT=53
 ENTRYPOINT /etc/unbound/entrypoint.sh
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 \
-            CMD LISTENINGPORT=${LISTENINGPORT:-1053}; [ -z $(nslookup duckduckgo.com 127.0.0.1 -port=$LISTENING_PORT -timeout=1 | grep "no servers could be reached") ] || exit 1
+            CMD LISTENINGPORT=${LISTENINGPORT:-53}; [ -z $(nslookup duckduckgo.com 127.0.0.1 -port=$LISTENING_PORT -timeout=1 | grep "no servers could be reached") ] || exit 1
 RUN apk --update --no-cache --progress -q add unbound bind-tools libcap && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
     addgroup nonrootgroup --gid 1000 && \

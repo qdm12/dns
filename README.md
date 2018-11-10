@@ -186,7 +186,7 @@ See [this](http://www.macinstruct.com/node/558)
 1. Launch the Docker container with:
 
     ```bash
-    docker run -it --rm -p 53:1053/udp \
+    docker run -it --rm -p 53:53/udp \
     -v $(pwd)/include.conf:/etc/unbound/include.conf \
     qmcgaw/cloudflare-dns-server
     ```

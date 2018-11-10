@@ -19,7 +19,7 @@ if [ $? != 0 ] && [ "$user" = "nonrootuser" ]; then
 fi
 VERBOSITY=${VERBOSITY:-1}
 VERBOSITY_DETAILS=${VERBOSITY_DETAILS:-0}
-LISTENINGPORT=${LISTENINGPORT:-1053}
+LISTENINGPORT=${LISTENINGPORT:-53}
 BLOCK_MALICIOUS=${BLOCK_MALICIOUS:-on}
 if [ -z $(echo $VERBOSITY | grep -E '^[0-9]+$') ] || [ $VERBOSITY -gt 5 ]; then
   printf "Environment variable VERBOSITY=$VERBOSITY must be a positive integer between 0 and 5\n"
