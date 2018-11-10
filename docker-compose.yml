@@ -5,10 +5,10 @@ services:
     image: qmcgaw/cloudflare-dns-server
     container_name: dns
     environment:
-      - VERBOSITY=1
-      - VERBOSITY_DETAILS=0
-      - BLOCK_MALICIOUS=on
-      - LISTENINGPORT=1053
+      - VERBOSITY=
+      - VERBOSITY_DETAILS=
+      - BLOCK_MALICIOUS=
+      - LISTENINGPORT=
     ports:
-      - 53:1053/udp
+      - 53:53/udp
     network_mode: bridge

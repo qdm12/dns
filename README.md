@@ -1,9 +1,9 @@
 # Cloudflare DNS over TLS Docker container
 
-**Warning: The port binding is now `53:1053/udp` instead of `53:53/udp` so that the container runs without root priviledges.**
-**If you need to bind to port 53 UDP INTERNALLY, see [the run as root section](#run-as-root)**
-
 *DNS caching server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4 and ~~IPv6~~) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
+
+**10 Nov 2018: The port binding is back to `53:53/udp` and the container runs without root privileges**
+**This is thanks to `setcap 'cap_net_bind_service=+ep' /usr/sbin/unbound` allowing Unbound to bind to well known ports**
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -23,7 +23,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 12.7MB | 13.2MB to 70MB | Low |
+| 18.3MB | 13.2MB to 70MB | Low |
 
 It is based on:
 
@@ -31,27 +31,29 @@ It is based on:
 - [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
 - Malicious hostnames list from [github.com/qdm12/malicious-hostnames-docker](https://github.com/qdm12/malicious-hostnames-docker)
 - Malicious IPs list from [github.com/qdm12/malicious-ips-docker](https://github.com/qdm12/malicious-ips-docker)
+- [bind-tools](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
+- [libcap](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/libcap) to set low port bind capabilities to unbound so that the container runs without root
 
 It also uses DNS rebinding protection and DNSSEC Validation:
 
 [![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
-You can also block additional domains of your choice, see the [Extra section](#Extra)
+You can also block additional domains of your choice, amongst other things, see the [Extra section](#Extra)
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
 ## Testing it
 
 ```bash
-docker run -it --rm -p 53:1053/udp -e LISTENINGPORT=1053 \
+docker run -it --rm --name cloudflare-dns-tls -p 53:53/udp \
 -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off \
 qmcgaw/cloudflare-dns-server
 ```
 
-- The `LISTENINGPORT`  environment variable sets the UDP port on which the Unbound DNS server should listen to, and defaults to 1053
 - The `VERBOSITY` environment variable goes from 0 (no log) to 5 (full debug log) and defaults to 1
 - The `VERBOSITY_DETAILS` environment variable goes from 0 to 4 and defaults to 0 (higher means more details)
 - The `BLOCK_MALICIOUS` environment variable can be set to 'on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM). It blocks malicious IP addresses and malicious hostnames from being resolved.
+- The `LISTENINGPORT`  environment variable sets the UDP port on which the Unbound DNS server should listen to (internally), and defaults to 53
 
 You can check the verbose output with:
 
@@ -64,7 +66,7 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 ## Run it as a daemon
 
 ```bash
-docker run -d -p 53:1053/udp qmcgaw/cloudflare-dns-server
+docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server
 ```
 
 
@@ -117,6 +119,8 @@ services:
       - 127.0.0.1
 ```
 
+If the containers are in the same virtual network, you can simply set the `dns` to the LAN IP address of the DNS container (i.e. `10.0.0.5`)
+
 #### Windows
 
 1. Open the control panel and follow the instructions shown on the screenshots below.
@@ -163,34 +167,6 @@ See [this](http://www.macinstruct.com/node/558)
 
 ## Extra
 
-### Run as root
-
-If you need to bind to ports lower than UDP 1024 **internally**, you must run the container as root.
-Unbound will however run with the user *nonrootuser* keeping you on the safe side.
-To do so, in example:
-
-```bash
-docker run -d --user=root -e LISTENINGPORT=53 qmcgaw/cloudflare-dns-server
-```
-
-
-```yml
-version: '3'
-services:
-  cloudflare-dns:
-    image: qmcgaw/cloudflare-dns-server
-    container_name: dns
-    user: root
-    environment:
-      - VERBOSITY=1
-      - VERBOSITY_DETAILS=0
-      - BLOCK_MALICIOUS=on
-      - LISTENINGPORT=53
-    network_mode: bridge
-    ports:
-      - 53:53/udp
-```
-
 ### Block domains of your choice
 
 1. Create a file on your host `include.conf`
@@ -211,25 +187,26 @@ services:
 
     ```bash
     docker run -it --rm -p 53:1053/udp \
-    -v /yourpath/include.conf:/etc/unbound/include.conf qmcgaw/cloudflare-dns-server
+    -v $(pwd)/include.conf:/etc/unbound/include.conf \
+    qmcgaw/cloudflare-dns-server
     ```
 
-### Build it yourself
+### Build all the images yourself
 
 ```bash
+docker build -t qmcgaw/malicious-ips https://github.com/qdm12/malicious-ips-docker.git
+docker build -t qmcgaw/malicious-hostnames https://github.com/qdm12/malicious-hostnames-docker.git
+docker build -t qmcgaw/dns-rootanchor https://github.com/qdm12/dns-rootanchor-docker.git
 docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
 ```
-
-
-You might want to build the qmcgaw/malicious-ips, qmcgaw/malicious-hostnames and qmcgaw/dns-rootanchor images yourself too.
 
 ### Firewall considerations
 
 This container requires the following connections:
 
-- UDP 53 Inbound
-- TCP 853 Outbound
+- UDP 53 Inbound (only if used externally)
+- TCP 853 Outbound to 1.1.1.1 and 1.0.0.1
 
 ## TO DOs
 
-- [ ] Build Unbound at image build stage
+- [ ] Build Unbound binary at image build stage
