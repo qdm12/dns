@@ -12,9 +12,17 @@ printf "Running as $user\n"
 [ "$user" != "nonrootuser" ] || sed -i 's/username: "nonrootuser"/username: ""/' /etc/unbound/unbound.conf
 [ -f /etc/unbound/include.conf ] || touch /etc/unbound/include.conf
 test -r /etc/unbound/include.conf
-if [ $? != 0 ] && [ "$user" = "nonrootuser" ]; then
-  printf "Please set the ownership and permissions of include.conf on your host with:\n"
-  printf "  chown 1000:1000 include.conf && chmod 400 include.conf\n"
+if [ $? != 0 ]; then
+  owneruid=$(stat -c %u /etc/unbound/include.conf)
+  ownergid=$(stat -c %g /etc/unbound/include.conf)
+  permissions=$(stat -c %a /etc/unbound/include.conf)
+  printf "Can't read file include.conf (owner UID $owneruid, owner GID $ownergid, permissions $permissions)\n"
+  if [ "$user" = "nonrootuser" ]; then
+    printf "1) Make sure include.conf has read permission (chmod 400 include.conf)\n"
+    printf "2) Either:\n"
+    printf "   a) Run the container with '--user=$owneruid'\n"
+    printf "   b) Change include.conf ownership 'chown 1000:1000 include.conf'\n"
+  fi
   exit 1
 fi
 VERBOSITY=${VERBOSITY:-1}
