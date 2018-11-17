@@ -26,10 +26,10 @@ ENTRYPOINT /etc/unbound/entrypoint.sh
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 \
             CMD LISTENINGPORT=${LISTENINGPORT:-53}; [ -z $(nslookup duckduckgo.com 127.0.0.1 -port=$LISTENING_PORT -timeout=1 | grep "no servers could be reached") ] || exit 1
 RUN apk --update --no-cache --progress -q add unbound bind-tools libcap && \
+    setcap 'cap_net_bind_service=+ep' /usr/sbin/unbound && \
+    apk del libcap && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
-    addgroup nonrootgroup --gid 1000 && \
-    adduser nonrootuser -G nonrootgroup -D -H --uid 1000 && \
-    setcap 'cap_net_bind_service=+ep' /usr/sbin/unbound
+    adduser nonrootuser -D -H --uid 1000    
 COPY --from=qmcgaw/dns-trustanchor /root.key /etc/unbound/root.key
 COPY --from=qmcgaw/dns-trustanchor /named.root /etc/unbound/root.hints
 COPY --from=qmcgaw/malicious-hostnames /malicious-hostnames.bz2 /tmp/malicious-hostnames.bz2
@@ -42,8 +42,8 @@ RUN cd /tmp && \
     tar -cjf /etc/unbound/blocks-malicious.bz2 blocks-malicious.conf && \
     rm -f /tmp/*
 COPY unbound.conf entrypoint.sh /etc/unbound/
-RUN chown nonrootuser:nonrootgroup -R /etc/unbound && \
-    chmod 700 -R /etc/unbound && \
+RUN chown nonrootuser -R /etc/unbound && \
+    chmod 700 /etc/unbound && \
     chmod 500 /etc/unbound/entrypoint.sh && \
     chmod 400 \
         /etc/unbound/root.hints \
