@@ -14,7 +14,7 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
       org.label-schema.docker.cmd="docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server" \
       org.label-schema.docker.cmd.devel="docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off qmcgaw/cloudflare-dns-server" \
       org.label-schema.docker.params="VERBOSITY=from 0 (no log) to 5 (full debug log) and defaults to 1,VERBOSITY_DETAILS=0 to 4 and defaults to 0 (higher means more details),BLOCK_MALICIOUS='on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM),LISTENING_PORT=1 to 65535 for internal Unbound listening port" \
-      image-size="19.4MB" \
+      image-size="19.3MB" \
       ram-usage="13.2MB to 70MB" \
       cpu-usage="Low"
 EXPOSE 53/udp
@@ -29,14 +29,12 @@ RUN apk --update --no-cache --progress -q add unbound bind-tools libcap && \
     setcap 'cap_net_bind_service=+ep' /usr/sbin/unbound && \
     apk del libcap && \
     rm -rf /var/cache/apk/* /etc/unbound/unbound.conf && \
-    adduser nonrootuser -D -H --uid 1000    
-COPY --from=qmcgaw/dns-trustanchor /root.key /etc/unbound/root.key
-COPY --from=qmcgaw/dns-trustanchor /named.root /etc/unbound/root.hints
-COPY --from=qmcgaw/malicious-hostnames /malicious-hostnames.bz2 /tmp/malicious-hostnames.bz2
-COPY --from=qmcgaw/malicious-ips /malicious-ips.bz2 /tmp/malicious-ips.bz2
-RUN cd /tmp && \
-    tar -xjf malicious-hostnames.bz2 && \
-    tar -xjf malicious-ips.bz2 && \
+    adduser nonrootuser -D -H --uid 1000 && \
+    wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/named.root.updated -O /etc/unbound/root.hints && \
+    wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/root.key.updated -O /etc/unbound/root.key && \
+    cd /tmp && \
+    wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/malicious-hostnames.updated -O malicious-hostnames && \
+    wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/malicious-ips.updated -O malicious-ips && \
     while read hostname; do echo "local-zone: \""$hostname"\" static" >> blocks-malicious.conf; done < malicious-hostnames && \
     while read ip; do echo "private-address: $ip" >> blocks-malicious.conf; done < malicious-ips && \
     tar -cjf /etc/unbound/blocks-malicious.bz2 blocks-malicious.conf && \

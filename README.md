@@ -2,9 +2,6 @@
 
 *DNS caching server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4 and ~~IPv6~~) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
 
-**10 Nov 2018: The port binding is back to `53:53/udp` and the container runs without root privileges**
-**This is thanks to `setcap 'cap_net_bind_service=+ep' /usr/sbin/unbound` allowing Unbound to bind to well known ports**
-
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
 [![Build Status](https://travis-ci.org/qdm12/cloudflare-dns-server.svg?branch=master)](https://travis-ci.org/qdm12/cloudflare-dns-server)
@@ -23,14 +20,13 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 19.4MB | 13.2MB to 70MB | Low |
+| 18.4MB | 13.2MB to 70MB | Low |
 
 It is based on:
 
 - [Alpine 3.8](https://alpinelinux.org)
 - [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
-- Malicious hostnames list from [github.com/qdm12/malicious-hostnames-docker](https://github.com/qdm12/malicious-hostnames-docker)
-- Malicious IPs list from [github.com/qdm12/malicious-ips-docker](https://github.com/qdm12/malicious-ips-docker)
+- [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - [bind-tools](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
 - [libcap](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/libcap) to set low port bind capabilities to unbound so that the container runs without root
 
