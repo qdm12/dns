@@ -150,8 +150,7 @@ Follow the instructions at [https://support.apple.com/kb/PH25577](https://suppor
 
 #### Linux
 
-You probably know how to do that. Otherwise you can usually modify the first line of */etc/resolv.conf* by changing the IP address 
-of your DNS server.
+You probably know how to do that. Otherwise you can usually modify the first line of */etc/resolv.conf* by changing the IP address of your DNS server.
 
 #### Android
 
@@ -182,17 +181,12 @@ See [this](http://www.macinstruct.com/node/558)
 1. Launch the Docker container with:
 
     ```bash
-    docker run -it --rm -p 53:53/udp \
-    -v $(pwd)/include.conf:/etc/unbound/include.conf \
-    qmcgaw/cloudflare-dns-server
+    docker run -it --rm -p 53:53/udp -v $(pwd)/include.conf:/etc/unbound/include.conf  qmcgaw/cloudflare-dns-server
     ```
 
-### Build all the images yourself
+### Build the image yourself
 
 ```bash
-docker build -t qmcgaw/malicious-ips https://github.com/qdm12/malicious-ips-docker.git
-docker build -t qmcgaw/malicious-hostnames https://github.com/qdm12/malicious-hostnames-docker.git
-docker build -t qmcgaw/dns-rootanchor https://github.com/qdm12/dns-rootanchor-docker.git
 docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
 ```
 
