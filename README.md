@@ -20,7 +20,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 18.4MB | 13.2MB to 70MB | Low |
+| 19MB | 13.2MB to 70MB | Low |
 
 It is based on:
 
@@ -57,7 +57,7 @@ You can check the verbose output with:
 docker logs -f cloudflare-dns-tls
 ```
 
-See the [Connect clients to it](#connect-clients-to-it) section to finish testing.
+See the [Connect clients to it](#connect-clients-to-it) section to finish testing, and refer to the [Verify DNS connection](#verify-dns-connection) section as well.
 
 ## Run it as a daemon
 
@@ -65,9 +65,7 @@ See the [Connect clients to it](#connect-clients-to-it) section to finish testin
 docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server
 ```
 
-
 or use [docker-compose.yml](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml) with:
-
 
 ```bash
 docker-compose up -d
@@ -196,6 +194,14 @@ This container requires the following connections:
 
 - UDP 53 Inbound (only if used externally)
 - TCP 853 Outbound to 1.1.1.1 and 1.0.0.1
+
+### Verify DNS connection
+
+1. Verify that you use Cloudflare DNS servers: [https://www.dnsleaktest.com](https://www.dnsleaktest.com) with the Standard or Extended test
+1. Verify that DNS SEC is enabled: [https://en.internet.nl/connection](https://en.internet.nl/connection)
+
+Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. 
+Hence https://1.1.1.1/help does not detect a direct connection to them.
 
 ## TO DOs
 
