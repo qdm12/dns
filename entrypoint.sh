@@ -7,9 +7,8 @@ printf " =========================================\n"
 printf " =========================================\n"
 printf " == by github.com/qdm12 - Quentin McGaw ==\n\n"
 
+# Checks parameters and mounted files
 user=$(whoami)
-printf "Running as $user\n"
-[ "$user" != "nonrootuser" ] || sed -i 's/username: "nonrootuser"/username: ""/' /etc/unbound/unbound.conf
 [ -f /etc/unbound/include.conf ] || touch /etc/unbound/include.conf
 test -r /etc/unbound/include.conf
 if [ $? != 0 ]; then
@@ -25,16 +24,12 @@ if [ $? != 0 ]; then
   fi
   exit 1
 fi
-VERBOSITY=${VERBOSITY:-1}
-VERBOSITY_DETAILS=${VERBOSITY_DETAILS:-0}
-LISTENINGPORT=${LISTENINGPORT:-53}
-BLOCK_MALICIOUS=${BLOCK_MALICIOUS:-on}
-if [ -z $(echo $VERBOSITY | grep -E '^[0-9]+$') ] || [ $VERBOSITY -gt 5 ]; then
-  printf "Environment variable VERBOSITY=$VERBOSITY must be a positive integer between 0 and 5\n"
+if [ -z $(echo $VERBOSITY | grep -E '^0|1|2|3|4|5$') ]; then
+  printf "Environment variable VERBOSITY=$VERBOSITY must be an integer between 0 and 5\n"
   exit 1
 fi
-if [ -z $(echo $VERBOSITY_DETAILS | grep -E '^[0-9]+$') ] || [ $VERBOSITY_DETAILS -gt 4 ]; then
-  printf "Environment variable VERBOSITY_DETAILS=$VERBOSITY_DETAILS must be a positive integer between 0 and 4\n"
+if [ -z $(echo $VERBOSITY_DETAILS | grep -E '^0|1|2|3|4$') ]; then
+  printf "Environment variable VERBOSITY_DETAILS=$VERBOSITY_DETAILS must be an integer between 0 and 4\n"
   exit 1
 fi
 if [ "$BLOCK_MALICIOUS" != "on" ] && [ "$BLOCK_MALICIOUS" != "off" ]; then
@@ -45,11 +40,46 @@ if [ -z $(echo $LISTENINGPORT | grep -E '^[0-9]+$') ] || [ $LISTENINGPORT -lt 1 
   printf "Environment variable LISTENINGPORT=$LISTENINGPORT must be a positive integer between 1 and 65535\n"
   exit 1
 fi
+
+# Modifies configuration according to valid parameters
+printf "Running as $user\n"
+if [ "$user" != "nonrootuser" ]; then
+  sed -i 's/username: .*$/username: ""/' /etc/unbound/unbound.conf
+else
+  sed -i 's/username: .*$/username: "nonrootuser"/' /etc/unbound/unbound.conf
+fi
 printf "Unbound version: $(unbound -h | grep "Version" | cut -d" " -f2)\n"
+sed -i '/forward-addr/d' /etc/unbound/unbound.conf
+case $PROVIDER in
+  cloudflare)
+    printf "forward-addr: 1.1.1.1@853#cloudflare-dns.com\n" >> /etc/unbound/unbound.conf
+    echo "forward-addr: 1.0.0.1@853#cloudflare-dns.com" >> /etc/unbound/unbound.conf
+    ;;
+  google)
+    echo "forward-addr: 8.8.8.8@853#dns.google" >> /etc/unbound/unbound.conf
+    echo "forward-addr: 8.8.4.4@853#dns.google" >> /etc/unbound/unbound.conf
+    ;;
+  quad9)
+    echo "forward-addr: 9.9.9.9@853#dns.quad9.net" >> /etc/unbound/unbound.conf
+    echo "forward-addr: 149.112.112.112@853#dns.quad9.net" >> /etc/unbound/unbound.conf
+    ;;
+  quadrant)
+    echo "forward-addr: 12.159.2.159@853#dns-tls.qis.io" >> /etc/unbound/unbound.conf
+    ;;
+  cleanbrowsing)
+    echo "forward-addr: 185.228.168.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
+    echo "forward-addr: 185.228.169.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
+    ;;
+  *)
+    printf "Environment variable PROVIDER=$PROVIDER must be 'cloudflare', 'google', 'quad9', 'quadrant' or 'cleanbrowsing'\n"
+    exit 1
+    ;;
+esac
+printf "Unbound DNS server: $PROVIDER\n"    
 printf "Unbound listening UDP port: $LISTENINGPORT\n"
-sed -i "s/port: 53/port: $LISTENINGPORT/" /etc/unbound/unbound.conf
+sed -i "s/port: .*$/port: $LISTENINGPORT/" /etc/unbound/unbound.conf
 printf "Verbosity level set to $VERBOSITY on 5\n"
-sed -i "s/verbosity: 0/verbosity: $VERBOSITY/" /etc/unbound/unbound.conf
+sed -i "s/verbosity: .*$/verbosity: $VERBOSITY/" /etc/unbound/unbound.conf
 printf "Verbosity details level set to $VERBOSITY_DETAILS on 4\n"
 [ $VERBOSITY_DETAILS = 0 ] || ARGS=-$(for i in `seq $VERBOSITY_DETAILS`; do printf "v"; done)
 printf "Malicious hostnames and ips blocking is $BLOCK_MALICIOUS\n"

@@ -1,6 +1,8 @@
 # Cloudflare DNS over TLS Docker container
 
-*DNS caching server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4 and ~~IPv6~~) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
+*DNS caching server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
+
+**NEW (13 January 2019): Supports all other DNS-over-TLS providers: Google, Quad9, Quadrant and CleanBrowsing**
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -20,7 +22,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 19MB | 13.2MB to 70MB | Low |
+| 17MB | 13.2MB to 70MB | Low |
 
 It is based on:
 
@@ -28,7 +30,6 @@ It is based on:
 - [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - [bind-tools](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
-- [libcap](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/libcap) to set low port bind capabilities to unbound so that the container runs without root
 
 It also uses DNS rebinding protection and DNSSEC Validation:
 
@@ -41,15 +42,10 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Testing it
 
 ```bash
-docker run -it --rm --name cloudflare-dns-tls -p 53:53/udp \
--e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off \
-qmcgaw/cloudflare-dns-server
+docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 qmcgaw/cloudflare-dns-server
 ```
 
-- The `VERBOSITY` environment variable goes from 0 (no log) to 5 (full debug log) and defaults to 1
-- The `VERBOSITY_DETAILS` environment variable goes from 0 to 4 and defaults to 0 (higher means more details)
-- The `BLOCK_MALICIOUS` environment variable can be set to 'on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM). It blocks malicious IP addresses and malicious hostnames from being resolved.
-- The `LISTENINGPORT`  environment variable sets the UDP port on which the Unbound DNS server should listen to (internally), and defaults to 53
+More environment variables are described in the [environment variables](#environment-variables) section.
 
 You can check the verbose output with:
 
@@ -57,7 +53,7 @@ You can check the verbose output with:
 docker logs -f cloudflare-dns-tls
 ```
 
-See the [Connect clients to it](#connect-clients-to-it) section to finish testing, and refer to the [Verify DNS connection](#verify-dns-connection) section as well.
+See the [Connect clients to it](#connect-clients-to-it) section to finish testing, and you can refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
 
 ## Run it as a daemon
 
@@ -70,6 +66,18 @@ or use [docker-compose.yml](https://github.com/qdm12/cloudflare-dns-server/blob/
 ```bash
 docker-compose up -d
 ```
+
+More environment variables are described in the [environment variables](#environment-variables) section.
+
+## Environment variables
+
+| Environment variable | Default | Description |
+| --- | --- | --- |
+| `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
+| `VERBOSITY_DETAILS` | `0` | From 0 to 4 and defaults to 0 (higher means more details) |
+| `BLOCK_MALICIOUS` | `on` | `on` or `off`. It blocks malicious IP addresses and malicious hostnames from being resolved. Note that it consumes about 50MB of additional RAM. |
+| `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
+| `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `google`, `quad9`, `quadrant`, `cleanbrowsing` |
 
 ## Connect clients to it
 
@@ -107,7 +115,7 @@ For *docker-compose.yml*:
 version: '3'
 services:
   test:
-    image: alpine
+    image: alpine:3.8
     network_mode: bridge
     dns:
       - 127.0.0.1
@@ -200,8 +208,7 @@ This container requires the following connections:
 1. Verify that you use Cloudflare DNS servers: [https://www.dnsleaktest.com](https://www.dnsleaktest.com) with the Standard or Extended test
 1. Verify that DNS SEC is enabled: [https://en.internet.nl/connection](https://en.internet.nl/connection)
 
-Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. 
-Hence https://1.1.1.1/help does not detect a direct connection to them.
+Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. Hence https://1.1.1.1/help does not detect a direct connection to them.
 
 ## TO DOs
 
