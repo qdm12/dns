@@ -44,9 +44,9 @@ fi
 # Modifies configuration according to valid parameters
 printf "Running as $user\n"
 if [ "$user" != "nonrootuser" ]; then
-  sed -i 's/username: .*$/username: ""/' /etc/unbound/unbound.conf
-else
   sed -i 's/username: .*$/username: "nonrootuser"/' /etc/unbound/unbound.conf
+else
+  sed -i 's/username: .*$/username: ""/' /etc/unbound/unbound.conf
 fi
 printf "Unbound version: $(unbound -h | grep "Version" | cut -d" " -f2)\n"
 sed -i '/forward-addr/d' /etc/unbound/unbound.conf
