@@ -28,8 +28,8 @@
 
 It is based on:
 
-- [Alpine 3.8](https://alpinelinux.org)
-- [Unbound 1.7.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
+- [Alpine 3.9](https://alpinelinux.org)
+- [Unbound 1.8.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - [bind-tools](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
 

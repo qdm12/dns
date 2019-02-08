@@ -1,4 +1,4 @@
-ARG ALPINE_VERSION=3.8
+ARG ALPINE_VERSION=3.9
 
 FROM alpine:${ALPINE_VERSION}
 ARG BUILD_DATE
@@ -9,7 +9,7 @@ LABEL org.label-schema.schema-version="1.0.0-rc1" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/qdm12/cloudflare-dns-server" \
       org.label-schema.url="https://github.com/qdm12/cloudflare-dns-server" \
-      org.label-schema.vcs-description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS" \
+      org.label-schema.vcs-description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)" \
       org.label-schema.vcs-usage="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md#setup" \
       org.label-schema.docker.cmd="docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server" \
       org.label-schema.docker.cmd.devel="docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off qmcgaw/cloudflare-dns-server" \
