@@ -1,8 +1,6 @@
 # Cloudflare DNS over TLS Docker container
 
-*DNS caching server connected to Cloudflare 1.1.1.1 DNS over TLS (IPv4) with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
-
-**NEW (13 January 2019): Supports all other DNS-over-TLS providers: Google, Quad9, Quadrant and CleanBrowsing**
+*DNS caching server connected to DNS over TLS (IPv4) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -25,6 +23,13 @@
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
 | 20.8MB | 13.2MB to 70MB | Low |
+
+It can be connected to one of all the DNS-over-TLS providers:
+
+- Google
+- Quad9
+- Quadrant
+- CleanBrowsing
 
 It is based on:
 
