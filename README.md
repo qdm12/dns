@@ -24,14 +24,14 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 17MB | 13.2MB to 70MB | Low |
+| 20.8MB | 13.2MB to 70MB | Low |
 
 It is based on:
 
 - [Alpine 3.9](https://alpinelinux.org)
-- [Unbound 1.8.3](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/unbound)
+- [Unbound 1.8.3](https://pkgs.alpinelinux.org/package/v3.9/main/x86_64/unbound)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-- [bind-tools](https://pkgs.alpinelinux.org/package/v3.8/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
+- [bind-tools](https://pkgs.alpinelinux.org/package/v3.9/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
 
 It also uses DNS rebinding protection and DNSSEC Validation:
 
@@ -78,6 +78,7 @@ More environment variables are described in the [environment variables](#environ
 | `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
 | `VERBOSITY_DETAILS` | `0` | From 0 to 4 and defaults to 0 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`. It blocks malicious IP addresses and malicious hostnames from being resolved. Note that it consumes about 50MB of additional RAM. |
+| `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
 | `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `google`, `quad9`, `quadrant`, `cleanbrowsing` |
 
@@ -117,7 +118,7 @@ For *docker-compose.yml*:
 version: '3'
 services:
   test:
-    image: alpine:3.8
+    image: alpine:3.9
     network_mode: bridge
     dns:
       - 127.0.0.1

@@ -36,6 +36,10 @@ if [ "$BLOCK_MALICIOUS" != "on" ] && [ "$BLOCK_MALICIOUS" != "off" ]; then
   printf "Environment variable BLOCK_MALICIOUS=$BLOCK_MALICIOUS must be 'on' or 'off'\n"
   exit 1
 fi
+if [ "$BLOCK_NSA" != "on" ] && [ "$BLOCK_NSA" != "off" ]; then
+  printf "Environment variable BLOCK_NSA=$BLOCK_NSA must be 'on' or 'off'\n"
+  exit 1
+fi
 if [ -z $(echo $LISTENINGPORT | grep -E '^[0-9]+$') ] || [ $LISTENINGPORT -lt 1 ] || [ $LISTENINGPORT -gt 65535 ]; then
   printf "Environment variable LISTENINGPORT=$LISTENINGPORT must be a positive integer between 1 and 65535\n"
   exit 1
@@ -88,6 +92,16 @@ if [ "$BLOCK_MALICIOUS" = "on" ]; then
   printf "$(cat /etc/unbound/blocks-malicious.conf | grep "local-zone" | wc -l ) malicious hostnames and $(cat /etc/unbound/blocks-malicious.conf | grep "private-address" | wc -l) malicious IP addresses blacklisted\n"
 else
   echo "" > /etc/unbound/blocks-malicious.conf
+fi
+printf "NSA hostnames blocking is $BLOCK_NSA\n"
+if [ "$BLOCK_NSA" = "on" ]; then
+  tar -xjf /etc/unbound/blocks-nsa.bz2 -C /etc/unbound/
+  printf "$(cat /etc/unbound/blocks-nsa.conf | grep "local-zone" | wc -l ) NSA hostnames blacklisted\n"
+  cat /etc/unbound/blocks-nsa.conf >> /etc/unbound/blocks-malicious.conf
+  rm /etc/unbound/blocks-nsa.conf
+  sort -u /etc/unbound/blocks-malicious.conf > /etc/unbound/temp
+  rm /etc/unbound/blocks-malicious.conf
+  mv /etc/unbound/temp /etc/unbound/blocks-malicious.conf
 fi
 unbound -d $ARGS
 status=$?
