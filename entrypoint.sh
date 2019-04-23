@@ -99,9 +99,7 @@ if [ "$BLOCK_NSA" = "on" ]; then
   printf "$(cat /etc/unbound/blocks-nsa.conf | grep "local-zone" | wc -l ) NSA hostnames blacklisted\n"
   cat /etc/unbound/blocks-nsa.conf >> /etc/unbound/blocks-malicious.conf
   rm /etc/unbound/blocks-nsa.conf
-  sort -u /etc/unbound/blocks-malicious.conf > /etc/unbound/temp
-  rm /etc/unbound/blocks-malicious.conf
-  mv /etc/unbound/temp /etc/unbound/blocks-malicious.conf
+  sort -u -o /etc/unbound/blocks-malicious.conf /etc/unbound/blocks-malicious.conf
 fi
 unbound -d $ARGS
 status=$?
