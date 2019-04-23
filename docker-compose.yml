@@ -9,6 +9,7 @@ services:
       - VERBOSITY_DETAILS=0
       - BLOCK_MALICIOUS=on
       - BLOCK_NSA=off
+      - UNBLOCK=
       - LISTENINGPORT=53
       - PROVIDER=cloudflare
     ports:

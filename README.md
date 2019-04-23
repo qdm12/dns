@@ -79,6 +79,7 @@ More environment variables are described in the [environment variables](#environ
 | `VERBOSITY_DETAILS` | `0` | From 0 to 4 and defaults to 0 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`. It blocks malicious IP addresses and malicious hostnames from being resolved. Note that it consumes about 50MB of additional RAM. |
 | `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
+| `UNBLOCK` | `` | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
 | `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `google`, `quad9`, `quadrant`, `cleanbrowsing` |
 

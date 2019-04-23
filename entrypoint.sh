@@ -101,6 +101,11 @@ if [ "$BLOCK_NSA" = "on" ]; then
   rm /etc/unbound/blocks-nsa.conf
   sort -u -o /etc/unbound/blocks-malicious.conf /etc/unbound/blocks-malicious.conf
 fi
+for hostname in ${UNBLOCK//,/ }
+do
+  printf "Unblocking hostname $hostname\n"
+  sed -i "/$hostname/d" /etc/unbound/blocks-malicious.conf
+done
 unbound -d $ARGS
 status=$?
 printf "\n =========================================\n"

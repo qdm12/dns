@@ -22,6 +22,7 @@ ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
     BLOCK_MALICIOUS=on \
     BLOCK_NSA=off \
+    UNBLOCK= \
     LISTENINGPORT=53 \
     PROVIDER=cloudflare
 ENTRYPOINT /etc/unbound/entrypoint.sh
