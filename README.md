@@ -31,12 +31,14 @@ It can be connected to one of all the DNS-over-TLS providers:
 - Quadrant
 - CleanBrowsing
 
-It is based on:
+<details><summary>Click to show base components</summary><p>
 
 - [Alpine 3.9](https://alpinelinux.org)
 - [Unbound 1.8.3](https://pkgs.alpinelinux.org/package/v3.9/main/x86_64/unbound)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - [bind-tools](https://pkgs.alpinelinux.org/package/v3.9/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
+
+</p></details>
 
 It also uses DNS rebinding protection and DNSSEC Validation:
 
@@ -84,7 +86,7 @@ More environment variables are described in the [environment variables](#environ
 | `VERBOSITY_DETAILS` | `0` | From 0 to 4 and defaults to 0 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`. It blocks malicious IP addresses and malicious hostnames from being resolved. Note that it consumes about 50MB of additional RAM. |
 | `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
-| `UNBLOCK` | `` | comma separated list of hostnames to leave unblocked |
+| `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
 | `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `google`, `quad9`, `quadrant`, `cleanbrowsing` |
 
