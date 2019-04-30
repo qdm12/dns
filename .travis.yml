@@ -1,7 +1,0 @@
-language: generic
-services:
-  - docker
-install:
-  - docker build .
-after_script:
-  - "curl -X POST https://hooks.microbadger.com/images/qmcgaw/cloudflare-dns-server/e5WTDWcDduI_TQ32JVAuP69H5BU="

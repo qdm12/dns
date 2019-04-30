@@ -1,5 +1,4 @@
 .gitignore
-.travis.yml
 .git
 docker-compose.yml
 README.md
