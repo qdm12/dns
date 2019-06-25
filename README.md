@@ -54,30 +54,25 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
     - If you have a ARM 32 bit v6 architecture
 
         ```sh
-        docker build -t qmcgaw/ddns-updater \
+        docker build -t qmcgaw/cloudflare-dns-server \
         --build-arg BASE_IMAGE=arm32v6/alpine \
-        --build-arg GOARCH=arm \
-        --build-arg GOARM=6 \
-        https://github.com/qdm12/REPONAME_GITHUB.git
+        https://github.com/qdm12/cloudflare-dns-server.git
         ```
 
     - If you have a ARM 32 bit v7 architecture
 
         ```sh
-        docker build -t qmcgaw/ddns-updater \
+        docker build -t qmcgaw/cloudflare-dns-server \
         --build-arg BASE_IMAGE=arm32v7/alpine \
-        --build-arg GOARCH=arm \
-        --build-arg GOARM=7 \
-        https://github.com/qdm12/REPONAME_GITHUB.git
+        https://github.com/qdm12/cloudflare-dns-server.git
         ```
 
     - If you have a ARM 64 bit v8 architecture
 
         ```sh
-        docker build -t qmcgaw/ddns-updater \
+        docker build -t qmcgaw/cloudflare-dns-server \
         --build-arg BASE_IMAGE=arm64v8/alpine \
-        --build-arg GOARCH=arm64 \
-        https://github.com/qdm12/REPONAME_GITHUB.git
+        https://github.com/qdm12/cloudflare-dns-server.git
         ```
 
     </p></details>
@@ -93,7 +88,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 1. Check the log output
 
     ```bash
-    docker logs cloudflare-dns-tls
+    docker logs cloudflare-dns-server
     ```
 
 1. See the [Connect clients to it](#connect-clients-to-it) section to finish testing, and you can refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
