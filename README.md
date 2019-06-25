@@ -21,7 +21,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 20.8MB | 13.2MB to 70MB | Low |
+| 26.9MB | 13.2MB to 70MB | Low |
 
 It can be connected to one of all the DNS-over-TLS providers:
 
@@ -32,10 +32,10 @@ It can be connected to one of all the DNS-over-TLS providers:
 
 <details><summary>Click to show base components</summary><p>
 
-- [Alpine 3.9](https://alpinelinux.org)
-- [Unbound 1.8.3](https://pkgs.alpinelinux.org/package/v3.9/main/x86_64/unbound)
+- [Alpine 3.10](https://alpinelinux.org)
+- [Unbound 1.9.1-r2](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/unbound)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-- [bind-tools](https://pkgs.alpinelinux.org/package/v3.9/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
+- [bind-tools](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
 
 </p></details>
 
@@ -125,7 +125,7 @@ For *docker-compose.yml*:
 version: '3'
 services:
   test:
-    image: alpine:3.9
+    image: alpine:3.10
     network_mode: bridge
     dns:
       - 127.0.0.1
