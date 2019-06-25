@@ -49,19 +49,54 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 ## Testing it
 
-```bash
-docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 qmcgaw/cloudflare-dns-server
-```
+1. <details><summary>CLICK IF YOU HAVE AN ARM DEVICE</summary><p>
 
-More environment variables are described in the [environment variables](#environment-variables) section.
+    - If you have a ARM 32 bit v6 architecture
 
-You can check the verbose output with:
+        ```sh
+        docker build -t qmcgaw/ddns-updater \
+        --build-arg BASE_IMAGE=arm32v6/alpine \
+        --build-arg GOARCH=arm \
+        --build-arg GOARM=6 \
+        https://github.com/qdm12/REPONAME_GITHUB.git
+        ```
 
-```bash
-docker logs -f cloudflare-dns-tls
-```
+    - If you have a ARM 32 bit v7 architecture
 
-See the [Connect clients to it](#connect-clients-to-it) section to finish testing, and you can refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
+        ```sh
+        docker build -t qmcgaw/ddns-updater \
+        --build-arg BASE_IMAGE=arm32v7/alpine \
+        --build-arg GOARCH=arm \
+        --build-arg GOARM=7 \
+        https://github.com/qdm12/REPONAME_GITHUB.git
+        ```
+
+    - If you have a ARM 64 bit v8 architecture
+
+        ```sh
+        docker build -t qmcgaw/ddns-updater \
+        --build-arg BASE_IMAGE=arm64v8/alpine \
+        --build-arg GOARCH=arm64 \
+        https://github.com/qdm12/REPONAME_GITHUB.git
+        ```
+
+    </p></details>
+
+1. Run the container
+
+    ```bash
+    docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 qmcgaw/cloudflare-dns-server
+    ```
+
+    More environment variables are described in the [environment variables](#environment-variables) section.
+
+1. Check the log output
+
+    ```bash
+    docker logs cloudflare-dns-tls
+    ```
+
+1. See the [Connect clients to it](#connect-clients-to-it) section to finish testing, and you can refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
 
 ## Run it as a daemon
 
