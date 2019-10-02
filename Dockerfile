@@ -4,17 +4,16 @@ ARG ALPINE_VERSION=3.10
 FROM ${BASE_IMAGE}:${ALPINE_VERSION}
 ARG BUILD_DATE
 ARG VCS_REF
-LABEL org.label-schema.schema-version="1.0.0-rc1" \
-    maintainer="quentin.mcgaw@gmail.com" \
-    org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.vcs-ref=$VCS_REF \
-    org.label-schema.vcs-url="https://github.com/qdm12/cloudflare-dns-server" \
-    org.label-schema.url="https://github.com/qdm12/cloudflare-dns-server" \
-    org.label-schema.vcs-description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)" \
-    org.label-schema.vcs-usage="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md#setup" \
-    org.label-schema.docker.cmd="docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server" \
-    org.label-schema.docker.cmd.devel="docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 -e BLOCK_MALICIOUS=off qmcgaw/cloudflare-dns-server" \
-    org.label-schema.docker.params="VERBOSITY=from 0 (no log) to 5 (full debug log) and defaults to 1,VERBOSITY_DETAILS=0 to 4 and defaults to 0 (higher means more details),BLOCK_MALICIOUS='on' or 'off' and defaults to 'on' (note that it consumes about 50MB of additional RAM),LISTENING_PORT=1 to 65535 for internal Unbound listening port,PROVIDER=CLOUDFLARE or GOOGLE or QUAD9 or QUADRANT or CLEANBROWSING" \
+LABEL \
+    org.opencontainers.image.authors="quentin.mcgaw@gmail.com" \
+    org.opencontainers.image.created=$BUILD_DATE \
+    org.opencontainers.image.version="" \
+    org.opencontainers.image.revision=$VCS_REF \
+    org.opencontainers.image.url="https://github.com/qdm12/cloudflare-dns-server" \
+    org.opencontainers.image.documentation="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md" \
+    org.opencontainers.image.source="https://github.com/qdm12/cloudflare-dns-server" \
+    org.opencontainers.image.title="cloudflare-dns-server" \
+    org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)" \
     image-size="26.9MB" \
     ram-usage="13.2MB to 70MB" \
     cpu-usage="Low"
