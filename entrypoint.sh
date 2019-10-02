@@ -74,12 +74,15 @@ case $PROVIDER in
     echo "forward-addr: 185.228.168.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
     echo "forward-addr: 185.228.169.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
     ;;
+  securedns)
+    echo "forward-addr: 146.185.167.43@853#dot.securedns.eu" >> /etc/unbound/unbound.conf
+    ;;
   *)
-    printf "Environment variable PROVIDER=$PROVIDER must be 'cloudflare', 'google', 'quad9', 'quadrant' or 'cleanbrowsing'\n"
+    printf "Environment variable PROVIDER=$PROVIDER must be 'cloudflare', 'google', 'quad9', 'quadrant', 'cleanbrowsing' or 'securedns'\n"
     exit 1
     ;;
 esac
-printf "Unbound DNS server: $PROVIDER\n"    
+printf "Unbound DNS server: $PROVIDER\n"
 printf "Unbound listening UDP port: $LISTENINGPORT\n"
 sed -i "s/port: .*$/port: $LISTENINGPORT/" /etc/unbound/unbound.conf
 printf "Verbosity level set to $VERBOSITY on 5\n"

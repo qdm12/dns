@@ -30,6 +30,7 @@ It can be connected to one of all the DNS-over-TLS providers:
 - Quad9
 - Quadrant
 - CleanBrowsing
+- SecureDNS
 
 <details><summary>Click to show base components</summary><p>
 
@@ -118,7 +119,7 @@ More environment variables are described in the [environment variables](#environ
 | `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
 | `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing` |
+| `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` |
 
 ## Connect clients to it
 
@@ -179,14 +180,14 @@ If the containers are in the same virtual network, you can simply set the `dns` 
 ![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows5.png?raw=true)
 
 Enter the IP Address of your Docker host as the **Preferred DNS server** (`192.168.1.210` in my case)
-You can set the Cloudflare DNS server address 1.1.1.1 as an alternate DNS server although you might want to 
+You can set the Cloudflare DNS server address 1.1.1.1 as an alternate DNS server although you might want to
 leave this blank so that no domain name request is in plaintext.
 
 ![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows6.png?raw=true)
 
 ![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows7.png?raw=true)
 
-When closing, Windows should try to identify any potential problems. 
+When closing, Windows should try to identify any potential problems.
 If everything is fine, you should see the following message:
 
 ![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows8.png?raw=true)
