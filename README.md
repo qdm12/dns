@@ -25,6 +25,7 @@
 
 It can be connected to one of all the DNS-over-TLS providers:
 
+- Cloudflare
 - Google
 - Quad9
 - Quadrant
@@ -35,7 +36,7 @@ It can be connected to one of all the DNS-over-TLS providers:
 - [Alpine 3.10](https://alpinelinux.org)
 - [Unbound 1.9.1-r2](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/unbound)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-- [bind-tools](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/bind-tools) for the healthcheck with `nslookup duckduckgo.com 127.0.0.1`
+- [bind-tools](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/bind-tools) for the healthcheck with `dig`
 
 </p></details>
 
@@ -47,7 +48,7 @@ You can also block additional domains of your choice, amongst other things, see 
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
-## Testing it
+## Running it
 
 1. <details><summary>CLICK IF YOU HAVE AN ARM DEVICE</summary><p>
 
@@ -117,7 +118,7 @@ More environment variables are described in the [environment variables](#environ
 | `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
 | `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `google`, `quad9`, `quadrant`, `cleanbrowsing` |
+| `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing` |
 
 ## Connect clients to it
 

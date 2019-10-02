@@ -56,7 +56,7 @@ printf "Unbound version: $(unbound -h | grep "Version" | cut -d" " -f2)\n"
 sed -i '/forward-addr/d' /etc/unbound/unbound.conf
 case $PROVIDER in
   cloudflare)
-    printf "forward-addr: 1.1.1.1@853#cloudflare-dns.com\n" >> /etc/unbound/unbound.conf
+    echo "forward-addr: 1.1.1.1@853#cloudflare-dns.com" >> /etc/unbound/unbound.conf
     echo "forward-addr: 1.0.0.1@853#cloudflare-dns.com" >> /etc/unbound/unbound.conf
     ;;
   google)
