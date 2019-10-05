@@ -8,7 +8,7 @@ printf " =========================================\n"
 printf " == by github.com/qdm12 - Quentin McGaw ==\n\n"
 
 # Retro compatibility
-if [ "$PROVIDERS" = "cloudflare" && ! -z "$PROVIDER" ]; then
+if [ "$PROVIDERS" = "cloudflare" ] && [ ! -z "$PROVIDER" ]; then
   PROVIDERS="$PROVIDER"
 fi
 
