@@ -28,7 +28,7 @@ ENV VERBOSITY=1 \
 ENTRYPOINT /etc/unbound/entrypoint.sh
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 \
     CMD LISTENINGPORT=${LISTENINGPORT:-53}; dig @127.0.0.1 +short +time=1 duckduckgo.com -p $LISTENINGPORT &> /dev/null; [ $? = 0 ] || exit 1
-RUN apk --update --no-cache --progress -q add ca-certificates unbound bind-tools libcap && \
+RUN apk --update --progress -q add ca-certificates unbound bind-tools libcap && \
     setcap 'cap_net_bind_service=+ep' /usr/sbin/unbound && \
     apk del libcap && \
     rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-anchor /usr/sbin/unbound-checkconf /usr/sbin/unbound-control /usr/sbin/unbound-control-setup /usr/sbin/unbound-host && \
