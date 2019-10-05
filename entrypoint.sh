@@ -7,6 +7,11 @@ printf " =========================================\n"
 printf " =========================================\n"
 printf " == by github.com/qdm12 - Quentin McGaw ==\n\n"
 
+# Retro compatibility
+if [ -z "$PROVIDERS" ]; then
+  PROVIDERS="$PROVIDER"
+fi
+
 # Checks parameters and mounted files
 user=$(whoami)
 [ -f /etc/unbound/include.conf ] || touch /etc/unbound/include.conf
@@ -44,6 +49,10 @@ if [ -z $(echo $LISTENINGPORT | grep -E '^[0-9]+$') ] || [ $LISTENINGPORT -lt 1 
   printf "Environment variable LISTENINGPORT=$LISTENINGPORT must be a positive integer between 1 and 65535\n"
   exit 1
 fi
+if [ -z "$PROVIDERS" ]; then
+  printf "PROVIDERS environment variable cannot be empty\n"
+  exit 1
+fi
 
 # Modifies configuration according to valid parameters
 printf "Running as $user\n"
@@ -54,35 +63,39 @@ else
 fi
 printf "Unbound version: $(unbound -h | grep "Version" | cut -d" " -f2)\n"
 sed -i '/forward-addr/d' /etc/unbound/unbound.conf
-case $PROVIDER in
+for provider in ${PROVIDERS//,/ }
+do
+  case $provider in
   cloudflare)
-    echo "forward-addr: 1.1.1.1@853#cloudflare-dns.com" >> /etc/unbound/unbound.conf
-    echo "forward-addr: 1.0.0.1@853#cloudflare-dns.com" >> /etc/unbound/unbound.conf
-    ;;
+      echo "forward-addr: 1.1.1.1@853#cloudflare-dns.com" >> /etc/unbound/unbound.conf
+      echo "forward-addr: 1.0.0.1@853#cloudflare-dns.com" >> /etc/unbound/unbound.conf
+      ;;
   google)
-    echo "forward-addr: 8.8.8.8@853#dns.google" >> /etc/unbound/unbound.conf
-    echo "forward-addr: 8.8.4.4@853#dns.google" >> /etc/unbound/unbound.conf
-    ;;
+      echo "forward-addr: 8.8.8.8@853#dns.google" >> /etc/unbound/unbound.conf
+      echo "forward-addr: 8.8.4.4@853#dns.google" >> /etc/unbound/unbound.conf
+      ;;
   quad9)
-    echo "forward-addr: 9.9.9.9@853#dns.quad9.net" >> /etc/unbound/unbound.conf
-    echo "forward-addr: 149.112.112.112@853#dns.quad9.net" >> /etc/unbound/unbound.conf
-    ;;
+      echo "forward-addr: 9.9.9.9@853#dns.quad9.net" >> /etc/unbound/unbound.conf
+      echo "forward-addr: 149.112.112.112@853#dns.quad9.net" >> /etc/unbound/unbound.conf
+      ;;
   quadrant)
-    echo "forward-addr: 12.159.2.159@853#dns-tls.qis.io" >> /etc/unbound/unbound.conf
-    ;;
+      echo "forward-addr: 12.159.2.159@853#dns-tls.qis.io" >> /etc/unbound/unbound.conf
+      ;;
   cleanbrowsing)
-    echo "forward-addr: 185.228.168.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
-    echo "forward-addr: 185.228.169.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
-    ;;
+      echo "forward-addr: 185.228.168.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
+      echo "forward-addr: 185.228.169.9@853#security-filter-dns.cleanbrowsing.org" >> /etc/unbound/unbound.conf
+      ;;
   securedns)
-    echo "forward-addr: 146.185.167.43@853#dot.securedns.eu" >> /etc/unbound/unbound.conf
-    ;;
+      echo "forward-addr: 146.185.167.43@853#dot.securedns.eu" >> /etc/unbound/unbound.conf
+      ;;
   *)
-    printf "Environment variable PROVIDER=$PROVIDER must be 'cloudflare', 'google', 'quad9', 'quadrant', 'cleanbrowsing' or 'securedns'\n"
-    exit 1
-    ;;
-esac
-printf "Unbound DNS server: $PROVIDER\n"
+      printf "Provider \"$provider\" must be \"cloudflare\", \"google\", \"quad9\", \"quadrant\", \"cleanbrowsing\" or \"securedns\"\n"
+      exit 1
+      ;;
+  esac
+done
+
+printf "Unbound DNS server: $PROVIDERS\n"
 printf "Unbound listening UDP port: $LISTENINGPORT\n"
 sed -i "s/port: .*$/port: $LISTENINGPORT/" /etc/unbound/unbound.conf
 printf "Verbosity level set to $VERBOSITY on 5\n"

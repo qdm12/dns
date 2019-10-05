@@ -23,7 +23,7 @@
 | --- | --- | --- |
 | 26.9MB | 13.2MB to 70MB | Low |
 
-It can be connected to one of all the DNS-over-TLS providers:
+It can be connected to one or more of the following DNS-over-TLS providers:
 
 - Cloudflare
 - Google
@@ -119,7 +119,7 @@ More environment variables are described in the [environment variables](#environ
 | `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
 | `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `PROVIDER` | `cloudflare` | DNS-over-TLS provider. It can be: `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` |
+| `PROVIDERS` | `cloudflare` | DNS-over-TLS provider. It can be: `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` or a comma separated list of these |
 
 ## Connect clients to it
 
