@@ -41,11 +41,19 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 
 </p></details>
 
-It also uses DNS rebinding protection and DNSSEC Validation:
+Features:
+
+- Compatible with ARM
+- DNS rebinding protection
+- DNSSEC Validation
 
 [![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
-You can also block additional domains of your choice, amongst other things, see the [Extra section](#Extra)
+- Split-horizon DNS (randomly pick one of the DoT providers)
+- Optional hostnames resolution and IPs blocking
+    - Malicious
+    - Surveillance
+    - Custom
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
@@ -125,8 +133,6 @@ More environment variables are described in the [environment variables](#environ
 
 ### Option 1: Router (recommended)
 
-Block the UDP 53 outgoing port on your router firewall so that all DNS traffic must go through this container.
-
 *All machines connected to your router will use the 1.1.1.1 encrypted DNS by default*
 
 Configure your router to use the LAN IP address of your Docker host as its primary DNS address.
@@ -136,6 +142,12 @@ Configure your router to use the LAN IP address of your Docker host as its prima
 - If a secondary fallback DNS address is required, use a dull ip address such as the router's IP 192.168.1.1 to force traffic to only go through this container
 
 ![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/diagram-router.png?raw=true)
+
+To ensure network clients cannot use another DNS, you might want to
+
+- Block the outbound UDP 53 port on your router firewall
+- Block the outbound TCP 853 port on your router firewall, **except from your Docker host**
+- If you have *Deep packet inspection* on your router, block DNS over HTTPs on port TCP 443
 
 ### Option 2: Client, one by one
 
@@ -163,7 +175,7 @@ services:
       - 127.0.0.1
 ```
 
-If the containers are in the same virtual network, you can simply set the `dns` to the LAN IP address of the DNS container (i.e. `10.0.0.5`)
+If the containers are in the same Docker network, you can simply set the `dns` to the LAN IP address of the DNS container (i.e. `10.0.0.5`)
 
 #### Windows
 
@@ -255,3 +267,5 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
 ## TO DOs
 
 - [ ] Build Unbound binary at image build stage
+- [ ] Malicious finer grain blocking
+- [ ] Custom block IPs and hostnames with env variables
