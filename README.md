@@ -21,7 +21,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 26.9MB | 13.2MB to 70MB | Low |
+| 28MB | 13.2MB to 70MB | Low |
 
 It can be connected to one or more of the following DNS-over-TLS providers:
 
@@ -241,7 +241,7 @@ See [this](http://www.macinstruct.com/node/558)
 1. Launch the Docker container with:
 
     ```bash
-    docker run -it --rm -p 53:53/udp -v $(pwd)/include.conf:/etc/unbound/include.conf  qmcgaw/cloudflare-dns-server
+    docker run -it --rm -p 53:53/udp -v $(pwd)/include.conf:/unbound/include.conf  qmcgaw/cloudflare-dns-server
     ```
 
 ### Build the image yourself
