@@ -70,26 +70,26 @@ for provider in ${PROVIDERS//,/ }
 do
   case $provider in
   cloudflare)
-      echo "forward-addr: 1.1.1.1@853#cloudflare-dns.com" >> /unbound/unbound.conf
-      echo "forward-addr: 1.0.0.1@853#cloudflare-dns.com" >> /unbound/unbound.conf
+      echo "  forward-addr: 1.1.1.1@853#cloudflare-dns.com" >> /unbound/unbound.conf
+      echo "  forward-addr: 1.0.0.1@853#cloudflare-dns.com" >> /unbound/unbound.conf
       ;;
   google)
-      echo "forward-addr: 8.8.8.8@853#dns.google" >> /unbound/unbound.conf
-      echo "forward-addr: 8.8.4.4@853#dns.google" >> /unbound/unbound.conf
+      echo "  forward-addr: 8.8.8.8@853#dns.google" >> /unbound/unbound.conf
+      echo "  forward-addr: 8.8.4.4@853#dns.google" >> /unbound/unbound.conf
       ;;
   quad9)
-      echo "forward-addr: 9.9.9.9@853#dns.quad9.net" >> /unbound/unbound.conf
-      echo "forward-addr: 149.112.112.112@853#dns.quad9.net" >> /unbound/unbound.conf
+      echo "  forward-addr: 9.9.9.9@853#dns.quad9.net" >> /unbound/unbound.conf
+      echo "  forward-addr: 149.112.112.112@853#dns.quad9.net" >> /unbound/unbound.conf
       ;;
   quadrant)
-      echo "forward-addr: 12.159.2.159@853#dns-tls.qis.io" >> /unbound/unbound.conf
+      echo "  forward-addr: 12.159.2.159@853#dns-tls.qis.io" >> /unbound/unbound.conf
       ;;
   cleanbrowsing)
-      echo "forward-addr: 185.228.168.9@853#security-filter-dns.cleanbrowsing.org" >> /unbound/unbound.conf
-      echo "forward-addr: 185.228.169.9@853#security-filter-dns.cleanbrowsing.org" >> /unbound/unbound.conf
+      echo "  forward-addr: 185.228.168.9@853#security-filter-dns.cleanbrowsing.org" >> /unbound/unbound.conf
+      echo "  forward-addr: 185.228.169.9@853#security-filter-dns.cleanbrowsing.org" >> /unbound/unbound.conf
       ;;
   securedns)
-      echo "forward-addr: 146.185.167.43@853#dot.securedns.eu" >> /unbound/unbound.conf
+      echo "  forward-addr: 146.185.167.43@853#dot.securedns.eu" >> /unbound/unbound.conf
       ;;
   *)
       printf "Provider \"$provider\" must be \"cloudflare\", \"google\", \"quad9\", \"quadrant\", \"cleanbrowsing\" or \"securedns\"\n"
