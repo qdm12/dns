@@ -128,6 +128,7 @@ More environment variables are described in the [environment variables](#environ
 | `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
 | `PROVIDERS` | `cloudflare` | DNS-over-TLS provider. It can be: `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` or a comma separated list of these |
+| `CACHING` | `on` | `on` or `off`. It can be useful if you have another DNS (i.e. Pihole) doing the caching as well on top of this container |
 
 ## Connect clients to it
 

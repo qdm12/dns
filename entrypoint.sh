@@ -56,6 +56,14 @@ if [ -z "$PROVIDERS" ]; then
   printf "PROVIDERS environment variable cannot be empty\n"
   exit 1
 fi
+if [ -z "$CACHING" ]; then
+  printf "CACHING environment variable cannot be empty\n"
+  exit 1
+fi
+if [ "$CACHING" != "on" ] && [ "$CACHING" != "off" ]; then
+  printf "Environment variable CACHING=$CACHING must be 'on' or 'off'\n"
+  exit 1
+fi
 
 # Modifies configuration according to valid parameters
 printf "Running as $user\n"
@@ -101,6 +109,9 @@ done
 printf "Unbound DNS server: $PROVIDERS\n"
 printf "Unbound listening UDP port: $LISTENINGPORT\n"
 sed -i "s/port: .*$/port: $LISTENINGPORT/" /unbound/unbound.conf
+printf "Caching is $CACHING\n"
+[ "$CACHING" = "off" ] && sed -i 's/forward-no-cache: .*/forward-no-cache: yes/' unbound.conf
+cat unbound.conf
 printf "Verbosity level set to $VERBOSITY on 5\n"
 sed -i "s/verbosity: .*$/verbosity: $VERBOSITY/" /unbound/unbound.conf
 printf "Verbosity details level set to $VERBOSITY_DETAILS on 4\n"
