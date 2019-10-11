@@ -267,6 +267,10 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
 
 ## TO DOs
 
-- [ ] Build Unbound binary at image build stage
 - [ ] Malicious finer grain blocking
 - [ ] Custom block IPs and hostnames with env variables
+- [x] Build Unbound binary at image build stage
+    - [ ] smaller static binary
+- [ ] Periodic SHUP signal to reload block lists
+- [ ] Branch with Pihole bundled
+- [ ] Scratch image with Go binary to configure container
