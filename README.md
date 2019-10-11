@@ -21,7 +21,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 28MB | 13.2MB to 70MB | Low |
+| 27.1MB | 13.2MB to 70MB | Low |
 
 It can be connected to one or more of the following DNS-over-TLS providers:
 

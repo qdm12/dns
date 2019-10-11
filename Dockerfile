@@ -11,7 +11,7 @@ RUN wget -q https://nlnetlabs.nl/downloads/unbound/unbound-${UNBOUND_VERSION}.ta
     rm unbound.tar.gz
 RUN CFLAGS=${CFLAGS} ./configure --disable-flto --with-libevent --with-conf-file=unbound.conf
 RUN sed -i 's/LDFLAGS=.*$/LDFLAGS=-all-static/' Makefile
-RUN make
+RUN make && strip unbound
 
 FROM ${BASE_IMAGE}:${ALPINE_VERSION} AS updated
 WORKDIR /tmp/updated
@@ -41,7 +41,7 @@ LABEL \
     org.opencontainers.image.source="https://github.com/qdm12/cloudflare-dns-server" \
     org.opencontainers.image.title="cloudflare-dns-server" \
     org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)" \
-    image-size="28MB" \
+    image-size="27.1MB" \
     ram-usage="13.2MB to 70MB" \
     cpu-usage="Low"
 EXPOSE 53/udp
