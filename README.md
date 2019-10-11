@@ -248,7 +248,8 @@ See [this](http://www.macinstruct.com/node/558)
 ### Build the image yourself
 
 ```bash
-docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
+# Docker Build Kit to carry OS capabilities of unbound from build image to final image
+DOCKER_BUILDKIT=1 docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
 ```
 
 ### Firewall considerations
