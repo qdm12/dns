@@ -111,7 +111,6 @@ printf "Unbound listening UDP port: $LISTENINGPORT\n"
 sed -i "s/port: .*$/port: $LISTENINGPORT/" /unbound/unbound.conf
 printf "Caching is $CACHING\n"
 [ "$CACHING" = "off" ] && sed -i 's/forward-no-cache: .*/forward-no-cache: yes/' unbound.conf
-cat unbound.conf
 printf "Verbosity level set to $VERBOSITY on 5\n"
 sed -i "s/verbosity: .*$/verbosity: $VERBOSITY/" /unbound/unbound.conf
 printf "Verbosity details level set to $VERBOSITY_DETAILS on 4\n"
