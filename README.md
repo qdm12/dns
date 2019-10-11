@@ -35,7 +35,7 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 <details><summary>Click to show base components</summary><p>
 
 - [Alpine 3.10](https://alpinelinux.org)
-- [Unbound 1.9.1-r2](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/unbound)
+- [Unbound 1.9.4](https://nlnetlabs.nl/downloads/unbound) built from source
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - [bind-tools](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/bind-tools) for the healthcheck with `dig`
 
