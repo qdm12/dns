@@ -12,12 +12,6 @@ RUN wget -q https://nlnetlabs.nl/downloads/unbound/unbound-${UNBOUND_VERSION}.ta
 RUN CFLAGS=${CFLAGS} ./configure --disable-flto --with-libevent --with-conf-file=unbound.conf
 RUN sed -i 's/LDFLAGS=.*$/LDFLAGS=-all-static/' Makefile
 RUN make && strip unbound
-RUN chown 1000 unbound && \
-    chmod 500 unbound && \
-    apk add libcap && \
-    setcap 'cap_net_bind_service,cap_sys_chroot=+ep' unbound && \
-    apk del libcap && \
-    rm -rf /var/cache/apk/*
 
 FROM ${BASE_IMAGE}:${ALPINE_VERSION} AS updated
 WORKDIR /tmp/updated
@@ -78,5 +72,11 @@ COPY --chown=nonrootuser unbound.conf entrypoint.sh ./
 RUN chmod 600 unbound.conf && \
     chmod 500 entrypoint.sh && \
     chmod 400 root.hints root.key ca-certificates.crt *.bz2 && \
+    rm -rf /var/cache/apk/*
+RUN chown 1000 unbound && \
+    chmod 500 unbound && \
+    apk add libcap && \
+    setcap 'cap_net_bind_service,cap_sys_chroot=+ep' unbound && \
+    apk del libcap && \
     rm -rf /var/cache/apk/*
 USER nonrootuser
