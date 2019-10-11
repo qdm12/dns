@@ -21,7 +21,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 28MB | 13.2MB to 70MB | Low |
+| 27.1MB | 13.2MB to 70MB | Low |
 
 It can be connected to one or more of the following DNS-over-TLS providers:
 
@@ -35,7 +35,7 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 <details><summary>Click to show base components</summary><p>
 
 - [Alpine 3.10](https://alpinelinux.org)
-- [Unbound 1.9.1-r2](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/unbound)
+- [Unbound 1.9.4](https://nlnetlabs.nl/downloads/unbound) built from source
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - [bind-tools](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/bind-tools) for the healthcheck with `dig`
 
@@ -248,7 +248,8 @@ See [this](http://www.macinstruct.com/node/558)
 ### Build the image yourself
 
 ```bash
-docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
+# Docker Build Kit to carry OS capabilities of unbound from build image to final image
+DOCKER_BUILDKIT=1 docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
 ```
 
 ### Firewall considerations
