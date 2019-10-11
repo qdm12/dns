@@ -135,7 +135,7 @@ do
   printf "Unblocking hostname $hostname\n"
   sed -i "/$hostname/d" /unbound/blocks-malicious.conf
 done
-/unbound/unbound -d -c /unbound/unbound.conf $ARGS
+./unbound -d -c unbound.conf $ARGS
 status=$?
 printf "\n =========================================\n"
 printf " Unbound exit with status $status\n"
