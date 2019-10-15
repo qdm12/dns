@@ -73,6 +73,7 @@ else
   sed -i 's/username: .*$/username: ""/' /unbound/unbound.conf
 fi
 printf "Unbound version: $(/unbound/unbound -h | grep "Version" | cut -d" " -f2)\n"
+printf "Unbound DNS server: $PROVIDERS\n"
 sed -i '/forward-addr/d' /unbound/unbound.conf
 for provider in ${PROVIDERS//,/ }
 do
@@ -105,8 +106,6 @@ do
       ;;
   esac
 done
-
-printf "Unbound DNS server: $PROVIDERS\n"
 printf "Unbound listening UDP port: $LISTENINGPORT\n"
 sed -i "s/port: .*$/port: $LISTENINGPORT/" /unbound/unbound.conf
 printf "Caching is $CACHING\n"
@@ -134,6 +133,12 @@ for hostname in ${UNBLOCK//,/ }
 do
   printf "Unblocking hostname $hostname\n"
   sed -i "/$hostname/d" /unbound/blocks-malicious.conf
+done
+printf "Unbound private addresses: $PRIVATE_ADDRESS\n"
+sed -i '/private-address/d' /unbound/unbound.conf
+for private in ${PRIVATE_ADDRESS//,/ }
+do
+  sed -i "/# Prevent DNS rebinding/a \ \ private-address: $private" /unbound/unbound.conf
 done
 ./unbound -d -c unbound.conf $ARGS
 status=$?

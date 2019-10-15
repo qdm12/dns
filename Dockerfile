@@ -52,7 +52,8 @@ ENV VERBOSITY=1 \
     UNBLOCK= \
     LISTENINGPORT=53 \
     PROVIDERS=cloudflare \
-    CACHING=on
+    CACHING=on \
+    PRIVATE_ADDRESS=127.0.0.1/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,::1/128,fc00::/7,fe80::/10,::ffff:0:0/96
 ENTRYPOINT /unbound/entrypoint.sh
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 \
     CMD LISTENINGPORT=${LISTENINGPORT:-53}; dig @127.0.0.1 +short +time=1 duckduckgo.com -p $LISTENINGPORT &> /dev/null; [ $? = 0 ] || exit 1
