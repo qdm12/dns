@@ -248,10 +248,47 @@ See [this](http://www.macinstruct.com/node/558)
 
 ### Build the image yourself
 
-```bash
-# Docker Build Kit to carry OS capabilities of unbound from build image to final image
-DOCKER_BUILDKIT=1 docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
-```
+- Build the latest Docker image
+    - With `git`
+
+        ```sh
+        docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
+        ```
+
+    - With `wget` and `unzip`
+
+        ```sh
+        wget -q "https://github.com/qdm12/cloudflare-dns-server/archive/master.zip"
+        unzip -q "master.zip"
+        cd *-master
+        docker build -t qmcgaw/cloudflare-dns-server .
+        cd .. && rm -r master.zip *-master
+        ```
+
+- Build an older Docker image (you need `wget` and `unzip`)
+    1. Go to [the commits](https://github.com/qdm12/cloudflare-dns-server/commits/master) and find which commit you want to build for
+    1. You can click on the clipboard next to the commit, in example you pick the commit `da6dbb2ff21c0af4cee93fdb92415aee167f7fd7`
+    1. Open a terminal and set `COMMIT=da6dbb2ff21c0af4cee93fdb92415aee167f7fd7`
+    1. Download the code for this commit and build the Docker image, either:
+        - With `git`
+
+            ```sh
+            git clone https://github.com/qdm12/cloudflare-dns-server.git temp
+            cd temp
+            git reset --hard $COMMIT
+            docker build -t qmcgaw/cloudflare-dns-server .
+            cd .. && rm -r temp
+            ```
+
+        - With `wget` and `unzip`
+
+            ```sh
+            wget -q "https://github.com/qdm12/cloudflare-dns-server/archive/$COMMIT.zip"
+            unzip -q "$COMMIT.zip"
+            cd *-$COMMIT
+            docker build -t qmcgaw/cloudflare-dns-server .
+            cd .. && rm -r "$COMMIT.zip" *-$COMMIT
+            ```
 
 ### Firewall considerations
 
