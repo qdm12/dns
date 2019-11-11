@@ -1,7 +1,10 @@
 #!/bin/bash
 
-export DOCKER_BUILDKIT=1
-docker build \
-    --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-    --build-arg VCS_REF=`git rev-parse --short HEAD` \
-    -t $IMAGE_NAME .
+docker run --rm --privileged -v `pwd`:/tmp/app \
+    --entrypoint buildctl-daemonless.sh \
+    moby/buildkit \
+    build \
+    --frontend=dockerfile.v0 --local context=/tmp/app --local dockerfile=/tmp/app \
+    --output type=image,name=$IMAGE_NAME \
+    --opt build-arg:BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+    --opt build-arg:VCS_REF=`git rev-parse --short HEAD`
