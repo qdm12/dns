@@ -21,7 +21,7 @@
 
 | Image size | RAM usage | CPU usage |
 | --- | --- | --- |
-| 27.1MB | 13.2MB to 70MB | Low |
+| 23.1MB | 13.2MB to 70MB | Low |
 
 It can be connected to one or more of the following DNS-over-TLS providers:
 
@@ -64,7 +64,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
     - If you have a ARM 32 bit v6 architecture
 
         ```sh
-        docker build -t qmcgaw/cloudflare-dns-server \
+        DOCKER_BUILDKIT=1 docker build \
+        -t qmcgaw/cloudflare-dns-server \
         --build-arg BASE_IMAGE=arm32v6/alpine \
         https://github.com/qdm12/cloudflare-dns-server.git
         ```
@@ -72,7 +73,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
     - If you have a ARM 32 bit v7 architecture
 
         ```sh
-        docker build -t qmcgaw/cloudflare-dns-server \
+        DOCKER_BUILDKIT=1 docker build \
+        -t qmcgaw/cloudflare-dns-server \
         --build-arg BASE_IMAGE=arm32v7/alpine \
         https://github.com/qdm12/cloudflare-dns-server.git
         ```
@@ -80,7 +82,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
     - If you have a ARM 64 bit v8 architecture
 
         ```sh
-        docker build -t qmcgaw/cloudflare-dns-server \
+        DOCKER_BUILDKIT=1 docker build \
+        -t qmcgaw/cloudflare-dns-server \
         --build-arg BASE_IMAGE=arm64v8/alpine \
         https://github.com/qdm12/cloudflare-dns-server.git
         ```
@@ -252,7 +255,7 @@ See [this](http://www.macinstruct.com/node/558)
     - With `git`
 
         ```sh
-        docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
+        DOCKER_BUILDKIT=1 docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
         ```
 
     - With `wget` and `unzip`
@@ -261,7 +264,7 @@ See [this](http://www.macinstruct.com/node/558)
         wget -q "https://github.com/qdm12/cloudflare-dns-server/archive/master.zip"
         unzip -q "master.zip"
         cd *-master
-        docker build -t qmcgaw/cloudflare-dns-server .
+        DOCKER_BUILDKIT=1 docker build -t qmcgaw/cloudflare-dns-server .
         cd .. && rm -r master.zip *-master
         ```
 
@@ -276,7 +279,7 @@ See [this](http://www.macinstruct.com/node/558)
             git clone https://github.com/qdm12/cloudflare-dns-server.git temp
             cd temp
             git reset --hard $COMMIT
-            docker build -t qmcgaw/cloudflare-dns-server .
+            DOCKER_BUILDKIT=1 docker build -t qmcgaw/cloudflare-dns-server .
             cd .. && rm -r temp
             ```
 
@@ -286,7 +289,7 @@ See [this](http://www.macinstruct.com/node/558)
             wget -q "https://github.com/qdm12/cloudflare-dns-server/archive/$COMMIT.zip"
             unzip -q "$COMMIT.zip"
             cd *-$COMMIT
-            docker build -t qmcgaw/cloudflare-dns-server .
+            DOCKER_BUILDKIT=1 docker build -t qmcgaw/cloudflare-dns-server .
             cd .. && rm -r "$COMMIT.zip" *-$COMMIT
             ```
 
