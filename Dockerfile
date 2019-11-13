@@ -2,14 +2,14 @@ ARG BASE_IMAGE=alpine
 ARG ALPINE_VERSION=3.10
 
 FROM ${BASE_IMAGE}:${ALPINE_VERSION} AS build
-ARG UNBOUND_VERSION=1.9.4
+ARG UNBOUND_VERSION=latest
 ARG CFLAGS=-Os
 WORKDIR /tmp/unbound
 RUN apk add --update --progress -q ca-certificates build-base libressl-dev expat-dev libevent-dev libevent-static
 RUN wget -q https://nlnetlabs.nl/downloads/unbound/unbound-${UNBOUND_VERSION}.tar.gz -O unbound.tar.gz && \
     tar -xzf unbound.tar.gz --strip-components=1 && \
     rm unbound.tar.gz
-RUN CFLAGS=${CFLAGS} ./configure --disable-flto --with-libevent --with-conf-file=unbound.conf
+RUN CFLAGS=${CFLAGS} ./configure --disable-flto --with-libevent --with-conf-file=unbound.conf --enable-fully-static
 RUN sed -i 's/LDFLAGS=.*$/LDFLAGS=-all-static/' Makefile
 RUN make && strip unbound
 
@@ -41,7 +41,7 @@ LABEL \
     org.opencontainers.image.source="https://github.com/qdm12/cloudflare-dns-server" \
     org.opencontainers.image.title="cloudflare-dns-server" \
     org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)" \
-    image-size="27.1MB" \
+    image-size="25.7MB" \
     ram-usage="13.2MB to 70MB" \
     cpu-usage="Low"
 EXPOSE 53/udp
@@ -64,7 +64,7 @@ RUN apk --update --progress -q add ca-certificates bind-tools && \
     mv /etc/ssl/certs/ca-certificates.crt . && \
     chown nonrootuser . ca-certificates.crt && \
     chmod 700 .
-COPY --from=build /tmp/unbound/unbound .
+COPY --from=build --chown=nonrootuser /tmp/unbound/unbound .
 COPY --from=updated --chown=nonrootuser /tmp/updated/root.hints .
 COPY --from=updated --chown=nonrootuser /tmp/updated/root.key .
 COPY --from=updated --chown=nonrootuser /tmp/updated/blocks-malicious.bz2 .
@@ -74,8 +74,7 @@ RUN chmod 600 unbound.conf && \
     chmod 500 entrypoint.sh && \
     chmod 400 root.hints root.key ca-certificates.crt *.bz2 && \
     rm -rf /var/cache/apk/*
-RUN chown 1000 unbound && \
-    chmod 500 unbound && \
+RUN chmod 500 unbound && \
     apk add libcap && \
     setcap 'cap_net_bind_service,cap_sys_chroot=+ep' unbound && \
     apk del libcap && \
