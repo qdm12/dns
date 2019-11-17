@@ -106,7 +106,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 ## Run it as a daemon
 
 ```bash
-docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server
+docker run -d -p 53:53/udp --restart=always qmcgaw/cloudflare-dns-server
 ```
 
 or use [docker-compose.yml](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml) with:
