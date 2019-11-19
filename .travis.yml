@@ -1,0 +1,29 @@
+dist: xenial
+sudo: required
+services:
+  - docker
+addons:
+  apt:
+    packages:
+      - docker-ce
+env:
+  global:
+    - IMAGE_PATH=qmcgaw/cloudflare-dns-server
+    - BASE_TAG=latest
+before_install:
+  - sudo docker run --privileged linuxkit/binfmt:v0.7
+  - sudo docker run -d --privileged -p 1234:1234 --name=buildkit moby/buildkit --addr tcp://0.0.0.0:1234 \
+    --oci-worker-platform linux/amd64 \
+    --oci-worker-platform linux/armhf \
+    --oci-worker-platform linux/arm64
+  - sudo docker cp buildkit:/usr/bin/buildctl /usr/bin/
+  - export BUILDKIT_HOST=tcp://0.0.0.0:1234
+  - export DOCKER_CLI_EXPERIMENTAL=enabled
+script: bash ci/build.sh
+deploy:
+  provider: script
+  script: bash ci/deploy.sh
+  on:
+    branch: travis
+after_success:
+  - curl -X POST https://hooks.microbadger.com/images/qmcgaw/cloudflare-dns-server/e5WTDWcDduI_TQ32JVAuP69H5BU=
