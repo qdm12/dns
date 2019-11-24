@@ -44,6 +44,8 @@ HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 \
     CMD LISTENINGPORT=${LISTENINGPORT:-53}; dig @127.0.0.1 +short +time=1 duckduckgo.com -p $LISTENINGPORT &> /dev/null; [ $? = 0 ] || exit 1
 WORKDIR /unbound
 RUN adduser nonrootuser -D -H --uid 1000 && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     apk --update --progress -q add ca-certificates bind-tools unbound libcap && \
     mv /usr/sbin/unbound . && \
     chown 1000 unbound && \
