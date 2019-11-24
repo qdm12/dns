@@ -1,7 +1,6 @@
-ARG BASE_IMAGE=alpine
 ARG ALPINE_VERSION=3.10
 
-FROM ${BASE_IMAGE}:${ALPINE_VERSION} AS updated
+FROM alpine:${ALPINE_VERSION} AS updated
 WORKDIR /tmp/updated
 RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/named.root.updated -O root.hints && \
     wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/root.key.updated -O root.key
@@ -16,7 +15,7 @@ RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/malicio
     tar -cjf /tmp/updated/blocks-nsa.bz2 blocks-nsa.conf && \
     rm -rf /tmp/updated/work/*
 
-FROM ${BASE_IMAGE}:${ALPINE_VERSION}
+FROM alpine:${ALPINE_VERSION}
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
