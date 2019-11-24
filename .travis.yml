@@ -5,7 +5,7 @@ git:
   depth: 1
 env:
   global:
-    - DOCKER_REPO=qmcgaw/private-internet-access
+    - DOCKER_REPO=qmcgaw/cloudflare-dns-server
 before_install:
   - curl -fsSL https://get.docker.com | sh
   - echo '{"experimental":"enabled"}' | sudo tee /etc/docker/daemon.json
