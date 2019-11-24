@@ -18,10 +18,6 @@
 [![Image size](https://images.microbadger.com/badges/image/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
 [![Image version](https://images.microbadger.com/badges/version/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
 
-| Image size | RAM usage | CPU usage |
-| --- | --- | --- |
-| 25.7MB | 13.2MB to 70MB | Low |
-
 It can be connected to one or more of the following DNS-over-TLS providers:
 
 - Cloudflare

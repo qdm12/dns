@@ -28,10 +28,7 @@ LABEL \
     org.opencontainers.image.documentation="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md" \
     org.opencontainers.image.source="https://github.com/qdm12/cloudflare-dns-server" \
     org.opencontainers.image.title="cloudflare-dns-server" \
-    org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)" \
-    image-size="25.7MB" \
-    ram-usage="13.2MB to 70MB" \
-    cpu-usage="Low"
+    org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)"
 EXPOSE 53/udp
 ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
