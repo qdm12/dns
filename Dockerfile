@@ -19,10 +19,11 @@ RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/malicio
 FROM ${BASE_IMAGE}:${ALPINE_VERSION}
 ARG BUILD_DATE
 ARG VCS_REF
+ARG VERSION
 LABEL \
     org.opencontainers.image.authors="quentin.mcgaw@gmail.com" \
     org.opencontainers.image.created=$BUILD_DATE \
-    org.opencontainers.image.version="" \
+    org.opencontainers.image.version=$VERSION \
     org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.url="https://github.com/qdm12/cloudflare-dns-server" \
     org.opencontainers.image.documentation="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md" \
