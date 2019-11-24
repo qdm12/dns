@@ -60,4 +60,5 @@ COPY --from=updated --chown=nonrootuser /tmp/updated/root.key .
 COPY --from=updated --chown=nonrootuser /tmp/updated/blocks-malicious.bz2 .
 COPY --from=updated --chown=nonrootuser /tmp/updated/blocks-nsa.bz2 .
 COPY --chown=nonrootuser unbound.conf entrypoint.sh ./
+RUN chmod 500 entrypoint.sh
 USER nonrootuser
