@@ -1,18 +1,6 @@
 ARG BASE_IMAGE=alpine
 ARG ALPINE_VERSION=3.10
 
-FROM ${BASE_IMAGE}:${ALPINE_VERSION} AS build
-ARG UNBOUND_VERSION=latest
-ARG CFLAGS=-Os
-WORKDIR /tmp/unbound
-RUN apk add --update --progress -q ca-certificates build-base libressl-dev expat-dev libevent-dev libevent-static
-RUN wget -q https://nlnetlabs.nl/downloads/unbound/unbound-${UNBOUND_VERSION}.tar.gz -O unbound.tar.gz && \
-    tar -xzf unbound.tar.gz --strip-components=1 && \
-    rm unbound.tar.gz
-RUN CFLAGS=${CFLAGS} ./configure --disable-flto --with-libevent --with-conf-file=unbound.conf --enable-fully-static
-RUN sed -i 's/LDFLAGS=.*$/LDFLAGS=-all-static/' Makefile
-RUN make && strip unbound
-
 FROM ${BASE_IMAGE}:${ALPINE_VERSION} AS updated
 WORKDIR /tmp/updated
 RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/named.root.updated -O root.hints && \
@@ -58,13 +46,18 @@ ENTRYPOINT /unbound/entrypoint.sh
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 \
     CMD LISTENINGPORT=${LISTENINGPORT:-53}; dig @127.0.0.1 +short +time=1 duckduckgo.com -p $LISTENINGPORT &> /dev/null; [ $? = 0 ] || exit 1
 WORKDIR /unbound
-RUN apk --update --progress -q add ca-certificates bind-tools && \
-    rm -rf /var/cache/apk/* && \
-    adduser nonrootuser -D -H --uid 1000 && \
+RUN adduser nonrootuser -D -H --uid 1000 && \
+    apk --update --progress -q add ca-certificates bind-tools unbound libcap && \
+    mv /usr/sbin/unbound . && \
+    chown 1000 unbound && \
+    chmod 500 unbound && \
+    setcap 'cap_net_bind_service=+ep' unbound && \
+    apk del libcap && \
+    rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-* && \
     mv /etc/ssl/certs/ca-certificates.crt . && \
     chown nonrootuser . ca-certificates.crt && \
+    chmod 400 ca-certificates.crt && \
     chmod 700 .
-COPY --from=build --chown=nonrootuser /tmp/unbound/unbound .
 COPY --from=updated --chown=nonrootuser /tmp/updated/root.hints .
 COPY --from=updated --chown=nonrootuser /tmp/updated/root.key .
 COPY --from=updated --chown=nonrootuser /tmp/updated/blocks-malicious.bz2 .
@@ -72,11 +65,5 @@ COPY --from=updated --chown=nonrootuser /tmp/updated/blocks-nsa.bz2 .
 COPY --chown=nonrootuser unbound.conf entrypoint.sh ./
 RUN chmod 600 unbound.conf && \
     chmod 500 entrypoint.sh && \
-    chmod 400 root.hints root.key ca-certificates.crt *.bz2 && \
-    rm -rf /var/cache/apk/*
-RUN chmod 500 unbound && \
-    apk add libcap && \
-    setcap 'cap_net_bind_service,cap_sys_chroot=+ep' unbound && \
-    apk del libcap && \
-    rm -rf /var/cache/apk/*
+    chmod 400 root.hints root.key *.bz2
 USER nonrootuser
