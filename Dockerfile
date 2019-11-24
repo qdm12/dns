@@ -1,7 +1,6 @@
-ARG BASE_IMAGE=alpine
 ARG ALPINE_VERSION=3.10
 
-FROM ${BASE_IMAGE}:${ALPINE_VERSION} AS updated
+FROM alpine:${ALPINE_VERSION} AS updated
 WORKDIR /tmp/updated
 RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/named.root.updated -O root.hints && \
     wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/root.key.updated -O root.key
@@ -16,22 +15,20 @@ RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/malicio
     tar -cjf /tmp/updated/blocks-nsa.bz2 blocks-nsa.conf && \
     rm -rf /tmp/updated/work/*
 
-FROM ${BASE_IMAGE}:${ALPINE_VERSION}
+FROM alpine:${ALPINE_VERSION}
 ARG BUILD_DATE
 ARG VCS_REF
+ARG VERSION
 LABEL \
     org.opencontainers.image.authors="quentin.mcgaw@gmail.com" \
     org.opencontainers.image.created=$BUILD_DATE \
-    org.opencontainers.image.version="" \
+    org.opencontainers.image.version=$VERSION \
     org.opencontainers.image.revision=$VCS_REF \
     org.opencontainers.image.url="https://github.com/qdm12/cloudflare-dns-server" \
     org.opencontainers.image.documentation="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md" \
     org.opencontainers.image.source="https://github.com/qdm12/cloudflare-dns-server" \
     org.opencontainers.image.title="cloudflare-dns-server" \
-    org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)" \
-    image-size="25.7MB" \
-    ram-usage="13.2MB to 70MB" \
-    cpu-usage="Low"
+    org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)"
 EXPOSE 53/udp
 ENV VERBOSITY=1 \
     VERBOSITY_DETAILS=0 \
@@ -63,7 +60,4 @@ COPY --from=updated --chown=nonrootuser /tmp/updated/root.key .
 COPY --from=updated --chown=nonrootuser /tmp/updated/blocks-malicious.bz2 .
 COPY --from=updated --chown=nonrootuser /tmp/updated/blocks-nsa.bz2 .
 COPY --chown=nonrootuser unbound.conf entrypoint.sh ./
-RUN chmod 600 unbound.conf && \
-    chmod 500 entrypoint.sh && \
-    chmod 400 root.hints root.key *.bz2
 USER nonrootuser

@@ -11,9 +11,7 @@ printf " == by github.com/qdm12 - Quentin McGaw ==\n\n"
 if [ "$PROVIDERS" = "cloudflare" ] && [ ! -z "$PROVIDER" ]; then
   PROVIDERS="$PROVIDER"
 fi
-if [ -d /etc/unbound ]; then
-  cp -f /etc/unbound/* .
-fi
+for f in /etc/unbound/*; do [ -e "$f" ] && cp -f "$f" .; done
 
 # Checks parameters and mounted files
 user=$(whoami)

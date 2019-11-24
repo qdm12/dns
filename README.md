@@ -4,23 +4,17 @@
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
-[![Join Slack channel](https://img.shields.io/badge/slack-@qdm12-yellow.svg?logo=slack)](https://join.slack.com/t/qdm12/shared_invite/enQtODMwMDQyMTAxMjY1LTU1YjE1MTVhNTBmNTViNzJiZmQwZWRmMDhhZjEyNjVhZGM4YmIxOTMxOTYzN2U0N2U2YjQ2MDk3YmYxN2NiNTc)
-[![Docker Build Status](https://img.shields.io/docker/build/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
+[![Build Status](https://travis-ci.org/qdm12/cloudflare-dns-server.svg?branch=master)](https://travis-ci.org/qdm12/cloudflare-dns-server)
+[![Docker Pulls](https://img.shields.io/docker/pulls/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
+[![Docker Stars](https://img.shields.io/docker/stars/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
 [![GitHub last commit](https://img.shields.io/github/last-commit/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/commits)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/y/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/commits)
 [![GitHub issues](https://img.shields.io/github/issues/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/issues)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
-[![Docker Stars](https://img.shields.io/docker/stars/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
-[![Docker Automated](https://img.shields.io/docker/automated/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
-
 [![Image size](https://images.microbadger.com/badges/image/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
 [![Image version](https://images.microbadger.com/badges/version/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
-
-| Image size | RAM usage | CPU usage |
-| --- | --- | --- |
-| 25.7MB | 13.2MB to 70MB | Low |
+[![Join Slack channel](https://img.shields.io/badge/slack-@qdm12-yellow.svg?logo=slack)](https://join.slack.com/t/qdm12/shared_invite/enQtODMwMDQyMTAxMjY1LTU1YjE1MTVhNTBmNTViNzJiZmQwZWRmMDhhZjEyNjVhZGM4YmIxOTMxOTYzN2U0N2U2YjQ2MDk3YmYxN2NiNTc)
 
 It can be connected to one or more of the following DNS-over-TLS providers:
 
@@ -42,7 +36,7 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 
 Features:
 
-- Compatible with ARM
+- Compatible with all ARM devices, as well as x86, S390X and ppc64le
 - DNS rebinding protection
 - DNSSEC Validation
 
@@ -57,34 +51,6 @@ Features:
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
 ## Running it
-
-1. <details><summary>CLICK IF YOU HAVE AN ARM DEVICE</summary><p>
-
-    - If you have a ARM 32 bit v6 architecture
-
-        ```sh
-        docker build -t qmcgaw/cloudflare-dns-server \
-        --build-arg BASE_IMAGE=arm32v6/alpine \
-        https://github.com/qdm12/cloudflare-dns-server.git
-        ```
-
-    - If you have a ARM 32 bit v7 architecture
-
-        ```sh
-        docker build -t qmcgaw/cloudflare-dns-server \
-        --build-arg BASE_IMAGE=arm32v7/alpine \
-        https://github.com/qdm12/cloudflare-dns-server.git
-        ```
-
-    - If you have a ARM 64 bit v8 architecture
-
-        ```sh
-        docker build -t qmcgaw/cloudflare-dns-server \
-        --build-arg BASE_IMAGE=arm64v8/alpine \
-        https://github.com/qdm12/cloudflare-dns-server.git
-        ```
-
-    </p></details>
 
 1. Run the container
 
