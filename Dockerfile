@@ -2,12 +2,12 @@ ARG ALPINE_VERSION=3.10
 
 FROM alpine:${ALPINE_VERSION} AS updated
 WORKDIR /tmp/updated
-RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/named.root.updated -O root.hints && \
-    wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/root.key.updated -O root.key
+RUN wget -q https://raw.githubusercontent.com/qdm12/files/master/named.root.updated -O root.hints && \
+    wget -q https://raw.githubusercontent.com/qdm12/files/master/root.key.updated -O root.key
 WORKDIR /tmp/updated/work
-RUN wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/malicious-hostnames.updated -O malicious-hostnames && \
-    wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/nsa-hostnames.updated -O nsa-hostnames && \
-    wget -q https://raw.githubusercontent.com/qdm12/updated/master/files/malicious-ips.updated -O malicious-ips && \
+RUN wget -q https://raw.githubusercontent.com/qdm12/files/master/malicious-hostnames.updated -O malicious-hostnames && \
+    wget -q https://raw.githubusercontent.com/qdm12/files/master/surveillance-hostnames.updated -O nsa-hostnames && \
+    wget -q https://raw.githubusercontent.com/qdm12/files/master/malicious-ips.updated -O malicious-ips && \
     while read hostname; do echo "local-zone: \""$hostname"\" static" >> blocks-malicious.conf; done < malicious-hostnames && \
     while read ip; do echo "private-address: $ip" >> blocks-malicious.conf; done < malicious-ips && \
     tar -cjf /tmp/updated/blocks-malicious.bz2 blocks-malicious.conf && \
@@ -51,7 +51,6 @@ RUN adduser nonrootuser -D -H --uid 1000 && \
     chown 1000 unbound && \
     chmod 500 unbound && \
     setcap 'cap_net_bind_service=+ep' unbound && \
-    apk del libcap && \
     rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-* && \
     mv /etc/ssl/certs/ca-certificates.crt . && \
     chown nonrootuser . ca-certificates.crt && \
