@@ -1,4 +1,4 @@
-# Cloudflare DNS over TLS Docker container
+# DNS over TLS client caching server Docker container
 
 *DNS caching server connected to DNS over TLS (IPv4) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
 
@@ -18,17 +18,18 @@
 
 It can be connected to one or more of the following DNS-over-TLS providers:
 
-- Cloudflare
-- Google
-- Quad9
-- Quadrant
-- CleanBrowsing
-- SecureDNS
+- [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
+- [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
+- [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
+- [SecureDNS](https://securedns.eu)
+- [LibreDNS](https://libredns.gr)
+- [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
+- [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
 
 <details><summary>Click to show base components</summary><p>
 
 - [Alpine 3.10](https://alpinelinux.org)
-- [Unbound 1.9.4 (latest)](https://nlnetlabs.nl/downloads/unbound) built from source
+- [Unbound 1.9.4](https://nlnetlabs.nl/downloads/unbound) built from source
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - [bind-tools](https://pkgs.alpinelinux.org/package/v3.10/main/x86_64/bind-tools) for the healthcheck with `dig`
 
@@ -92,7 +93,7 @@ More environment variables are described in the [environment variables](#environ
 | `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
 | `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `PROVIDERS` | `cloudflare` | DNS-over-TLS provider. It can be: `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` or a comma separated list of these |
+| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` and `libredns` |
 | `CACHING` | `on` | `on` or `off`. It can be useful if you have another DNS (i.e. Pihole) doing the caching as well on top of this container |
 | `PRIVATE_ADDRESS` | All IPv4 and IPv6 CIDRs private ranges | Comma separated list of CIDRs or single IP addresses. Note that the default setting prevents DNS rebinding |
 

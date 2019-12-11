@@ -98,6 +98,9 @@ do
   securedns)
       echo "  forward-addr: 146.185.167.43@853#dot.securedns.eu" >> /unbound/unbound.conf
       ;;
+  libredns)
+      echo "  forward-addr: 116.203.115.192@853#dot.libredns.gr" >> /unbound/unbound.conf
+      ;;
   *)
       printf "Provider \"$provider\" must be \"cloudflare\", \"google\", \"quad9\", \"quadrant\", \"cleanbrowsing\" or \"securedns\"\n"
       exit 1
