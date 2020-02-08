@@ -6,12 +6,12 @@ services:
     container_name: cloudflare-dns-tls
     environment:
       - VERBOSITY=1
-      - VERBOSITY_DETAILS=0
+      - VERBOSITY_DETAILS=1
       - BLOCK_MALICIOUS=on
-      - BLOCK_NSA=off
+      - BLOCK_SURVEILLANCE=off
+      - BLOCK_ADS=off
       - UNBLOCK=
-      - LISTENINGPORT=53
-      - PROVIDER=cloudflare
+      - PROVIDER=cloudflare,quad9
     ports:
       - 53:53/udp
     network_mode: bridge

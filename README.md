@@ -2,6 +2,8 @@
 
 *DNS caching server connected to DNS over TLS (IPv4) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
 
+**ANNOUCEMENT**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break use the image with tag `:old`)
+
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
 [![Build Status](https://travis-ci.org/qdm12/cloudflare-dns-server.svg?branch=master)](https://travis-ci.org/qdm12/cloudflare-dns-server)
@@ -16,6 +18,8 @@
 [![Image version](https://images.microbadger.com/badges/version/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
 [![Join Slack channel](https://img.shields.io/badge/slack-@qdm12-yellow.svg?logo=slack)](https://join.slack.com/t/qdm12/shared_invite/enQtODMwMDQyMTAxMjY1LTU1YjE1MTVhNTBmNTViNzJiZmQwZWRmMDhhZjEyNjVhZGM4YmIxOTMxOTYzN2U0N2U2YjQ2MDk3YmYxN2NiNTc)
 
+## Features
+
 It can be connected to one or more of the following DNS-over-TLS providers:
 
 - [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
@@ -29,15 +33,13 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 <details><summary>Click to show base components</summary><p>
 
 - [Alpine 3.11](https://alpinelinux.org)
-- [Unbound 1.9.4](https://nlnetlabs.nl/downloads/unbound) built from source
+- [Unbound 1.9.6](https://nlnetlabs.nl/downloads/unbound) ~built from source~ (from Alpine packages)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-- [bind-tools](https://pkgs.alpinelinux.org/package/v3.11/main/x86_64/bind-tools) for the healthcheck with `dig`
+- Go static binary built from this source
 
 </p></details>
 
-Features:
-
-- Compatible with all ARM devices, as well as x86, S390X and ppc64le
+- Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v6 and v7, ppc64le and even that s390x 🎆
 - DNS rebinding protection
 - DNSSEC Validation
 
@@ -47,53 +49,41 @@ Features:
 - Optional hostnames resolution and IPs blocking
     - Malicious
     - Surveillance
-    - Custom
+    - Ads
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
-## Running it
+## Setup
 
-1. Run the container
+1. Launch the container with
 
-    ```bash
-    docker run -it --rm -p 53:53/udp -e VERBOSITY=3 -e VERBOSITY_DETAILS=3 qmcgaw/cloudflare-dns-server
+    ```sh
+    docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server
+    ```
+
+    You can also use [docker-compose.yml](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml) with:
+
+    ```sh
+    docker-compose up -d
     ```
 
     More environment variables are described in the [environment variables](#environment-variables) section.
 
-1. Check the log output
-
-    ```bash
-    docker logs cloudflare-dns-server
-    ```
-
-1. See the [Connect clients to it](#connect-clients-to-it) section to finish testing, and you can refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
-
-## Run it as a daemon
-
-```bash
-docker run -d -p 53:53/udp --restart=always qmcgaw/cloudflare-dns-server
-```
-
-or use [docker-compose.yml](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml) with:
-
-```bash
-docker-compose up -d
-```
-
-More environment variables are described in the [environment variables](#environment-variables) section.
+1. See the [Connect clients to it](#connect-clients-to-it) section, you can also refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
 
 ## Environment variables
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
+| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` and `libredns` |
+| `PRIVATE_ADDRESS` | `127.0.0.1/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,::1/128,fc00::/7,fe80::/10,::ffff:0:0/96` | Prevent hostnames to resolve to these IP addresses, to prevent DNS rebinding attacks |
 | `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
-| `VERBOSITY_DETAILS` | `0` | From 0 to 4 and defaults to 0 (higher means more details) |
-| `BLOCK_MALICIOUS` | `on` | `on` or `off`. It blocks malicious IP addresses and malicious hostnames from being resolved. Note that it consumes about 50MB of additional RAM. |
-| `BLOCK_NSA` | `off` | `on` or `off`. It blocks NSA hostnames from being resolved. |
+| `VERBOSITY_DETAILS` | `1` | From 0 to 4 (higher means more details) |
+| `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
+| `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
+| `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
 | `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` and `libredns` |
 | `CACHING` | `on` | `on` or `off`. It can be useful if you have another DNS (i.e. Pihole) doing the caching as well on top of this container |
 | `PRIVATE_ADDRESS` | All IPv4 and IPv6 CIDRs private ranges | Comma separated list of CIDRs or single IP addresses. Note that the default setting prevents DNS rebinding |
 
@@ -137,7 +127,7 @@ For *docker-compose.yml*:
 version: '3'
 services:
   test:
-    image: alpine:3.10
+    image: alpine:3.11
     network_mode: bridge
     dns:
       - 127.0.0.1
@@ -187,30 +177,6 @@ See [this](http://xslab.com/2013/08/how-to-change-dns-settings-on-android/)
 #### iOS
 
 See [this](http://www.macinstruct.com/node/558)
-
-## Extra
-
-### Block domains of your choice
-
-1. Create a file on your host `include.conf`
-1. Write the following to the file to block *youtube.com* for example:
-
-    ```txt
-    local-zone: "youtube.com" static
-    ```
-
-1. Change the ownership and permissions of `include.conf`:
-
-    ```bash
-    chown 1000:1000 include.conf
-    chmod 400 include.conf
-    ```
-
-1. Launch the Docker container with:
-
-    ```bash
-    docker run -it --rm -p 53:53/udp -v $(pwd)/include.conf:/unbound/include.conf  qmcgaw/cloudflare-dns-server
-    ```
 
 ### Build the image yourself
 
@@ -272,10 +238,9 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
 
 ## TO DOs
 
-- [ ] Malicious finer grain blocking
 - [ ] Custom block IPs and hostnames with env variables
+- [ ] Periodic SHUP signal to reload block lists
 - [x] Build Unbound binary at image build stage
     - [ ] smaller static binary
-- [ ] Periodic SHUP signal to reload block lists
+    - [ ] Bundled with Go static binary on a Scratch image
 - [ ] Branch with Pihole bundled
-- [ ] Scratch image with Go binary to configure container

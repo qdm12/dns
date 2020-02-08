@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  vscode:
+    image: qmcgaw/godevcontainer:alpine
+    #image: qmcgaw/godevcontainer:debian
+    volumes:
+      - ../:/workspace
+      - ~/.ssh:/home/vscode/.ssh:ro
+      - ~/.ssh:/root/.ssh:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    entrypoint: zsh -c "while sleep 1000; do :; done"

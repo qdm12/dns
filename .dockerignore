@@ -4,3 +4,7 @@ docker-compose.yml
 README.md
 readme
 Dockerfile
+ci.sh
+.travis.yml
+.github
+LICENSE
