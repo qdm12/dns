@@ -248,6 +248,16 @@ This container requires the following connections:
 
 Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. Hence https://1.1.1.1/help does not detect a direct connection to them.
 
+## Development
+
+### Using VSCode and Docker
+
+1. Install [Docker](https://docs.docker.com/install)
+    - On Windows, share a drive with Docker Desktop and have the project on that partition
+1. With [Visual Studio Code](https://code.visualstudio.com/download), install the [remote containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+1. In Visual Studio Code, press on `F1` and select `Remote-Containers: Open Folder in Container...`
+1. Your dev environment is ready to go!... and it's running in a container :+1:
+
 ## TO DOs
 
 - [ ] Periodic SHUP signal to reload block lists
