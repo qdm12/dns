@@ -24,6 +24,8 @@ type Settings struct {
 	BlockMalicious        bool
 	BlockSurveillance     bool
 	BlockAds              bool
+	BlockedHostnames      []string
+	BlockedIPs            []string
 	AllowedHostnames      []string
 }
 
@@ -45,6 +47,22 @@ func (s *Settings) String() string {
 	for _, provider := range s.Providers {
 		providersStr = append(providersStr, string(provider))
 	}
+	blockedHostnames := "Blocked hostnames:"
+	if len(s.BlockedHostnames) > 0 {
+		blockedHostnames += " \n |--" + strings.Join(s.BlockedHostnames, "\n |--")
+	}
+	blockedIPs := "Blocked IP addresses:"
+	if len(s.BlockedIPs) > 0 {
+		blockedIPs += " \n |--" + strings.Join(s.BlockedIPs, "\n |--")
+	}
+	allowedHostnames := "Allowed hostnames:"
+	if len(s.AllowedHostnames) > 0 {
+		allowedHostnames += " \n |--" + strings.Join(s.AllowedHostnames, "\n |--")
+	}
+	privateAddresses := "Private addresses:"
+	if len(s.PrivateAddresses) > 0 {
+		privateAddresses += " \n |--" + strings.Join(s.PrivateAddresses, "\n |--")
+	}
 	settingsList := []string{
 		"DNS over TLS provider:\n|--" + strings.Join(providersStr, "\n|--"),
 		"Listening port: " + fmt.Sprintf("%d", s.ListeningPort),
@@ -55,8 +73,10 @@ func (s *Settings) String() string {
 		"Block malicious: " + blockMalicious,
 		"Block surveillance: " + blockSurveillance,
 		"Block ads: " + blockAds,
-		"Allowed hostnames:\n |--" + strings.Join(s.AllowedHostnames, "\n |--"),
-		"Private addresses:\n |--" + strings.Join(s.PrivateAddresses, "\n |--"),
+		blockedHostnames,
+		blockedIPs,
+		allowedHostnames,
+		privateAddresses,
 	}
 	return strings.Join(settingsList, "\n")
 }

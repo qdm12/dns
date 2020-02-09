@@ -25,6 +25,8 @@ type ParamsReader interface {
 	GetSurveillanceBlocking() (blocking bool, err error)
 	GetAdsBlocking() (blocking bool, err error)
 	GetUnblockedHostnames() (hostnames []string, err error)
+	GetBlockedHostnames() (hostnames []string, err error)
+	GetBlockedIPs() (IPs []string, err error)
 
 	// Version getters
 	GetVersion() string

@@ -50,6 +50,7 @@ It can be connected to one or more of the following DNS-over-TLS providers:
     - Malicious
     - Surveillance
     - Ads
+    - Custom
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
@@ -82,6 +83,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
 | `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
+| `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
+| `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
 | `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
 | `CACHING` | `on` | `on` or `off`. It can be useful if you have another DNS (i.e. Pihole) doing the caching as well on top of this container |

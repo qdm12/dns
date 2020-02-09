@@ -2,6 +2,7 @@ package params
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	libparams "github.com/qdm12/golibs/params"
@@ -51,4 +52,44 @@ func (p *paramsReader) GetUnblockedHostnames() (hostnames []string, err error) {
 		}
 	}
 	return hostnames, nil
+}
+
+// GetBlockedHostnames obtains a list of hostnames to block from the comma
+// separated list for the environment variable BLOCK_HOSTNAMES
+func (p *paramsReader) GetBlockedHostnames() (hostnames []string, err error) {
+	s, err := p.envParams.GetEnv("BLOCK_HOSTNAMES")
+	if err != nil {
+		return nil, err
+	}
+	if len(s) == 0 {
+		return nil, nil
+	}
+	hostnames = strings.Split(s, ",")
+	for _, hostname := range hostnames {
+		if !p.verifier.MatchHostname(hostname) {
+			return nil, fmt.Errorf("hostname %q does not seem valid", hostname)
+		}
+	}
+	return hostnames, nil
+}
+
+// GetBlockedIPs obtains a list of IP addresses or CIDR ranges to block from
+// the comma separated list for the environment variable BLOCK_IPS
+func (p *paramsReader) GetBlockedIPs() (IPs []string, err error) {
+	s, err := p.envParams.GetEnv("BLOCK_IPS")
+	if err != nil {
+		return nil, err
+	}
+	if len(s) == 0 {
+		return nil, nil
+	}
+	words := strings.Split(s, ",")
+	for _, IP := range words {
+		_, _, err = net.ParseCIDR(IP)
+		if err != nil && net.ParseIP(IP) == nil {
+			return nil, fmt.Errorf("Blocked IP address %q is not a valid IP address or CIDR range", IP)
+		}
+		IPs = append(IPs, IP)
+	}
+	return IPs, nil
 }

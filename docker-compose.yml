@@ -10,6 +10,8 @@ services:
       - BLOCK_MALICIOUS=on
       - BLOCK_SURVEILLANCE=off
       - BLOCK_ADS=off
+      - BLOCK_IPS=
+      - BLOCK_HOSTNAMES=
       - UNBLOCK=
       - PROVIDER=cloudflare,quad9
     ports:

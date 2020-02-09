@@ -17,7 +17,9 @@ func Test_generateUnboundConf(t *testing.T) {
 	t.Parallel()
 	settings := models.Settings{
 		Providers:          []models.Provider{constants.Cloudflare, constants.Quad9},
+		BlockedHostnames:   []string{"blockedHostname"},
 		AllowedHostnames:   []string{"a"},
+		BlockedIPs:         []string{"8.0.1.2"},
 		PrivateAddresses:   []string{"9.9.9.9"},
 		BlockMalicious:     true,
 		BlockSurveillance:  false,
@@ -69,7 +71,9 @@ server:
   val-log-level: 3
   verbosity: 2
   local-zone: "b" static
+  local-zone: "blockedHostname" static
   local-zone: "c" static
+  private-address: 8.0.1.2
   private-address: 9.9.9.9
   private-address: c
   private-address: d
@@ -95,8 +99,9 @@ func Test_buildBlocked(t *testing.T) {
 		malicious        blockParams
 		ads              blockParams
 		surveillance     blockParams
+		blockedHostnames []string
+		blockedIPs       []string
 		allowedHostnames []string
-		privateAddresses []string
 		hostnamesLines   []string
 		ipsLines         []string
 		errsString       []string
@@ -157,7 +162,7 @@ func Test_buildBlocked(t *testing.T) {
 				"  private-address: malicious",
 				"  private-address: surveillance"},
 		},
-		"all blocked with private addresses": {
+		"all blocked with blocked IPs": {
 			malicious: blockParams{
 				blocked: true,
 				content: []byte("malicious"),
@@ -170,7 +175,7 @@ func Test_buildBlocked(t *testing.T) {
 				blocked: true,
 				content: []byte("surveillance"),
 			},
-			privateAddresses: []string{"ads", "192.100.1.5"},
+			blockedIPs: []string{"ads", "192.100.1.5"},
 			hostnamesLines: []string{
 				"  local-zone: \"ads\" static",
 				"  local-zone: \"malicious\" static",
@@ -243,7 +248,7 @@ func Test_buildBlocked(t *testing.T) {
 					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Once()
 			}
 			hostnamesLines, ipsLines, errs := buildBlocked(client, tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
-				tc.allowedHostnames, tc.privateAddresses)
+				tc.blockedHostnames, tc.blockedIPs, tc.allowedHostnames)
 			var errsString []string
 			for _, err := range errs {
 				errsString = append(errsString, err.Error())
@@ -302,6 +307,7 @@ func Test_buildBlockedHostnames(t *testing.T) {
 		malicious        blockParams
 		ads              blockParams
 		surveillance     blockParams
+		blockedHostnames []string
 		allowedHostnames []string
 		lines            []string
 		errsString       []string
@@ -392,7 +398,7 @@ func Test_buildBlockedHostnames(t *testing.T) {
 					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Once()
 			}
 			lines, errs := buildBlockedHostnames(client,
-				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked, tc.allowedHostnames)
+				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked, tc.blockedHostnames, tc.allowedHostnames)
 			var errsString []string
 			for _, err := range errs {
 				errsString = append(errsString, err.Error())

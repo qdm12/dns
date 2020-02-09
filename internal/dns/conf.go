@@ -69,9 +69,10 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 	}
 
 	// Block lists
+	blockedIPs := append(settings.BlockedIPs, settings.PrivateAddresses...)
 	hostnamesLines, ipsLines, warnings := buildBlocked(client,
 		settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-		settings.AllowedHostnames, settings.PrivateAddresses,
+		settings.BlockedHostnames, blockedIPs, settings.AllowedHostnames,
 	)
 	logger.Info("%d hostnames blocked overall", len(hostnamesLines))
 	logger.Info("%d IP addresses blocked overall", len(ipsLines))
@@ -128,17 +129,17 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 }
 
 func buildBlocked(client network.Client, blockMalicious, blockAds, blockSurveillance bool,
-	allowedHostnames, privateAddresses []string) (hostnamesLines, ipsLines []string, errs []error) {
+	blockedHostnames, blockedIPs, allowedHostnames []string) (hostnamesLines, ipsLines []string, errs []error) {
 	chHostnames := make(chan []string)
 	chIPs := make(chan []string)
 	chErrors := make(chan []error)
 	go func() {
-		lines, errs := buildBlockedHostnames(client, blockMalicious, blockAds, blockSurveillance, allowedHostnames)
+		lines, errs := buildBlockedHostnames(client, blockMalicious, blockAds, blockSurveillance, blockedHostnames, allowedHostnames)
 		chHostnames <- lines
 		chErrors <- errs
 	}()
 	go func() {
-		lines, errs := buildBlockedIPs(client, blockMalicious, blockAds, blockSurveillance, privateAddresses)
+		lines, errs := buildBlockedIPs(client, blockMalicious, blockAds, blockSurveillance, blockedIPs)
 		chIPs <- lines
 		chErrors <- errs
 	}()
@@ -183,7 +184,7 @@ func getList(client network.Client, URL string) (results []string, err error) {
 }
 
 func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, blockSurveillance bool,
-	allowedHostnames []string) (lines []string, errs []error) {
+	blockedHostnames, allowedHostnames []string) (lines []string, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
 	listsLeftToFetch := 0
@@ -225,6 +226,9 @@ func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, bloc
 			}
 		}
 	}
+	for _, blockedHostname := range blockedHostnames {
+		uniqueResults[blockedHostname] = struct{}{}
+	}
 	for _, allowedHostname := range allowedHostnames {
 		delete(uniqueResults, allowedHostname)
 	}
@@ -235,7 +239,7 @@ func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, bloc
 }
 
 func buildBlockedIPs(client network.Client, blockMalicious, blockAds, blockSurveillance bool,
-	privateAddresses []string) (lines []string, errs []error) {
+	blockedIPs []string) (lines []string, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
 	listsLeftToFetch := 0
@@ -277,8 +281,8 @@ func buildBlockedIPs(client network.Client, blockMalicious, blockAds, blockSurve
 			}
 		}
 	}
-	for _, privateAddress := range privateAddresses {
-		uniqueResults[privateAddress] = struct{}{}
+	for _, blockedIP := range blockedIPs {
+		uniqueResults[blockedIP] = struct{}{}
 	}
 	for result := range uniqueResults {
 		lines = append(lines, "  private-address: "+result)

@@ -41,6 +41,8 @@ ENV \
     BLOCK_MALICIOUS=on \
     BLOCK_SURVEILLANCE=off \
     BLOCK_ADS=off \
+    BLOCK_IPS= \
+    BLOCK_HOSTNAMES= \
     UNBLOCK=
 ENTRYPOINT /entrypoint
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD /entrypoint healthcheck
