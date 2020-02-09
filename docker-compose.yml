@@ -8,7 +8,7 @@ services:
       - VERBOSITY=1
       - VERBOSITY_DETAILS=1
       - BLOCK_MALICIOUS=on
-      - BLOCK_SURVEILLANCE=off
+      - BLOCK_SURVEILLANCE=on
       - BLOCK_ADS=off
       - BLOCK_IPS=
       - BLOCK_HOSTNAMES=

@@ -1,8 +1,8 @@
-# DNS over TLS client caching server Docker container
+# DNS over TLS upstream server Docker container
 
-*DNS caching server connected to DNS over TLS (IPv4) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and malicious IPs + hostnames blocking*
+*DNS over TLS upstream server connected to DNS over TLS (IPv4) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
 
-**ANNOUCEMENT**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break use the image with tag `:old`)
+**ANNOUCEMENT**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break, use the image with tag `:shell`)
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
@@ -29,6 +29,16 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 - [LibreDNS](https://libredns.gr)
 - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
 - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
+
+<details><summary>New features added</summary><p>
+
+- Smaller image of 41.3MB and faster boot up
+- Download cryptographic files and needed block files at container start time
+- Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
+- Block custom hostnames and IP addresses using environment variables
+- Added environment variable `VALIDATION_LOGLEVEL` for Unbound
+
+</p></details>
 
 <details><summary>Click to show base components</summary><p>
 
@@ -77,11 +87,10 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | Environment variable | Default | Description |
 | --- | --- | --- |
 | `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` and `libredns` |
-| `PRIVATE_ADDRESS` | `127.0.0.1/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,::1/128,fc00::/7,fe80::/10,::ffff:0:0/96` | Prevent hostnames to resolve to these IP addresses, to prevent DNS rebinding attacks |
 | `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
 | `VERBOSITY_DETAILS` | `1` | From 0 to 4 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
-| `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
+| `BLOCK_SURVEILLANCE` | `on` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
 | `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
@@ -241,7 +250,6 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
 
 ## TO DOs
 
-- [ ] Custom block IPs and hostnames with env variables
 - [ ] Periodic SHUP signal to reload block lists
 - [x] Build Unbound binary at image build stage
     - [ ] smaller static binary
