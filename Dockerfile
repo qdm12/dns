@@ -61,5 +61,4 @@ RUN adduser nonrootuser -D -H --uid 1000 && \
     chmod 400 ca-certificates.crt && \
     chmod 700 .
 COPY --from=builder --chown=nonrootuser /tmp/gobuild/entrypoint /entrypoint
-# TODO RUN chmod 500 /entrypoint
 USER nonrootuser

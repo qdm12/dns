@@ -52,9 +52,9 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 		"hide-identity":    "yes",
 		"hide-version":     "yes",
 		// Security
-		"tls-cert-bundle": fmt.Sprintf("%q", constants.CACertificates),
-		// "root-hints":            fmt.Sprintf("%q", constants.RootHints),
-		// "trust-anchor-file":     fmt.Sprintf("%q", constants.RootKey),
+		"tls-cert-bundle":       fmt.Sprintf("%q", constants.CACertificates),
+		"root-hints":            fmt.Sprintf("%q", constants.RootHints),
+		"trust-anchor-file":     fmt.Sprintf("%q", constants.RootKey),
 		"harden-below-nxdomain": "yes",
 		"harden-referral-path":  "yes",
 		"harden-algo-downgrade": "yes",
