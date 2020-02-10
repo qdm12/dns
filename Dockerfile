@@ -52,7 +52,7 @@ RUN adduser nonrootuser -D -H --uid 1000 && \
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     apk --update --progress -q add ca-certificates unbound libcap && \
     mv /usr/sbin/unbound . && \
-    chown 1000 unbound && \
+    chown -R 1000 "$(pwd)" && \
     chmod 500 unbound && \
     setcap 'cap_net_bind_service=+ep' unbound && \
     rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-* && \
