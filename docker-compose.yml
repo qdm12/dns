@@ -1,7 +1,6 @@
 version: "3.7"
 services:
   cloudflare-dns-tls:
-    build: .
     image: qmcgaw/cloudflare-dns-server
     container_name: cloudflare-dns-tls
     environment:
