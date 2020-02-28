@@ -32,7 +32,7 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 
 <details><summary>New features added</summary><p>
 
-- Smaller image of 41.3MB and faster boot up
+- Smaller image of 39.4MB and faster boot up
 - Download cryptographic files and needed block files at container start time
 - Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
 - Block custom hostnames and IP addresses using environment variables
@@ -43,13 +43,13 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 <details><summary>Click to show base components</summary><p>
 
 - [Alpine 3.11](https://alpinelinux.org)
-- [Unbound 1.9.6](https://nlnetlabs.nl/downloads/unbound) ~built from source~ (from Alpine packages)
+- [Unbound 1.10.0](https://nlnetlabs.nl/downloads/unbound) ~built from source~ (from Alpine packages)
 - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
 - Go static binary built from this source
 
 </p></details>
 
-- Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v6 and v7, ppc64le and even that s390x 🎆
+- Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
 - DNS rebinding protection
 - DNSSEC Validation
 

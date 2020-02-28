@@ -1,10 +1,9 @@
 module github.com/qdm12/cloudflare-dns-server
 
-go 1.13
+go 1.14
 
 require (
 	github.com/kyokomi/emoji v2.1.0+incompatible
-	github.com/qdm12/golibs v0.0.0-20200208153322-66b2eb719e21
+	github.com/qdm12/golibs v0.0.0-20200224235252-bc16caae82ea
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/sys v0.0.0-20190412213103-97732733099d
 )
