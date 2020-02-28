@@ -25,7 +25,7 @@ func (c *configurator) MakeUnboundConf(settings models.Settings, uid, gid int) (
 		string(constants.UnboundConf),
 		lines,
 		files.Ownership(uid, gid),
-		files.Permissions(0400))
+		files.Permissions(0600))
 }
 
 // MakeUnboundConf generates an Unbound configuration from the user provided settings
