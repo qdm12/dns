@@ -79,7 +79,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | --- | --- | --- |
 | `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns`, `libredns` and `cira` |
 | `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
-| `VERBOSITY_DETAILS` | `1` | From 0 to 4 (higher means more details) |
+| `VERBOSITY_DETAILS` | `0` | From 0 to 4 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
 | `BLOCK_SURVEILLANCE` | `on` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
