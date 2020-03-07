@@ -60,7 +60,7 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 		"harden-algo-downgrade": "yes",
 		// Network
 		"do-ip4":         "yes",
-		"do-ip6":         "no",
+		"do-ip6":         "yes",
 		"interface":      "0.0.0.0",
 		"port":           fmt.Sprintf("%d", settings.ListeningPort),
 		"access-control": "0.0.0.0/0 allow",

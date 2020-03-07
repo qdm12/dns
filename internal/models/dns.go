@@ -8,8 +8,9 @@ import (
 
 // ProviderData contains information for a DNS provider
 type ProviderData struct {
-	IPs  []net.IP
-	Host Host
+	IPs          []net.IP
+	Host         Host
+	SupportsIPv6 bool
 }
 
 // Settings represents all the user settings for Unbound

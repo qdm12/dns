@@ -1,6 +1,6 @@
 # DNS over TLS upstream server Docker container
 
-*DNS over TLS upstream server connected to DNS over TLS (IPv4) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
+*DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
 
 **Announcement**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break, use the image with tag `:shell`)
 
@@ -20,48 +20,38 @@
 
 ## Features
 
-It can be connected to one or more of the following DNS-over-TLS providers:
+- It can be connected to one or more of the following DNS-over-TLS providers:
 
-- [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
-- [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
-- [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
-- [SecureDNS](https://securedns.eu)
-- [LibreDNS](https://libredns.gr)
-- [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
-- [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
-- [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
+    - [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
+    - [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
+    - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
+    - [SecureDNS](https://securedns.eu)
+    - [LibreDNS](https://libredns.gr)
+    - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
+    - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
+    - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
 
-<details><summary>New features added</summary><p>
-
-- Smaller image of 39.4MB and faster boot up
-- Download cryptographic files and needed block files at container start time
+- Split-horizon DNS (randomly pick one of the DoT providers specified for each request)
 - Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
 - Block custom hostnames and IP addresses using environment variables
-- Added environment variable `VALIDATION_LOGLEVEL` for Unbound
+- **One line setup**
+- Small 39.4MB Docker image (uncompressed, amd64)
 
-</p></details>
+    <details><summary>Click to show base components</summary><p>
 
-<details><summary>Click to show base components</summary><p>
+    - [Alpine 3.11](https://alpinelinux.org)
+    - [Unbound 1.10.0](https://nlnetlabs.nl/downloads/unbound) ~built from source~ (from Alpine packages)
+    - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
+    - Go static binary built from this source
 
-- [Alpine 3.11](https://alpinelinux.org)
-- [Unbound 1.10.0](https://nlnetlabs.nl/downloads/unbound) ~built from source~ (from Alpine packages)
-- [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-- Go static binary built from this source
+    </p></details>
 
-</p></details>
-
+- Resolves using IPv4 and IPv6 when available
 - Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
 - DNS rebinding protection
 - DNSSEC Validation
 
-[![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
-
-- Split-horizon DNS (randomly pick one of the DoT providers)
-- Optional hostnames resolution and IPs blocking
-    - Malicious
-    - Surveillance
-    - Ads
-    - Custom
+    [![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 

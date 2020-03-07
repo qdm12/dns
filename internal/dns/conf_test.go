@@ -45,7 +45,7 @@ server:
   cache-max-ttl: 9000
   cache-min-ttl: 3600
   do-ip4: yes
-  do-ip6: no
+  do-ip6: yes
   harden-algo-downgrade: yes
   harden-below-nxdomain: yes
   harden-referral-path: yes
@@ -83,8 +83,12 @@ forward-zone:
   name: "."
   forward-addr: 1.1.1.1@853#cloudflare-dns.com
   forward-addr: 1.0.0.1@853#cloudflare-dns.com
+  forward-addr: 2606:4700:4700::1111@853#cloudflare-dns.com
+  forward-addr: 2606:4700:4700::1001@853#cloudflare-dns.com
   forward-addr: 9.9.9.9@853#dns.quad9.net
-  forward-addr: 149.112.112.112@853#dns.quad9.net`
+  forward-addr: 149.112.112.112@853#dns.quad9.net
+  forward-addr: 2620:fe::fe@853#dns.quad9.net
+  forward-addr: 2620:fe::9@853#dns.quad9.net`
 	assert.Equal(t, expected, "\n"+strings.Join(lines, "\n"))
 }
 
