@@ -1,10 +1,10 @@
 package constants
 
 const (
-	// Annoucement is a message annoucement
-	Annoucement = "Total rewrite in Go with many new features"
-	// AnnoucementExpiration is the expiration date of the annoucement in format yyyy-mm-dd
-	AnnoucementExpiration = "2020-03-05"
+	// Announcement is a message announcement
+	Announcement = "Total rewrite in Go with many new features"
+	// AnnouncementExpiration is the expiration date of the announcement in format yyyy-mm-dd
+	AnnouncementExpiration = "2020-03-05"
 )
 
 const (

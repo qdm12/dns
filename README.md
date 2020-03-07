@@ -2,7 +2,7 @@
 
 *DNS over TLS upstream server connected to DNS over TLS (IPv4) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
 
-**ANNOUCEMENT**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break, use the image with tag `:shell`)
+**Announcement**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break, use the image with tag `:shell`)
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
