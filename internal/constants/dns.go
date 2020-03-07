@@ -21,6 +21,8 @@ const (
 	SecureDNS models.Provider = "securedns"
 	// LibreDNS is a DNS over TLS provider
 	LibreDNS models.Provider = "libredns"
+	// CIRA is a DNS over TLS provider
+	CIRA models.Provider = "cira"
 )
 
 // ProviderMapping returns a constant mapping of dns provider name
@@ -54,6 +56,10 @@ func ProviderMapping() map[models.Provider]models.ProviderData {
 		LibreDNS: models.ProviderData{
 			IPs:  []net.IP{{116, 203, 115, 192}},
 			Host: models.Host("dot.libredns.gr"),
+		},
+		CIRA: models.ProviderData{
+			IPs:  []net.IP{{149, 112, 121, 20}, {149, 112, 122, 20}},
+			Host: models.Host("protected.canadianshield.cira.ca"),
 		},
 	}
 }

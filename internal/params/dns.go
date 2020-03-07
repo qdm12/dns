@@ -27,7 +27,7 @@ func (p *paramsReader) GetProviders() (providers []models.Provider, err error) {
 	for _, word := range strings.Split(s, ",") {
 		provider := models.Provider(word)
 		switch provider {
-		case constants.Cloudflare, constants.Google, constants.Quad9, constants.Quadrant, constants.CleanBrowsing, constants.SecureDNS, constants.LibreDNS:
+		case constants.Cloudflare, constants.Google, constants.Quad9, constants.Quadrant, constants.CleanBrowsing, constants.SecureDNS, constants.LibreDNS, constants.CIRA:
 			providers = append(providers, provider)
 		default:
 			return nil, fmt.Errorf("DNS over TLS provider %q is not valid", provider)
