@@ -29,6 +29,7 @@ It can be connected to one or more of the following DNS-over-TLS providers:
 - [LibreDNS](https://libredns.gr)
 - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
 - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
+- [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
 
 <details><summary>New features added</summary><p>
 
@@ -86,7 +87,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
-| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns` and `libredns` |
+| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns`, `libredns` and `cira` |
 | `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
 | `VERBOSITY_DETAILS` | `1` | From 0 to 4 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
