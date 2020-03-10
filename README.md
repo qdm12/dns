@@ -90,6 +90,11 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | `CACHING` | `on` | `on` or `off`. It can be useful if you have another DNS (i.e. Pihole) doing the caching as well on top of this container |
 | `PRIVATE_ADDRESS` | All IPv4 and IPv6 CIDRs private ranges | Comma separated list of CIDRs or single IP addresses. Note that the default setting prevents DNS rebinding |
 
+## Extra configuration
+
+You can bind mount an Unbound configuration file *include.conf* to be included in the Unbound server section with
+`-v $(pwd)/include.conf:/unbound/include.conf:ro`, see [Unbound configuration documentation](https://nlnetlabs.nl/documentation/unbound/unbound.conf/)
+
 ## Connect clients to it
 
 ### Option 1: Router (recommended)

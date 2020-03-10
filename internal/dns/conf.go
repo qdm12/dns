@@ -66,6 +66,7 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 		"access-control": "0.0.0.0/0 allow",
 		// Other
 		"username": "\"nonrootuser\"",
+		"include":  "include.conf",
 	}
 
 	// Block lists

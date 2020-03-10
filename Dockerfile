@@ -53,9 +53,10 @@ RUN adduser nonrootuser -D -H --uid 1000 && \
     apk --update --progress -q add ca-certificates unbound libcap && \
     mv /usr/sbin/unbound . && \
     mv /etc/ssl/certs/ca-certificates.crt . && \
+    touch include.conf && \
     chown nonrootuser -R . && \
     chmod 700 . && \
-    chmod 400 ca-certificates.crt && \
+    chmod 400 ca-certificates.crt include.conf && \
     chmod 500 unbound && \
     setcap 'cap_net_bind_service=+ep' unbound && \
     apk del libcap && \
