@@ -52,13 +52,13 @@ RUN adduser nonrootuser -D -H --uid 1000 && \
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     apk --update --progress -q add ca-certificates unbound libcap && \
     mv /usr/sbin/unbound . && \
-    chown -R 1000 "$(pwd)" && \
+    mv /etc/ssl/certs/ca-certificates.crt . && \
+    chown nonrootuser -R . && \
+    chmod 700 . && \
+    chmod 400 ca-certificates.crt && \
     chmod 500 unbound && \
     setcap 'cap_net_bind_service=+ep' unbound && \
-    rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-* && \
-    mv /etc/ssl/certs/ca-certificates.crt . && \
-    chown nonrootuser . ca-certificates.crt && \
-    chmod 400 ca-certificates.crt && \
-    chmod 700 .
+    apk del libcap && \
+    rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-*
 COPY --from=builder --chown=nonrootuser /tmp/gobuild/entrypoint /entrypoint
 USER nonrootuser
