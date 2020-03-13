@@ -12,9 +12,9 @@ import (
 )
 
 type Configurator interface {
-	DownloadRootHints(uid, gid int) error
-	DownloadRootKey(uid, gid int) error
-	MakeUnboundConf(settings models.Settings, uid, gid int) (err error)
+	DownloadRootHints() error
+	DownloadRootKey() error
+	MakeUnboundConf(settings models.Settings) (err error)
 	UseDNSInternally(IP net.IP)
 	Start(logLevel uint8) (stdout io.ReadCloser, err error)
 	WaitForUnbound() (err error)

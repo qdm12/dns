@@ -12,7 +12,7 @@ import (
 	"github.com/qdm12/golibs/network"
 )
 
-func (c *configurator) MakeUnboundConf(settings models.Settings, uid, gid int) (err error) {
+func (c *configurator) MakeUnboundConf(settings models.Settings) (err error) {
 	c.logger.Info("generating Unbound configuration")
 	lines, warnings, err := generateUnboundConf(settings, c.client, c.logger)
 	for _, warning := range warnings {
@@ -24,7 +24,6 @@ func (c *configurator) MakeUnboundConf(settings models.Settings, uid, gid int) (
 	return c.fileManager.WriteLinesToFile(
 		string(constants.UnboundConf),
 		lines,
-		files.Ownership(uid, gid),
 		files.Permissions(0600))
 }
 
@@ -65,7 +64,7 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 		"port":           fmt.Sprintf("%d", settings.ListeningPort),
 		"access-control": "0.0.0.0/0 allow",
 		// Other
-		"username": "\"nonrootuser\"",
+		"username": "\"\"",
 		"include":  "include.conf",
 	}
 

@@ -35,6 +35,7 @@
 - Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
 - Block custom hostnames and IP addresses using environment variables
 - **One line setup**
+- Runs without root
 - Small 39.4MB Docker image (uncompressed, amd64)
 
     <details><summary>Click to show base components</summary><p>

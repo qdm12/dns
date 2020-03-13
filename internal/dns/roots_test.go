@@ -60,12 +60,11 @@ func Test_DownloadRootHints(t *testing.T) {
 					"WriteToFile",
 					string(constants.RootHints),
 					tc.content,
-					mock.AnythingOfType("files.WriteOptionSetter"),
 					mock.AnythingOfType("files.WriteOptionSetter")).
 					Return(tc.writeErr).Once()
 			}
 			c := &configurator{logger: logger, client: client, fileManager: fileManager}
-			err := c.DownloadRootHints(1000, 1000)
+			err := c.DownloadRootHints()
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())
@@ -125,11 +124,10 @@ func Test_DownloadRootKey(t *testing.T) {
 					string(constants.RootKey),
 					tc.content,
 					mock.AnythingOfType("files.WriteOptionSetter"),
-					mock.AnythingOfType("files.WriteOptionSetter"),
 				).Return(tc.writeErr).Once()
 			}
 			c := &configurator{logger: logger, client: client, fileManager: fileManager}
-			err := c.DownloadRootKey(1000, 1001)
+			err := c.DownloadRootKey()
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())

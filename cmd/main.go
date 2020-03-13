@@ -22,10 +22,6 @@ import (
 	"github.com/qdm12/golibs/signals"
 )
 
-const (
-	uid, gid = 1000, 1000
-)
-
 func main() {
 	logger, err := logging.NewLogger(logging.ConsoleEncoding, logging.InfoLevel, -1)
 	if err != nil {
@@ -85,11 +81,11 @@ func main() {
 
 	initialDNSToUse := constants.ProviderMapping()[settings.Providers[0]]
 	dnsConf.UseDNSInternally(initialDNSToUse.IPs[0])
-	err = dnsConf.DownloadRootHints(uid, gid)
+	err = dnsConf.DownloadRootHints()
 	e.FatalOnError(err)
-	err = dnsConf.DownloadRootKey(uid, gid)
+	err = dnsConf.DownloadRootKey()
 	e.FatalOnError(err)
-	err = dnsConf.MakeUnboundConf(settings, uid, gid)
+	err = dnsConf.MakeUnboundConf(settings)
 	e.FatalOnError(err)
 	stream, err := dnsConf.Start(settings.VerbosityDetailsLevel)
 	e.FatalOnError(err)

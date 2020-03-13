@@ -47,19 +47,18 @@ ENV \
 ENTRYPOINT /entrypoint
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD /entrypoint healthcheck
 WORKDIR /unbound
-RUN adduser nonrootuser -D -H --uid 1000 && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     apk --update --progress -q add ca-certificates unbound libcap && \
     mv /usr/sbin/unbound . && \
     mv /etc/ssl/certs/ca-certificates.crt . && \
     touch include.conf && \
-    chown nonrootuser -R . && \
+    chown 1000 -R . && \
     chmod 700 . && \
     chmod 400 ca-certificates.crt include.conf && \
     chmod 500 unbound && \
     setcap 'cap_net_bind_service=+ep' unbound && \
     apk del libcap && \
     rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-*
-COPY --from=builder --chown=nonrootuser /tmp/gobuild/entrypoint /entrypoint
-USER nonrootuser
+COPY --from=builder --chown=1000 /tmp/gobuild/entrypoint /entrypoint
+USER 1000

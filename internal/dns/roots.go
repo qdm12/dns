@@ -8,7 +8,7 @@ import (
 	"github.com/qdm12/golibs/files"
 )
 
-func (c *configurator) DownloadRootHints(uid, gid int) error {
+func (c *configurator) DownloadRootHints() error {
 	c.logger.Info("downloading root hints from %s", constants.NamedRootURL)
 	content, status, err := c.client.GetContent(string(constants.NamedRootURL))
 	if err != nil {
@@ -19,11 +19,10 @@ func (c *configurator) DownloadRootHints(uid, gid int) error {
 	return c.fileManager.WriteToFile(
 		string(constants.RootHints),
 		content,
-		files.Ownership(uid, gid),
 		files.Permissions(0600))
 }
 
-func (c *configurator) DownloadRootKey(uid, gid int) error {
+func (c *configurator) DownloadRootKey() error {
 	c.logger.Info("downloading root key from %s", constants.RootKeyURL)
 	content, status, err := c.client.GetContent(string(constants.RootKeyURL))
 	if err != nil {
@@ -34,6 +33,5 @@ func (c *configurator) DownloadRootKey(uid, gid int) error {
 	return c.fileManager.WriteToFile(
 		string(constants.RootKey),
 		content,
-		files.Ownership(uid, gid),
 		files.Permissions(0600))
 }

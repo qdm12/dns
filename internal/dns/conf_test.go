@@ -68,7 +68,7 @@ server:
   tls-cert-bundle: "/unbound/ca-certificates.crt"
   trust-anchor-file: "/unbound/root.key"
   use-syslog: no
-  username: "nonrootuser"
+  username: ""
   val-log-level: 3
   verbosity: 2
   local-zone: "b" static
