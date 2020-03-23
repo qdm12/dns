@@ -46,3 +46,9 @@ func (p *paramsReader) GetValidationLogLevel() (validationLogLevel uint8, err er
 	n, err := p.envParams.GetEnvIntRange("VALIDATION_LOGLEVEL", 0, 2, libparams.Default("0"))
 	return uint8(n), err
 }
+
+// GetCheckUnbound obtains if the program should check Unbound is running correctly
+// at 127.0.0.1:53 from the environment variable CHECK_UNBOUND
+func (p *paramsReader) GetCheckUnbound() (check bool, err error) {
+	return p.envParams.GetOnOff("CHECK_UNBOUND", libparams.Default("on"))
+}

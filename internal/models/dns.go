@@ -28,10 +28,11 @@ type Settings struct {
 	BlockedHostnames      []string
 	BlockedIPs            []string
 	AllowedHostnames      []string
+	CheckUnbound          bool
 }
 
 func (s *Settings) String() string {
-	caching, blockMalicious, blockSurveillance, blockAds := "disabed", "disabed", "disabed", "disabed"
+	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound := "disabed", "disabed", "disabed", "disabed", "no"
 	if s.Caching {
 		caching = "enabled"
 	}
@@ -43,6 +44,9 @@ func (s *Settings) String() string {
 	}
 	if s.BlockAds {
 		blockAds = "enabled"
+	}
+	if s.CheckUnbound {
+		checkUnbound = "yes"
 	}
 	var providersStr []string
 	for _, provider := range s.Providers {
@@ -78,6 +82,7 @@ func (s *Settings) String() string {
 		blockedIPs,
 		allowedHostnames,
 		privateAddresses,
+		"Check Unbound: " + checkUnbound,
 	}
 	return strings.Join(settingsList, "\n")
 }

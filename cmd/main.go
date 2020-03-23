@@ -72,6 +72,8 @@ func main() {
 	e.FatalOnError(err)
 	settings.AllowedHostnames, err = paramsReader.GetUnblockedHostnames()
 	e.FatalOnError(err)
+	settings.CheckUnbound, err = paramsReader.GetCheckUnbound()
+	e.FatalOnError(err)
 	logger.Info("Settings summary:\n" + settings.String())
 
 	go func() {
@@ -92,9 +94,11 @@ func main() {
 	go streamMerger.Merge("unbound", stream)
 	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1})
 	e.FatalOnError(err)
-	err = dnsConf.WaitForUnbound()
-	e.FatalOnError(err)
-
+	if settings.CheckUnbound {
+		if err := dnsConf.WaitForUnbound(); err != nil {
+			logger.Warn(err)
+		}
+	}
 	signals.WaitForExit(func(signal string) int {
 		logger.Warn("Caught OS signal %s, shutting down", signal)
 		time.Sleep(100 * time.Millisecond) // wait for other processes to exit

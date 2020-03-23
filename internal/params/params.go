@@ -19,6 +19,7 @@ type ParamsReader interface {
 	GetVerbosity() (verbosityLevel uint8, err error)
 	GetVerbosityDetails() (verbosityDetailsLevel uint8, err error)
 	GetValidationLogLevel() (validationLogLevel uint8, err error)
+	GetCheckUnbound() (check bool, err error)
 
 	// Blocking getters
 	GetMaliciousBlocking() (blocking bool, err error)

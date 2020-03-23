@@ -43,7 +43,8 @@ ENV \
     BLOCK_ADS=off \
     BLOCK_IPS= \
     BLOCK_HOSTNAMES= \
-    UNBLOCK=
+    UNBLOCK= \
+    CHECK_UNBOUND=yes
 ENTRYPOINT /entrypoint
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD /entrypoint healthcheck
 WORKDIR /unbound
