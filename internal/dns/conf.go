@@ -224,6 +224,15 @@ func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, bloc
 		}
 	}
 	for _, blockedHostname := range blockedHostnames {
+		allowed := false
+		for _, allowedHostname := range allowedHostnames {
+			if blockedHostname == allowedHostname || strings.HasSuffix(blockedHostname, "."+allowedHostname) {
+				allowed = true
+			}
+		}
+		if allowed {
+			continue
+		}
 		uniqueResults[blockedHostname] = struct{}{}
 	}
 	for _, allowedHostname := range allowedHostnames {
