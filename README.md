@@ -248,13 +248,45 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
 
 ## Development
 
-### Using VSCode and Docker
+1. Setup your environment
 
-1. Install [Docker](https://docs.docker.com/install)
-    - On Windows, share a drive with Docker Desktop and have the project on that partition
-1. With [Visual Studio Code](https://code.visualstudio.com/download), install the [remote containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-1. In Visual Studio Code, press on `F1` and select `Remote-Containers: Open Folder in Container...`
-1. Your dev environment is ready to go!... and it's running in a container :+1:
+    <details><summary>Using VSCode and Docker</summary><p>
+
+    1. Install [Docker](https://docs.docker.com/install/)
+       - On Windows, share a drive with Docker Desktop and have the project on that partition
+       - On OSX, share your project directory with Docker Desktop
+    1. With [Visual Studio Code](https://code.visualstudio.com/download), install the [remote containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+    1. In Visual Studio Code, press on `F1` and select `Remote-Containers: Open Folder in Container...`
+    1. Your dev environment is ready to go!... and it's running in a container :+1:
+
+    </p></details>
+
+    <details><summary>Locally</summary><p>
+
+    Install [Go](https://golang.org/dl/), [Docker](https://www.docker.com/products/docker-desktop) and [Git](https://git-scm.com/downloads); then:
+
+    ```sh
+    go mod download
+    ```
+
+    And finally install [golangci-lint](https://github.com/golangci/golangci-lint#install)
+
+    </p></details>
+
+1. Commands available:
+
+    ```sh
+    # Build the binary
+    go build cmd/main.go
+    # Test the code
+    go test ./...
+    # Lint the code
+    golangci-lint run
+    # Build the Docker image
+    docker build -t qmcgaw/cloudflare-dns-server .
+    ```
+
+1. See [Contributing](.github/CONTRIBUTING.md) for more information on how to contribute to this repository.
 
 ## TO DOs
 
