@@ -79,7 +79,7 @@ server:
   private-address: c
   private-address: d
 forward-zone:
-  forward-no-cache: no
+  forward-no-cache: yes
   forward-tls-upstream: yes
   name: "."
   forward-addr: 1.1.1.1@853#cloudflare-dns.com
