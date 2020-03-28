@@ -103,9 +103,9 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 		"forward-tls-upstream": "yes",
 	}
 	if settings.Caching {
-		forwardZoneSection["forward-no-cache"] = "yes"
-	} else {
 		forwardZoneSection["forward-no-cache"] = "no"
+	} else {
+		forwardZoneSection["forward-no-cache"] = "yes"
 	}
 	var forwardZoneLines []string
 	for k, v := range forwardZoneSection {
