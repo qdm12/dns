@@ -27,6 +27,8 @@ func Test_generateUnboundConf(t *testing.T) {
 		VerbosityLevel:     2,
 		ValidationLogLevel: 3,
 		ListeningPort:      53,
+		IPv4:               true,
+		IPv6:               true,
 	}
 	client := &mocks.Client{}
 	client.On("GetContent", string(constants.MaliciousBlockListHostnamesURL)).

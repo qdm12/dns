@@ -29,10 +29,12 @@ type Settings struct {
 	BlockedIPs            []string
 	AllowedHostnames      []string
 	CheckUnbound          bool
+	IPv4                  bool
+	IPv6                  bool
 }
 
 func (s *Settings) String() string {
-	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound := "disabed", "disabed", "disabed", "disabed", "no"
+	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound, ipv4, ipv6 := "disabed", "disabed", "disabed", "disabed", "disabled", "disabled", "disabled"
 	if s.Caching {
 		caching = "enabled"
 	}
@@ -46,7 +48,13 @@ func (s *Settings) String() string {
 		blockAds = "enabled"
 	}
 	if s.CheckUnbound {
-		checkUnbound = "yes"
+		checkUnbound = "enabled"
+	}
+	if s.IPv4 {
+		ipv4 = "enabled"
+	}
+	if s.IPv6 {
+		ipv6 = "enabled"
 	}
 	var providersStr []string
 	for _, provider := range s.Providers {
@@ -72,6 +80,8 @@ func (s *Settings) String() string {
 		"DNS over TLS provider:\n|--" + strings.Join(providersStr, "\n|--"),
 		"Listening port: " + fmt.Sprintf("%d", s.ListeningPort),
 		"Caching: " + caching,
+		"IPv4 resolution: " + ipv4,
+		"IPv6 resolution: " + ipv6,
 		"Verbosity level: " + fmt.Sprintf("%d/5", s.VerbosityLevel),
 		"Verbosity details level: " + fmt.Sprintf("%d/4", s.VerbosityDetailsLevel),
 		"Validation log level: " + fmt.Sprintf("%d/2", s.ValidationLogLevel),

@@ -38,6 +38,8 @@ ENV \
     VERBOSITY_DETAILS=0 \
     VALIDATION_LOGLEVEL=0 \
     CACHING=on \
+    IPV4=on \
+    IPV6=on \
     BLOCK_MALICIOUS=on \
     BLOCK_SURVEILLANCE=off \
     BLOCK_ADS=off \

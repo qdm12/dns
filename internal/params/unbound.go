@@ -52,3 +52,11 @@ func (p *paramsReader) GetValidationLogLevel() (validationLogLevel uint8, err er
 func (p *paramsReader) GetCheckUnbound() (check bool, err error) {
 	return p.envParams.GetOnOff("CHECK_UNBOUND", libparams.Default("on"))
 }
+
+func (p *paramsReader) GetIPv4() (doIPv4 bool, err error) {
+	return p.envParams.GetOnOff("IPV4", libparams.Default("on"))
+}
+
+func (p *paramsReader) GetIPv6() (doIPv6 bool, err error) {
+	return p.envParams.GetOnOff("IPV6", libparams.Default("on"))
+}

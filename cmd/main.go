@@ -74,6 +74,10 @@ func main() {
 	e.FatalOnError(err)
 	settings.CheckUnbound, err = paramsReader.GetCheckUnbound()
 	e.FatalOnError(err)
+	settings.IPv4, err = paramsReader.GetIPv4()
+	e.FatalOnError(err)
+	settings.IPv6, err = paramsReader.GetIPv6()
+	e.FatalOnError(err)
 	logger.Info("Settings summary:\n" + settings.String())
 
 	go func() {

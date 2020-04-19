@@ -29,6 +29,16 @@ func (c *configurator) MakeUnboundConf(settings models.Settings) (err error) {
 
 // MakeUnboundConf generates an Unbound configuration from the user provided settings
 func generateUnboundConf(settings models.Settings, client network.Client, logger logging.Logger) (lines []string, warnings []error, err error) {
+	ipv4, ipv6 := "no", "no"
+	if !settings.IPv4 && !settings.IPv6 {
+		return nil, nil, fmt.Errorf("cannot disable both ipv4 and ipv6 resolution")
+	}
+	if settings.IPv4 {
+		ipv4 = "yes"
+	}
+	if settings.IPv6 {
+		ipv6 = "yes"
+	}
 	serverSection := map[string]string{
 		// Logging
 		"verbosity":     fmt.Sprintf("%d", settings.VerbosityLevel),
@@ -58,8 +68,8 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 		"harden-referral-path":  "yes",
 		"harden-algo-downgrade": "yes",
 		// Network
-		"do-ip4":         "yes",
-		"do-ip6":         "yes",
+		"do-ip4":         ipv4,
+		"do-ip6":         ipv6,
 		"interface":      "0.0.0.0",
 		"port":           fmt.Sprintf("%d", settings.ListeningPort),
 		"access-control": "0.0.0.0/0 allow",
