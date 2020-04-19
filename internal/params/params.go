@@ -7,8 +7,8 @@ import (
 	"github.com/qdm12/golibs/verification"
 )
 
-// ParamsReader contains methods to obtain parameters
-type ParamsReader interface {
+// Reader contains methods to obtain parameters
+type Reader interface {
 	// DNS getters
 	GetProviders() (providers []models.Provider, err error)
 	GetPrivateAddresses() (privateAddresses []string)
@@ -37,7 +37,7 @@ type ParamsReader interface {
 	GetVcsRef() string
 }
 
-type paramsReader struct {
+type reader struct {
 	envParams libparams.EnvParams
 	logger    logging.Logger
 	verifier  verification.Verifier
@@ -45,8 +45,8 @@ type paramsReader struct {
 
 // NewParamsReader returns a paramsReadeer object to read parameters from
 // environment variables
-func NewParamsReader(logger logging.Logger) ParamsReader {
-	return &paramsReader{
+func NewParamsReader(logger logging.Logger) Reader {
+	return &reader{
 		envParams: libparams.NewEnvParams(),
 		logger:    logger,
 		verifier:  verification.NewVerifier(),

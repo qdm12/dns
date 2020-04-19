@@ -11,15 +11,16 @@ import (
 
 // GetProviders obtains the DNS over TLS providers to use
 // from the environment variable PROVIDERS and PROVIDER for retro-compatibility
-func (p *paramsReader) GetProviders() (providers []models.Provider, err error) {
+func (r *reader) GetProviders() (providers []models.Provider, err error) {
 	// Retro-compatibility
-	s, err := p.envParams.GetEnv("PROVIDER")
-	if err != nil {
+	s, err := r.envParams.GetEnv("PROVIDER")
+	switch {
+	case err != nil:
 		return nil, err
-	} else if len(s) != 0 {
-		p.logger.Warn("You are using the old environment variable PROVIDER, please consider changing it to PROVIDERS")
-	} else {
-		s, err = p.envParams.GetEnv("PROVIDERS", libparams.Default("cloudflare"))
+	case len(s) != 0:
+		r.logger.Warn("You are using the old environment variable PROVIDER, please consider changing it to PROVIDERS")
+	default:
+		s, err = r.envParams.GetEnv("PROVIDERS", libparams.Default("cloudflare"))
 		if err != nil {
 			return nil, err
 		}
@@ -36,10 +37,8 @@ func (p *paramsReader) GetProviders() (providers []models.Provider, err error) {
 
 // GetPrivateAddresses obtains if Unbound caching should be enable or not
 // from the environment variable PRIVATE_ADDRESS
-func (p *paramsReader) GetPrivateAddresses() (privateAddresses []string) {
-	s, _ := p.envParams.GetEnv("PRIVATE_ADDRESS")
-	for _, s := range strings.Split(s, ",") {
-		privateAddresses = append(privateAddresses, s)
-	}
+func (r *reader) GetPrivateAddresses() (privateAddresses []string) {
+	s, _ := r.envParams.GetEnv("PRIVATE_ADDRESS")
+	privateAddresses = append(privateAddresses, strings.Split(s, ",")...)
 	return privateAddresses
 }

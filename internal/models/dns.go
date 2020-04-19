@@ -17,6 +17,9 @@ type ProviderData struct {
 type Settings struct {
 	Providers             []Provider
 	PrivateAddresses      []string
+	BlockedHostnames      []string
+	BlockedIPs            []string
+	AllowedHostnames      []string
 	ListeningPort         uint16
 	VerbosityLevel        uint8
 	VerbosityDetailsLevel uint8
@@ -25,40 +28,41 @@ type Settings struct {
 	BlockMalicious        bool
 	BlockSurveillance     bool
 	BlockAds              bool
-	BlockedHostnames      []string
-	BlockedIPs            []string
-	AllowedHostnames      []string
 	CheckUnbound          bool
 	IPv4                  bool
 	IPv6                  bool
 }
 
 func (s *Settings) String() string {
-	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound, ipv4, ipv6 := "disabed", "disabed", "disabed", "disabed", "disabled", "disabled", "disabled"
+	const (
+		disabled = "disabled"
+		enabled  = "enabled"
+	)
+	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound, ipv4, ipv6 := disabled, disabled, disabled, disabled, disabled, disabled, disabled
 	if s.Caching {
-		caching = "enabled"
+		caching = enabled
 	}
 	if s.BlockMalicious {
-		blockMalicious = "enabled"
+		blockMalicious = enabled
 	}
 	if s.BlockSurveillance {
-		blockSurveillance = "enabled"
+		blockSurveillance = enabled
 	}
 	if s.BlockAds {
-		blockAds = "enabled"
+		blockAds = enabled
 	}
 	if s.CheckUnbound {
-		checkUnbound = "enabled"
+		checkUnbound = enabled
 	}
 	if s.IPv4 {
-		ipv4 = "enabled"
+		ipv4 = enabled
 	}
 	if s.IPv6 {
-		ipv6 = "enabled"
+		ipv6 = enabled
 	}
-	var providersStr []string
-	for _, provider := range s.Providers {
-		providersStr = append(providersStr, string(provider))
+	providersStr := make([]string, len(s.Providers))
+	for i := range s.Providers {
+		providersStr[i] = string(s.Providers[i])
 	}
 	blockedHostnames := "Blocked hostnames:"
 	if len(s.BlockedHostnames) > 0 {

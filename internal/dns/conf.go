@@ -29,15 +29,19 @@ func (c *configurator) MakeUnboundConf(settings models.Settings) (err error) {
 
 // MakeUnboundConf generates an Unbound configuration from the user provided settings
 func generateUnboundConf(settings models.Settings, client network.Client, logger logging.Logger) (lines []string, warnings []error, err error) {
-	ipv4, ipv6 := "no", "no"
+	const (
+		yes = "yes"
+		no  = "no"
+	)
+	ipv4, ipv6 := no, no
 	if !settings.IPv4 && !settings.IPv6 {
 		return nil, nil, fmt.Errorf("cannot disable both ipv4 and ipv6 resolution")
 	}
 	if settings.IPv4 {
-		ipv4 = "yes"
+		ipv4 = yes
 	}
 	if settings.IPv6 {
-		ipv6 = "yes"
+		ipv6 = yes
 	}
 	serverSection := map[string]string{
 		// Logging
@@ -95,9 +99,11 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 
 	// Server
 	lines = append(lines, "server:")
-	var serverLines []string
+	serverLines := make([]string, len(serverSection))
+	i := 0
 	for k, v := range serverSection {
-		serverLines = append(serverLines, "  "+k+": "+v)
+		serverLines[i] = "  " + k + ": " + v
+		i++
 	}
 	sort.Slice(serverLines, func(i, j int) bool {
 		return serverLines[i] < serverLines[j]
@@ -117,9 +123,11 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 	} else {
 		forwardZoneSection["forward-no-cache"] = "no"
 	}
-	var forwardZoneLines []string
+	forwardZoneLines := make([]string, len(forwardZoneSection))
+	i = 0
 	for k, v := range forwardZoneSection {
-		forwardZoneLines = append(forwardZoneLines, "  "+k+": "+v)
+		forwardZoneLines[i] = "  " + k + ": " + v
+		i++
 	}
 	sort.Slice(forwardZoneLines, func(i, j int) bool {
 		return forwardZoneLines[i] < forwardZoneLines[j]
@@ -165,8 +173,8 @@ func buildBlocked(client network.Client, blockMalicious, blockAds, blockSurveill
 	return hostnamesLines, ipsLines, errs
 }
 
-func getList(client network.Client, URL string) (results []string, err error) {
-	content, status, err := client.GetContent(URL)
+func getList(client network.Client, url string) (results []string, err error) {
+	content, status, err := client.GetContent(url)
 	if err != nil {
 		return nil, err
 	} else if status != 200 {
