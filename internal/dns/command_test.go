@@ -1,11 +1,13 @@
 package dns
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	commandMocks "github.com/qdm12/golibs/command/mocks"
-	loggingMocks "github.com/qdm12/golibs/logging/mocks"
+	"github.com/golang/mock/gomock"
+	"github.com/qdm12/golibs/command/mock_command"
+	"github.com/qdm12/golibs/logging/mock_logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -14,17 +16,17 @@ import (
 
 func Test_Start(t *testing.T) {
 	t.Parallel()
-	logger := &loggingMocks.Logger{}
-	logger.On("Info", "starting unbound").Once()
-	commander := &commandMocks.Commander{}
-	commander.On("Start", "/unbound/unbound", "-d", "-c", string(constants.UnboundConf), "-vv").
-		Return(nil, nil, nil, nil).Once()
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	logger := mock_logging.NewMockLogger(mockCtrl)
+	logger.EXPECT().Info("starting unbound").Times(1)
+	commander := mock_command.NewMockCommander(mockCtrl)
+	commander.EXPECT().Start(context.Background(), "/unbound/unbound", "-d", "-c", string(constants.UnboundConf), "-vv").
+		Return(nil, nil, nil, nil).Times(1)
 	c := &configurator{commander: commander, logger: logger}
-	stdout, err := c.Start(2)
+	stdout, _, err := c.Start(context.Background(), 2)
 	assert.Nil(t, stdout)
 	assert.NoError(t, err)
-	logger.AssertExpectations(t)
-	commander.AssertExpectations(t)
 }
 
 func Test_Version(t *testing.T) {
@@ -51,11 +53,13 @@ func Test_Version(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			commander := &commandMocks.Commander{}
-			commander.On("Run", "/unbound/unbound", "-V").
-				Return(tc.runOutput, tc.runErr).Once()
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			commander := mock_command.NewMockCommander(mockCtrl)
+			commander.EXPECT().Run(context.Background(), "/unbound/unbound", "-V").
+				Return(tc.runOutput, tc.runErr).Times(1)
 			c := &configurator{commander: commander}
-			version, err := c.Version()
+			version, err := c.Version(context.Background())
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())
@@ -63,7 +67,6 @@ func Test_Version(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tc.version, version)
-			commander.AssertExpectations(t)
 		})
 	}
 }

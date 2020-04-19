@@ -5,10 +5,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
-	"github.com/qdm12/golibs/logging"
-	"github.com/qdm12/golibs/network/mocks"
+	"github.com/qdm12/golibs/logging/mock_logging"
+	"github.com/qdm12/golibs/network/mock_network"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -30,17 +31,19 @@ func Test_generateUnboundConf(t *testing.T) {
 		IPv4:               true,
 		IPv6:               true,
 	}
-	client := &mocks.Client{}
-	client.On("GetContent", string(constants.MaliciousBlockListHostnamesURL)).
-		Return([]byte("b\na\nc"), 200, nil).Once()
-	client.On("GetContent", string(constants.MaliciousBlockListIPsURL)).
-		Return([]byte("c\nd\n"), 200, nil).Once()
-	emptyLogger, err := logging.NewEmptyLogger()
-	require.NoError(t, err)
-	lines, warnings, err := generateUnboundConf(settings, client, emptyLogger)
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	client := mock_network.NewMockClient(mockCtrl)
+	client.EXPECT().GetContent(string(constants.MaliciousBlockListHostnamesURL)).
+		Return([]byte("b\na\nc"), 200, nil).Times(1)
+	client.EXPECT().GetContent(string(constants.MaliciousBlockListIPsURL)).
+		Return([]byte("c\nd\n"), 200, nil).Times(1)
+	logger := mock_logging.NewMockLogger(mockCtrl)
+	logger.EXPECT().Info("%d hostnames blocked overall", 3).Times(1)
+	logger.EXPECT().Info("%d IP addresses blocked overall", 4).Times(1)
+	lines, warnings, err := generateUnboundConf(settings, client, logger)
 	require.Len(t, warnings, 0)
 	require.NoError(t, err)
-	client.AssertExpectations(t)
 	expected := `
 server:
   access-control: 0.0.0.0/0 allow
@@ -235,24 +238,26 @@ func Test_buildBlocked(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			client := &mocks.Client{}
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			client := mock_network.NewMockClient(mockCtrl)
 			if tc.malicious.blocked {
-				client.On("GetContent", string(constants.MaliciousBlockListHostnamesURL)).
-					Return(tc.malicious.content, 200, tc.malicious.clientErr).Once()
-				client.On("GetContent", string(constants.MaliciousBlockListIPsURL)).
-					Return(tc.malicious.content, 200, tc.malicious.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.MaliciousBlockListHostnamesURL)).
+					Return(tc.malicious.content, 200, tc.malicious.clientErr).Times(1)
+				client.EXPECT().GetContent(string(constants.MaliciousBlockListIPsURL)).
+					Return(tc.malicious.content, 200, tc.malicious.clientErr).Times(1)
 			}
 			if tc.ads.blocked {
-				client.On("GetContent", string(constants.AdsBlockListHostnamesURL)).
-					Return(tc.ads.content, 200, tc.ads.clientErr).Once()
-				client.On("GetContent", string(constants.AdsBlockListIPsURL)).
-					Return(tc.ads.content, 200, tc.ads.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.AdsBlockListHostnamesURL)).
+					Return(tc.ads.content, 200, tc.ads.clientErr).Times(1)
+				client.EXPECT().GetContent(string(constants.AdsBlockListIPsURL)).
+					Return(tc.ads.content, 200, tc.ads.clientErr).Times(1)
 			}
 			if tc.surveillance.blocked {
-				client.On("GetContent", string(constants.SurveillanceBlockListHostnamesURL)).
-					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Once()
-				client.On("GetContent", string(constants.SurveillanceBlockListIPsURL)).
-					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.SurveillanceBlockListHostnamesURL)).
+					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Times(1)
+				client.EXPECT().GetContent(string(constants.SurveillanceBlockListIPsURL)).
+					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Times(1)
 			}
 			hostnamesLines, ipsLines, errs := buildBlocked(client, tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
 				tc.blockedHostnames, tc.blockedIPs, tc.allowedHostnames)
@@ -263,7 +268,6 @@ func Test_buildBlocked(t *testing.T) {
 			assert.ElementsMatch(t, tc.errsString, errsString)
 			assert.ElementsMatch(t, tc.hostnamesLines, hostnamesLines)
 			assert.ElementsMatch(t, tc.ipsLines, ipsLines)
-			client.AssertExpectations(t)
 		})
 	}
 }
@@ -286,10 +290,12 @@ func Test_getList(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			client := &mocks.Client{}
-			client.On("GetContent", "irrelevant_url").Return(
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			client := mock_network.NewMockClient(mockCtrl)
+			client.EXPECT().GetContent("irrelevant_url").Return(
 				tc.content, tc.status, tc.clientErr,
-			).Once()
+			).Times(1)
 			results, err := getList(client, "irrelevant_url")
 			if tc.err != nil {
 				require.Error(t, err)
@@ -298,7 +304,6 @@ func Test_getList(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tc.results, results)
-			client.AssertExpectations(t)
 		})
 	}
 }
@@ -391,18 +396,20 @@ func Test_buildBlockedHostnames(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			client := &mocks.Client{}
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			client := mock_network.NewMockClient(mockCtrl)
 			if tc.malicious.blocked {
-				client.On("GetContent", string(constants.MaliciousBlockListHostnamesURL)).
-					Return(tc.malicious.content, 200, tc.malicious.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.MaliciousBlockListHostnamesURL)).
+					Return(tc.malicious.content, 200, tc.malicious.clientErr).Times(1)
 			}
 			if tc.ads.blocked {
-				client.On("GetContent", string(constants.AdsBlockListHostnamesURL)).
-					Return(tc.ads.content, 200, tc.ads.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.AdsBlockListHostnamesURL)).
+					Return(tc.ads.content, 200, tc.ads.clientErr).Times(1)
 			}
 			if tc.surveillance.blocked {
-				client.On("GetContent", string(constants.SurveillanceBlockListHostnamesURL)).
-					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.SurveillanceBlockListHostnamesURL)).
+					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Times(1)
 			}
 			lines, errs := buildBlockedHostnames(client,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked, tc.blockedHostnames, tc.allowedHostnames)
@@ -412,7 +419,6 @@ func Test_buildBlockedHostnames(t *testing.T) {
 			}
 			assert.ElementsMatch(t, tc.errsString, errsString)
 			assert.ElementsMatch(t, tc.lines, lines)
-			client.AssertExpectations(t)
 		})
 	}
 }
@@ -506,18 +512,20 @@ func Test_buildBlockedIPs(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			client := &mocks.Client{}
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			client := mock_network.NewMockClient(mockCtrl)
 			if tc.malicious.blocked {
-				client.On("GetContent", string(constants.MaliciousBlockListIPsURL)).
-					Return(tc.malicious.content, 200, tc.malicious.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.MaliciousBlockListIPsURL)).
+					Return(tc.malicious.content, 200, tc.malicious.clientErr).Times(1)
 			}
 			if tc.ads.blocked {
-				client.On("GetContent", string(constants.AdsBlockListIPsURL)).
-					Return(tc.ads.content, 200, tc.ads.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.AdsBlockListIPsURL)).
+					Return(tc.ads.content, 200, tc.ads.clientErr).Times(1)
 			}
 			if tc.surveillance.blocked {
-				client.On("GetContent", string(constants.SurveillanceBlockListIPsURL)).
-					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Once()
+				client.EXPECT().GetContent(string(constants.SurveillanceBlockListIPsURL)).
+					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Times(1)
 			}
 			lines, errs := buildBlockedIPs(client,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked, tc.privateAddresses)
@@ -527,7 +535,6 @@ func Test_buildBlockedIPs(t *testing.T) {
 			}
 			assert.ElementsMatch(t, tc.errsString, errsString)
 			assert.ElementsMatch(t, tc.lines, lines)
-			client.AssertExpectations(t)
 		})
 	}
 }

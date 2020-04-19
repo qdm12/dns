@@ -45,7 +45,7 @@ func main() {
 	defer cancel()
 	streamMerger := command.NewStreamMerger(ctx)
 
-	e.PrintVersion("Unbound", dnsConf.Version)
+	e.PrintVersion(ctx, "Unbound", dnsConf.Version)
 	settings := models.Settings{}
 	settings.Providers, err = paramsReader.GetProviders()
 	e.FatalOnError(err)
@@ -93,9 +93,9 @@ func main() {
 	e.FatalOnError(err)
 	err = dnsConf.MakeUnboundConf(settings)
 	e.FatalOnError(err)
-	stream, err := dnsConf.Start(settings.VerbosityDetailsLevel)
+	stream, wait, err := dnsConf.Start(ctx, settings.VerbosityDetailsLevel)
 	e.FatalOnError(err)
-	go streamMerger.Merge("unbound", stream)
+	go streamMerger.Merge(stream, command.MergeName("unbound"))
 	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1})
 	e.FatalOnError(err)
 	if settings.CheckUnbound {
@@ -105,7 +105,10 @@ func main() {
 	}
 	signals.WaitForExit(func(signal string) int {
 		logger.Warn("Caught OS signal %s, shutting down", signal)
-		time.Sleep(100 * time.Millisecond) // wait for other processes to exit
+		cancel()
+		if err := wait(); err != nil {
+			logger.Warn(err)
+		}
 		return 0
 	})
 }

@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"testing"
 
-	filesMocks "github.com/qdm12/golibs/files/mocks"
-	loggingMocks "github.com/qdm12/golibs/logging/mocks"
-	networkMocks "github.com/qdm12/golibs/network/mocks"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
+	"github.com/qdm12/golibs/files/mock_files"
+	"github.com/qdm12/golibs/logging/mock_logging"
+	"github.com/qdm12/golibs/network/mock_network"
 )
 
 func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
@@ -49,19 +49,20 @@ func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			logger := &loggingMocks.Logger{}
-			logger.On("Info", "downloading root hints from %s", constants.NamedRootURL).Once()
-			client := &networkMocks.Client{}
-			client.On("GetContent", string(constants.NamedRootURL)).
-				Return(tc.content, tc.status, tc.clientErr).Once()
-			fileManager := &filesMocks.FileManager{}
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			logger := mock_logging.NewMockLogger(mockCtrl)
+			logger.EXPECT().Info("downloading root hints from %s", constants.NamedRootURL).Times(1)
+			client := mock_network.NewMockClient(mockCtrl)
+			client.EXPECT().GetContent(string(constants.NamedRootURL)).
+				Return(tc.content, tc.status, tc.clientErr).Times(1)
+			fileManager := mock_files.NewMockFileManager(mockCtrl)
 			if tc.clientErr == nil && tc.status == http.StatusOK {
-				fileManager.On(
-					"WriteToFile",
+				fileManager.EXPECT().WriteToFile(
 					string(constants.RootHints),
 					tc.content,
-					mock.AnythingOfType("files.WriteOptionSetter")).
-					Return(tc.writeErr).Once()
+					gomock.Any()).
+					Return(tc.writeErr).Times(1)
 			}
 			c := &configurator{logger: logger, client: client, fileManager: fileManager}
 			err := c.DownloadRootHints()
@@ -71,9 +72,6 @@ func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
 			} else {
 				assert.NoError(t, err)
 			}
-			logger.AssertExpectations(t)
-			client.AssertExpectations(t)
-			fileManager.AssertExpectations(t)
 		})
 	}
 }
@@ -112,19 +110,20 @@ func Test_DownloadRootKey(t *testing.T) { //nolint:dupl
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			logger := &loggingMocks.Logger{}
-			logger.On("Info", "downloading root key from %s", constants.RootKeyURL).Once()
-			client := &networkMocks.Client{}
-			client.On("GetContent", string(constants.RootKeyURL)).
-				Return(tc.content, tc.status, tc.clientErr).Once()
-			fileManager := &filesMocks.FileManager{}
+			mockCtrl := gomock.NewController(t)
+			defer mockCtrl.Finish()
+			logger := mock_logging.NewMockLogger(mockCtrl)
+			logger.EXPECT().Info("downloading root key from %s", constants.RootKeyURL).Times(1)
+			client := mock_network.NewMockClient(mockCtrl)
+			client.EXPECT().GetContent(string(constants.RootKeyURL)).
+				Return(tc.content, tc.status, tc.clientErr).Times(1)
+			fileManager := mock_files.NewMockFileManager(mockCtrl)
 			if tc.clientErr == nil && tc.status == http.StatusOK {
-				fileManager.On(
-					"WriteToFile",
+				fileManager.EXPECT().WriteToFile(
 					string(constants.RootKey),
 					tc.content,
-					mock.AnythingOfType("files.WriteOptionSetter"),
-				).Return(tc.writeErr).Once()
+					gomock.Any(),
+				).Return(tc.writeErr).Times(1)
 			}
 			c := &configurator{logger: logger, client: client, fileManager: fileManager}
 			err := c.DownloadRootKey()
@@ -134,9 +133,6 @@ func Test_DownloadRootKey(t *testing.T) { //nolint:dupl
 			} else {
 				assert.NoError(t, err)
 			}
-			logger.AssertExpectations(t)
-			client.AssertExpectations(t)
-			fileManager.AssertExpectations(t)
 		})
 	}
 }

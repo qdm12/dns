@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"context"
 	"io"
 	"net"
 
@@ -16,9 +17,9 @@ type Configurator interface {
 	DownloadRootKey() error
 	MakeUnboundConf(settings models.Settings) (err error)
 	UseDNSInternally(IP net.IP)
-	Start(logLevel uint8) (stdout io.ReadCloser, err error)
+	Start(ctx context.Context, logLevel uint8) (stdout io.ReadCloser, wait func() error, err error)
 	WaitForUnbound() (err error)
-	Version() (version string, err error)
+	Version(ctx context.Context) (version string, err error)
 }
 
 type configurator struct {
