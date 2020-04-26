@@ -82,7 +82,7 @@ func main() {
 	logger.Info("Settings summary:\n" + settings.String())
 
 	go func() {
-		err = streamMerger.CollectLines(func(line string) { logger.Info(line) })
+		err := streamMerger.CollectLines(func(line string) { logger.Info(line) })
 		e.FatalOnError(err)
 	}()
 

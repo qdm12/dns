@@ -55,6 +55,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/qdm12/golibs v0.0.0-20200419174016-f1c612728dfa h1:7kFbnjnVF87U1gF3LdTYi3b63oIaUWJXv8pZvRdJoNA=
 github.com/qdm12/golibs v0.0.0-20200419174016-f1c612728dfa/go.mod h1:pikkTN7g7zRuuAnERwqW1yAFq6pYmxrxpjiwGvb0Ysc=
+github.com/qdm12/golibs v0.0.0-20200426003505-3fe2c5f6dad6 h1:dOTBitT+RaouZ27ykdfYcrVOuY6oELkHrfvugAMSoKE=
+github.com/qdm12/golibs v0.0.0-20200426003505-3fe2c5f6dad6/go.mod h1:pikkTN7g7zRuuAnERwqW1yAFq6pYmxrxpjiwGvb0Ysc=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
