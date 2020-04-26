@@ -49,7 +49,8 @@ func main() {
 	settings := models.Settings{}
 	settings.Providers, err = paramsReader.GetProviders()
 	e.FatalOnError(err)
-	settings.PrivateAddresses = paramsReader.GetPrivateAddresses()
+	settings.PrivateAddresses, err = paramsReader.GetPrivateAddresses()
+	e.FatalOnError(err)
 	settings.ListeningPort, err = paramsReader.GetListeningPort()
 	e.FatalOnError(err)
 	settings.Caching, err = paramsReader.GetCaching()

@@ -11,7 +11,7 @@ import (
 type Reader interface {
 	// DNS getters
 	GetProviders() (providers []models.Provider, err error)
-	GetPrivateAddresses() (privateAddresses []string)
+	GetPrivateAddresses() (privateAddresses []string, err error)
 
 	// Unbound getters
 	GetListeningPort() (listeningPort uint16, err error)

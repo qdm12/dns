@@ -79,17 +79,16 @@ func (r *reader) GetBlockedIPs() (ips []string, err error) {
 	s, err := r.envParams.GetEnv("BLOCK_IPS")
 	if err != nil {
 		return nil, err
-	}
-	if len(s) == 0 {
+	} else if len(s) == 0 {
 		return nil, nil
 	}
-	words := strings.Split(s, ",")
-	for _, ip := range words {
-		_, _, err = net.ParseCIDR(ip)
-		if err != nil && net.ParseIP(ip) == nil {
-			return nil, fmt.Errorf("Blocked IP address %q is not a valid IP address or CIDR range", ip)
+	ips = strings.Split(s, ",")
+	for _, address := range ips {
+		ip := net.ParseIP(address)
+		_, _, err = net.ParseCIDR(address)
+		if ip == nil && err != nil {
+			return nil, fmt.Errorf("blocked address %q is not a valid IP or CIDR range", address)
 		}
-		ips = append(ips, ip)
 	}
 	return ips, nil
 }

@@ -2,6 +2,7 @@ package params
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
@@ -37,10 +38,20 @@ func (r *reader) GetProviders() (providers []models.Provider, err error) {
 
 // GetPrivateAddresses obtains if Unbound caching should be enable or not
 // from the environment variable PRIVATE_ADDRESS
-func (r *reader) GetPrivateAddresses() (privateAddresses []string) {
-	s, _ := r.envParams.GetEnv("PRIVATE_ADDRESS")
-	if len(s) != 0 {
-		privateAddresses = append(privateAddresses, strings.Split(s, ",")...)
+func (r *reader) GetPrivateAddresses() (privateAddresses []string, err error) {
+	s, err := r.envParams.GetEnv("PRIVATE_ADDRESS")
+	if err != nil {
+		return nil, err
+	} else if len(s) == 0 {
+		return nil, nil
 	}
-	return privateAddresses
+	privateAddresses = strings.Split(s, ",")
+	for _, address := range privateAddresses {
+		ip := net.ParseIP(address)
+		_, _, err := net.ParseCIDR(address)
+		if ip == nil && err != nil {
+			return nil, fmt.Errorf("private address %q is not a valid IP or CIDR range", address)
+		}
+	}
+	return privateAddresses, nil
 }
