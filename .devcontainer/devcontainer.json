@@ -1,8 +1,12 @@
 {
     "name": "dns-dev",
-    "dockerComposeFile": ["docker-compose.yml"],
+    "dockerComposeFile": [
+        "docker-compose.yml"
+    ],
     "service": "vscode",
-    "runServices": ["vscode"],
+    "runServices": [
+        "vscode"
+    ],
     "shutdownAction": "stopCompose",
     "postCreateCommand": "chmod -R 700 .git && go mod download",
     "workspaceFolder": "/workspace",
@@ -56,7 +60,9 @@
             "GOFLAGS": "-tags=integration"
         },
         "go.testEnvVars": {},
-        "go.testFlags": ["-v", "-race"],
+        "go.testFlags": [
+            "-v"
+        ],
         "go.testTimeout": "600s"
     }
 }
