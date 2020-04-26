@@ -39,6 +39,8 @@ func (r *reader) GetProviders() (providers []models.Provider, err error) {
 // from the environment variable PRIVATE_ADDRESS
 func (r *reader) GetPrivateAddresses() (privateAddresses []string) {
 	s, _ := r.envParams.GetEnv("PRIVATE_ADDRESS")
-	privateAddresses = append(privateAddresses, strings.Split(s, ",")...)
+	if len(s) != 0 {
+		privateAddresses = append(privateAddresses, strings.Split(s, ",")...)
+	}
 	return privateAddresses
 }
