@@ -2,8 +2,7 @@ version: "3.7"
 
 services:
   vscode:
-    image: qmcgaw/godevcontainer:alpine
-    #image: qmcgaw/godevcontainer:debian
+    image: qmcgaw/godevcontainer
     volumes:
       - ../:/workspace
       - ~/.ssh:/home/vscode/.ssh:ro
