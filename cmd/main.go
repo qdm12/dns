@@ -11,8 +11,8 @@ import (
 	"github.com/qdm12/cloudflare-dns-server/internal/dns"
 	"github.com/qdm12/cloudflare-dns-server/internal/env"
 	"github.com/qdm12/cloudflare-dns-server/internal/healthcheck"
-	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/cloudflare-dns-server/internal/params"
+	"github.com/qdm12/cloudflare-dns-server/internal/settings"
 	"github.com/qdm12/cloudflare-dns-server/internal/splash"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/files"
@@ -46,38 +46,7 @@ func main() {
 	streamMerger := command.NewStreamMerger()
 
 	e.PrintVersion(ctx, "Unbound", dnsConf.Version)
-	settings := models.Settings{}
-	settings.Providers, err = paramsReader.GetProviders()
-	e.FatalOnError(err)
-	settings.PrivateAddresses, err = paramsReader.GetPrivateAddresses()
-	e.FatalOnError(err)
-	settings.ListeningPort, err = paramsReader.GetListeningPort()
-	e.FatalOnError(err)
-	settings.Caching, err = paramsReader.GetCaching()
-	e.FatalOnError(err)
-	settings.VerbosityLevel, err = paramsReader.GetVerbosity()
-	e.FatalOnError(err)
-	settings.VerbosityDetailsLevel, err = paramsReader.GetVerbosityDetails()
-	e.FatalOnError(err)
-	settings.ValidationLogLevel, err = paramsReader.GetValidationLogLevel()
-	e.FatalOnError(err)
-	settings.BlockMalicious, err = paramsReader.GetMaliciousBlocking()
-	e.FatalOnError(err)
-	settings.BlockSurveillance, err = paramsReader.GetSurveillanceBlocking()
-	e.FatalOnError(err)
-	settings.BlockAds, err = paramsReader.GetAdsBlocking()
-	e.FatalOnError(err)
-	settings.BlockedHostnames, err = paramsReader.GetBlockedHostnames()
-	e.FatalOnError(err)
-	settings.BlockedIPs, err = paramsReader.GetBlockedIPs()
-	e.FatalOnError(err)
-	settings.AllowedHostnames, err = paramsReader.GetUnblockedHostnames()
-	e.FatalOnError(err)
-	settings.CheckUnbound, err = paramsReader.GetCheckUnbound()
-	e.FatalOnError(err)
-	settings.IPv4, err = paramsReader.GetIPv4()
-	e.FatalOnError(err)
-	settings.IPv6, err = paramsReader.GetIPv6()
+	settings, err := settings.GetSettings(paramsReader)
 	e.FatalOnError(err)
 	logger.Info("Settings summary:\n" + settings.String())
 

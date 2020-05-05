@@ -14,23 +14,23 @@ type ProviderData struct {
 }
 
 // Settings represents all the user settings for Unbound
-type Settings struct {
+type Settings struct { //nolint:memalign
 	Providers             []Provider
-	PrivateAddresses      []string
-	BlockedHostnames      []string
-	BlockedIPs            []string
-	AllowedHostnames      []string
 	ListeningPort         uint16
+	Caching               bool
+	IPv4                  bool
+	IPv6                  bool
 	VerbosityLevel        uint8
 	VerbosityDetailsLevel uint8
 	ValidationLogLevel    uint8
-	Caching               bool
 	BlockMalicious        bool
 	BlockSurveillance     bool
 	BlockAds              bool
+	BlockedHostnames      []string
+	BlockedIPs            []string
+	AllowedHostnames      []string
+	PrivateAddresses      []string
 	CheckUnbound          bool
-	IPv4                  bool
-	IPv6                  bool
 }
 
 func (s *Settings) String() string {
