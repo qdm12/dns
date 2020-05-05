@@ -56,10 +56,11 @@ func Test_Version(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			commander := mock_command.NewMockCommander(mockCtrl)
-			commander.EXPECT().Run(context.Background(), "/unbound/unbound", "-V").
+			ctx := context.Background()
+			commander.EXPECT().Run(ctx, "/unbound/unbound", "-V").
 				Return(tc.runOutput, tc.runErr).Times(1)
 			c := &configurator{commander: commander}
-			version, err := c.Version(context.Background())
+			version, err := c.Version(ctx)
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())

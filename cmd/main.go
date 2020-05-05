@@ -23,10 +23,6 @@ import (
 )
 
 func main() {
-	logger, err := logging.NewLogger(logging.ConsoleEncoding, logging.InfoLevel, -1)
-	if err != nil {
-		panic(err)
-	}
 	if libhealthcheck.Mode(os.Args) {
 		if err := healthcheck.Healthcheck(); err != nil {
 			fmt.Println(err)
@@ -34,15 +30,26 @@ func main() {
 		}
 		os.Exit(0)
 	}
+
+	logger, err := logging.NewLogger(logging.ConsoleEncoding, logging.InfoLevel, -1)
+	if err != nil {
+		panic(err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	paramsReader := params.NewParamsReader(logger)
-	fmt.Println(splash.Splash(paramsReader))
+
+	fmt.Println(splash.Splash(
+		paramsReader.GetVersion(),
+		paramsReader.GetVcsRef(),
+		paramsReader.GetBuildDate()))
+
 	client := network.NewClient(15 * time.Second)
 	// Create configurators
 	fileManager := files.NewFileManager()
 	dnsConf := dns.NewConfigurator(logger, client, fileManager)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	streamMerger := command.NewStreamMerger()
 
 	version, err := dnsConf.Version(ctx)
 	if err != nil {
@@ -50,6 +57,7 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("Unbound version: %s", version)
+
 	settings, err := settings.GetSettings(paramsReader)
 	if err != nil {
 		logger.Error(err)
@@ -57,24 +65,22 @@ func main() {
 	}
 	logger.Info("Settings summary:\n" + settings.String())
 
+	streamMerger := command.NewStreamMerger()
 	go streamMerger.CollectLines(ctx,
 		func(line string) { logger.Info(line) },
 		func(err error) { logger.Error(err) })
 
 	initialDNSToUse := constants.ProviderMapping()[settings.Providers[0]]
 	dnsConf.UseDNSInternally(initialDNSToUse.IPs[0])
-	err = dnsConf.DownloadRootHints()
-	if err != nil {
+	if err := dnsConf.DownloadRootHints(); err != nil {
 		logger.Error(err)
 		os.Exit(1)
 	}
-	err = dnsConf.DownloadRootKey()
-	if err != nil {
+	if err := dnsConf.DownloadRootKey(); err != nil {
 		logger.Error(err)
 		os.Exit(1)
 	}
-	err = dnsConf.MakeUnboundConf(settings)
-	if err != nil {
+	if err := dnsConf.MakeUnboundConf(settings); err != nil {
 		logger.Error(err)
 		os.Exit(1)
 	}
@@ -85,13 +91,9 @@ func main() {
 	}
 	go streamMerger.Merge(ctx, stream, command.MergeName("unbound"))
 	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1})
-	if err != nil {
-		logger.Error(err)
-		os.Exit(1)
-	}
 	if settings.CheckUnbound {
 		if err := dnsConf.WaitForUnbound(); err != nil {
-			logger.Warn(err)
+			logger.Error(err)
 		}
 	}
 
