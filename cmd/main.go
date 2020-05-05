@@ -9,7 +9,6 @@ import (
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/dns"
-	"github.com/qdm12/cloudflare-dns-server/internal/env"
 	"github.com/qdm12/cloudflare-dns-server/internal/healthcheck"
 	"github.com/qdm12/cloudflare-dns-server/internal/params"
 	"github.com/qdm12/cloudflare-dns-server/internal/settings"
@@ -36,7 +35,6 @@ func main() {
 	}
 	paramsReader := params.NewParamsReader(logger)
 	fmt.Println(splash.Splash(paramsReader))
-	e := env.New(logger)
 	client := network.NewClient(15 * time.Second)
 	// Create configurators
 	fileManager := files.NewFileManager()
@@ -45,9 +43,17 @@ func main() {
 	defer cancel()
 	streamMerger := command.NewStreamMerger()
 
-	e.PrintVersion(ctx, "Unbound", dnsConf.Version)
+	version, err := dnsConf.Version(ctx)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
+	logger.Info("Unbound version: %s", version)
 	settings, err := settings.GetSettings(paramsReader)
-	e.FatalOnError(err)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
 	logger.Info("Settings summary:\n" + settings.String())
 
 	go streamMerger.CollectLines(ctx,
@@ -57,16 +63,31 @@ func main() {
 	initialDNSToUse := constants.ProviderMapping()[settings.Providers[0]]
 	dnsConf.UseDNSInternally(initialDNSToUse.IPs[0])
 	err = dnsConf.DownloadRootHints()
-	e.FatalOnError(err)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
 	err = dnsConf.DownloadRootKey()
-	e.FatalOnError(err)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
 	err = dnsConf.MakeUnboundConf(settings)
-	e.FatalOnError(err)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
 	stream, wait, err := dnsConf.Start(ctx, settings.VerbosityDetailsLevel)
-	e.FatalOnError(err)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
 	go streamMerger.Merge(ctx, stream, command.MergeName("unbound"))
 	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1})
-	e.FatalOnError(err)
+	if err != nil {
+		logger.Error(err)
+		os.Exit(1)
+	}
 	if settings.CheckUnbound {
 		if err := dnsConf.WaitForUnbound(); err != nil {
 			logger.Warn(err)
