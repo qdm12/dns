@@ -14,7 +14,7 @@ type ProviderData struct {
 }
 
 // Settings represents all the user settings for Unbound
-type Settings struct { //nolint:memalign
+type Settings struct { //nolint:maligned
 	Providers             []Provider
 	ListeningPort         uint16
 	Caching               bool
