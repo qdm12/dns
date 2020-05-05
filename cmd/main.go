@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
@@ -18,7 +20,6 @@ import (
 	libhealthcheck "github.com/qdm12/golibs/healthcheck"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/network"
-	"github.com/qdm12/golibs/signals"
 )
 
 func main() {
@@ -93,12 +94,21 @@ func main() {
 			logger.Warn(err)
 		}
 	}
-	signals.WaitForExit(func(signal string) int {
+
+	signalsCh := make(chan os.Signal, 1)
+	signal.Notify(signalsCh,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		os.Interrupt,
+	)
+	select {
+	case signal := <-signalsCh:
 		logger.Warn("Caught OS signal %s, shutting down", signal)
 		cancel()
-		if err := wait(); err != nil {
-			logger.Warn(err)
-		}
-		return 0
-	})
+	case <-ctx.Done():
+		logger.Warn("context canceled, shutting down")
+	}
+	if err := wait(); err != nil {
+		logger.Error(err)
+	}
 }
