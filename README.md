@@ -92,7 +92,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | `PRIVATE_ADDRESS` | All IPv4 and IPv6 CIDRs private ranges | Comma separated list of CIDRs or single IP addresses. Note that the default setting prevents DNS rebinding |
 | `CHECK_UNBOUND` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `IPV4` | `on` | `on` or `off`. Uses DNS resolution for IPV4 |
-| `IPV6` | `on` | `on` or `off`. Uses DNS resolution for IPV6 |
+| `IPV6` | `off` | `on` or `off`. Uses DNS resolution for IPV6. **Do not enable if you don't have IPV6** |
 
 ## Extra configuration
 

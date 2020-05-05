@@ -58,5 +58,5 @@ func (r *reader) GetIPv4() (doIPv4 bool, err error) {
 }
 
 func (r *reader) GetIPv6() (doIPv6 bool, err error) {
-	return r.envParams.GetOnOff("IPV6", libparams.Default("on"))
+	return r.envParams.GetOnOff("IPV6", libparams.Default("off"))
 }

@@ -43,7 +43,7 @@ ENV \
     VALIDATION_LOGLEVEL=0 \
     CACHING=on \
     IPV4=on \
-    IPV6=on \
+    IPV6=off \
     BLOCK_MALICIOUS=on \
     BLOCK_SURVEILLANCE=off \
     BLOCK_ADS=off \
