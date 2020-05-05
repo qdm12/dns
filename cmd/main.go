@@ -43,7 +43,7 @@ func main() {
 	dnsConf := dns.NewConfigurator(logger, client, fileManager)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	streamMerger := command.NewStreamMerger(ctx)
+	streamMerger := command.NewStreamMerger()
 
 	e.PrintVersion(ctx, "Unbound", dnsConf.Version)
 	settings := models.Settings{}
@@ -81,10 +81,9 @@ func main() {
 	e.FatalOnError(err)
 	logger.Info("Settings summary:\n" + settings.String())
 
-	go func() {
-		err := streamMerger.CollectLines(func(line string) { logger.Info(line) })
-		e.FatalOnError(err)
-	}()
+	go streamMerger.CollectLines(ctx,
+		func(line string) { logger.Info(line) },
+		func(err error) { logger.Error(err) })
 
 	initialDNSToUse := constants.ProviderMapping()[settings.Providers[0]]
 	dnsConf.UseDNSInternally(initialDNSToUse.IPs[0])
@@ -96,7 +95,7 @@ func main() {
 	e.FatalOnError(err)
 	stream, wait, err := dnsConf.Start(ctx, settings.VerbosityDetailsLevel)
 	e.FatalOnError(err)
-	go streamMerger.Merge(stream, command.MergeName("unbound"))
+	go streamMerger.Merge(ctx, stream, command.MergeName("unbound"))
 	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1})
 	e.FatalOnError(err)
 	if settings.CheckUnbound {
