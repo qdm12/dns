@@ -110,7 +110,10 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 	settings models.Settings, waiter command.Waiter, streamMerger command.StreamMerger,
 	fatal func(),
 ) {
-	timer := time.NewTimer(settings.UpdatePeriod)
+	var timer *time.Timer
+	if settings.UpdatePeriod > 0 {
+		timer = time.NewTimer(settings.UpdatePeriod)
+	}
 	unboundCtx, unboundCancel := context.WithCancel(ctx)
 	defer unboundCancel()
 	for ctx.Err() == nil {
@@ -120,7 +123,7 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 		switch {
 		case ctx.Err() != nil:
 			logger.Warn("context canceled: exiting unbound run loop")
-		case !timer.Stop():
+		case timer != nil && !timer.Stop():
 			logger.Info("planned restart of unbound")
 		case setupErr != nil:
 			logger.Warn(setupErr)
@@ -136,8 +139,10 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 
 func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc, timer *time.Timer, dnsConf dns.Configurator, settings models.Settings,
 	streamMerger command.StreamMerger, waiter command.Waiter) (newCtx context.Context, newCancel context.CancelFunc, setupErr, startErr, waitErr error) {
-	timer.Stop()
-	timer.Reset(settings.UpdatePeriod)
+	if timer != nil {
+		timer.Stop()
+		timer.Reset(settings.UpdatePeriod)
+	}
 	if err := dnsConf.DownloadRootHints(); err != nil {
 		return oldCtx, oldCancel, err, nil, nil
 	}
@@ -170,6 +175,10 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc, timer
 		waitError <- err
 		waiterError <- err
 	}()
+	if timer == nil {
+		waitErr := <-waitError
+		return newCtx, newCancel, nil, nil, waitErr
+	}
 	select {
 	case <-timer.C:
 		return newCtx, newCancel, nil, nil, nil
