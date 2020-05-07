@@ -36,7 +36,7 @@
 - Block custom hostnames and IP addresses using environment variables
 - **One line setup**
 - Runs without root
-- Small 39.4MB Docker image (uncompressed, amd64)
+- Small 41.3MB Docker image (uncompressed, amd64)
 
     <details><summary>Click to show base components</summary><p>
 
@@ -48,6 +48,7 @@
     </p></details>
 
 - Resolves using IPv4 and IPv6 when available
+- Auto updates block lists and cryptographic files very 24h and restarts Unbound (< 1 second downtime)
 - Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
 - DNS rebinding protection
 - DNSSEC Validation
@@ -93,6 +94,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | `CHECK_UNBOUND` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `IPV4` | `on` | `on` or `off`. Uses DNS resolution for IPV4 |
 | `IPV6` | `off` | `on` or `off`. Uses DNS resolution for IPV6. **Do not enable if you don't have IPV6** |
+| `UPDATE_PERIOD` | `24h` | Period to update block lists and restart Unbound. Set to `0` to disable. |
 
 ## Extra configuration
 

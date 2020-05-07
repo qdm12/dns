@@ -1,6 +1,8 @@
 package params
 
 import (
+	"time"
+
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/golibs/logging"
 	libparams "github.com/qdm12/golibs/params"
@@ -30,6 +32,9 @@ type Reader interface {
 	GetUnblockedHostnames() (hostnames []string, err error)
 	GetBlockedHostnames() (hostnames []string, err error)
 	GetBlockedIPs() (IPs []string, err error)
+
+	// Update getters
+	GetUpdatePeriod() (period time.Duration, err error)
 
 	// Version getters
 	GetVersion() string

@@ -70,5 +70,9 @@ func GetSettings(reader params.Reader) (settings models.Settings, err error) {
 	if err != nil {
 		return settings, err
 	}
+	settings.UpdatePeriod, err = reader.GetUpdatePeriod()
+	if err != nil {
+		return settings, err
+	}
 	return settings, nil
 }

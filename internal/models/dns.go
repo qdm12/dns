@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 // ProviderData contains information for a DNS provider
@@ -31,6 +32,7 @@ type Settings struct { //nolint:maligned
 	AllowedHostnames      []string
 	PrivateAddresses      []string
 	CheckUnbound          bool
+	UpdatePeriod          time.Duration
 }
 
 func (s *Settings) String() string {
@@ -38,7 +40,7 @@ func (s *Settings) String() string {
 		disabled = "disabled"
 		enabled  = "enabled"
 	)
-	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound, ipv4, ipv6 := disabled, disabled, disabled, disabled, disabled, disabled, disabled
+	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound, ipv4, ipv6, update := disabled, disabled, disabled, disabled, disabled, disabled, disabled, disabled
 	if s.Caching {
 		caching = enabled
 	}
@@ -59,6 +61,9 @@ func (s *Settings) String() string {
 	}
 	if s.IPv6 {
 		ipv6 = enabled
+	}
+	if s.UpdatePeriod > 0 {
+		update = fmt.Sprintf("every %s", s.UpdatePeriod)
 	}
 	providersStr := make([]string, len(s.Providers))
 	for i := range s.Providers {
@@ -97,6 +102,7 @@ func (s *Settings) String() string {
 		allowedHostnames,
 		privateAddresses,
 		"Check Unbound: " + checkUnbound,
+		"Update: " + update,
 	}
 	return strings.Join(settingsList, "\n")
 }

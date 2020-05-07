@@ -13,6 +13,7 @@ services:
       - BLOCK_HOSTNAMES=
       - UNBLOCK=
       - PROVIDER=cloudflare,quad9
+      - UPDATE_PERIOD=24h
     ports:
       - 53:53/udp
     network_mode: bridge
