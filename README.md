@@ -36,7 +36,7 @@
 - Block custom hostnames and IP addresses using environment variables
 - **One line setup**
 - Runs without root
-- Small 41.3MB Docker image (uncompressed, amd64)
+- Small 41.1MB Docker image (uncompressed, amd64)
 
     <details><summary>Click to show base components</summary><p>
 
