@@ -59,9 +59,10 @@ ENV \
 ENTRYPOINT /entrypoint
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD /entrypoint healthcheck
 WORKDIR /unbound
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
+RUN apk --update --no-cache add libcap ca-certificates && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories && \
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
-    apk --update --progress -q add ca-certificates unbound libcap && \
+    apk --update --no-cache add unbound && \
     mv /usr/sbin/unbound . && \
     mv /etc/ssl/certs/ca-certificates.crt . && \
     touch include.conf && \
