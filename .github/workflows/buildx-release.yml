@@ -2,19 +2,15 @@ name: Buildx release
 on:
   release:
     types: [published]
-    paths-ignore:
-      - .github/workflows/buildx-latest.yml
-      - .github/workflows/dockerhub-description.yml
-      - .github/workflows/greetings.yml
-      - .github/workflows/labels.yml
-      - .github/workflows/misspell.yml
-      - .github/workflows/security.yml
+    paths:
+      - .github/workflows/buildx-release.yml
+      - cmd/**
+      - internal/**
       - .dockerignore
-      - .gitignore
-      - docker-compose.yml
-      - LICENSE
-      - README.md
-      - title.svg
+      - .golangci.yml
+      - Dockerfile
+      - go.mod
+      - go.sum
 jobs:
   buildx:
     runs-on: ubuntu-latest

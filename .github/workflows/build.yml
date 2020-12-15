@@ -2,6 +2,15 @@ name: Docker build
 on:
   pull_request:
     branches: [master]
+    paths:
+      - .github/workflows/build.yml
+      - cmd/**
+      - internal/**
+      - .dockerignore
+      - .golangci.yml
+      - Dockerfile
+      - go.mod
+      - go.sum
 jobs:
   build:
     runs-on: ubuntu-latest
