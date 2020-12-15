@@ -287,7 +287,7 @@ func Test_getList(t *testing.T) {
 		err       error
 	}{
 		"no result":     {nil, 200, nil, nil, nil},
-		"bad status":    {nil, 500, nil, nil, fmt.Errorf("HTTP status code is 500 and not 200")},
+		"bad status":    {nil, 500, nil, nil, fmt.Errorf("Internal Server Error")},
 		"network error": {nil, 200, fmt.Errorf("error"), nil, fmt.Errorf("error")},
 		"results":       {[]byte("a\nb\nc\n"), 200, nil, []string{"a", "b", "c"}, nil},
 	}
