@@ -6,7 +6,8 @@ import (
 	"net"
 )
 
-// IsHealthy checks the localhost DNS UDP server is working by resolving github.com
+// IsHealthy checks the localhost DNS UDP server is working by
+// resolving github.com.
 func IsHealthy() (err error) {
 	net.DefaultResolver = &net.Resolver{
 		PreferGo: true,

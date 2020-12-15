@@ -7,24 +7,25 @@ import (
 )
 
 const (
-	// Cloudflare is a DNS over TLS provider
+	// Cloudflare is a DNS over TLS provider.
 	Cloudflare models.Provider = "cloudflare"
-	// Google is a DNS over TLS provider
+	// Google is a DNS over TLS provider.
 	Google models.Provider = "google"
-	// Quad9 is a DNS over TLS provider
+	// Quad9 is a DNS over TLS provider.
 	Quad9 models.Provider = "quad9"
-	// Quadrant is a DNS over TLS provider
+	// Quadrant is a DNS over TLS provider.
 	Quadrant models.Provider = "quadrant"
-	// CleanBrowsing is a DNS over TLS provider
+	// CleanBrowsing is a DNS over TLS provider.
 	CleanBrowsing models.Provider = "cleanbrowsing"
-	// SecureDNS is a DNS over TLS provider
+	// SecureDNS is a DNS over TLS provider.
 	SecureDNS models.Provider = "securedns"
-	// LibreDNS is a DNS over TLS provider
+	// LibreDNS is a DNS over TLS provider.
 	LibreDNS models.Provider = "libredns"
-	// CIRA is a DNS over TLS provider
+	// CIRA is a DNS over TLS provider.
 	CIRA models.Provider = "cira"
 )
 
+//nolint:lll
 // ProviderMapping returns a constant mapping of dns provider name
 // to their data such as IP addresses or TLS host name.
 func ProviderMapping() map[models.Provider]models.ProviderData {
@@ -70,7 +71,8 @@ func ProviderMapping() map[models.Provider]models.ProviderData {
 	}
 }
 
-// Block lists URLs
+//nolint:lll
+// Block lists URLs.
 const (
 	AdsBlockListHostnamesURL          models.URL = "https://raw.githubusercontent.com/qdm12/files/master/ads-hostnames.updated"
 	AdsBlockListIPsURL                models.URL = "https://raw.githubusercontent.com/qdm12/files/master/ads-ips.updated"
@@ -80,8 +82,8 @@ const (
 	SurveillanceBlockListIPsURL       models.URL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-ips.updated"
 )
 
-// DNS certificates to fetch
-// TODO obtain from source directly, see qdm12/updated)
+// DNS certificates to fetch.
+// TODO obtain from source directly, see qdm12/updated).
 const (
 	NamedRootURL models.URL = "https://raw.githubusercontent.com/qdm12/files/master/named.root.updated"
 	RootKeyURL   models.URL = "https://raw.githubusercontent.com/qdm12/files/master/root.key.updated"

@@ -7,16 +7,15 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/golibs/files/mock_files"
 	"github.com/qdm12/golibs/logging/mock_logging"
 	"github.com/qdm12/golibs/network/mock_network"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
+func Test_DownloadRootHints(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
 		content   []byte
@@ -30,7 +29,7 @@ func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
 		},
 		"bad status": {
 			status: http.StatusBadRequest,
-			err:    fmt.Errorf("HTTP status code is 400 for https://raw.githubusercontent.com/qdm12/files/master/named.root.updated"),
+			err:    fmt.Errorf("HTTP status code is 400 for https://raw.githubusercontent.com/qdm12/files/master/named.root.updated"), //nolint:lll
 		},
 		"client error": {
 			clientErr: fmt.Errorf("error"),
@@ -78,7 +77,7 @@ func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
 	}
 }
 
-func Test_DownloadRootKey(t *testing.T) { //nolint:dupl
+func Test_DownloadRootKey(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
 		content   []byte
@@ -92,7 +91,7 @@ func Test_DownloadRootKey(t *testing.T) { //nolint:dupl
 		},
 		"bad status": {
 			status: http.StatusBadRequest,
-			err:    fmt.Errorf("HTTP status code is 400 for https://raw.githubusercontent.com/qdm12/files/master/root.key.updated"),
+			err:    fmt.Errorf("HTTP status code is 400 for https://raw.githubusercontent.com/qdm12/files/master/root.key.updated"), //nolint:lll
 		},
 		"client error": {
 			clientErr: fmt.Errorf("error"),

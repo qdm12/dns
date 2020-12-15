@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-// ProviderData contains information for a DNS provider
+// ProviderData contains information for a DNS provider.
 type ProviderData struct {
 	IPs          []net.IP
 	Host         Host
 	SupportsIPv6 bool
 }
 
-// Settings represents all the user settings for Unbound
+// Settings represents all the user settings for Unbound.
 type Settings struct { //nolint:maligned
 	Providers             []Provider
 	ListeningPort         uint16
@@ -40,7 +40,10 @@ func (s *Settings) String() string {
 		disabled = "disabled"
 		enabled  = "enabled"
 	)
-	caching, blockMalicious, blockSurveillance, blockAds, checkUnbound, ipv4, ipv6, update := disabled, disabled, disabled, disabled, disabled, disabled, disabled, disabled
+	caching, blockMalicious, blockSurveillance, blockAds,
+		checkUnbound, ipv4, ipv6, update :=
+		disabled, disabled, disabled, disabled,
+		disabled, disabled, disabled, disabled
 	if s.Caching {
 		caching = enabled
 	}

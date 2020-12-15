@@ -9,7 +9,7 @@ import (
 	"github.com/qdm12/golibs/verification"
 )
 
-// Reader contains methods to obtain parameters
+// Reader contains methods to obtain parameters.
 type Reader interface {
 	// DNS getters
 	GetProviders() (providers []models.Provider, err error)
@@ -49,7 +49,7 @@ type reader struct {
 }
 
 // NewParamsReader returns a paramsReadeer object to read parameters from
-// environment variables
+// environment variables.
 func NewParamsReader(logger logging.Logger) Reader {
 	return &reader{
 		envParams: libparams.NewEnvParams(),

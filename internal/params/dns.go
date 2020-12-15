@@ -11,7 +11,7 @@ import (
 )
 
 // GetProviders obtains the DNS over TLS providers to use
-// from the environment variable PROVIDERS and PROVIDER for retro-compatibility
+// from the environment variable PROVIDERS and PROVIDER for retro-compatibility.
 func (r *reader) GetProviders() (providers []models.Provider, err error) {
 	// Retro-compatibility
 	s, err := r.envParams.GetEnv("PROVIDER")
@@ -37,7 +37,7 @@ func (r *reader) GetProviders() (providers []models.Provider, err error) {
 }
 
 // GetPrivateAddresses obtains if Unbound caching should be enable or not
-// from the environment variable PRIVATE_ADDRESS
+// from the environment variable PRIVATE_ADDRESS.
 func (r *reader) GetPrivateAddresses() (privateAddresses []string, err error) {
 	s, err := r.envParams.GetEnv("PRIVATE_ADDRESS")
 	if err != nil {

@@ -56,7 +56,8 @@ func _main(ctx context.Context) int {
 		paramsReader.GetVcsRef(),
 		paramsReader.GetBuildDate()))
 
-	client := network.NewClient(15 * time.Second)
+	const clientTimeout = 15 * time.Second
+	client := network.NewClient(clientTimeout)
 	// Create configurators
 	fileManager := files.NewFileManager()
 	dnsConf := dns.NewConfigurator(logger, client, fileManager)
@@ -157,8 +158,11 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 	}
 }
 
-func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc, timer *time.Timer, dnsConf dns.Configurator, settings models.Settings,
-	streamMerger command.StreamMerger, waiter command.Waiter) (newCtx context.Context, newCancel context.CancelFunc, setupErr, startErr, waitErr error) {
+func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
+	timer *time.Timer, dnsConf dns.Configurator, settings models.Settings,
+	streamMerger command.StreamMerger, waiter command.Waiter) (
+	newCtx context.Context, newCancel context.CancelFunc, setupErr,
+	startErr, waitErr error) {
 	if timer != nil {
 		timer.Stop()
 		timer.Reset(settings.UpdatePeriod)

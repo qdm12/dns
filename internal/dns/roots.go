@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/golibs/files"
@@ -17,10 +18,11 @@ func (c *configurator) DownloadRootHints(ctx context.Context) error {
 	} else if status != http.StatusOK {
 		return fmt.Errorf("HTTP status code is %d for %s", status, constants.NamedRootURL)
 	}
+	const userWritePerm os.FileMode = 0600
 	return c.fileManager.WriteToFile(
 		string(constants.RootHints),
 		content,
-		files.Permissions(0600))
+		files.Permissions(userWritePerm))
 }
 
 func (c *configurator) DownloadRootKey(ctx context.Context) error {
@@ -31,8 +33,9 @@ func (c *configurator) DownloadRootKey(ctx context.Context) error {
 	} else if status != http.StatusOK {
 		return fmt.Errorf("HTTP status code is %d for %s", status, constants.RootKeyURL)
 	}
+	const userWritePerm os.FileMode = 0600
 	return c.fileManager.WriteToFile(
 		string(constants.RootKey),
 		content,
-		files.Permissions(0600))
+		files.Permissions(userWritePerm))
 }

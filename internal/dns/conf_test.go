@@ -262,8 +262,10 @@ func Test_buildBlocked(t *testing.T) {
 				client.EXPECT().Get(ctx, string(constants.SurveillanceBlockListIPsURL)).
 					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Times(1)
 			}
-			hostnamesLines, ipsLines, errs := buildBlocked(ctx, client, tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
-				tc.blockedHostnames, tc.blockedIPs, tc.allowedHostnames)
+			hostnamesLines, ipsLines, errs := buildBlocked(
+				ctx, client, tc.malicious.blocked, tc.ads.blocked,
+				tc.surveillance.blocked, tc.blockedHostnames,
+				tc.blockedIPs, tc.allowedHostnames)
 			var errsString []string
 			for _, err := range errs {
 				errsString = append(errsString, err.Error())

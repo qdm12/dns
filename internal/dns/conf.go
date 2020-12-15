@@ -3,6 +3,8 @@ package dns
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
 	"sort"
 	"strings"
 
@@ -22,13 +24,14 @@ func (c *configurator) MakeUnboundConf(ctx context.Context, settings models.Sett
 	if err != nil {
 		return err
 	}
+	const userWritePerm os.FileMode = 0600
 	return c.fileManager.WriteLinesToFile(
 		string(constants.UnboundConf),
 		lines,
-		files.Permissions(0600))
+		files.Permissions(userWritePerm))
 }
 
-// MakeUnboundConf generates an Unbound configuration from the user provided settings
+// MakeUnboundConf generates an Unbound configuration from the user provided settings.
 func generateUnboundConf(ctx context.Context, settings models.Settings,
 	client network.Client, logger logging.Logger) (
 	lines []string, warnings []error, err error) {
@@ -152,7 +155,9 @@ func buildBlocked(ctx context.Context, client network.Client, blockMalicious, bl
 	chIPs := make(chan []string)
 	chErrors := make(chan []error)
 	go func() {
-		lines, errs := buildBlockedHostnames(ctx, client, blockMalicious, blockAds, blockSurveillance, blockedHostnames, allowedHostnames)
+		lines, errs := buildBlockedHostnames(ctx, client,
+			blockMalicious, blockAds, blockSurveillance, blockedHostnames,
+			allowedHostnames)
 		chHostnames <- lines
 		chErrors <- errs
 	}()
@@ -180,8 +185,8 @@ func getList(ctx context.Context, client network.Client, url string) (results []
 	content, status, err := client.Get(ctx, url)
 	if err != nil {
 		return nil, err
-	} else if status != 200 {
-		return nil, fmt.Errorf("HTTP status code is %d and not 200", status)
+	} else if status != http.StatusOK {
+		return nil, fmt.Errorf("%s", http.StatusText(status))
 	}
 	results = strings.Split(string(content), "\n")
 
