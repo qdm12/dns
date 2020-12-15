@@ -23,12 +23,23 @@ import (
 	"github.com/qdm12/golibs/network"
 )
 
+var (
+	version   string
+	buildDate string
+	commit    string
+)
+
 func main() {
+	buildInfo := models.BuildInformation{
+		Version:   version,
+		Commit:    commit,
+		BuildDate: buildDate,
+	}
 	ctx := context.Background()
-	os.Exit(_main(ctx))
+	os.Exit(_main(ctx, buildInfo))
 }
 
-func _main(ctx context.Context) int {
+func _main(ctx context.Context, buildInfo models.BuildInformation) int {
 	if health.IsClientMode(os.Args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
@@ -51,10 +62,7 @@ func _main(ctx context.Context) int {
 
 	paramsReader := params.NewParamsReader(logger)
 
-	fmt.Println(splash.Splash(
-		paramsReader.GetVersion(),
-		paramsReader.GetVcsRef(),
-		paramsReader.GetBuildDate()))
+	fmt.Println(splash.Splash(buildInfo))
 
 	const clientTimeout = 15 * time.Second
 	client := network.NewClient(clientTimeout)

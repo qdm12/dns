@@ -35,11 +35,6 @@ type Reader interface {
 
 	// Update getters
 	GetUpdatePeriod() (period time.Duration, err error)
-
-	// Version getters
-	GetVersion() string
-	GetBuildDate() string
-	GetVcsRef() string
 }
 
 type reader struct {

@@ -14,6 +14,14 @@ issues:
       text: File is not `goimports`-ed
       linters:
         - goimports
+    - path: cmd/
+      text: buildDate is a global variable
+      linters:
+        - gochecknoglobals
+    - path: cmd/
+      text: commit is a global variable
+      linters:
+        - gochecknoglobals
 
 linters:
   disable-all: true

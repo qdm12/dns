@@ -10,24 +10,28 @@ WORKDIR /tmp/gobuild
 COPY .golangci.yml .
 COPY go.mod go.sum ./
 RUN go mod download 2>&1
-COPY cmd/main.go .
+COPY cmd/main.go cmd/app/main.go
 COPY internal/ ./internal/
 RUN go test ./...
 RUN golangci-lint run --timeout=10m
-RUN go build -ldflags="-s -w" -o entrypoint main.go
+ARG VERSION=unknown
+ARG BUILD_DATE="an unknown date"
+ARG COMMIT=unknown
+RUN go build -o entrypoint -trimpath -ldflags="-s -w \
+    -X 'main.version=$VERSION' \
+    -X 'main.buildDate=$BUILD_DATE' \
+    -X 'main.commit=$COMMIT'" \
+    cmd/app/main.go
 
 FROM alpine:${ALPINE_VERSION}
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
-ENV VERSION=$VERSION \
-    BUILD_DATE=$BUILD_DATE \
-    VCS_REF=$VCS_REF
+ARG VERSION=unknown
+ARG BUILD_DATE="an unknown date"
+ARG COMMIT=unknown
 LABEL \
     org.opencontainers.image.authors="quentin.mcgaw@gmail.com" \
-    org.opencontainers.image.created=$BUILD_DATE \
     org.opencontainers.image.version=$VERSION \
-    org.opencontainers.image.revision=$VCS_REF \
+    org.opencontainers.image.created=$BUILD_DATE \
+    org.opencontainers.image.revision=$COMMIT \
     org.opencontainers.image.url="https://github.com/qdm12/cloudflare-dns-server" \
     org.opencontainers.image.documentation="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md" \
     org.opencontainers.image.source="https://github.com/qdm12/cloudflare-dns-server" \
