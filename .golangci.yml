@@ -4,6 +4,13 @@ linters-settings:
   misspell:
     locale: US
 
+issues:
+  exclude-rules:
+    - path: main\.go
+      text: File is not `goimports`-ed
+      linters:
+        - goimports
+
 linters:
   disable-all: true
   enable:

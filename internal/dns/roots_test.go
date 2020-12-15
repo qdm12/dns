@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -51,10 +52,11 @@ func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
 			t.Parallel()
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
+			ctx := context.Background()
 			logger := mock_logging.NewMockLogger(mockCtrl)
 			logger.EXPECT().Info("downloading root hints from %s", constants.NamedRootURL).Times(1)
 			client := mock_network.NewMockClient(mockCtrl)
-			client.EXPECT().GetContent(string(constants.NamedRootURL)).
+			client.EXPECT().Get(ctx, string(constants.NamedRootURL)).
 				Return(tc.content, tc.status, tc.clientErr).Times(1)
 			fileManager := mock_files.NewMockFileManager(mockCtrl)
 			if tc.clientErr == nil && tc.status == http.StatusOK {
@@ -65,7 +67,7 @@ func Test_DownloadRootHints(t *testing.T) { //nolint:dupl
 					Return(tc.writeErr).Times(1)
 			}
 			c := &configurator{logger: logger, client: client, fileManager: fileManager}
-			err := c.DownloadRootHints()
+			err := c.DownloadRootHints(ctx)
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())
@@ -112,10 +114,11 @@ func Test_DownloadRootKey(t *testing.T) { //nolint:dupl
 			t.Parallel()
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
+			ctx := context.Background()
 			logger := mock_logging.NewMockLogger(mockCtrl)
 			logger.EXPECT().Info("downloading root key from %s", constants.RootKeyURL).Times(1)
 			client := mock_network.NewMockClient(mockCtrl)
-			client.EXPECT().GetContent(string(constants.RootKeyURL)).
+			client.EXPECT().Get(ctx, string(constants.RootKeyURL)).
 				Return(tc.content, tc.status, tc.clientErr).Times(1)
 			fileManager := mock_files.NewMockFileManager(mockCtrl)
 			if tc.clientErr == nil && tc.status == http.StatusOK {
@@ -126,7 +129,7 @@ func Test_DownloadRootKey(t *testing.T) { //nolint:dupl
 				).Return(tc.writeErr).Times(1)
 			}
 			c := &configurator{logger: logger, client: client, fileManager: fileManager}
-			err := c.DownloadRootKey()
+			err := c.DownloadRootKey(ctx)
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())

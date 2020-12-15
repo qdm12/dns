@@ -13,9 +13,9 @@ import (
 )
 
 type Configurator interface {
-	DownloadRootHints() error
-	DownloadRootKey() error
-	MakeUnboundConf(settings models.Settings) (err error)
+	DownloadRootHints(ctx context.Context) error
+	DownloadRootKey(ctx context.Context) error
+	MakeUnboundConf(ctx context.Context, settings models.Settings) (err error)
 	UseDNSInternally(IP net.IP)
 	Start(ctx context.Context, logLevel uint8) (stdout io.ReadCloser, wait func() error, err error)
 	WaitForUnbound() (err error)

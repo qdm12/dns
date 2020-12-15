@@ -6,33 +6,42 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/dns"
-	"github.com/qdm12/cloudflare-dns-server/internal/healthcheck"
+	"github.com/qdm12/cloudflare-dns-server/internal/health"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/cloudflare-dns-server/internal/params"
 	"github.com/qdm12/cloudflare-dns-server/internal/settings"
 	"github.com/qdm12/cloudflare-dns-server/internal/splash"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/files"
-	libhealthcheck "github.com/qdm12/golibs/healthcheck"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/network"
 )
 
 func main() {
-	if libhealthcheck.Mode(os.Args) {
-		if err := healthcheck.Healthcheck(); err != nil {
+	ctx := context.Background()
+	os.Exit(_main(ctx))
+}
+
+func _main(ctx context.Context) int {
+	if health.IsClientMode(os.Args) {
+		// Running the program in a separate instance through the Docker
+		// built-in healthcheck, in an ephemeral fashion to query the
+		// long running instance of the program about its status
+		client := health.NewClient()
+		if err := client.Query(ctx); err != nil {
 			fmt.Println(err)
-			os.Exit(1)
+			return 1
 		}
-		os.Exit(0)
+		return 0
 	}
 
-	logger, err := logging.NewLogger(logging.ConsoleEncoding, logging.InfoLevel, -1)
+	logger, err := logging.NewLogger(logging.ConsoleEncoding, logging.InfoLevel)
 	if err != nil {
 		panic(err)
 	}
@@ -55,14 +64,14 @@ func main() {
 	version, err := dnsConf.Version(ctx)
 	if err != nil {
 		logger.Error(err)
-		os.Exit(1)
+		return 1
 	}
 	logger.Info("Unbound version: %s", version)
 
 	settings, err := settings.GetSettings(paramsReader)
 	if err != nil {
 		logger.Error(err)
-		os.Exit(1)
+		return 1
 	}
 	logger.Info("Settings summary:\n" + settings.String())
 
@@ -81,6 +90,16 @@ func main() {
 			break
 		}
 	}
+
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+
+	const healthServerAddr = "127.0.0.1:9999"
+	healthServer := health.NewServer(healthServerAddr,
+		logger.WithPrefix("healthcheck server: "),
+		health.IsHealthy)
+	wg.Add(1)
+	go healthServer.Run(ctx, wg)
 
 	waiter := command.NewWaiter()
 
@@ -104,6 +123,7 @@ func main() {
 	for _, err := range waiter.WaitForAll(timeoutCtx) {
 		logger.Warn(err)
 	}
+	return 1
 }
 
 func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Configurator,
@@ -143,13 +163,13 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc, timer
 		timer.Stop()
 		timer.Reset(settings.UpdatePeriod)
 	}
-	if err := dnsConf.DownloadRootHints(); err != nil {
+	if err := dnsConf.DownloadRootHints(ctx); err != nil {
 		return oldCtx, oldCancel, err, nil, nil
 	}
-	if err := dnsConf.DownloadRootKey(); err != nil {
+	if err := dnsConf.DownloadRootKey(ctx); err != nil {
 		return oldCtx, oldCancel, err, nil, nil
 	}
-	if err := dnsConf.MakeUnboundConf(settings); err != nil {
+	if err := dnsConf.MakeUnboundConf(ctx, settings); err != nil {
 		return oldCtx, oldCancel, err, nil, nil
 	}
 	newCtx, newCancel = context.WithCancel(ctx)

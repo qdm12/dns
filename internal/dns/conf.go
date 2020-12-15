@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -12,9 +13,9 @@ import (
 	"github.com/qdm12/golibs/network"
 )
 
-func (c *configurator) MakeUnboundConf(settings models.Settings) (err error) {
+func (c *configurator) MakeUnboundConf(ctx context.Context, settings models.Settings) (err error) {
 	c.logger.Info("generating Unbound configuration")
-	lines, warnings, err := generateUnboundConf(settings, c.client, c.logger)
+	lines, warnings, err := generateUnboundConf(ctx, settings, c.client, c.logger)
 	for _, warning := range warnings {
 		c.logger.Warn(warning)
 	}
@@ -28,7 +29,9 @@ func (c *configurator) MakeUnboundConf(settings models.Settings) (err error) {
 }
 
 // MakeUnboundConf generates an Unbound configuration from the user provided settings
-func generateUnboundConf(settings models.Settings, client network.Client, logger logging.Logger) (lines []string, warnings []error, err error) {
+func generateUnboundConf(ctx context.Context, settings models.Settings,
+	client network.Client, logger logging.Logger) (
+	lines []string, warnings []error, err error) {
 	const (
 		yes = "yes"
 		no  = "no"
@@ -84,7 +87,7 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 
 	// Block lists
 	blockedIPs := append(settings.BlockedIPs, settings.PrivateAddresses...)
-	hostnamesLines, ipsLines, warnings := buildBlocked(client,
+	hostnamesLines, ipsLines, warnings := buildBlocked(ctx, client,
 		settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
 		settings.BlockedHostnames, blockedIPs, settings.AllowedHostnames,
 	)
@@ -143,18 +146,18 @@ func generateUnboundConf(settings models.Settings, client network.Client, logger
 	return lines, warnings, nil
 }
 
-func buildBlocked(client network.Client, blockMalicious, blockAds, blockSurveillance bool,
+func buildBlocked(ctx context.Context, client network.Client, blockMalicious, blockAds, blockSurveillance bool,
 	blockedHostnames, blockedIPs, allowedHostnames []string) (hostnamesLines, ipsLines []string, errs []error) {
 	chHostnames := make(chan []string)
 	chIPs := make(chan []string)
 	chErrors := make(chan []error)
 	go func() {
-		lines, errs := buildBlockedHostnames(client, blockMalicious, blockAds, blockSurveillance, blockedHostnames, allowedHostnames)
+		lines, errs := buildBlockedHostnames(ctx, client, blockMalicious, blockAds, blockSurveillance, blockedHostnames, allowedHostnames)
 		chHostnames <- lines
 		chErrors <- errs
 	}()
 	go func() {
-		lines, errs := buildBlockedIPs(client, blockMalicious, blockAds, blockSurveillance, blockedIPs)
+		lines, errs := buildBlockedIPs(ctx, client, blockMalicious, blockAds, blockSurveillance, blockedIPs)
 		chIPs <- lines
 		chErrors <- errs
 	}()
@@ -173,8 +176,8 @@ func buildBlocked(client network.Client, blockMalicious, blockAds, blockSurveill
 	return hostnamesLines, ipsLines, errs
 }
 
-func getList(client network.Client, url string) (results []string, err error) {
-	content, status, err := client.GetContent(url)
+func getList(ctx context.Context, client network.Client, url string) (results []string, err error) {
+	content, status, err := client.Get(ctx, url)
 	if err != nil {
 		return nil, err
 	} else if status != 200 {
@@ -198,7 +201,7 @@ func getList(client network.Client, url string) (results []string, err error) {
 	return results, nil
 }
 
-func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, blockSurveillance bool,
+func buildBlockedHostnames(ctx context.Context, client network.Client, blockMalicious, blockAds, blockSurveillance bool,
 	blockedHostnames, allowedHostnames []string) (lines []string, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
@@ -206,7 +209,7 @@ func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, bloc
 	if blockMalicious {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(client, string(constants.MaliciousBlockListHostnamesURL))
+			results, err := getList(ctx, client, string(constants.MaliciousBlockListHostnamesURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -214,7 +217,7 @@ func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, bloc
 	if blockAds {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(client, string(constants.AdsBlockListHostnamesURL))
+			results, err := getList(ctx, client, string(constants.AdsBlockListHostnamesURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -222,7 +225,7 @@ func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, bloc
 	if blockSurveillance {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(client, string(constants.SurveillanceBlockListHostnamesURL))
+			results, err := getList(ctx, client, string(constants.SurveillanceBlockListHostnamesURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -262,7 +265,7 @@ func buildBlockedHostnames(client network.Client, blockMalicious, blockAds, bloc
 	return lines, errs
 }
 
-func buildBlockedIPs(client network.Client, blockMalicious, blockAds, blockSurveillance bool,
+func buildBlockedIPs(ctx context.Context, client network.Client, blockMalicious, blockAds, blockSurveillance bool,
 	blockedIPs []string) (lines []string, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
@@ -270,7 +273,7 @@ func buildBlockedIPs(client network.Client, blockMalicious, blockAds, blockSurve
 	if blockMalicious {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(client, string(constants.MaliciousBlockListIPsURL))
+			results, err := getList(ctx, client, string(constants.MaliciousBlockListIPsURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -278,7 +281,7 @@ func buildBlockedIPs(client network.Client, blockMalicious, blockAds, blockSurve
 	if blockAds {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(client, string(constants.AdsBlockListIPsURL))
+			results, err := getList(ctx, client, string(constants.AdsBlockListIPsURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -286,7 +289,7 @@ func buildBlockedIPs(client network.Client, blockMalicious, blockAds, blockSurve
 	if blockSurveillance {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(client, string(constants.SurveillanceBlockListIPsURL))
+			results, err := getList(ctx, client, string(constants.SurveillanceBlockListIPsURL))
 			chResults <- results
 			chError <- err
 		}()

@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -8,9 +9,9 @@ import (
 	"github.com/qdm12/golibs/files"
 )
 
-func (c *configurator) DownloadRootHints() error {
+func (c *configurator) DownloadRootHints(ctx context.Context) error {
 	c.logger.Info("downloading root hints from %s", constants.NamedRootURL)
-	content, status, err := c.client.GetContent(string(constants.NamedRootURL))
+	content, status, err := c.client.Get(ctx, string(constants.NamedRootURL))
 	if err != nil {
 		return err
 	} else if status != http.StatusOK {
@@ -22,9 +23,9 @@ func (c *configurator) DownloadRootHints() error {
 		files.Permissions(0600))
 }
 
-func (c *configurator) DownloadRootKey() error {
+func (c *configurator) DownloadRootKey(ctx context.Context) error {
 	c.logger.Info("downloading root key from %s", constants.RootKeyURL)
-	content, status, err := c.client.GetContent(string(constants.RootKeyURL))
+	content, status, err := c.client.Get(ctx, string(constants.RootKeyURL))
 	if err != nil {
 		return err
 	} else if status != http.StatusOK {
