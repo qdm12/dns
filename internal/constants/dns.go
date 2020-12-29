@@ -61,7 +61,7 @@ func ProviderMapping() map[models.Provider]models.ProviderData {
 			Host:         models.Host("dot.securedns.eu"),
 		},
 		LibreDNS: {
-			IPs:  []net.IP{{116, 203, 115, 192}},
+			IPs:  []net.IP{{116, 202, 176, 26}},
 			Host: models.Host("dot.libredns.gr"),
 		},
 		CIRA: {
