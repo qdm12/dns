@@ -180,7 +180,7 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 	go streamMerger.Merge(newCtx, stream, command.MergeName("unbound"))
 	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1}) // use Unbound
 	if settings.CheckUnbound {
-		if err := dnsConf.WaitForUnbound(); err != nil {
+		if err := dnsConf.WaitForUnbound(ctx); err != nil {
 			return newCtx, newCancel, nil, err, nil
 		}
 	}

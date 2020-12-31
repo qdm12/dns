@@ -18,7 +18,7 @@ type Configurator interface {
 	MakeUnboundConf(ctx context.Context, settings models.Settings) (err error)
 	UseDNSInternally(IP net.IP)
 	Start(ctx context.Context, logLevel uint8) (stdout io.ReadCloser, wait func() error, err error)
-	WaitForUnbound() (err error)
+	WaitForUnbound(ctx context.Context) (err error)
 	Version(ctx context.Context) (version string, err error)
 }
 
@@ -27,7 +27,7 @@ type configurator struct {
 	client      network.Client
 	fileManager files.FileManager
 	commander   command.Commander
-	lookupIP    func(host string) ([]net.IP, error)
+	resolver    *net.Resolver
 }
 
 func NewConfigurator(logger logging.Logger, client network.Client, fileManager files.FileManager) Configurator {
@@ -36,6 +36,6 @@ func NewConfigurator(logger logging.Logger, client network.Client, fileManager f
 		client:      client,
 		fileManager: fileManager,
 		commander:   command.NewCommander(),
-		lookupIP:    net.LookupIP,
+		resolver:    net.DefaultResolver,
 	}
 }
