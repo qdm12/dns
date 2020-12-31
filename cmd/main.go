@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/dns"
 	"github.com/qdm12/cloudflare-dns-server/internal/health"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
@@ -88,17 +87,6 @@ func _main(ctx context.Context, buildInfo models.BuildInformation) int {
 	go streamMerger.CollectLines(ctx,
 		func(line string) { logger.Info(line) },
 		func(err error) { logger.Warn(err) })
-
-	initialDNSToUse := constants.ProviderMapping()[settings.Providers[0]]
-	for _, targetIP := range initialDNSToUse.IPs {
-		if settings.IPv6 && targetIP.To4() == nil {
-			dnsConf.UseDNSInternally(targetIP)
-			break
-		} else if !settings.IPv6 && targetIP.To4() != nil {
-			dnsConf.UseDNSInternally(targetIP)
-			break
-		}
-	}
 
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
