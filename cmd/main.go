@@ -57,7 +57,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation) int {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	paramsReader := params.NewParamsReader(logger)
