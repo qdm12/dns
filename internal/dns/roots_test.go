@@ -65,8 +65,8 @@ func Test_DownloadRootHints(t *testing.T) {
 					gomock.Any()).
 					Return(tc.writeErr).Times(1)
 			}
-			c := &configurator{logger: logger, client: client, fileManager: fileManager}
-			err := c.DownloadRootHints(ctx)
+			c := &configurator{logger: logger, fileManager: fileManager}
+			err := c.DownloadRootHints(ctx, client)
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())
@@ -127,8 +127,8 @@ func Test_DownloadRootKey(t *testing.T) {
 					gomock.Any(),
 				).Return(tc.writeErr).Times(1)
 			}
-			c := &configurator{logger: logger, client: client, fileManager: fileManager}
-			err := c.DownloadRootKey(ctx)
+			c := &configurator{logger: logger, fileManager: fileManager}
+			err := c.DownloadRootKey(ctx, client)
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())

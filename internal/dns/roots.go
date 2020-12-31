@@ -8,11 +8,12 @@ import (
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/golibs/files"
+	"github.com/qdm12/golibs/network"
 )
 
-func (c *configurator) DownloadRootHints(ctx context.Context) error {
+func (c *configurator) DownloadRootHints(ctx context.Context, client network.Client) error {
 	c.logger.Info("downloading root hints from %s", constants.NamedRootURL)
-	content, status, err := c.client.Get(ctx, string(constants.NamedRootURL))
+	content, status, err := client.Get(ctx, string(constants.NamedRootURL))
 	if err != nil {
 		return err
 	} else if status != http.StatusOK {
@@ -25,9 +26,9 @@ func (c *configurator) DownloadRootHints(ctx context.Context) error {
 		files.Permissions(userWritePerm))
 }
 
-func (c *configurator) DownloadRootKey(ctx context.Context) error {
+func (c *configurator) DownloadRootKey(ctx context.Context, client network.Client) error {
 	c.logger.Info("downloading root key from %s", constants.RootKeyURL)
-	content, status, err := c.client.Get(ctx, string(constants.RootKeyURL))
+	content, status, err := client.Get(ctx, string(constants.RootKeyURL))
 	if err != nil {
 		return err
 	} else if status != http.StatusOK {

@@ -11,16 +11,13 @@ import (
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/golibs/files"
-	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/network"
 )
 
-func (c *configurator) MakeUnboundConf(ctx context.Context, settings models.Settings) (err error) {
+func (c *configurator) MakeUnboundConf(settings models.Settings,
+	hostnamesLines, ipsLines []string) (err error) {
 	c.logger.Info("generating Unbound configuration")
-	lines, warnings, err := generateUnboundConf(ctx, settings, c.client, c.logger)
-	for _, warning := range warnings {
-		c.logger.Warn(warning)
-	}
+	lines, err := generateUnboundConf(settings, hostnamesLines, ipsLines)
 	if err != nil {
 		return err
 	}
@@ -32,16 +29,15 @@ func (c *configurator) MakeUnboundConf(ctx context.Context, settings models.Sett
 }
 
 // MakeUnboundConf generates an Unbound configuration from the user provided settings.
-func generateUnboundConf(ctx context.Context, settings models.Settings,
-	client network.Client, logger logging.Logger) (
-	lines []string, warnings []error, err error) {
+func generateUnboundConf(settings models.Settings, hostnamesLines, ipsLines []string) (
+	lines []string, err error) {
 	const (
 		yes = "yes"
 		no  = "no"
 	)
 	ipv4, ipv6 := no, no
 	if !settings.IPv4 && !settings.IPv6 {
-		return nil, nil, fmt.Errorf("cannot disable both ipv4 and ipv6 resolution")
+		return nil, fmt.Errorf("cannot disable both ipv4 and ipv6 resolution")
 	}
 	if settings.IPv4 {
 		ipv4 = yes
@@ -88,21 +84,6 @@ func generateUnboundConf(ctx context.Context, settings models.Settings,
 		"include":  "include.conf",
 	}
 
-	// Block lists
-	blockedIPs := append(settings.BlockedIPs, settings.PrivateAddresses...)
-	hostnamesLines, ipsLines, warnings := buildBlocked(ctx, client,
-		settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-		settings.BlockedHostnames, blockedIPs, settings.AllowedHostnames,
-	)
-	logger.Info("%d hostnames blocked overall", len(hostnamesLines))
-	logger.Info("%d IP addresses blocked overall", len(ipsLines))
-	sort.Slice(hostnamesLines, func(i, j int) bool { // for unit tests really
-		return hostnamesLines[i] < hostnamesLines[j]
-	})
-	sort.Slice(ipsLines, func(i, j int) bool { // for unit tests really
-		return ipsLines[i] < ipsLines[j]
-	})
-
 	// Server
 	lines = append(lines, "server:")
 	serverLines := make([]string, len(serverSection))
@@ -146,14 +127,17 @@ func generateUnboundConf(ctx context.Context, settings models.Settings,
 		}
 	}
 	lines = append(lines, forwardZoneLines...)
-	return lines, warnings, nil
+	return lines, nil
 }
 
-func buildBlocked(ctx context.Context, client network.Client, blockMalicious, blockAds, blockSurveillance bool,
-	blockedHostnames, blockedIPs, allowedHostnames []string) (hostnamesLines, ipsLines []string, errs []error) {
+func (c *configurator) BuildBlocked(ctx context.Context, client network.Client,
+	blockMalicious, blockAds, blockSurveillance bool,
+	blockedHostnames, blockedIPs, allowedHostnames []string) (
+	hostnamesLines, ipsLines []string) {
 	chHostnames := make(chan []string)
 	chIPs := make(chan []string)
 	chErrors := make(chan []error)
+	var errs []error
 	go func() {
 		lines, errs := buildBlockedHostnames(ctx, client,
 			blockMalicious, blockAds, blockSurveillance, blockedHostnames,
@@ -178,7 +162,18 @@ func buildBlocked(ctx context.Context, client network.Client, blockMalicious, bl
 			n--
 		}
 	}
-	return hostnamesLines, ipsLines, errs
+	for _, err := range errs {
+		c.logger.Warn(err)
+	}
+	c.logger.Info("%d hostnames blocked overall", len(hostnamesLines))
+	c.logger.Info("%d IP addresses blocked overall", len(ipsLines))
+	sort.Slice(hostnamesLines, func(i, j int) bool { // for unit tests really
+		return hostnamesLines[i] < hostnamesLines[j]
+	})
+	sort.Slice(ipsLines, func(i, j int) bool { // for unit tests really
+		return ipsLines[i] < ipsLines[j]
+	})
+	return hostnamesLines, ipsLines
 }
 
 func getList(ctx context.Context, client network.Client, url string) (results []string, err error) {

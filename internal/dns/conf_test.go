@@ -17,10 +17,8 @@ import (
 
 func Test_generateUnboundConf(t *testing.T) {
 	t.Parallel()
-	ctx := context.Background()
 	settings := models.Settings{
 		Providers:          []models.Provider{constants.Cloudflare, constants.Quad9},
-		BlockedHostnames:   []string{"blockedHostname"},
 		AllowedHostnames:   []string{"a"},
 		BlockedIPs:         []string{"8.0.1.2"},
 		PrivateAddresses:   []string{"9.9.9.9"},
@@ -33,18 +31,16 @@ func Test_generateUnboundConf(t *testing.T) {
 		IPv4:               true,
 		IPv6:               true,
 	}
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	client := mock_network.NewMockClient(mockCtrl)
-	client.EXPECT().Get(ctx, string(constants.MaliciousBlockListHostnamesURL)).
-		Return([]byte("b\na\nc"), 200, nil).Times(1)
-	client.EXPECT().Get(ctx, string(constants.MaliciousBlockListIPsURL)).
-		Return([]byte("c\nd\n"), 200, nil).Times(1)
-	logger := mock_logging.NewMockLogger(mockCtrl)
-	logger.EXPECT().Info("%d hostnames blocked overall", 3).Times(1)
-	logger.EXPECT().Info("%d IP addresses blocked overall", 4).Times(1)
-	lines, warnings, err := generateUnboundConf(ctx, settings, client, logger)
-	require.Len(t, warnings, 0)
+	lines, err := generateUnboundConf(settings,
+		[]string{
+			`  local-zone: "b" static`,
+			`  local-zone: "c" static`,
+		},
+		[]string{
+			"  private-address: c",
+			"  private-address: d",
+		},
+	)
 	require.NoError(t, err)
 	expected := `
 server:
@@ -79,10 +75,7 @@ server:
   val-log-level: 3
   verbosity: 2
   local-zone: "b" static
-  local-zone: "blockedHostname" static
   local-zone: "c" static
-  private-address: 8.0.1.2
-  private-address: 9.9.9.9
   private-address: c
   private-address: d
 forward-zone:
@@ -116,7 +109,6 @@ func Test_buildBlocked(t *testing.T) {
 		allowedHostnames []string
 		hostnamesLines   []string
 		ipsLines         []string
-		errsString       []string
 	}{
 		"none blocked": {},
 		"all blocked without lists": {
@@ -218,7 +210,6 @@ func Test_buildBlocked(t *testing.T) {
 			ipsLines: []string{
 				"  private-address: malicious",
 				"  private-address: surveillance"},
-			errsString: []string{"ads error", "ads error"},
 		},
 		"all blocked with errors": {
 			malicious: blockParams{
@@ -233,7 +224,6 @@ func Test_buildBlocked(t *testing.T) {
 				blocked:   true,
 				clientErr: fmt.Errorf("surveillance"),
 			},
-			errsString: []string{"malicious", "malicious", "ads", "ads", "surveillance", "surveillance"},
 		},
 	}
 	for name, tc := range tests {
@@ -262,15 +252,27 @@ func Test_buildBlocked(t *testing.T) {
 				client.EXPECT().Get(ctx, string(constants.SurveillanceBlockListIPsURL)).
 					Return(tc.surveillance.content, 200, tc.surveillance.clientErr).Times(1)
 			}
-			hostnamesLines, ipsLines, errs := buildBlocked(
+
+			logger := mock_logging.NewMockLogger(mockCtrl)
+			logger.EXPECT().Info("%d hostnames blocked overall", len(tc.hostnamesLines))
+			logger.EXPECT().Info("%d IP addresses blocked overall", len(tc.ipsLines))
+			if tc.malicious.clientErr != nil {
+				logger.EXPECT().Warn(tc.malicious.clientErr).Times(2)
+			}
+			if tc.ads.clientErr != nil {
+				logger.EXPECT().Warn(tc.ads.clientErr).Times(2)
+			}
+			if tc.surveillance.clientErr != nil {
+				logger.EXPECT().Warn(tc.surveillance.clientErr).Times(2)
+			}
+
+			c := configurator{
+				logger: logger,
+			}
+			hostnamesLines, ipsLines := c.BuildBlocked(
 				ctx, client, tc.malicious.blocked, tc.ads.blocked,
 				tc.surveillance.blocked, tc.blockedHostnames,
 				tc.blockedIPs, tc.allowedHostnames)
-			var errsString []string
-			for _, err := range errs {
-				errsString = append(errsString, err.Error())
-			}
-			assert.ElementsMatch(t, tc.errsString, errsString)
 			assert.ElementsMatch(t, tc.hostnamesLines, hostnamesLines)
 			assert.ElementsMatch(t, tc.ipsLines, ipsLines)
 		})

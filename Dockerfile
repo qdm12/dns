@@ -72,3 +72,5 @@ RUN apk --update --no-cache add unbound libcap ca-certificates && \
     rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-*
 COPY --from=builder --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 USER 1000
+# Downloads and install some files
+RUN /entrypoint  build

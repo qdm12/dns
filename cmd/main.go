@@ -66,7 +66,19 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	client := network.NewClient(clientTimeout)
 	// Create configurators
 	fileManager := files.NewFileManager()
-	dnsConf := dns.NewConfigurator(logger, client, fileManager)
+	dnsConf := dns.NewConfigurator(logger, fileManager)
+
+	if len(args) > 1 && args[1] == "build" {
+		if err := dnsConf.DownloadRootHints(ctx, client); err != nil {
+			logger.Error(err)
+			return 1
+		}
+		if err := dnsConf.DownloadRootKey(ctx, client); err != nil {
+			logger.Error(err)
+			return 1
+		}
+		return 0
+	}
 
 	version, err := dnsConf.Version(ctx)
 	if err != nil {
@@ -99,7 +111,8 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 
 	waiter := command.NewWaiter()
 
-	go unboundRunLoop(ctx, logger, dnsConf, settings, waiter, streamMerger, cancel)
+	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1}) // use Unbound
+	go unboundRunLoop(ctx, logger, dnsConf, settings, waiter, streamMerger, client, cancel)
 
 	signalsCh := make(chan os.Signal, 1)
 	signal.Notify(signalsCh,
@@ -124,7 +137,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 
 func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Configurator,
 	settings models.Settings, waiter command.Waiter, streamMerger command.StreamMerger,
-	fatal func(),
+	client network.Client, fatal func(),
 ) {
 	var timer *time.Timer
 	if settings.UpdatePeriod > 0 {
@@ -132,10 +145,14 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 	}
 	unboundCtx, unboundCancel := context.WithCancel(ctx)
 	defer unboundCancel()
+
+	firstRun := true
+
 	for ctx.Err() == nil {
 		var setupErr, startErr, waitErr error
 		unboundCtx, unboundCancel, setupErr, startErr, waitErr = unboundRun(
-			ctx, unboundCtx, unboundCancel, timer, dnsConf, settings, streamMerger, waiter)
+			ctx, unboundCtx, unboundCancel, timer, dnsConf, settings, streamMerger, waiter,
+			client, firstRun)
 		switch {
 		case ctx.Err() != nil:
 			logger.Warn("context canceled: exiting unbound run loop")
@@ -143,6 +160,9 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 			logger.Info("planned restart of unbound")
 		case setupErr != nil:
 			logger.Warn(setupErr)
+		case firstRun:
+			logger.Info("restarting Unbound the first time to get updated files")
+			firstRun = false
 		case startErr != nil:
 			logger.Error(startErr)
 			fatal()
@@ -155,20 +175,29 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 
 func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 	timer *time.Timer, dnsConf dns.Configurator, settings models.Settings,
-	streamMerger command.StreamMerger, waiter command.Waiter) (
+	streamMerger command.StreamMerger, waiter command.Waiter,
+	client network.Client, firstRun bool) (
 	newCtx context.Context, newCancel context.CancelFunc, setupErr,
 	startErr, waitErr error) {
 	if timer != nil {
 		timer.Stop()
 		timer.Reset(settings.UpdatePeriod)
 	}
-	if err := dnsConf.DownloadRootHints(ctx); err != nil {
-		return oldCtx, oldCancel, err, nil, nil
+	var hostnamesLines, ipsLines []string
+	if !firstRun {
+		if err := dnsConf.DownloadRootHints(ctx, client); err != nil {
+			return oldCtx, oldCancel, err, nil, nil
+		}
+		if err := dnsConf.DownloadRootKey(ctx, client); err != nil {
+			return oldCtx, oldCancel, err, nil, nil
+		}
+		blockedIPs := append(settings.BlockedIPs, settings.PrivateAddresses...)
+		hostnamesLines, ipsLines = dnsConf.BuildBlocked(ctx, client,
+			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
+			settings.BlockedHostnames, blockedIPs, settings.AllowedHostnames,
+		)
 	}
-	if err := dnsConf.DownloadRootKey(ctx); err != nil {
-		return oldCtx, oldCancel, err, nil, nil
-	}
-	if err := dnsConf.MakeUnboundConf(ctx, settings); err != nil {
+	if err := dnsConf.MakeUnboundConf(settings, hostnamesLines, ipsLines); err != nil {
 		return oldCtx, oldCancel, err, nil, nil
 	}
 	newCtx, newCancel = context.WithCancel(ctx)
@@ -178,7 +207,6 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 		return newCtx, newCancel, nil, err, nil
 	}
 	go streamMerger.Merge(newCtx, stream, command.MergeName("unbound"))
-	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1}) // use Unbound
 	if settings.CheckUnbound {
 		if err := dnsConf.WaitForUnbound(ctx); err != nil {
 			return newCtx, newCancel, nil, err, nil
@@ -194,6 +222,9 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 		waitError <- err
 		waiterError <- err
 	}()
+	if firstRun { // force restart
+		return newCtx, newCancel, nil, nil, nil
+	}
 	if timer == nil {
 		waitErr := <-waitError
 		return newCtx, newCancel, nil, nil, waitErr
