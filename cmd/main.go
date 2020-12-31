@@ -50,6 +50,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation) int {
 		}
 		return 0
 	}
+	fmt.Println(splash.Splash(buildInfo))
 
 	logger, err := logging.NewLogger(logging.ConsoleEncoding, logging.InfoLevel)
 	if err != nil {
@@ -60,8 +61,6 @@ func _main(ctx context.Context, buildInfo models.BuildInformation) int {
 	defer cancel()
 
 	paramsReader := params.NewParamsReader(logger)
-
-	fmt.Println(splash.Splash(buildInfo))
 
 	const clientTimeout = 15 * time.Second
 	client := network.NewClient(clientTimeout)
