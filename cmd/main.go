@@ -35,11 +35,11 @@ func main() {
 		BuildDate: buildDate,
 	}
 	ctx := context.Background()
-	os.Exit(_main(ctx, buildInfo))
+	os.Exit(_main(ctx, buildInfo, os.Args))
 }
 
-func _main(ctx context.Context, buildInfo models.BuildInformation) int {
-	if health.IsClientMode(os.Args) {
+func _main(ctx context.Context, buildInfo models.BuildInformation, args []string) int {
+	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
 		// long running instance of the program about its status
