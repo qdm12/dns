@@ -100,7 +100,6 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 		func(err error) { logger.Warn(err) })
 
 	wg := &sync.WaitGroup{}
-	defer wg.Wait()
 
 	const healthServerAddr = "127.0.0.1:9999"
 	healthServer := health.NewServer(healthServerAddr,
@@ -109,10 +108,9 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	wg.Add(1)
 	go healthServer.Run(ctx, wg)
 
-	waiter := command.NewWaiter()
-
 	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1}) // use Unbound
-	go unboundRunLoop(ctx, logger, dnsConf, settings, waiter, streamMerger, client, cancel)
+	wg.Add(1)
+	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, streamMerger, client, cancel)
 
 	signalsCh := make(chan os.Signal, 1)
 	signal.Notify(signalsCh,
@@ -127,36 +125,52 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	case <-ctx.Done():
 		logger.Warn("context canceled, shutting down")
 	}
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	for _, err := range waiter.WaitForAll(timeoutCtx) {
-		logger.Warn(err)
+
+	waited := make(chan struct{})
+	timer := time.NewTimer(time.Second)
+	go func() {
+		wg.Wait()
+		close(waited)
+	}()
+	select {
+	case <-waited:
+		if !timer.Stop() {
+			<-timer.C
+		}
+	case <-timer.C:
+		logger.Error("shutdown timed out, force quitting")
 	}
+
 	return 1
 }
 
-func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Configurator,
-	settings models.Settings, waiter command.Waiter, streamMerger command.StreamMerger,
+func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Settings,
+	logger logging.Logger, dnsConf dns.Configurator, streamMerger command.StreamMerger,
 	client network.Client, fatal func(),
 ) {
-	var timer *time.Timer
-	if settings.UpdatePeriod > 0 {
-		timer = time.NewTimer(settings.UpdatePeriod)
-	}
+	defer wg.Done()
+	defer logger.Info("unbound loop exited")
+	timer := time.NewTimer(time.Hour)
+
 	unboundCtx, unboundCancel := context.WithCancel(ctx)
 	defer unboundCancel()
 
 	firstRun := true
 
 	for ctx.Err() == nil {
+		timer.Stop()
+		if settings.UpdatePeriod > 0 {
+			timer.Reset(settings.UpdatePeriod)
+		}
+
 		var setupErr, startErr, waitErr error
 		unboundCtx, unboundCancel, setupErr, startErr, waitErr = unboundRun(
-			ctx, unboundCtx, unboundCancel, timer, dnsConf, settings, streamMerger, waiter,
+			ctx, unboundCtx, unboundCancel, timer, dnsConf, settings, streamMerger,
 			client, firstRun)
 		switch {
 		case ctx.Err() != nil:
 			logger.Warn("context canceled: exiting unbound run loop")
-		case timer != nil && !timer.Stop():
+		case !timer.Stop():
 			logger.Info("planned restart of unbound")
 		case setupErr != nil:
 			logger.Warn(setupErr)
@@ -175,14 +189,10 @@ func unboundRunLoop(ctx context.Context, logger logging.Logger, dnsConf dns.Conf
 
 func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 	timer *time.Timer, dnsConf dns.Configurator, settings models.Settings,
-	streamMerger command.StreamMerger, waiter command.Waiter,
+	streamMerger command.StreamMerger,
 	client network.Client, firstRun bool) (
 	newCtx context.Context, newCancel context.CancelFunc, setupErr,
 	startErr, waitErr error) {
-	if timer != nil {
-		timer.Stop()
-		timer.Reset(settings.UpdatePeriod)
-	}
 	var hostnamesLines, ipsLines []string
 	if !firstRun {
 		if err := dnsConf.DownloadRootHints(ctx, client); err != nil {
@@ -212,27 +222,22 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 			return newCtx, newCancel, nil, err, nil
 		}
 	}
+
 	waitError := make(chan error)
-	waiterError := make(chan error)
-	waiter.Add(func() error { //nolint:scopelint
-		return <-waiterError
-	})
 	go func() {
-		err := fmt.Errorf("unbound: %w", waitFn())
+		err := waitFn() // blocking
 		waitError <- err
-		waiterError <- err
 	}()
+
 	if firstRun { // force restart
 		return newCtx, newCancel, nil, nil, nil
 	}
-	if timer == nil {
-		waitErr := <-waitError
-		return newCtx, newCancel, nil, nil, waitErr
-	}
+
 	select {
 	case <-timer.C:
 		return newCtx, newCancel, nil, nil, nil
 	case waitErr := <-waitError:
+		close(waitError)
 		return newCtx, newCancel, nil, nil, waitErr
 	}
 }
