@@ -17,8 +17,6 @@ const (
 	Quadrant models.Provider = "quadrant"
 	// CleanBrowsing is a DNS over TLS provider.
 	CleanBrowsing models.Provider = "cleanbrowsing"
-	// SecureDNS is a DNS over TLS provider.
-	SecureDNS models.Provider = "securedns"
 	// LibreDNS is a DNS over TLS provider.
 	LibreDNS models.Provider = "libredns"
 	// CIRA is a DNS over TLS provider.
@@ -54,11 +52,6 @@ func ProviderMapping() map[models.Provider]models.ProviderData {
 			IPs:          []net.IP{{185, 228, 168, 9}, {185, 228, 169, 9}, {0x2a, 0xd, 0x2a, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2}, {0x2a, 0xd, 0x2a, 0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2}},
 			SupportsIPv6: true,
 			Host:         models.Host("security-filter-dns.cleanbrowsing.org"),
-		},
-		SecureDNS: {
-			IPs:          []net.IP{{146, 185, 167, 43}, {0x2a, 0x3, 0xb0, 0xc0, 0x0, 0x0, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0xe, 0x9a, 0x30, 0x1}},
-			SupportsIPv6: true,
-			Host:         models.Host("dot.securedns.eu"),
 		},
 		LibreDNS: {
 			IPs:  []net.IP{{116, 203, 115, 192}},
