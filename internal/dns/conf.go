@@ -84,6 +84,12 @@ func generateUnboundConf(settings models.Settings, hostnamesLines, ipsLines []st
 		"include":  "include.conf",
 	}
 
+	for _, provider := range settings.Providers {
+		if provider == constants.LibreDNS {
+			delete(serverSection, "trust-anchor-file")
+		}
+	}
+
 	// Server
 	lines = append(lines, "server:")
 	serverLines := make([]string, len(serverSection))
