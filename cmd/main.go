@@ -173,7 +173,7 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 		case !timer.Stop():
 			logger.Info("planned restart of unbound")
 		case setupErr != nil:
-			logger.Warn(setupErr)
+			logAndWait(ctx, logger, setupErr)
 		case firstRun:
 			logger.Info("restarting Unbound the first time to get updated files")
 			firstRun = false
@@ -183,6 +183,19 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 		case waitErr != nil:
 			logger.Error(waitErr)
 			fatal()
+		}
+	}
+}
+
+func logAndWait(ctx context.Context, logger logging.Logger, err error) {
+	const wait = 10 * time.Second
+	logger.Error("%s, retrying in %s", err, wait)
+	timer := time.NewTimer(wait)
+	select {
+	case <-timer.C:
+	case <-ctx.Done():
+		if !timer.Stop() {
+			<-timer.C
 		}
 	}
 }
