@@ -4,26 +4,26 @@ import (
 	"context"
 	"io"
 	"net"
+	"net/http"
 
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/files"
 	"github.com/qdm12/golibs/logging"
-	"github.com/qdm12/golibs/network"
+	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
 type Configurator interface {
-	DownloadRootHints(ctx context.Context, client network.Client) error
-	DownloadRootKey(ctx context.Context, client network.Client) error
+	SetupFiles(ctx context.Context) error
 	MakeUnboundConf(settings models.Settings, hostnamesLines, ipsLines []string) (err error)
 	UseDNSInternally(IP net.IP)
 	Start(ctx context.Context, logLevel uint8) (stdout io.ReadCloser, wait func() error, err error)
 	WaitForUnbound(ctx context.Context) (err error)
 	Version(ctx context.Context) (version string, err error)
-	BuildBlocked(ctx context.Context, client network.Client,
+	BuildBlocked(ctx context.Context, client *http.Client,
 		blockMalicious, blockAds, blockSurveillance bool,
 		blockedHostnames, blockedIPs, allowedHostnames []string) (
-		hostnamesLines, ipsLines []string)
+		hostnamesLines, ipsLines []string, errs []error)
 }
 
 type configurator struct {
@@ -31,13 +31,15 @@ type configurator struct {
 	fileManager files.FileManager
 	commander   command.Commander
 	resolver    *net.Resolver
+	dnscrypto   dnscrypto.DNSCrypto
 }
 
-func NewConfigurator(logger logging.Logger, fileManager files.FileManager) Configurator {
+func NewConfigurator(logger logging.Logger, fileManager files.FileManager, dnscrypto dnscrypto.DNSCrypto) Configurator {
 	return &configurator{
 		logger:      logger,
 		fileManager: fileManager,
 		commander:   command.NewCommander(),
 		resolver:    net.DefaultResolver,
+		dnscrypto:   dnscrypto,
 	}
 }

@@ -2,41 +2,50 @@ package dns
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"os"
 
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/golibs/files"
-	"github.com/qdm12/golibs/network"
 )
 
-func (c *configurator) DownloadRootHints(ctx context.Context, client network.Client) error {
-	c.logger.Info("downloading root hints from %s", constants.NamedRootURL)
-	content, status, err := client.Get(ctx, string(constants.NamedRootURL))
+func (c *configurator) SetupFiles(ctx context.Context) error {
+	if err := c.downloadRootHints(ctx); err != nil {
+		return err
+	}
+
+	if err := c.downloadRootKeys(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *configurator) downloadRootHints(ctx context.Context) error {
+	c.logger.Info("downloading root hints")
+	namedRoot, err := c.dnscrypto.GetNamedRoot(ctx)
 	if err != nil {
 		return err
-	} else if status != http.StatusOK {
-		return fmt.Errorf("HTTP status code is %d for %s", status, constants.NamedRootURL)
 	}
 	const userWritePerm os.FileMode = 0600
 	return c.fileManager.WriteToFile(
 		string(constants.RootHints),
-		content,
+		namedRoot,
 		files.Permissions(userWritePerm))
 }
 
-func (c *configurator) DownloadRootKey(ctx context.Context, client network.Client) error {
-	c.logger.Info("downloading root key from %s", constants.RootKeyURL)
-	content, status, err := client.Get(ctx, string(constants.RootKeyURL))
+func (c *configurator) downloadRootKeys(ctx context.Context) error {
+	c.logger.Info("downloading root keys")
+	rootAnchorsXML, err := c.dnscrypto.GetRootAnchorsXML(ctx)
 	if err != nil {
 		return err
-	} else if status != http.StatusOK {
-		return fmt.Errorf("HTTP status code is %d for %s", status, constants.RootKeyURL)
+	}
+	rootKeys, err := c.dnscrypto.ConvertRootAnchorsToRootKeys(rootAnchorsXML)
+	if err != nil {
+		return err
 	}
 	const userWritePerm os.FileMode = 0600
-	return c.fileManager.WriteToFile(
+	return c.fileManager.WriteLinesToFile(
 		string(constants.RootKey),
-		content,
+		rootKeys,
 		files.Permissions(userWritePerm))
 }

@@ -2,7 +2,9 @@ package dns
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"sort"
@@ -11,7 +13,6 @@ import (
 	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/golibs/files"
-	"github.com/qdm12/golibs/network"
 )
 
 func (c *configurator) MakeUnboundConf(settings models.Settings,
@@ -136,14 +137,13 @@ func generateUnboundConf(settings models.Settings, hostnamesLines, ipsLines []st
 	return lines, nil
 }
 
-func (c *configurator) BuildBlocked(ctx context.Context, client network.Client,
+func (c *configurator) BuildBlocked(ctx context.Context, client *http.Client,
 	blockMalicious, blockAds, blockSurveillance bool,
 	blockedHostnames, blockedIPs, allowedHostnames []string) (
-	hostnamesLines, ipsLines []string) {
+	hostnamesLines, ipsLines []string, errs []error) {
 	chHostnames := make(chan []string)
 	chIPs := make(chan []string)
 	chErrors := make(chan []error)
-	var errs []error
 	go func() {
 		lines, errs := buildBlockedHostnames(ctx, client,
 			blockMalicious, blockAds, blockSurveillance, blockedHostnames,
@@ -168,27 +168,40 @@ func (c *configurator) BuildBlocked(ctx context.Context, client network.Client,
 			n--
 		}
 	}
-	for _, err := range errs {
-		c.logger.Warn(err)
-	}
-	c.logger.Info("%d hostnames blocked overall", len(hostnamesLines))
-	c.logger.Info("%d IP addresses blocked overall", len(ipsLines))
 	sort.Slice(hostnamesLines, func(i, j int) bool { // for unit tests really
 		return hostnamesLines[i] < hostnamesLines[j]
 	})
 	sort.Slice(ipsLines, func(i, j int) bool { // for unit tests really
 		return ipsLines[i] < ipsLines[j]
 	})
-	return hostnamesLines, ipsLines
+	return hostnamesLines, ipsLines, errs
 }
 
-func getList(ctx context.Context, client network.Client, url string) (results []string, err error) {
-	content, status, err := client.Get(ctx, url)
+var ErrBadStatusCode = errors.New("bad HTTP status code")
+
+func getList(ctx context.Context, client *http.Client, url string) (results []string, err error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
-	} else if status != http.StatusOK {
-		return nil, fmt.Errorf("%s", http.StatusText(status))
 	}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	} else if response.StatusCode != http.StatusOK {
+		_ = response.Body.Close()
+		return nil, fmt.Errorf("%w: %d %s", ErrBadStatusCode, response.StatusCode, response.Status)
+	}
+
+	content, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		_ = response.Body.Close()
+		return nil, err
+	}
+
+	if err := response.Body.Close(); err != nil {
+		return nil, err
+	}
+
 	results = strings.Split(string(content), "\n")
 
 	// remove empty lines
@@ -207,7 +220,7 @@ func getList(ctx context.Context, client network.Client, url string) (results []
 	return results, nil
 }
 
-func buildBlockedHostnames(ctx context.Context, client network.Client, blockMalicious, blockAds, blockSurveillance bool,
+func buildBlockedHostnames(ctx context.Context, client *http.Client, blockMalicious, blockAds, blockSurveillance bool,
 	blockedHostnames, allowedHostnames []string) (lines []string, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
@@ -271,7 +284,7 @@ func buildBlockedHostnames(ctx context.Context, client network.Client, blockMali
 	return lines, errs
 }
 
-func buildBlockedIPs(ctx context.Context, client network.Client, blockMalicious, blockAds, blockSurveillance bool,
+func buildBlockedIPs(ctx context.Context, client *http.Client, blockMalicious, blockAds, blockSurveillance bool,
 	blockedIPs []string) (lines []string, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
