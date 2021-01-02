@@ -204,50 +204,6 @@ See [this](http://xslab.com/2013/08/how-to-change-dns-settings-on-android/)
 
 See [this](http://www.macinstruct.com/node/558)
 
-### Build the image yourself
-
-- Build the latest Docker image
-    - With `git`
-
-        ```sh
-        docker build -t qmcgaw/dns https://github.com/qdm12/dns.git
-        ```
-
-    - With `wget` and `unzip`
-
-        ```sh
-        wget -q "https://github.com/qdm12/dns/archive/master.zip"
-        unzip -q "master.zip"
-        cd *-master
-        docker build -t qmcgaw/dns .
-        cd .. && rm -r master.zip *-master
-        ```
-
-- Build an older Docker image (you need `wget` and `unzip`)
-    1. Go to [the commits](https://github.com/qdm12/dns/commits/master) and find which commit you want to build for
-    1. You can click on the clipboard next to the commit, in example you pick the commit `da6dbb2ff21c0af4cee93fdb92415aee167f7fd7`
-    1. Open a terminal and set `COMMIT=da6dbb2ff21c0af4cee93fdb92415aee167f7fd7`
-    1. Download the code for this commit and build the Docker image, either:
-        - With `git`
-
-            ```sh
-            git clone https://github.com/qdm12/dns.git temp
-            cd temp
-            git reset --hard $COMMIT
-            docker build -t qmcgaw/dns .
-            cd .. && rm -r temp
-            ```
-
-        - With `wget` and `unzip`
-
-            ```sh
-            wget -q "https://github.com/qdm12/dns/archive/$COMMIT.zip"
-            unzip -q "$COMMIT.zip"
-            cd *-$COMMIT
-            docker build -t qmcgaw/dns .
-            cd .. && rm -r "$COMMIT.zip" *-$COMMIT
-            ```
-
 ### Firewall considerations
 
 This container requires the following connections:
