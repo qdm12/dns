@@ -19,6 +19,7 @@ type Configurator interface {
 		hostnamesLines, ipsLines []string, username string,
 		puid, pgid int) (err error)
 	UseDNSInternally(IP net.IP)
+	UseDNSSystemWide(ip net.IP, keepNameserver bool) error
 	Start(ctx context.Context, logLevel uint8) (stdout io.ReadCloser, wait func() error, err error)
 	WaitForUnbound(ctx context.Context) (err error)
 	Version(ctx context.Context) (version string, err error)
