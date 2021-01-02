@@ -5,14 +5,13 @@ import (
 	"net"
 	"strings"
 
-	"github.com/qdm12/dns/internal/models"
 	"github.com/qdm12/dns/pkg/dns"
 	libparams "github.com/qdm12/golibs/params"
 )
 
 // GetProviders obtains the DNS over TLS providers to use
 // from the environment variable PROVIDERS and PROVIDER for retro-compatibility.
-func (r *reader) GetProviders() (providers []models.Provider, err error) {
+func (r *reader) GetProviders() (providers []string, err error) {
 	// Retro-compatibility
 	s, err := r.envParams.GetEnv("PROVIDER")
 	switch {
@@ -27,7 +26,7 @@ func (r *reader) GetProviders() (providers []models.Provider, err error) {
 		}
 	}
 	for _, word := range strings.Split(s, ",") {
-		provider := models.Provider(word)
+		provider := word
 		if _, ok := dns.GetProviderData(provider); !ok {
 			return nil, fmt.Errorf("DNS provider %q is not valid", provider)
 		}

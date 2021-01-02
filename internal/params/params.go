@@ -3,7 +3,6 @@ package params
 import (
 	"time"
 
-	"github.com/qdm12/dns/internal/models"
 	"github.com/qdm12/golibs/logging"
 	libparams "github.com/qdm12/golibs/params"
 	"github.com/qdm12/golibs/verification"
@@ -12,7 +11,7 @@ import (
 // Reader contains methods to obtain parameters.
 type Reader interface {
 	// DNS getters
-	GetProviders() (providers []models.Provider, err error)
+	GetProviders() (providers []string, err error)
 	GetPrivateAddresses() (privateAddresses []string, err error)
 
 	// Unbound getters

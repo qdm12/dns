@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qdm12/dns/internal/models"
+	"github.com/qdm12/dns/pkg/models"
 )
 
-func (c *configurator) MakeUnboundConf(settings models.UnboundSettings,
+func (c *configurator) MakeUnboundConf(settings models.Settings,
 	hostnamesLines, ipsLines []string, username string, puid, pgid int) (err error) {
 	configFilepath := filepath.Join(c.unboundDir, unboundConfigFilename)
 	file, err := c.openFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
@@ -38,7 +38,7 @@ func (c *configurator) MakeUnboundConf(settings models.UnboundSettings,
 }
 
 // generateUnboundConf generates an Unbound configuration from the user provided settings.
-func generateUnboundConf(settings models.UnboundSettings,
+func generateUnboundConf(settings models.Settings,
 	hostnamesLines, ipsLines []string, unboundDir, username string) (
 	lines []string) {
 	const (

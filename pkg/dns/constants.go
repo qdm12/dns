@@ -20,25 +20,25 @@ const (
 
 const (
 	// Cloudflare is a DNS over TLS provider.
-	Cloudflare models.Provider = "cloudflare"
+	Cloudflare = "cloudflare"
 	// Google is a DNS over TLS provider.
-	Google models.Provider = "google"
+	Google = "google"
 	// Quad9 is a DNS over TLS provider.
-	Quad9 models.Provider = "quad9"
+	Quad9 = "quad9"
 	// Quadrant is a DNS over TLS provider.
-	Quadrant models.Provider = "quadrant"
+	Quadrant = "quadrant"
 	// CleanBrowsing is a DNS over TLS provider.
-	CleanBrowsing models.Provider = "cleanbrowsing"
+	CleanBrowsing = "cleanbrowsing"
 	// SecureDNS is a DNS over TLS provider.
-	SecureDNS models.Provider = "securedns"
+	SecureDNS = "securedns"
 	// LibreDNS is a DNS over TLS provider.
-	LibreDNS models.Provider = "libredns"
+	LibreDNS = "libredns"
 	// CIRA is a DNS over TLS provider.
-	CIRA models.Provider = "cira"
+	CIRA = "cira"
 )
 
-func GetProviderData(provider models.Provider) (data models.ProviderData, ok bool) {
-	mapping := map[models.Provider]models.ProviderData{
+func GetProviderData(provider string) (data models.ProviderData, ok bool) {
+	mapping := map[string]models.ProviderData{
 		Cloudflare: {
 			IPs: []net.IP{
 				{1, 1, 1, 1},

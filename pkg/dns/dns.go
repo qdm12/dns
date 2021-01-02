@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/qdm12/dns/internal/models"
+	"github.com/qdm12/dns/pkg/models"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/os"
@@ -15,7 +15,7 @@ import (
 
 type Configurator interface {
 	SetupFiles(ctx context.Context) error
-	MakeUnboundConf(settings models.UnboundSettings,
+	MakeUnboundConf(settings models.Settings,
 		hostnamesLines, ipsLines []string, username string,
 		puid, pgid int) (err error)
 	UseDNSInternally(IP net.IP)

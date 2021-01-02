@@ -11,14 +11,15 @@ import (
 	"testing"
 
 	"github.com/qdm12/dns/internal/models"
+	dnsmodels "github.com/qdm12/dns/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_generateUnboundConf(t *testing.T) {
 	t.Parallel()
-	settings := models.UnboundSettings{
-		Providers:          []models.Provider{Cloudflare, Quad9},
+	settings := dnsmodels.Settings{
+		Providers:          []string{Cloudflare, Quad9},
 		AllowedHostnames:   []string{"a"},
 		BlockedIPs:         []string{"8.0.1.2", "9.9.9.9"},
 		VerbosityLevel:     2,
