@@ -42,6 +42,7 @@ func Test_generateUnboundConf(t *testing.T) {
 	)
 	expected := `
 server:
+  access-control: 0.0.0.0/0 allow
   cache-max-ttl: 9000
   cache-min-ttl: 3600
   do-ip4: yes
