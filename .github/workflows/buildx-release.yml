@@ -6,6 +6,7 @@ on:
       - .github/workflows/buildx-release.yml
       - cmd/**
       - internal/**
+      - pkg/**
       - .dockerignore
       - .golangci.yml
       - Dockerfile
