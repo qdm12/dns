@@ -54,95 +54,108 @@ func generateUnboundConf(settings models.Settings,
 	if settings.IPv6 {
 		ipv6 = yes
 	}
-	serverSection := map[string]string{
+	serverLines := []string{
 		// Logging
-		"verbosity":     strconv.Itoa(int(settings.VerbosityLevel)),
-		"val-log-level": strconv.Itoa(int(settings.ValidationLogLevel)),
-		"use-syslog":    "no",
+		"verbosity: " + strconv.Itoa(int(settings.VerbosityLevel)),
+		"val-log-level: " + strconv.Itoa(int(settings.ValidationLogLevel)),
+		"use-syslog: no",
 		// Performance
-		"num-threads":       "2",
-		"prefetch":          "yes",
-		"prefetch-key":      "yes",
-		"key-cache-size":    "32m",
-		"key-cache-slabs":   "4",
-		"msg-cache-size":    "8m",
-		"msg-cache-slabs":   "4",
-		"rrset-cache-size":  "8m",
-		"rrset-cache-slabs": "4",
-		"cache-min-ttl":     "3600",
-		"cache-max-ttl":     "9000",
+		"num-threads: 2",
+		"prefetch: yes",
+		"prefetch-key: yes",
+		"key-cache-size: 32m",
+		"key-cache-slabs: 4",
+		"msg-cache-size: 8m",
+		"msg-cache-slabs: 4",
+		"rrset-cache-size: 8m",
+		"rrset-cache-slabs: 4",
+		"cache-min-ttl: 3600",
+		"cache-max-ttl: 9000",
 		// Privacy
-		"rrset-roundrobin": "yes",
-		"hide-identity":    "yes",
-		"hide-version":     "yes",
+		"rrset-roundrobin: yes",
+		"hide-identity: yes",
+		"hide-version: yes",
 		// Security
-		"tls-cert-bundle":       `"` + cacertsPath + `"`,
-		"root-hints":            `"` + filepath.Join(unboundDir, rootHints) + `"`,
-		"trust-anchor-file":     `"` + filepath.Join(unboundDir, rootKey) + `"`,
-		"harden-below-nxdomain": "yes",
-		"harden-referral-path":  "yes",
-		"harden-algo-downgrade": "yes",
+		`tls-cert-bundle: "` + cacertsPath + `"`,
+		`root-hints: "` + filepath.Join(unboundDir, rootHints) + `"`,
+		"harden-below-nxdomain: yes",
+		"harden-referral-path: yes",
+		"harden-algo-downgrade: yes",
 		// Network
-		"do-ip4":         ipv4,
-		"do-ip6":         ipv6,
-		"interface":      "0.0.0.0",
-		"access-control": "0.0.0.0/0 allow",
-		"port":           strconv.Itoa(int(settings.ListeningPort)),
+		"do-ip4: " + ipv4,
+		"do-ip6: " + ipv6,
+		"interface: 0.0.0.0",
+		"access-control: 0.0.0.0/0 allow",
+		"port: " + strconv.Itoa(int(settings.ListeningPort)),
 		// Other
-		"username": `"` + username + `"`,
-		"include":  `"` + filepath.Join(unboundDir, includeConfFilename) + `"`,
+		`username: "` + username + `"`,
+		`include: "` + filepath.Join(unboundDir, includeConfFilename) + `"`,
 	}
 
+	// DNSSEC trust anchor file
+	dnsSec := true
 	for _, provider := range settings.Providers {
 		data, _ := GetProviderData(provider)
 		if !data.SupportsDNSSEC {
-			delete(serverSection, "trust-anchor-file")
+			dnsSec = false
 		}
 	}
-
-	// Server
-	lines = append(lines, "server:")
-	serverLines := make([]string, len(serverSection))
-	i := 0
-	for k, v := range serverSection {
-		serverLines[i] = "  " + k + ": " + v
-		i++
+	if dnsSec {
+		trustAnchorFile := `trust-anchor-file: "` + filepath.Join(unboundDir, rootKey) + `"`
+		serverLines = append(serverLines, trustAnchorFile)
 	}
+
+	serverLines = ensureIndentLines(serverLines)
 	sort.Slice(serverLines, func(i, j int) bool {
 		return serverLines[i] < serverLines[j]
 	})
+
+	hostnamesLines = ensureIndentLines(hostnamesLines)
+	ipsLines = ensureIndentLines(ipsLines)
+
+	lines = append(lines, "server:")
 	lines = append(lines, serverLines...)
 	lines = append(lines, hostnamesLines...)
 	lines = append(lines, ipsLines...)
 
 	// Forward zone
 	lines = append(lines, "forward-zone:")
-	forwardZoneSection := map[string]string{
-		"name":                 "\".\"",
-		"forward-tls-upstream": "yes",
+	forwardZoneLines := []string{
+		`name: "."`,
+		"forward-tls-upstream: yes",
 	}
+	cachingLine := "forward-no-cache: yes"
 	if settings.Caching {
-		forwardZoneSection["forward-no-cache"] = "no"
-	} else {
-		forwardZoneSection["forward-no-cache"] = "yes"
+		cachingLine = "forward-no-cache: no"
 	}
-	forwardZoneLines := make([]string, len(forwardZoneSection))
-	i = 0
-	for k, v := range forwardZoneSection {
-		forwardZoneLines[i] = "  " + k + ": " + v
-		i++
-	}
+	forwardZoneLines = append(forwardZoneLines, cachingLine)
+
 	sort.Slice(forwardZoneLines, func(i, j int) bool {
 		return forwardZoneLines[i] < forwardZoneLines[j]
 	})
+
 	for _, provider := range settings.Providers {
 		providerData, _ := GetProviderData(provider)
 		for _, IP := range providerData.IPs {
 			forwardZoneLines = append(forwardZoneLines,
-				fmt.Sprintf("  forward-addr: %s@853#%s", IP.String(), providerData.Host))
+				fmt.Sprintf("forward-addr: %s@853#%s", IP.String(), providerData.Host))
 		}
 	}
+
+	forwardZoneLines = ensureIndentLines(forwardZoneLines)
+
 	lines = append(lines, forwardZoneLines...)
+	return lines
+}
+
+func ensureIndentLines(lines []string) []string {
+	const spaces = 2
+	indent := strings.Repeat(" ", spaces)
+	for i := range lines {
+		if !strings.HasPrefix(lines[i], indent) {
+			lines[i] = indent + lines[i]
+		}
+	}
 	return lines
 }
 
