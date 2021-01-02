@@ -68,8 +68,9 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	client := &http.Client{Timeout: clientTimeout}
 	// Create configurators
 	dnsCrypto := dnscrypto.New(client, "", "") // TODO checksums for build
-	const unboundDir = "/unbound"
-	dnsConf := unbound.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundDir)
+	const unboundEtcDir = "/unbound"
+	const unboundPath = "/unbound/unbound"
+	dnsConf := unbound.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundEtcDir, unboundPath)
 
 	if len(args) > 1 && args[1] == "build" {
 		if err := dnsConf.SetupFiles(ctx); err != nil {

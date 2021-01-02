@@ -29,7 +29,7 @@ func (c *configurator) downloadRootHints(ctx context.Context) error {
 		return err
 	}
 
-	filepath := filepath.Join(c.unboundDir, rootHints)
+	filepath := filepath.Join(c.unboundEtcDir, rootHints)
 	file, err := c.openFile(filepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (c *configurator) downloadRootKeys(ctx context.Context) error {
 		return err
 	}
 
-	filepath := filepath.Join(c.unboundDir, rootKey)
+	filepath := filepath.Join(c.unboundEtcDir, rootKey)
 	file, err := c.openFile(filepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err

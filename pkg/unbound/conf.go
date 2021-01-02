@@ -17,13 +17,13 @@ import (
 
 func (c *configurator) MakeUnboundConf(settings models.Settings,
 	hostnamesLines, ipsLines []string, username string, puid, pgid int) (err error) {
-	configFilepath := filepath.Join(c.unboundDir, unboundConfigFilename)
+	configFilepath := filepath.Join(c.unboundEtcDir, unboundConfigFilename)
 	file, err := c.openFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
 
-	lines := generateUnboundConf(settings, hostnamesLines, ipsLines, c.unboundDir, username)
+	lines := generateUnboundConf(settings, hostnamesLines, ipsLines, c.unboundEtcDir, username)
 	_, err = file.WriteString(strings.Join(lines, "\n"))
 	if err != nil {
 		_ = file.Close()

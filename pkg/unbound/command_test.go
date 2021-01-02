@@ -14,13 +14,15 @@ import (
 func Test_Start(t *testing.T) {
 	t.Parallel()
 	mockCtrl := gomock.NewController(t)
-	const unboundDir = "/unbound"
+	const unboundEtcDir = "/unbound"
+	const unboundPath = "/usr/sbin/unbound"
 	commander := mock_command.NewMockCommander(mockCtrl)
-	commander.EXPECT().Start(context.Background(), "/unbound/unbound", "-d", "-c", "/unbound/unbound.conf", "-vv").
+	commander.EXPECT().Start(context.Background(), unboundPath, "-d", "-c", "/unbound/unbound.conf", "-vv").
 		Return(nil, nil, nil, nil).Times(1)
 	c := &configurator{
-		commander:  commander,
-		unboundDir: unboundDir,
+		commander:     commander,
+		unboundEtcDir: unboundEtcDir,
+		unboundPath:   unboundPath,
 	}
 	stdout, waitFn, err := c.Start(context.Background(), 2)
 	assert.Nil(t, stdout)
@@ -56,12 +58,14 @@ func Test_Version(t *testing.T) {
 			commander := mock_command.NewMockCommander(mockCtrl)
 			ctx := context.Background()
 
-			const unboundDir = "/unbound"
-			commander.EXPECT().Run(ctx, "/unbound/unbound", "-V").
+			const unboundEtcDir = "/unbound"
+			const unboundPath = "/usr/sbin/unbound"
+			commander.EXPECT().Run(ctx, unboundPath, "-V").
 				Return(tc.runOutput, tc.runErr).Times(1)
 			c := &configurator{
-				unboundDir: unboundDir,
-				commander:  commander,
+				commander:     commander,
+				unboundEtcDir: unboundEtcDir,
+				unboundPath:   unboundPath,
 			}
 			version, err := c.Version(ctx)
 			if tc.err != nil {

@@ -30,20 +30,22 @@ type Configurator interface {
 }
 
 type configurator struct {
-	openFile   os.OpenFileFunc
-	commander  command.Commander
-	resolver   *net.Resolver
-	dnscrypto  dnscrypto.DNSCrypto
-	unboundDir string
+	openFile      os.OpenFileFunc
+	commander     command.Commander
+	resolver      *net.Resolver
+	dnscrypto     dnscrypto.DNSCrypto
+	unboundEtcDir string
+	unboundPath   string
 }
 
 func NewConfigurator(logger logging.Logger, openFile os.OpenFileFunc,
-	dnscrypto dnscrypto.DNSCrypto, unboundDir string) Configurator {
+	dnscrypto dnscrypto.DNSCrypto, unboundEtcDir, unboundPath string) Configurator {
 	return &configurator{
-		openFile:   openFile,
-		commander:  command.NewCommander(),
-		resolver:   net.DefaultResolver,
-		dnscrypto:  dnscrypto,
-		unboundDir: unboundDir,
+		openFile:      openFile,
+		commander:     command.NewCommander(),
+		resolver:      net.DefaultResolver,
+		dnscrypto:     dnscrypto,
+		unboundEtcDir: unboundEtcDir,
+		unboundPath:   unboundPath,
 	}
 }
