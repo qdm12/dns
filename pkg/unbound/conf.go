@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/qdm12/dns/pkg/models"
+	"github.com/qdm12/golibs/os"
 )
 
 func (c *configurator) MakeUnboundConf(settings models.Settings,

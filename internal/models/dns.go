@@ -15,6 +15,7 @@ type ProviderData struct {
 	IPs          []net.IP
 	Host         Host
 	SupportsIPv6 bool
+	SupportsTLS  bool
 }
 
 type Settings struct { //nolint:maligned
