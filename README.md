@@ -218,6 +218,15 @@ This container requires the following connections:
 
 Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. Hence https://1.1.1.1/help does not detect a direct connection to them.
 
+## Go API
+
+Some packages are exposed publicly through the [pkg](pkg) directory.
+
+The API is at v1.x.x but (shame on me) is not stable and subject to change without
+changing version. If you need it to be stable, please [create an issue](https://github.com/qdm12/dns/issues/new).
+
+For now, it is used by the [gluetun](https://github.com/qdm12/gluetun) project for its DNS over TLS usage.
+
 ## Development
 
 1. Setup your environment
