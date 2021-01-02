@@ -1,8 +1,8 @@
 package settings
 
 import (
-	"github.com/qdm12/cloudflare-dns-server/internal/models"
-	"github.com/qdm12/cloudflare-dns-server/internal/params"
+	"github.com/qdm12/dns/internal/models"
+	"github.com/qdm12/dns/internal/params"
 )
 
 func GetSettings(reader params.Reader) (settings models.Settings, err error) {

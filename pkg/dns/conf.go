@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/models"
+	"github.com/qdm12/dns/internal/models"
 )
 
 func (c *configurator) MakeUnboundConf(settings models.UnboundSettings,

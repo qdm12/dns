@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/kyokomi/emoji"
-	"github.com/qdm12/cloudflare-dns-server/internal/constants"
-	"github.com/qdm12/cloudflare-dns-server/internal/models"
+	"github.com/qdm12/dns/internal/constants"
+	"github.com/qdm12/dns/internal/models"
 )
 
 // Splash returns the welcome spash message.

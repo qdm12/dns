@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/models"
+	"github.com/qdm12/dns/internal/models"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/os"

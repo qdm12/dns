@@ -3,7 +3,7 @@ package params
 import (
 	"time"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/models"
+	"github.com/qdm12/dns/internal/models"
 	"github.com/qdm12/golibs/logging"
 	libparams "github.com/qdm12/golibs/params"
 	"github.com/qdm12/golibs/verification"

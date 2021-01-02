@@ -4,19 +4,20 @@
 
 **Announcement**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break, use the image with tag `:shell`)
 
-[![Cloudflare DNS over TLS Docker](https://github.com/qdm12/cloudflare-dns-server/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
+[![Cloudflare DNS over TLS Docker](https://github.com/qdm12/dns/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/dns)
 
-[![Build Status](https://travis-ci.org/qdm12/cloudflare-dns-server.svg?branch=master)](https://travis-ci.org/qdm12/cloudflare-dns-server)
+[![Size](https://img.shields.io/docker/image-size/qmcgaw/dns?sort=semver&label=Last%20released%20image)](https://hub.docker.com/r/qmcgaw/dns/tags?page=1&ordering=last_updated)
+[![Size](https://img.shields.io/docker/image-size/qmcgaw/dns/latest?label=Latest%20image)](https://hub.docker.com/r/qmcgaw/dns/tags)
+
 [![Docker Pulls](https://img.shields.io/docker/pulls/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
-[![Docker Stars](https://img.shields.io/docker/stars/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
+[![Docker Pulls](https://img.shields.io/docker/pulls/qmcgaw/dns.svg)](https://hub.docker.com/r/qmcgaw/dns)
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/commits)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/y/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/commits)
-[![GitHub issues](https://img.shields.io/github/issues/qdm12/cloudflare-dns-server.svg)](https://github.com/qdm12/cloudflare-dns-server/issues)
+[![Docker Stars](https://img.shields.io/docker/pulls/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
+[![Docker Stars](https://img.shields.io/docker/stars/qmcgaw/dns.svg)](https://hub.docker.com/r/qmcgaw/dns)
 
-[![Image size](https://images.microbadger.com/badges/image/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
-[![Image version](https://images.microbadger.com/badges/version/qmcgaw/cloudflare-dns-server.svg)](https://microbadger.com/images/qmcgaw/cloudflare-dns-server)
-[![Join Slack channel](https://img.shields.io/badge/slack-@qdm12-yellow.svg?logo=slack)](https://join.slack.com/t/qdm12/shared_invite/enQtODMwMDQyMTAxMjY1LTU1YjE1MTVhNTBmNTViNzJiZmQwZWRmMDhhZjEyNjVhZGM4YmIxOTMxOTYzN2U0N2U2YjQ2MDk3YmYxN2NiNTc)
+[![GitHub last commit](https://img.shields.io/github/last-commit/qdm12/dns.svg)](https://github.com/qdm12/dns/commits)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/y/qdm12/dns.svg)](https://github.com/qdm12/dns/commits)
+[![GitHub issues](https://img.shields.io/github/issues/qdm12/dns.svg)](https://github.com/qdm12/dns/issues)
 
 ## Features
 
@@ -53,7 +54,7 @@
 - DNS rebinding protection
 - DNSSEC Validation
 
-    [![DNSSEC Validation](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
+    [![DNSSEC Validation](https://github.com/qdm12/dns/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
@@ -62,10 +63,10 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 1. Launch the container with
 
     ```sh
-    docker run -d -p 53:53/udp qmcgaw/cloudflare-dns-server
+    docker run -d -p 53:53/udp qmcgaw/dns
     ```
 
-    You can also use [docker-compose.yml](https://github.com/qdm12/cloudflare-dns-server/blob/master/docker-compose.yml) with:
+    You can also use [docker-compose.yml](https://github.com/qdm12/dns/blob/master/docker-compose.yml) with:
 
     ```sh
     docker-compose up -d
@@ -113,7 +114,7 @@ Configure your router to use the LAN IP address of your Docker host as its prima
 - Change the DNS settings, which are usually located in *Connection settings / Advanced / DNS server*
 - If a secondary fallback DNS address is required, use a dull ip address such as the router's IP 192.168.1.1 to force traffic to only go through this container
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/diagram-router.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/diagram-router.png?raw=true)
 
 To ensure network clients cannot use another DNS, you might want to
 
@@ -125,7 +126,7 @@ To ensure network clients cannot use another DNS, you might want to
 
 You have to configure each machine connected to your router to use the Docker host as their DNS server.
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/diagram-clients.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/diagram-clients.png?raw=true)
 
 #### Docker containers
 
@@ -153,28 +154,28 @@ If the containers are in the same Docker network, you can simply set the `dns` t
 
 1. Open the control panel and follow the instructions shown on the screenshots below.
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows1.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows1.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows2.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows2.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows3.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows3.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows4.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows4.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows5.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows5.png?raw=true)
 
 Enter the IP Address of your Docker host as the **Preferred DNS server** (`192.168.1.210` in my case)
 You can set the Cloudflare DNS server address 1.1.1.1 as an alternate DNS server although you might want to
 leave this blank so that no domain name request is in plaintext.
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows6.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows6.png?raw=true)
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows7.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows7.png?raw=true)
 
 When closing, Windows should try to identify any potential problems.
 If everything is fine, you should see the following message:
 
-![](https://github.com/qdm12/cloudflare-dns-server/blob/master/readme/windows8.png?raw=true)
+![](https://github.com/qdm12/dns/blob/master/readme/windows8.png?raw=true)
 
 #### Mac OS
 
@@ -198,41 +199,41 @@ See [this](http://www.macinstruct.com/node/558)
     - With `git`
 
         ```sh
-        docker build -t qmcgaw/cloudflare-dns-server https://github.com/qdm12/cloudflare-dns-server.git
+        docker build -t qmcgaw/dns https://github.com/qdm12/dns.git
         ```
 
     - With `wget` and `unzip`
 
         ```sh
-        wget -q "https://github.com/qdm12/cloudflare-dns-server/archive/master.zip"
+        wget -q "https://github.com/qdm12/dns/archive/master.zip"
         unzip -q "master.zip"
         cd *-master
-        docker build -t qmcgaw/cloudflare-dns-server .
+        docker build -t qmcgaw/dns .
         cd .. && rm -r master.zip *-master
         ```
 
 - Build an older Docker image (you need `wget` and `unzip`)
-    1. Go to [the commits](https://github.com/qdm12/cloudflare-dns-server/commits/master) and find which commit you want to build for
+    1. Go to [the commits](https://github.com/qdm12/dns/commits/master) and find which commit you want to build for
     1. You can click on the clipboard next to the commit, in example you pick the commit `da6dbb2ff21c0af4cee93fdb92415aee167f7fd7`
     1. Open a terminal and set `COMMIT=da6dbb2ff21c0af4cee93fdb92415aee167f7fd7`
     1. Download the code for this commit and build the Docker image, either:
         - With `git`
 
             ```sh
-            git clone https://github.com/qdm12/cloudflare-dns-server.git temp
+            git clone https://github.com/qdm12/dns.git temp
             cd temp
             git reset --hard $COMMIT
-            docker build -t qmcgaw/cloudflare-dns-server .
+            docker build -t qmcgaw/dns .
             cd .. && rm -r temp
             ```
 
         - With `wget` and `unzip`
 
             ```sh
-            wget -q "https://github.com/qdm12/cloudflare-dns-server/archive/$COMMIT.zip"
+            wget -q "https://github.com/qdm12/dns/archive/$COMMIT.zip"
             unzip -q "$COMMIT.zip"
             cd *-$COMMIT
-            docker build -t qmcgaw/cloudflare-dns-server .
+            docker build -t qmcgaw/dns .
             cd .. && rm -r "$COMMIT.zip" *-$COMMIT
             ```
 
@@ -287,7 +288,7 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
     # Lint the code
     golangci-lint run
     # Build the Docker image
-    docker build -t qmcgaw/cloudflare-dns-server .
+    docker build -t qmcgaw/dns .
     ```
 
 1. See [Contributing](.github/CONTRIBUTING.md) for more information on how to contribute to this repository.

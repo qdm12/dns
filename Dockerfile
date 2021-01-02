@@ -33,9 +33,9 @@ LABEL \
     org.opencontainers.image.version=$VERSION \
     org.opencontainers.image.created=$BUILD_DATE \
     org.opencontainers.image.revision=$COMMIT \
-    org.opencontainers.image.url="https://github.com/qdm12/cloudflare-dns-server" \
-    org.opencontainers.image.documentation="https://github.com/qdm12/cloudflare-dns-server/blob/master/README.md" \
-    org.opencontainers.image.source="https://github.com/qdm12/cloudflare-dns-server" \
+    org.opencontainers.image.url="https://github.com/qdm12/dns" \
+    org.opencontainers.image.documentation="https://github.com/qdm12/dns/blob/master/README.md" \
+    org.opencontainers.image.source="https://github.com/qdm12/dns" \
     org.opencontainers.image.title="DNS over TLS upstream server" \
     org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)"
 EXPOSE 53/udp

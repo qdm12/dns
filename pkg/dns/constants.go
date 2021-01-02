@@ -3,7 +3,7 @@ package dns
 import (
 	"net"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/models"
+	"github.com/qdm12/dns/internal/models"
 )
 
 const (

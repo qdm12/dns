@@ -16,6 +16,6 @@ jobs:
         with:
           username: qmcgaw
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: qmcgaw/cloudflare-dns-server
+          repository: qmcgaw/dns
           short-description: DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers
           readme-filepath: README.md

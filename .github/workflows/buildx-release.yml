@@ -29,8 +29,6 @@ jobs:
             --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
             --build-arg COMMIT=`git rev-parse --short HEAD` \
             --build-arg VERSION=${GITHUB_REF##*/} \
-            -t qmcgaw/cloudflare-dns-server:${GITHUB_REF##*/} \
+            -t qmcgaw/dns:${GITHUB_REF##*/} \
             --push \
             .
-      - run: curl -X POST https://hooks.microbadger.com/images/qmcgaw/cloudflare-dns-server/tQFy7AxtSUNANPe6aoVChYdsI_I=_LINK
-        continue-on-error: true

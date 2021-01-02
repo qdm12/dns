@@ -1,4 +1,4 @@
-module github.com/qdm12/cloudflare-dns-server
+module github.com/qdm12/dns
 
 go 1.14
 
