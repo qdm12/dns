@@ -4,25 +4,27 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
-
-	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 )
 
 func (c *configurator) Start(ctx context.Context, verbosityDetailsLevel uint8) (
 	stdout io.ReadCloser, wait func() error, err error) {
-	c.logger.Info("starting unbound")
-	args := []string{"-d", "-c", string(constants.UnboundConf)}
+	configFilepath := filepath.Join(c.unboundDir, unboundConfigFilename)
+	args := []string{"-d", "-c", configFilepath}
 	if verbosityDetailsLevel > 0 {
 		args = append(args, "-"+strings.Repeat("v", int(verbosityDetailsLevel)))
 	}
+
+	binFilepath := filepath.Join(c.unboundDir, unboundBinFilename)
 	// Only logs to stderr
-	_, stdout, wait, err = c.commander.Start(ctx, "/unbound/unbound", args...)
+	_, stdout, wait, err = c.commander.Start(ctx, binFilepath, args...)
 	return stdout, wait, err
 }
 
 func (c *configurator) Version(ctx context.Context) (version string, err error) {
-	output, err := c.commander.Run(ctx, "/unbound/unbound", "-V")
+	binFilepath := filepath.Join(c.unboundDir, unboundBinFilename)
+	output, err := c.commander.Run(ctx, binFilepath, "-V")
 	if err != nil {
 		return "", fmt.Errorf("unbound version: %w", err)
 	}

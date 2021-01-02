@@ -7,7 +7,6 @@ import (
 
 // UseDNSInternally is to change the Go program DNS only.
 func (c *configurator) UseDNSInternally(ip net.IP) {
-	c.logger.Info("using DNS address %s internally", ip.String())
 	net.DefaultResolver.PreferGo = true
 	net.DefaultResolver.Dial = func(ctx context.Context, network, address string) (net.Conn, error) {
 		d := net.Dialer{}

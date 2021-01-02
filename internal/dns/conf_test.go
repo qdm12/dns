@@ -10,7 +10,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,21 +17,17 @@ import (
 
 func Test_generateUnboundConf(t *testing.T) {
 	t.Parallel()
-	settings := models.Settings{
-		Providers:          []models.Provider{constants.Cloudflare, constants.Quad9},
+	settings := models.UnboundSettings{
+		Providers:          []models.Provider{Cloudflare, Quad9},
 		AllowedHostnames:   []string{"a"},
-		BlockedIPs:         []string{"8.0.1.2"},
-		PrivateAddresses:   []string{"9.9.9.9"},
-		BlockMalicious:     true,
-		BlockSurveillance:  false,
-		BlockAds:           false,
+		BlockedIPs:         []string{"8.0.1.2", "9.9.9.9"},
 		VerbosityLevel:     2,
 		ValidationLogLevel: 3,
 		ListeningPort:      53,
 		IPv4:               true,
 		IPv6:               true,
 	}
-	lines, err := generateUnboundConf(settings,
+	lines := generateUnboundConf(settings,
 		[]string{
 			`  local-zone: "b" static`,
 			`  local-zone: "c" static`,
@@ -41,11 +36,11 @@ func Test_generateUnboundConf(t *testing.T) {
 			"  private-address: c",
 			"  private-address: d",
 		},
+		"/unbound",
+		"user",
 	)
-	require.NoError(t, err)
 	expected := `
 server:
-  access-control: 0.0.0.0/0 allow
   cache-max-ttl: 9000
   cache-min-ttl: 3600
   do-ip4: yes
@@ -72,7 +67,7 @@ server:
   tls-cert-bundle: "/unbound/ca-certificates.crt"
   trust-anchor-file: "/unbound/root.key"
   use-syslog: no
-  username: ""
+  username: "user"
   val-log-level: 3
   verbosity: 2
   local-zone: "b" static
@@ -253,16 +248,16 @@ func Test_buildBlocked(t *testing.T) {
 				m: make(map[models.URL]int),
 			}
 			if tc.malicious.blocked {
-				clientCalls.m[constants.MaliciousBlockListIPsURL] = 0
-				clientCalls.m[constants.MaliciousBlockListHostnamesURL] = 0
+				clientCalls.m[maliciousBlockListIPsURL] = 0
+				clientCalls.m[maliciousBlockListHostnamesURL] = 0
 			}
 			if tc.ads.blocked {
-				clientCalls.m[constants.AdsBlockListIPsURL] = 0
-				clientCalls.m[constants.AdsBlockListHostnamesURL] = 0
+				clientCalls.m[adsBlockListIPsURL] = 0
+				clientCalls.m[adsBlockListHostnamesURL] = 0
 			}
 			if tc.surveillance.blocked {
-				clientCalls.m[constants.SurveillanceBlockListIPsURL] = 0
-				clientCalls.m[constants.SurveillanceBlockListHostnamesURL] = 0
+				clientCalls.m[surveillanceBlockListIPsURL] = 0
+				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
 			}
 
 			client := &http.Client{
@@ -278,13 +273,13 @@ func Test_buildBlocked(t *testing.T) {
 					var body []byte
 					var err error
 					switch url {
-					case constants.MaliciousBlockListIPsURL, constants.MaliciousBlockListHostnamesURL:
+					case maliciousBlockListIPsURL, maliciousBlockListHostnamesURL:
 						body = tc.malicious.content
 						err = tc.malicious.clientErr
-					case constants.AdsBlockListIPsURL, constants.AdsBlockListHostnamesURL:
+					case adsBlockListIPsURL, adsBlockListHostnamesURL:
 						body = tc.ads.content
 						err = tc.ads.clientErr
-					case constants.SurveillanceBlockListIPsURL, constants.SurveillanceBlockListHostnamesURL:
+					case surveillanceBlockListIPsURL, surveillanceBlockListHostnamesURL:
 						body = tc.surveillance.content
 						err = tc.surveillance.clientErr
 					default: // just in case if the test is badly written
@@ -482,13 +477,13 @@ func Test_buildBlockedHostnames(t *testing.T) {
 				m: make(map[models.URL]int),
 			}
 			if tc.malicious.blocked {
-				clientCalls.m[constants.MaliciousBlockListHostnamesURL] = 0
+				clientCalls.m[maliciousBlockListHostnamesURL] = 0
 			}
 			if tc.ads.blocked {
-				clientCalls.m[constants.AdsBlockListHostnamesURL] = 0
+				clientCalls.m[adsBlockListHostnamesURL] = 0
 			}
 			if tc.surveillance.blocked {
-				clientCalls.m[constants.SurveillanceBlockListHostnamesURL] = 0
+				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
 			}
 
 			client := &http.Client{
@@ -504,13 +499,13 @@ func Test_buildBlockedHostnames(t *testing.T) {
 					var body []byte
 					var err error
 					switch url {
-					case constants.MaliciousBlockListHostnamesURL:
+					case maliciousBlockListHostnamesURL:
 						body = tc.malicious.content
 						err = tc.malicious.clientErr
-					case constants.AdsBlockListHostnamesURL:
+					case adsBlockListHostnamesURL:
 						body = tc.ads.content
 						err = tc.ads.clientErr
-					case constants.SurveillanceBlockListHostnamesURL:
+					case surveillanceBlockListHostnamesURL:
 						body = tc.surveillance.content
 						err = tc.surveillance.clientErr
 					default: // just in case if the test is badly written
@@ -640,13 +635,13 @@ func Test_buildBlockedIPs(t *testing.T) {
 				m: make(map[models.URL]int),
 			}
 			if tc.malicious.blocked {
-				clientCalls.m[constants.MaliciousBlockListIPsURL] = 0
+				clientCalls.m[maliciousBlockListIPsURL] = 0
 			}
 			if tc.ads.blocked {
-				clientCalls.m[constants.AdsBlockListIPsURL] = 0
+				clientCalls.m[adsBlockListIPsURL] = 0
 			}
 			if tc.surveillance.blocked {
-				clientCalls.m[constants.SurveillanceBlockListIPsURL] = 0
+				clientCalls.m[surveillanceBlockListIPsURL] = 0
 			}
 
 			client := &http.Client{
@@ -662,13 +657,13 @@ func Test_buildBlockedIPs(t *testing.T) {
 					var body []byte
 					var err error
 					switch url {
-					case constants.MaliciousBlockListIPsURL:
+					case maliciousBlockListIPsURL:
 						body = tc.malicious.content
 						err = tc.malicious.clientErr
-					case constants.AdsBlockListIPsURL:
+					case adsBlockListIPsURL:
 						body = tc.ads.content
 						err = tc.ads.clientErr
-					case constants.SurveillanceBlockListIPsURL:
+					case surveillanceBlockListIPsURL:
 						body = tc.surveillance.content
 						err = tc.surveillance.clientErr
 					default: // just in case if the test is badly written

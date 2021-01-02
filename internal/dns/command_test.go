@@ -6,9 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/golibs/command/mock_command"
-	"github.com/qdm12/golibs/logging/mock_logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,12 +15,15 @@ func Test_Start(t *testing.T) {
 	t.Parallel()
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	logger := mock_logging.NewMockLogger(mockCtrl)
-	logger.EXPECT().Info("starting unbound").Times(1)
+
+	const unboundDir = "/unbound"
 	commander := mock_command.NewMockCommander(mockCtrl)
-	commander.EXPECT().Start(context.Background(), "/unbound/unbound", "-d", "-c", string(constants.UnboundConf), "-vv").
+	commander.EXPECT().Start(context.Background(), "/unbound/unbound", "-d", "-c", "/unbound/unbound.conf", "-vv").
 		Return(nil, nil, nil, nil).Times(1)
-	c := &configurator{commander: commander, logger: logger}
+	c := &configurator{
+		commander:  commander,
+		unboundDir: unboundDir,
+	}
 	stdout, _, err := c.Start(context.Background(), 2)
 	assert.Nil(t, stdout)
 	assert.NoError(t, err)
@@ -56,9 +57,14 @@ func Test_Version(t *testing.T) {
 			defer mockCtrl.Finish()
 			commander := mock_command.NewMockCommander(mockCtrl)
 			ctx := context.Background()
+
+			const unboundDir = "/unbound"
 			commander.EXPECT().Run(ctx, "/unbound/unbound", "-V").
 				Return(tc.runOutput, tc.runErr).Times(1)
-			c := &configurator{commander: commander}
+			c := &configurator{
+				unboundDir: unboundDir,
+				commander:  commander,
+			}
 			version, err := c.Version(ctx)
 			if tc.err != nil {
 				require.Error(t, err)

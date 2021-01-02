@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/constants"
+	"github.com/qdm12/cloudflare-dns-server/internal/dns"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	libparams "github.com/qdm12/golibs/params"
 )
@@ -28,7 +28,7 @@ func (r *reader) GetProviders() (providers []models.Provider, err error) {
 	}
 	for _, word := range strings.Split(s, ",") {
 		provider := models.Provider(word)
-		if _, ok := constants.ProviderMapping()[provider]; !ok {
+		if _, ok := dns.GetProviderData(provider); !ok {
 			return nil, fmt.Errorf("DNS provider %q is not valid", provider)
 		}
 		providers = append(providers, provider)

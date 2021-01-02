@@ -7,39 +7,45 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/constants"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
-	"github.com/qdm12/golibs/files"
 )
 
-func (c *configurator) MakeUnboundConf(settings models.Settings,
-	hostnamesLines, ipsLines []string) (err error) {
-	c.logger.Info("generating Unbound configuration")
-	lines, err := generateUnboundConf(settings, hostnamesLines, ipsLines)
+func (c *configurator) MakeUnboundConf(settings models.UnboundSettings,
+	hostnamesLines, ipsLines []string, username string, puid, pgid int) (err error) {
+	configFilepath := filepath.Join(c.unboundDir, unboundConfigFilename)
+	file, err := c.openFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
-	const userWritePerm os.FileMode = 0600
-	return c.fileManager.WriteLinesToFile(
-		string(constants.UnboundConf),
-		lines,
-		files.Permissions(userWritePerm))
+
+	lines := generateUnboundConf(settings, hostnamesLines, ipsLines, c.unboundDir, username)
+	_, err = file.WriteString(strings.Join(lines, "\n"))
+	if err != nil {
+		_ = file.Close()
+		return err
+	}
+
+	if err := file.Close(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// MakeUnboundConf generates an Unbound configuration from the user provided settings.
-func generateUnboundConf(settings models.Settings, hostnamesLines, ipsLines []string) (
-	lines []string, err error) {
+// generateUnboundConf generates an Unbound configuration from the user provided settings.
+func generateUnboundConf(settings models.UnboundSettings,
+	hostnamesLines, ipsLines []string, unboundDir, username string) (
+	lines []string) {
 	const (
 		yes = "yes"
 		no  = "no"
 	)
 	ipv4, ipv6 := no, no
-	if !settings.IPv4 && !settings.IPv6 {
-		return nil, fmt.Errorf("cannot disable both ipv4 and ipv6 resolution")
-	}
 	if settings.IPv4 {
 		ipv4 = yes
 	}
@@ -48,8 +54,8 @@ func generateUnboundConf(settings models.Settings, hostnamesLines, ipsLines []st
 	}
 	serverSection := map[string]string{
 		// Logging
-		"verbosity":     fmt.Sprintf("%d", settings.VerbosityLevel),
-		"val-log-level": fmt.Sprintf("%d", settings.ValidationLogLevel),
+		"verbosity":     strconv.Itoa(int(settings.VerbosityLevel)),
+		"val-log-level": strconv.Itoa(int(settings.ValidationLogLevel)),
 		"use-syslog":    "no",
 		// Performance
 		"num-threads":       "2",
@@ -68,25 +74,24 @@ func generateUnboundConf(settings models.Settings, hostnamesLines, ipsLines []st
 		"hide-identity":    "yes",
 		"hide-version":     "yes",
 		// Security
-		"tls-cert-bundle":       fmt.Sprintf("%q", constants.CACertificates),
-		"root-hints":            fmt.Sprintf("%q", constants.RootHints),
-		"trust-anchor-file":     fmt.Sprintf("%q", constants.RootKey),
+		"tls-cert-bundle":       `"` + filepath.Join(unboundDir, cacertsFilename) + `"`,
+		"root-hints":            `"` + filepath.Join(unboundDir, rootHints) + `"`,
+		"trust-anchor-file":     `"` + filepath.Join(unboundDir, rootKey) + `"`,
 		"harden-below-nxdomain": "yes",
 		"harden-referral-path":  "yes",
 		"harden-algo-downgrade": "yes",
 		// Network
-		"do-ip4":         ipv4,
-		"do-ip6":         ipv6,
-		"interface":      "0.0.0.0",
-		"port":           fmt.Sprintf("%d", settings.ListeningPort),
-		"access-control": "0.0.0.0/0 allow",
+		"do-ip4":    ipv4,
+		"do-ip6":    ipv6,
+		"interface": "0.0.0.0",
+		"port":      strconv.Itoa(int(settings.ListeningPort)),
 		// Other
-		"username": "\"\"",
+		"username": `"` + username + `"`,
 		"include":  "include.conf",
 	}
 
 	for _, provider := range settings.Providers {
-		if provider == constants.LibreDNS {
+		if provider == LibreDNS {
 			delete(serverSection, "trust-anchor-file")
 		}
 	}
@@ -127,14 +132,14 @@ func generateUnboundConf(settings models.Settings, hostnamesLines, ipsLines []st
 		return forwardZoneLines[i] < forwardZoneLines[j]
 	})
 	for _, provider := range settings.Providers {
-		providerData := constants.ProviderMapping()[provider]
+		providerData, _ := GetProviderData(provider)
 		for _, IP := range providerData.IPs {
 			forwardZoneLines = append(forwardZoneLines,
 				fmt.Sprintf("  forward-addr: %s@853#%s", IP.String(), providerData.Host))
 		}
 	}
 	lines = append(lines, forwardZoneLines...)
-	return lines, nil
+	return lines
 }
 
 func (c *configurator) BuildBlocked(ctx context.Context, client *http.Client,
@@ -228,7 +233,7 @@ func buildBlockedHostnames(ctx context.Context, client *http.Client, blockMalici
 	if blockMalicious {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(ctx, client, string(constants.MaliciousBlockListHostnamesURL))
+			results, err := getList(ctx, client, string(maliciousBlockListHostnamesURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -236,7 +241,7 @@ func buildBlockedHostnames(ctx context.Context, client *http.Client, blockMalici
 	if blockAds {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(ctx, client, string(constants.AdsBlockListHostnamesURL))
+			results, err := getList(ctx, client, string(adsBlockListHostnamesURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -244,7 +249,7 @@ func buildBlockedHostnames(ctx context.Context, client *http.Client, blockMalici
 	if blockSurveillance {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(ctx, client, string(constants.SurveillanceBlockListHostnamesURL))
+			results, err := getList(ctx, client, string(surveillanceBlockListHostnamesURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -292,7 +297,7 @@ func buildBlockedIPs(ctx context.Context, client *http.Client, blockMalicious, b
 	if blockMalicious {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(ctx, client, string(constants.MaliciousBlockListIPsURL))
+			results, err := getList(ctx, client, string(maliciousBlockListIPsURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -300,7 +305,7 @@ func buildBlockedIPs(ctx context.Context, client *http.Client, blockMalicious, b
 	if blockAds {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(ctx, client, string(constants.AdsBlockListIPsURL))
+			results, err := getList(ctx, client, string(adsBlockListIPsURL))
 			chResults <- results
 			chError <- err
 		}()
@@ -308,7 +313,7 @@ func buildBlockedIPs(ctx context.Context, client *http.Client, blockMalicious, b
 	if blockSurveillance {
 		listsLeftToFetch++
 		go func() {
-			results, err := getList(ctx, client, string(constants.SurveillanceBlockListIPsURL))
+			results, err := getList(ctx, client, string(surveillanceBlockListIPsURL))
 			chResults <- results
 			chError <- err
 		}()

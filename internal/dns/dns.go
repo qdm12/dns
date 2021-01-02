@@ -8,14 +8,15 @@ import (
 
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/golibs/command"
-	"github.com/qdm12/golibs/files"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
 type Configurator interface {
 	SetupFiles(ctx context.Context) error
-	MakeUnboundConf(settings models.Settings, hostnamesLines, ipsLines []string) (err error)
+	MakeUnboundConf(settings models.UnboundSettings,
+		hostnamesLines, ipsLines []string, username string,
+		puid, pgid int) (err error)
 	UseDNSInternally(IP net.IP)
 	Start(ctx context.Context, logLevel uint8) (stdout io.ReadCloser, wait func() error, err error)
 	WaitForUnbound(ctx context.Context) (err error)
@@ -27,19 +28,20 @@ type Configurator interface {
 }
 
 type configurator struct {
-	logger      logging.Logger
-	fileManager files.FileManager
-	commander   command.Commander
-	resolver    *net.Resolver
-	dnscrypto   dnscrypto.DNSCrypto
+	openFile   models.OSOpenFileFunc
+	commander  command.Commander
+	resolver   *net.Resolver
+	dnscrypto  dnscrypto.DNSCrypto
+	unboundDir string
 }
 
-func NewConfigurator(logger logging.Logger, fileManager files.FileManager, dnscrypto dnscrypto.DNSCrypto) Configurator {
+func NewConfigurator(logger logging.Logger, openFile models.OSOpenFileFunc,
+	dnscrypto dnscrypto.DNSCrypto, unboundDir string) Configurator {
 	return &configurator{
-		logger:      logger,
-		fileManager: fileManager,
-		commander:   command.NewCommander(),
-		resolver:    net.DefaultResolver,
-		dnscrypto:   dnscrypto,
+		openFile:   openFile,
+		commander:  command.NewCommander(),
+		resolver:   net.DefaultResolver,
+		dnscrypto:  dnscrypto,
+		unboundDir: unboundDir,
 	}
 }

@@ -18,7 +18,6 @@ import (
 	"github.com/qdm12/cloudflare-dns-server/internal/settings"
 	"github.com/qdm12/cloudflare-dns-server/internal/splash"
 	"github.com/qdm12/golibs/command"
-	"github.com/qdm12/golibs/files"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/updated/pkg/dnscrypto"
 )
@@ -36,10 +35,10 @@ func main() {
 		BuildDate: buildDate,
 	}
 	ctx := context.Background()
-	os.Exit(_main(ctx, buildInfo, os.Args))
+	os.Exit(_main(ctx, buildInfo, os.Args, os.OpenFile))
 }
 
-func _main(ctx context.Context, buildInfo models.BuildInformation, args []string) int {
+func _main(ctx context.Context, buildInfo models.BuildInformation, args []string, openFile models.OSOpenFileFunc) int {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
@@ -66,9 +65,9 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
 	// Create configurators
-	fileManager := files.NewFileManager()
 	dnsCrypto := dnscrypto.NewDNSCrypto(client, "", "") // TODO checksums for build
-	dnsConf := dns.NewConfigurator(logger, fileManager, dnsCrypto)
+	const unboundDir = "/unbound"
+	dnsConf := dns.NewConfigurator(logger, openFile, dnsCrypto, unboundDir)
 
 	if len(args) > 1 && args[1] == "build" {
 		if err := dnsConf.SetupFiles(ctx); err != nil {
@@ -106,7 +105,9 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	wg.Add(1)
 	go healthServer.Run(ctx, wg)
 
-	dnsConf.UseDNSInternally(net.IP{127, 0, 0, 1}) // use Unbound
+	localIP := net.IP{127, 0, 0, 1}
+	logger.Info("using DNS address %s internally", localIP.String())
+	dnsConf.UseDNSInternally(localIP) // use Unbound
 	wg.Add(1)
 	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, streamMerger, client, cancel)
 
@@ -206,14 +207,15 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 	startErr, waitErr error) {
 	var hostnamesLines, ipsLines []string
 	if !firstRun {
+		logger.Info("downloading DNSSEC root hints and named root")
 		if err := dnsConf.SetupFiles(ctx); err != nil {
 			return oldCtx, oldCancel, err, nil, nil
 		}
-		blockedIPs := append(settings.BlockedIPs, settings.PrivateAddresses...)
+		logger.Info("downloading and building DNS block lists")
 		var errs []error
 		hostnamesLines, ipsLines, errs = dnsConf.BuildBlocked(ctx, client,
 			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-			settings.BlockedHostnames, blockedIPs, settings.AllowedHostnames,
+			settings.Unbound.BlockedHostnames, settings.Unbound.BlockedIPs, settings.Unbound.AllowedHostnames,
 		)
 		for _, err := range errs {
 			logger.Warn(err)
@@ -221,12 +223,15 @@ func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
 		logger.Info("%d hostnames blocked overall", len(hostnamesLines))
 		logger.Info("%d IP addresses blocked overall", len(ipsLines))
 	}
-	if err := dnsConf.MakeUnboundConf(settings, hostnamesLines, ipsLines); err != nil {
+	logger.Info("generating Unbound configuration")
+	if err := dnsConf.MakeUnboundConf(settings.Unbound, hostnamesLines, ipsLines,
+		settings.Username, settings.Puid, settings.Pgid); err != nil {
 		return oldCtx, oldCancel, err, nil, nil
 	}
 	newCtx, newCancel = context.WithCancel(ctx)
 	oldCancel()
-	stream, waitFn, err := dnsConf.Start(newCtx, settings.VerbosityDetailsLevel)
+	logger.Info("starting unbound")
+	stream, waitFn, err := dnsConf.Start(newCtx, settings.Unbound.VerbosityDetailsLevel)
 	if err != nil {
 		return newCtx, newCancel, nil, err, nil
 	}
