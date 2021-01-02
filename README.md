@@ -75,6 +75,18 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 1. See the [Connect clients to it](#connect-clients-to-it) section, you can also refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
 
+## Docker tags 🐳
+
+| Docker image | Github release |
+| --- | --- |
+| `qmcgaw/dns:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
+| `qmcgaw/dns:v1.2.1` | [v1.2.1](https://github.com/qdm12/dns/releases/tag/v1.2.1) |
+| `qmcgaw/dns:v1.1.1` | [v1.1.1](https://github.com/qdm12/dns/releases/tag/v1.1.1) |
+| `qmcgaw/cloudflare-dns-server:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
+| `qmcgaw/cloudflare-dns-server:v1.0.0` | [v1.0.0](https://github.com/qdm12/dns/releases/tag/v1.0.0) |
+
+💁 `qmcgaw/cloudflare-dns-server:latest` mirrors `qmcgaw/dns:latest`
+
 ## Environment variables
 
 | Environment variable | Default | Description |
