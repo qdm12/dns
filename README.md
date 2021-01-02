@@ -26,7 +26,6 @@
     - [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
     - [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
     - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
-    - [SecureDNS](https://securedns.eu)
     - [LibreDNS](https://libredns.gr)
     - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
     - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
@@ -80,7 +79,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
-| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `securedns`, `libredns` and `cira` |
+| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `libredns` and `cira` |
 | `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
 | `VERBOSITY_DETAILS` | `0` | From 0 to 4 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
