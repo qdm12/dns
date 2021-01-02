@@ -52,7 +52,7 @@ server:
   harden-referral-path: yes
   hide-identity: yes
   hide-version: yes
-  include: include.conf
+  include: "/unbound/include.conf"
   interface: 0.0.0.0
   key-cache-size: 32m
   key-cache-slabs: 4
