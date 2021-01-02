@@ -15,6 +15,10 @@ const (
 )
 
 const (
+	resolvConfFilepath = "/etc/resolv.conf"
+)
+
+const (
 	// Cloudflare is a DNS over TLS provider.
 	Cloudflare models.Provider = "cloudflare"
 	// Google is a DNS over TLS provider.

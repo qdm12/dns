@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
+	nativeos "os"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -19,6 +19,7 @@ import (
 	"github.com/qdm12/cloudflare-dns-server/pkg/dns"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
+	"github.com/qdm12/golibs/os"
 	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
@@ -35,10 +36,11 @@ func main() {
 		BuildDate: buildDate,
 	}
 	ctx := context.Background()
-	os.Exit(_main(ctx, buildInfo, os.Args, os.OpenFile))
+	os := os.New()
+	nativeos.Exit(_main(ctx, buildInfo, nativeos.Args, os))
 }
 
-func _main(ctx context.Context, buildInfo models.BuildInformation, args []string, openFile models.OSOpenFileFunc) int {
+func _main(ctx context.Context, buildInfo models.BuildInformation, args []string, os os.OS) int {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
@@ -67,7 +69,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	// Create configurators
 	dnsCrypto := dnscrypto.New(client, "", "") // TODO checksums for build
 	const unboundDir = "/unbound"
-	dnsConf := dns.NewConfigurator(logger, openFile, dnsCrypto, unboundDir)
+	dnsConf := dns.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundDir)
 
 	if len(args) > 1 && args[1] == "build" {
 		if err := dnsConf.SetupFiles(ctx); err != nil {
@@ -111,11 +113,11 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	wg.Add(1)
 	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, streamMerger, client, cancel)
 
-	signalsCh := make(chan os.Signal, 1)
+	signalsCh := make(chan nativeos.Signal, 1)
 	signal.Notify(signalsCh,
 		syscall.SIGINT,
 		syscall.SIGTERM,
-		os.Interrupt,
+		nativeos.Interrupt,
 	)
 	select {
 	case signal := <-signalsCh:

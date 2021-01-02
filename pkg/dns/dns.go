@@ -9,6 +9,7 @@ import (
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
+	"github.com/qdm12/golibs/os"
 	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
@@ -28,14 +29,14 @@ type Configurator interface {
 }
 
 type configurator struct {
-	openFile   models.OSOpenFileFunc
+	openFile   os.OpenFileFunc
 	commander  command.Commander
 	resolver   *net.Resolver
 	dnscrypto  dnscrypto.DNSCrypto
 	unboundDir string
 }
 
-func NewConfigurator(logger logging.Logger, openFile models.OSOpenFileFunc,
+func NewConfigurator(logger logging.Logger, openFile os.OpenFileFunc,
 	dnscrypto dnscrypto.DNSCrypto, unboundDir string) Configurator {
 	return &configurator{
 		openFile:   openFile,
