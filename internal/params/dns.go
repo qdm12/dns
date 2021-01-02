@@ -5,8 +5,8 @@ import (
 	"net"
 	"strings"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/dns"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
+	"github.com/qdm12/cloudflare-dns-server/pkg/dns"
 	libparams "github.com/qdm12/golibs/params"
 )
 

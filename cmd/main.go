@@ -11,12 +11,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/qdm12/cloudflare-dns-server/internal/dns"
 	"github.com/qdm12/cloudflare-dns-server/internal/health"
 	"github.com/qdm12/cloudflare-dns-server/internal/models"
 	"github.com/qdm12/cloudflare-dns-server/internal/params"
 	"github.com/qdm12/cloudflare-dns-server/internal/settings"
 	"github.com/qdm12/cloudflare-dns-server/internal/splash"
+	"github.com/qdm12/cloudflare-dns-server/pkg/dns"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/updated/pkg/dnscrypto"
