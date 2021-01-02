@@ -6,35 +6,7 @@ import (
 )
 
 func GetSettings(reader params.Reader) (settings models.Settings, err error) {
-	settings.Unbound.Providers, err = reader.GetProviders()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.ListeningPort, err = reader.GetListeningPort()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.Caching, err = reader.GetCaching()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.IPv4, err = reader.GetIPv4()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.IPv6, err = reader.GetIPv6()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.VerbosityLevel, err = reader.GetVerbosity()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.VerbosityDetailsLevel, err = reader.GetVerbosityDetails()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.ValidationLogLevel, err = reader.GetValidationLogLevel()
+	settings.Unbound, err = getUnboundSettings(reader)
 	if err != nil {
 		return settings, err
 	}
@@ -50,23 +22,6 @@ func GetSettings(reader params.Reader) (settings models.Settings, err error) {
 	if err != nil {
 		return settings, err
 	}
-	settings.Unbound.BlockedHostnames, err = reader.GetBlockedHostnames()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.BlockedIPs, err = reader.GetBlockedIPs()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.AllowedHostnames, err = reader.GetUnblockedHostnames()
-	if err != nil {
-		return settings, err
-	}
-	privateAddresses, err := reader.GetPrivateAddresses()
-	if err != nil {
-		return settings, err
-	}
-	settings.Unbound.BlockedIPs = append(settings.Unbound.BlockedIPs, privateAddresses...)
 	settings.CheckUnbound, err = reader.GetCheckUnbound()
 	if err != nil {
 		return settings, err
