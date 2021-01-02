@@ -63,10 +63,9 @@ WORKDIR /unbound
 RUN apk --update --no-cache add unbound libcap ca-certificates && \
     mv /usr/sbin/unbound . && \
     mv /etc/ssl/certs/ca-certificates.crt . && \
-    touch include.conf && \
     chown 1000 -R . && \
     chmod 700 . && \
-    chmod 400 ca-certificates.crt include.conf && \
+    chmod 400 ca-certificates.crt && \
     chmod 500 unbound && \
     setcap 'cap_net_bind_service=+ep' unbound && \
     apk del libcap && \

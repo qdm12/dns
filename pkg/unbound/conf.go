@@ -87,7 +87,7 @@ func generateUnboundConf(settings models.Settings,
 		"port":      strconv.Itoa(int(settings.ListeningPort)),
 		// Other
 		"username": `"` + username + `"`,
-		"include":  "include.conf",
+		"include":  includeConfFilename,
 	}
 
 	for _, provider := range settings.Providers {
