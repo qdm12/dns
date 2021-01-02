@@ -23,7 +23,8 @@ func (c *configurator) MakeUnboundConf(settings models.Settings,
 		return err
 	}
 
-	lines := generateUnboundConf(settings, hostnamesLines, ipsLines, c.unboundEtcDir, username)
+	lines := generateUnboundConf(settings, hostnamesLines, ipsLines,
+		c.unboundEtcDir, c.cacertsPath, username)
 	_, err = file.WriteString(strings.Join(lines, "\n"))
 	if err != nil {
 		_ = file.Close()
@@ -39,7 +40,8 @@ func (c *configurator) MakeUnboundConf(settings models.Settings,
 
 // generateUnboundConf generates an Unbound configuration from the user provided settings.
 func generateUnboundConf(settings models.Settings,
-	hostnamesLines, ipsLines []string, unboundDir, username string) (
+	hostnamesLines, ipsLines []string,
+	unboundDir, cacertsPath, username string) (
 	lines []string) {
 	const (
 		yes = "yes"
@@ -74,7 +76,7 @@ func generateUnboundConf(settings models.Settings,
 		"hide-identity":    "yes",
 		"hide-version":     "yes",
 		// Security
-		"tls-cert-bundle":       `"` + filepath.Join(unboundDir, cacertsFilename) + `"`,
+		"tls-cert-bundle":       `"` + cacertsPath + `"`,
 		"root-hints":            `"` + filepath.Join(unboundDir, rootHints) + `"`,
 		"trust-anchor-file":     `"` + filepath.Join(unboundDir, rootKey) + `"`,
 		"harden-below-nxdomain": "yes",

@@ -8,7 +8,6 @@ import (
 
 const (
 	unboundConfigFilename = "unbound.conf"
-	cacertsFilename       = "ca-certificates.crt"
 	rootHints             = "root.hints"
 	rootKey               = "root.key"
 )

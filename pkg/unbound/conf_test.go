@@ -38,6 +38,7 @@ func Test_generateUnboundConf(t *testing.T) {
 			"  private-address: d",
 		},
 		"/unbound",
+		"/unbound/ca-certificates.crt",
 		"user",
 	)
 	expected := `

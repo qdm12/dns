@@ -36,10 +36,11 @@ type configurator struct {
 	dnscrypto     dnscrypto.DNSCrypto
 	unboundEtcDir string
 	unboundPath   string
+	cacertsPath   string
 }
 
 func NewConfigurator(logger logging.Logger, openFile os.OpenFileFunc,
-	dnscrypto dnscrypto.DNSCrypto, unboundEtcDir, unboundPath string) Configurator {
+	dnscrypto dnscrypto.DNSCrypto, unboundEtcDir, unboundPath, cacertsPath string) Configurator {
 	return &configurator{
 		openFile:      openFile,
 		commander:     command.NewCommander(),
@@ -47,5 +48,6 @@ func NewConfigurator(logger logging.Logger, openFile os.OpenFileFunc,
 		dnscrypto:     dnscrypto,
 		unboundEtcDir: unboundEtcDir,
 		unboundPath:   unboundPath,
+		cacertsPath:   cacertsPath,
 	}
 }

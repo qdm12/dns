@@ -70,7 +70,8 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	dnsCrypto := dnscrypto.New(client, "", "") // TODO checksums for build
 	const unboundEtcDir = "/unbound"
 	const unboundPath = "/unbound/unbound"
-	dnsConf := unbound.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundEtcDir, unboundPath)
+	const cacertsPath = "/unbound/ca-certificates.crt"
+	dnsConf := unbound.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundEtcDir, unboundPath, cacertsPath)
 
 	if len(args) > 1 && args[1] == "build" {
 		if err := dnsConf.SetupFiles(ctx); err != nil {
