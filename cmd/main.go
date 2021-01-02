@@ -16,7 +16,7 @@ import (
 	"github.com/qdm12/dns/internal/params"
 	"github.com/qdm12/dns/internal/settings"
 	"github.com/qdm12/dns/internal/splash"
-	"github.com/qdm12/dns/pkg/dns"
+	"github.com/qdm12/dns/pkg/unbound"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/os"
@@ -69,7 +69,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	// Create configurators
 	dnsCrypto := dnscrypto.New(client, "", "") // TODO checksums for build
 	const unboundDir = "/unbound"
-	dnsConf := dns.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundDir)
+	dnsConf := unbound.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundDir)
 
 	if len(args) > 1 && args[1] == "build" {
 		if err := dnsConf.SetupFiles(ctx); err != nil {
@@ -146,7 +146,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 }
 
 func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Settings,
-	logger logging.Logger, dnsConf dns.Configurator, streamMerger command.StreamMerger,
+	logger logging.Logger, dnsConf unbound.Configurator, streamMerger command.StreamMerger,
 	client *http.Client, fatal func(),
 ) {
 	defer wg.Done()
@@ -202,7 +202,7 @@ func logAndWait(ctx context.Context, logger logging.Logger, err error) {
 }
 
 func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
-	timer *time.Timer, dnsConf dns.Configurator, settings models.Settings,
+	timer *time.Timer, dnsConf unbound.Configurator, settings models.Settings,
 	streamMerger command.StreamMerger, logger logging.Logger,
 	client *http.Client, firstRun bool) (
 	newCtx context.Context, newCancel context.CancelFunc, setupErr,

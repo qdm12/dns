@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/qdm12/dns/pkg/dns"
+	"github.com/qdm12/dns/pkg/unbound"
 	libparams "github.com/qdm12/golibs/params"
 )
 
@@ -27,7 +27,7 @@ func (r *reader) GetProviders() (providers []string, err error) {
 	}
 	for _, word := range strings.Split(s, ",") {
 		provider := word
-		if _, ok := dns.GetProviderData(provider); !ok {
+		if _, ok := unbound.GetProviderData(provider); !ok {
 			return nil, fmt.Errorf("DNS provider %q is not valid", provider)
 		}
 		providers = append(providers, provider)

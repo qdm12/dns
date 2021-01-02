@@ -1,4 +1,4 @@
-package dns
+package unbound
 
 import (
 	"context"
@@ -14,8 +14,6 @@ import (
 func Test_Start(t *testing.T) {
 	t.Parallel()
 	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
 	const unboundDir = "/unbound"
 	commander := mock_command.NewMockCommander(mockCtrl)
 	commander.EXPECT().Start(context.Background(), "/unbound/unbound", "-d", "-c", "/unbound/unbound.conf", "-vv").
@@ -24,8 +22,9 @@ func Test_Start(t *testing.T) {
 		commander:  commander,
 		unboundDir: unboundDir,
 	}
-	stdout, _, err := c.Start(context.Background(), 2)
+	stdout, waitFn, err := c.Start(context.Background(), 2)
 	assert.Nil(t, stdout)
+	assert.Nil(t, waitFn)
 	assert.NoError(t, err)
 }
 
@@ -54,7 +53,6 @@ func Test_Version(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			mockCtrl := gomock.NewController(t)
-			defer mockCtrl.Finish()
 			commander := mock_command.NewMockCommander(mockCtrl)
 			ctx := context.Background()
 
