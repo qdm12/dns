@@ -20,7 +20,7 @@ func (c *configurator) SetupFiles(ctx context.Context) error {
 }
 
 func (c *configurator) downloadRootHints(ctx context.Context) error {
-	namedRoot, err := c.dnscrypto.GetNamedRoot(ctx)
+	namedRoot, err := c.dnscrypto.DownloadNamedRoot(ctx)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (c *configurator) downloadRootHints(ctx context.Context) error {
 }
 
 func (c *configurator) downloadRootKeys(ctx context.Context) error {
-	rootAnchorsXML, err := c.dnscrypto.GetRootAnchorsXML(ctx)
+	rootAnchorsXML, err := c.dnscrypto.DownloadRootAnchorsXML(ctx)
 	if err != nil {
 		return err
 	}

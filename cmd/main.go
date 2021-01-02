@@ -65,7 +65,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
 	// Create configurators
-	dnsCrypto := dnscrypto.NewDNSCrypto(client, "", "") // TODO checksums for build
+	dnsCrypto := dnscrypto.New(client, "", "") // TODO checksums for build
 	const unboundDir = "/unbound"
 	dnsConf := dns.NewConfigurator(logger, openFile, dnsCrypto, unboundDir)
 
