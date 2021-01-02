@@ -12,10 +12,11 @@ import (
 
 // ProviderData contains information for a DNS provider.
 type ProviderData struct {
-	IPs          []net.IP
-	Host         Host
-	SupportsIPv6 bool
-	SupportsTLS  bool
+	IPs            []net.IP
+	Host           Host
+	SupportsIPv6   bool
+	SupportsTLS    bool
+	SupportsDNSSEC bool
 }
 
 type Settings struct { //nolint:maligned

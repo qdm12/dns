@@ -91,7 +91,8 @@ func generateUnboundConf(settings models.Settings,
 	}
 
 	for _, provider := range settings.Providers {
-		if provider == LibreDNS {
+		data, _ := GetProviderData(provider)
+		if !data.SupportsDNSSEC {
 			delete(serverSection, "trust-anchor-file")
 		}
 	}
