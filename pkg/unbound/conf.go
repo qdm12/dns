@@ -85,11 +85,16 @@ func generateUnboundConf(settings models.Settings,
 		"do-ip4: " + ipv4,
 		"do-ip6: " + ipv6,
 		"interface: 0.0.0.0",
-		"access-control: 0.0.0.0/0 allow",
 		"port: " + strconv.Itoa(int(settings.ListeningPort)),
 		// Other
 		`username: "` + username + `"`,
 		`include: "` + filepath.Join(unboundDir, includeConfFilename) + `"`,
+	}
+
+	// Access control
+	for _, subnet := range settings.AccessControl.Allowed {
+		line := "access-control: " + subnet.String() + " allow"
+		serverLines = append(serverLines, line)
 	}
 
 	// DNSSEC trust anchor file

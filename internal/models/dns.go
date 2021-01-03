@@ -19,7 +19,7 @@ type ProviderData struct {
 	SupportsDNSSEC bool
 }
 
-type Settings struct { //nolint:maligned
+type Settings struct {
 	Unbound           models.Settings
 	Username          string
 	Puid, Pgid        int

@@ -1,6 +1,8 @@
 package settings
 
 import (
+	"net"
+
 	"github.com/qdm12/dns/internal/params"
 	"github.com/qdm12/dns/pkg/models"
 )
@@ -55,5 +57,16 @@ func getUnboundSettings(reader params.Reader) (settings models.Settings, err err
 		return settings, err
 	}
 	settings.BlockedIPs = append(settings.BlockedIPs, privateAddresses...)
+
+	settings.AccessControl.Allowed = []net.IPNet{
+		{
+			IP:   net.IPv4zero,
+			Mask: net.IPv4Mask(0, 0, 0, 0),
+		},
+		{
+			IP:   net.IPv6zero,
+			Mask: net.IPMask{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		},
+	}
 	return settings, nil
 }

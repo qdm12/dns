@@ -1,6 +1,7 @@
 package models
 
 import (
+	"net"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,8 @@ func Test_Settings_Lines(t *testing.T) {
 			lines: []string{
 				"DNS over TLS provider:",
 				"Listening port: 0",
+				"Access control:",
+				" |--Allowed:",
 				"Caching: disabled",
 				"IPv4 resolution: disabled",
 				"IPv6 resolution: disabled",
@@ -40,12 +43,21 @@ func Test_Settings_Lines(t *testing.T) {
 				BlockedHostnames:      []string{"hostname 1", "hostname 2"},
 				BlockedIPs:            []string{"1.1.1.2", "2.2.2.2"},
 				AllowedHostnames:      []string{"hostname 3", "hostname 4"},
+				AccessControl: AccessControlSettings{
+					Allowed: []net.IPNet{{
+						IP:   net.IPv4zero,
+						Mask: net.IPv4Mask(0, 0, 0, 0),
+					}},
+				},
 			},
 			lines: []string{
 				"DNS over TLS provider:",
 				" |--quad9",
 				" |--cloudflare",
 				"Listening port: 53",
+				"Access control:",
+				" |--Allowed:",
+				"    |--0.0.0.0/0",
 				"Caching: enabled",
 				"IPv4 resolution: enabled",
 				"IPv6 resolution: enabled",

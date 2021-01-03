@@ -1,11 +1,15 @@
 package models
 
 import (
+	"net"
 	"strconv"
+	"strings"
 )
 
+const prefix = " |--"
+
 // Settings represents all the user settings for Unbound.
-type Settings struct { //nolint:maligned
+type Settings struct {
 	Providers             []string
 	ListeningPort         uint16
 	Caching               bool
@@ -17,6 +21,7 @@ type Settings struct { //nolint:maligned
 	BlockedHostnames      []string
 	BlockedIPs            []string
 	AllowedHostnames      []string
+	AccessControl         AccessControlSettings
 }
 
 func (s *Settings) String() string {
@@ -28,7 +33,6 @@ func (s *Settings) Lines() (lines []string) {
 		disabled = "disabled"
 		enabled  = "enabled"
 	)
-	const prefix = " |--"
 
 	lines = append(lines, "DNS over TLS provider:")
 	for _, provider := range s.Providers {
@@ -37,6 +41,8 @@ func (s *Settings) Lines() (lines []string) {
 
 	lines = append(lines,
 		"Listening port: "+strconv.Itoa(int(s.ListeningPort)))
+
+	lines = append(lines, s.AccessControl.Lines()...)
 
 	caching := disabled
 	if s.Caching {
@@ -83,5 +89,19 @@ func (s *Settings) Lines() (lines []string) {
 		lines = append(lines, prefix+hostname)
 	}
 
+	return lines
+}
+
+type AccessControlSettings struct {
+	Allowed []net.IPNet
+}
+
+func (s *AccessControlSettings) Lines() (lines []string) {
+	lines = append(lines, "Access control:")
+	lines = append(lines, prefix+"Allowed:")
+	for _, subnet := range s.Allowed {
+		lines = append(lines,
+			"   "+prefix+subnet.String())
+	}
 	return lines
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -27,6 +28,12 @@ func Test_generateUnboundConf(t *testing.T) {
 		ListeningPort:      53,
 		IPv4:               true,
 		IPv6:               true,
+		AccessControl: dnsmodels.AccessControlSettings{
+			Allowed: []net.IPNet{{
+				IP:   net.IPv4zero,
+				Mask: net.IPv4Mask(0, 0, 0, 0),
+			}},
+		},
 	}
 	lines := generateUnboundConf(settings,
 		[]string{
