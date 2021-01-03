@@ -1,8 +1,7 @@
 package models
 
 import (
-	"fmt"
-	"strings"
+	"strconv"
 )
 
 // Settings represents all the user settings for Unbound.
@@ -20,45 +19,65 @@ type Settings struct { //nolint:maligned
 	AllowedHostnames      []string
 }
 
-func (s *Settings) Lines() []string {
+func (s *Settings) Lines() (lines []string) {
 	const (
 		disabled = "disabled"
 		enabled  = "enabled"
 	)
-	caching, ipv4, ipv6 := disabled, disabled, disabled
+	const prefix = " |--"
+
+	lines = append(lines, "DNS over TLS provider:")
+	for _, provider := range s.Providers {
+		lines = append(lines, prefix+provider)
+	}
+
+	lines = append(lines,
+		"Listening port: "+strconv.Itoa(int(s.ListeningPort)))
+
+	caching := disabled
 	if s.Caching {
 		caching = enabled
 	}
+	lines = append(lines,
+		"Caching: "+caching)
+
+	ipv4 := disabled
 	if s.IPv4 {
 		ipv4 = enabled
 	}
+	lines = append(lines,
+		"IPv4 resolution: "+ipv4)
+
+	ipv6 := disabled
 	if s.IPv6 {
 		ipv6 = enabled
 	}
-	blockedHostnames := "Blocked hostnames:"
-	if len(s.BlockedHostnames) > 0 {
-		blockedHostnames += " \n |--" + strings.Join(s.BlockedHostnames, "\n |--")
+	lines = append(lines,
+		"IPv6 resolution: "+ipv6)
+
+	lines = append(lines,
+		"Verbosity level: "+strconv.Itoa(int(s.VerbosityLevel))+"/5")
+
+	lines = append(lines,
+		"Verbosity details level: "+strconv.Itoa(int(s.VerbosityDetailsLevel))+"/4")
+
+	lines = append(lines,
+		"Validation log level: "+strconv.Itoa(int(s.ValidationLogLevel))+"/2")
+
+	lines = append(lines, "Blocked hostnames:")
+	for _, hostname := range s.BlockedHostnames {
+		lines = append(lines, prefix+hostname)
 	}
-	blockedIPs := "Blocked IP addresses:"
-	if len(s.BlockedIPs) > 0 {
-		blockedIPs += " \n |--" + strings.Join(s.BlockedIPs, "\n |--")
+
+	lines = append(lines, "Blocked IP addresses:")
+	for _, ip := range s.BlockedIPs {
+		lines = append(lines, prefix+ip)
 	}
-	allowedHostnames := "Allowed hostnames:"
-	if len(s.AllowedHostnames) > 0 {
-		allowedHostnames += " \n |--" + strings.Join(s.AllowedHostnames, "\n |--")
+
+	lines = append(lines, "Allowed hostnames:")
+	for _, hostname := range s.AllowedHostnames {
+		lines = append(lines, prefix+hostname)
 	}
-	settingsList := []string{
-		"DNS over TLS provider:\n|--" + strings.Join(s.Providers, "\n|--"),
-		"Listening port: " + fmt.Sprintf("%d", s.ListeningPort),
-		"Caching: " + caching,
-		"IPv4 resolution: " + ipv4,
-		"IPv6 resolution: " + ipv6,
-		"Verbosity level: " + fmt.Sprintf("%d/5", s.VerbosityLevel),
-		"Verbosity details level: " + fmt.Sprintf("%d/4", s.VerbosityDetailsLevel),
-		"Validation log level: " + fmt.Sprintf("%d/2", s.ValidationLogLevel),
-		blockedHostnames,
-		blockedIPs,
-		allowedHostnames,
-	}
-	return settingsList
+
+	return lines
 }
