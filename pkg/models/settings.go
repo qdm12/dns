@@ -19,6 +19,10 @@ type Settings struct { //nolint:maligned
 	AllowedHostnames      []string
 }
 
+func (s *Settings) String() string {
+	return strings.Join(s.Lines(), "\n")
+}
+
 func (s *Settings) Lines() (lines []string) {
 	const (
 		disabled = "disabled"
