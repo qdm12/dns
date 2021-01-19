@@ -91,7 +91,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
-| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `libredns` and `cira` |
+| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cloudflare`, `cloudflare.security`, `cloudflare.family`, `google`, `quad9`, `quadrant`, `cleanbrowsing`, `cleanbrowsing.family`, `cleanbrowsing.adult`, `libredns` and `cira` |
 | `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
 | `VERBOSITY_DETAILS` | `0` | From 0 to 4 (higher means more details) |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |

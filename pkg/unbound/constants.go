@@ -19,6 +19,10 @@ const (
 const (
 	// Cloudflare is a DNS over TLS provider.
 	Cloudflare = "cloudflare"
+	// CloudflareSecurity is a DNS over TLS provider blocking malware.
+	CloudflareSecurity = "cloudflare.security"
+	// CloudflareFamily is a DNS over TLS provider blocking malware and adult content.
+	CloudflareFamily = "cloudflare.family"
 	// Google is a DNS over TLS provider.
 	Google = "google"
 	// Quad9 is a DNS over TLS provider.
@@ -27,6 +31,10 @@ const (
 	Quadrant = "quadrant"
 	// CleanBrowsing is a DNS over TLS provider.
 	CleanBrowsing = "cleanbrowsing"
+	// CleanBrowsingFamily is a DNS over TLS provider blocking malware, adult content and mixed content.
+	CleanBrowsingFamily = "cleanbrowsing.family"
+	// CleanBrowsingAdult is a DNS over TLS provider blocking adult content.
+	CleanBrowsingAdult = "cleanbrowsing.adult"
 	// LibreDNS is a DNS over TLS provider.
 	LibreDNS = "libredns"
 	// CIRA is a DNS over TLS provider.
@@ -46,6 +54,30 @@ func GetProviderData(provider string) (data models.ProviderData, ok bool) {
 			SupportsDNSSEC: true,
 			SupportsIPv6:   true,
 			Host:           models.Host("cloudflare-dns.com"),
+		},
+		CloudflareSecurity: {
+			IPs: []net.IP{
+				{1, 1, 1, 2},
+				{1, 0, 0, 2},
+				{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x11, 0x12},
+				{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x02},
+			},
+			SupportsTLS:    true,
+			SupportsDNSSEC: true,
+			SupportsIPv6:   true,
+			Host:           models.Host("security.cloudflare-dns.com"),
+		},
+		CloudflareFamily: {
+			IPs: []net.IP{
+				{1, 1, 1, 3},
+				{1, 0, 0, 3},
+				{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x11, 0x13},
+				{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x03},
+			},
+			SupportsTLS:    true,
+			SupportsDNSSEC: true,
+			SupportsIPv6:   true,
+			Host:           models.Host("family.cloudflare-dns.com"),
 		},
 		Google: {
 			IPs: []net.IP{
@@ -92,6 +124,30 @@ func GetProviderData(provider string) (data models.ProviderData, ok bool) {
 			SupportsDNSSEC: true,
 			SupportsIPv6:   true,
 			Host:           models.Host("security-filter-dns.cleanbrowsing.org"),
+		},
+		CleanBrowsingFamily: {
+			IPs: []net.IP{
+				{185, 228, 168, 168},
+				{185, 228, 169, 168},
+				{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+				{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+			},
+			SupportsTLS:    true,
+			SupportsDNSSEC: true,
+			SupportsIPv6:   true,
+			Host:           models.Host("family-filter-dns.cleanbrowsing.org"),
+		},
+		CleanBrowsingAdult: {
+			IPs: []net.IP{
+				{185, 228, 168, 10},
+				{185, 228, 169, 11},
+				{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1},
+				{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1},
+			},
+			SupportsTLS:    true,
+			SupportsDNSSEC: true,
+			SupportsIPv6:   true,
+			Host:           models.Host("adult-filter-dns.cleanbrowsing.org"),
 		},
 		LibreDNS: {
 			IPs:         []net.IP{{116, 202, 176, 26}},
