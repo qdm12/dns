@@ -37,7 +37,7 @@ type Reader interface {
 }
 
 type reader struct {
-	envParams libparams.EnvParams
+	envParams libparams.Env
 	logger    logging.Logger
 	verifier  verification.Verifier
 }
@@ -46,8 +46,15 @@ type reader struct {
 // environment variables.
 func NewParamsReader(logger logging.Logger) Reader {
 	return &reader{
-		envParams: libparams.NewEnvParams(),
+		envParams: libparams.NewEnv(),
 		logger:    logger,
 		verifier:  verification.NewVerifier(),
 	}
+}
+
+func (r *reader) onRetroActive(oldKey, newKey string) {
+	r.logger.Warn(
+		"You are using the old environment variable %s, please consider changing it to %s",
+		oldKey, newKey,
+	)
 }

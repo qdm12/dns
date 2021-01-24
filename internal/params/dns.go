@@ -3,7 +3,6 @@ package params
 import (
 	"fmt"
 	"net"
-	"strings"
 
 	"github.com/qdm12/dns/pkg/unbound"
 	libparams "github.com/qdm12/golibs/params"
@@ -12,20 +11,13 @@ import (
 // GetProviders obtains the DNS over TLS providers to use
 // from the environment variable PROVIDERS and PROVIDER for retro-compatibility.
 func (r *reader) GetProviders() (providers []string, err error) {
-	// Retro-compatibility
-	s, err := r.envParams.GetEnv("PROVIDER")
-	switch {
-	case err != nil:
+	words, err := r.envParams.CSV("PROVIDERS", libparams.Default("cloudflare"),
+		libparams.RetroKeys([]string{"PROVIDER"}, r.onRetroActive))
+	if err != nil {
 		return nil, err
-	case len(s) != 0:
-		r.logger.Warn("You are using the old environment variable PROVIDER, please consider changing it to PROVIDERS")
-	default:
-		s, err = r.envParams.GetEnv("PROVIDERS", libparams.Default("cloudflare"))
-		if err != nil {
-			return nil, err
-		}
 	}
-	for _, word := range strings.Split(s, ",") {
+
+	for _, word := range words {
 		provider := word
 		if _, ok := unbound.GetProviderData(provider); !ok {
 			return nil, fmt.Errorf("DNS provider %q is not valid", provider)
@@ -38,13 +30,10 @@ func (r *reader) GetProviders() (providers []string, err error) {
 // GetPrivateAddresses obtains if Unbound caching should be enable or not
 // from the environment variable PRIVATE_ADDRESS.
 func (r *reader) GetPrivateAddresses() (privateAddresses []string, err error) {
-	s, err := r.envParams.GetEnv("PRIVATE_ADDRESS")
+	privateAddresses, err = r.envParams.CSV("PRIVATE_ADDRESS")
 	if err != nil {
 		return nil, err
-	} else if len(s) == 0 {
-		return nil, nil
 	}
-	privateAddresses = strings.Split(s, ",")
 	for _, address := range privateAddresses {
 		ip := net.ParseIP(address)
 		_, _, err := net.ParseCIDR(address)
