@@ -148,13 +148,15 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 	defer logger.Info("unbound loop exited")
 	timer := time.NewTimer(time.Hour)
 
-	unboundCtx, unboundCancel := context.WithCancel(ctx) //nolint:ineffassign,staticcheck
-
 	firstRun := true
 	restart := false
 
-	var waitError chan error
-	var stdoutLines, stderrLines chan string
+	var (
+		unboundCtx               context.Context
+		unboundCancel            context.CancelFunc
+		waitError                chan error
+		stdoutLines, stderrLines chan string
+	)
 
 	for ctx.Err() == nil {
 		timer.Stop()
@@ -202,8 +204,8 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 		stdoutLines, stderrLines, waitError, err := dnsConf.Start(unboundCtx, settings.Unbound.VerbosityDetailsLevel)
 		if err != nil {
 			logger.Error(err)
-			unboundCancel()
 			fatal()
+			continue
 		}
 
 		go logUnboundStreams(logger, stdoutLines, stderrLines)
@@ -211,8 +213,8 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 		if settings.CheckUnbound {
 			if err := dnsConf.WaitForUnbound(ctx); err != nil {
 				logger.Error(err)
-				unboundCancel()
 				fatal()
+				continue
 			}
 		}
 
@@ -234,7 +236,6 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 			close(waitError)
 			close(stdoutLines)
 			close(stderrLines)
-			unboundCancel()
 			if !timer.Stop() {
 				<-timer.C
 			}
@@ -242,6 +243,7 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 			fatal()
 		}
 	}
+	unboundCancel()
 }
 
 func logAndWait(ctx context.Context, logger logging.Logger, err error) {
