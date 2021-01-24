@@ -17,7 +17,6 @@ import (
 	"github.com/qdm12/dns/internal/settings"
 	"github.com/qdm12/dns/internal/splash"
 	"github.com/qdm12/dns/pkg/unbound"
-	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/os"
 	"github.com/qdm12/updated/pkg/dnscrypto"
@@ -95,11 +94,6 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	}
 	logger.Info("Settings summary:\n" + settings.String())
 
-	streamMerger := command.NewStreamMerger()
-	go streamMerger.CollectLines(ctx,
-		func(line string) { logger.Info(line) },
-		func(err error) { logger.Warn(err) })
-
 	wg := &sync.WaitGroup{}
 
 	const healthServerAddr = "127.0.0.1:9999"
@@ -113,7 +107,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	logger.Info("using DNS address %s internally", localIP.String())
 	dnsConf.UseDNSInternally(localIP) // use Unbound
 	wg.Add(1)
-	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, streamMerger, client, cancel)
+	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, client, cancel)
 
 	signalsCh := make(chan nativeos.Signal, 1)
 	signal.Notify(signalsCh,
@@ -147,18 +141,20 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	return 1
 }
 
-func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Settings,
-	logger logging.Logger, dnsConf unbound.Configurator, streamMerger command.StreamMerger,
-	client *http.Client, fatal func(),
+func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Settings, //nolint:gocognit
+	logger logging.Logger, dnsConf unbound.Configurator, client *http.Client, fatal func(),
 ) {
 	defer wg.Done()
 	defer logger.Info("unbound loop exited")
 	timer := time.NewTimer(time.Hour)
 
-	unboundCtx, unboundCancel := context.WithCancel(ctx)
-	defer unboundCancel()
+	unboundCtx, unboundCancel := context.WithCancel(ctx) //nolint:ineffassign,staticcheck
 
 	firstRun := true
+	restart := false
+
+	var waitError chan error
+	var stdoutLines, stderrLines chan string
 
 	for ctx.Err() == nil {
 		timer.Stop()
@@ -166,24 +162,82 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 			timer.Reset(settings.UpdatePeriod)
 		}
 
-		var setupErr, startErr, waitErr error
-		unboundCtx, unboundCancel, setupErr, startErr, waitErr = unboundRun(
-			ctx, unboundCtx, unboundCancel, timer, dnsConf, settings, streamMerger,
-			logger, client, firstRun)
-		switch {
-		case ctx.Err() != nil:
-			logger.Warn("context canceled: exiting unbound run loop")
-		case !timer.Stop():
-			logger.Info("planned restart of unbound")
-		case setupErr != nil:
-			logAndWait(ctx, logger, setupErr)
-		case firstRun:
+		var hostnamesLines, ipsLines []string
+		if !firstRun {
+			logger.Info("downloading DNSSEC root hints and named root")
+			if err := dnsConf.SetupFiles(ctx); err != nil {
+				logAndWait(ctx, logger, err)
+				continue
+			}
+			logger.Info("downloading and building DNS block lists")
+			var errs []error
+			hostnamesLines, ipsLines, errs = dnsConf.BuildBlocked(ctx, client,
+				settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
+				settings.Unbound.BlockedHostnames, settings.Unbound.BlockedIPs, settings.Unbound.AllowedHostnames,
+			)
+			for _, err := range errs {
+				logger.Warn(err)
+			}
+			logger.Info("%d hostnames blocked overall", len(hostnamesLines))
+			logger.Info("%d IP addresses blocked overall", len(ipsLines))
+		}
+
+		logger.Info("generating Unbound configuration")
+		if err := dnsConf.MakeUnboundConf(settings.Unbound, hostnamesLines, ipsLines,
+			settings.Username, settings.Puid, settings.Pgid); err != nil {
+			logAndWait(ctx, logger, err)
+			continue
+		}
+
+		if restart {
+			unboundCancel()
+			<-waitError
+			close(waitError)
+			close(stdoutLines)
+			close(stderrLines)
+		}
+		unboundCtx, unboundCancel = context.WithCancel(ctx)
+
+		logger.Info("starting unbound")
+		stdoutLines, stderrLines, waitError, err := dnsConf.Start(unboundCtx, settings.Unbound.VerbosityDetailsLevel)
+		if err != nil {
+			logger.Error(err)
+			unboundCancel()
+			fatal()
+		}
+
+		go logUnboundStreams(logger, stdoutLines, stderrLines)
+
+		if settings.CheckUnbound {
+			if err := dnsConf.WaitForUnbound(ctx); err != nil {
+				logger.Error(err)
+				unboundCancel()
+				fatal()
+			}
+		}
+
+		if firstRun {
 			logger.Info("restarting Unbound the first time to get updated files")
 			firstRun = false
-		case startErr != nil:
-			logger.Error(startErr)
-			fatal()
-		case waitErr != nil:
+			continue
+		}
+
+		select {
+		case <-timer.C:
+			logger.Info("planned restart of unbound")
+		case <-ctx.Done():
+			if !timer.Stop() {
+				<-timer.C
+			}
+			logger.Warn("context canceled: exiting unbound run loop")
+		case waitErr := <-waitError:
+			close(waitError)
+			close(stdoutLines)
+			close(stderrLines)
+			unboundCancel()
+			if !timer.Stop() {
+				<-timer.C
+			}
 			logger.Error(waitErr)
 			fatal()
 		}
@@ -203,64 +257,18 @@ func logAndWait(ctx context.Context, logger logging.Logger, err error) {
 	}
 }
 
-func unboundRun(ctx, oldCtx context.Context, oldCancel context.CancelFunc,
-	timer *time.Timer, dnsConf unbound.Configurator, settings models.Settings,
-	streamMerger command.StreamMerger, logger logging.Logger,
-	client *http.Client, firstRun bool) (
-	newCtx context.Context, newCancel context.CancelFunc, setupErr,
-	startErr, waitErr error) {
-	var hostnamesLines, ipsLines []string
-	if !firstRun {
-		logger.Info("downloading DNSSEC root hints and named root")
-		if err := dnsConf.SetupFiles(ctx); err != nil {
-			return oldCtx, oldCancel, err, nil, nil
+func logUnboundStreams(logger logging.Logger, stdout, stderr <-chan string) {
+	var line string
+	var ok bool
+	for {
+		select {
+		case line, ok = <-stdout:
+		case line, ok = <-stderr:
 		}
-		logger.Info("downloading and building DNS block lists")
-		var errs []error
-		hostnamesLines, ipsLines, errs = dnsConf.BuildBlocked(ctx, client,
-			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-			settings.Unbound.BlockedHostnames, settings.Unbound.BlockedIPs, settings.Unbound.AllowedHostnames,
-		)
-		for _, err := range errs {
-			logger.Warn(err)
+		if !ok {
+			fmt.Println("EXITIIIITTT")
+			return
 		}
-		logger.Info("%d hostnames blocked overall", len(hostnamesLines))
-		logger.Info("%d IP addresses blocked overall", len(ipsLines))
-	}
-	logger.Info("generating Unbound configuration")
-	if err := dnsConf.MakeUnboundConf(settings.Unbound, hostnamesLines, ipsLines,
-		settings.Username, settings.Puid, settings.Pgid); err != nil {
-		return oldCtx, oldCancel, err, nil, nil
-	}
-	newCtx, newCancel = context.WithCancel(ctx)
-	oldCancel()
-	logger.Info("starting unbound")
-	stream, waitFn, err := dnsConf.Start(newCtx, settings.Unbound.VerbosityDetailsLevel)
-	if err != nil {
-		return newCtx, newCancel, nil, err, nil
-	}
-	go streamMerger.Merge(newCtx, stream, command.MergeName("unbound"))
-	if settings.CheckUnbound {
-		if err := dnsConf.WaitForUnbound(ctx); err != nil {
-			return newCtx, newCancel, nil, err, nil
-		}
-	}
-
-	waitError := make(chan error)
-	go func() {
-		err := waitFn() // blocking
-		waitError <- err
-	}()
-
-	if firstRun { // force restart
-		return newCtx, newCancel, nil, nil, nil
-	}
-
-	select {
-	case <-timer.C:
-		return newCtx, newCancel, nil, nil, nil
-	case waitErr := <-waitError:
-		close(waitError)
-		return newCtx, newCancel, nil, nil, waitErr
+		logger.Info(line)
 	}
 }

@@ -16,18 +16,33 @@ func Test_Start(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	const unboundEtcDir = "/unbound"
 	const unboundPath = "/usr/sbin/unbound"
+
+	ctx := context.Background()
 	commander := mock_command.NewMockCommander(mockCtrl)
-	commander.EXPECT().Start(context.Background(), unboundPath, "-d", "-c", "/unbound/unbound.conf", "-vv").
-		Return(nil, nil, nil, nil).Times(1)
+	commander.EXPECT().
+		Start(ctx, unboundPath, "-d", "-c", "/unbound/unbound.conf", "-vv").
+		DoAndReturn(func(ctx context.Context, name string, arg ...string) (
+			stdoutLines, stderrLines chan string, waitError chan error, err error) {
+			stdoutLines = make(chan string)
+			stderrLines = make(chan string)
+			waitError = make(chan error, 1) // buffered so it runs in the same goroutine
+			waitError <- nil
+			return stdoutLines, stderrLines, waitError, nil
+		})
+
 	c := &configurator{
 		commander:     commander,
 		unboundEtcDir: unboundEtcDir,
 		unboundPath:   unboundPath,
 	}
-	stdout, waitFn, err := c.Start(context.Background(), 2)
-	assert.Nil(t, stdout)
-	assert.Nil(t, waitFn)
+
+	stdoutLines, stderrLines, waitError, err := c.Start(ctx, 2)
+
 	assert.NoError(t, err)
+	<-waitError
+	close(stdoutLines)
+	close(stderrLines)
+	close(waitError)
 }
 
 func Test_Version(t *testing.T) {

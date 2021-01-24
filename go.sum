@@ -71,8 +71,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/qdm12/golibs v0.0.0-20201227203847-2fd99ffdfdba h1:En+jX5OvTswfE5W3Pe41To8Ge8WXtskMbyO5FleofNE=
 github.com/qdm12/golibs v0.0.0-20201227203847-2fd99ffdfdba/go.mod h1:pikkTN7g7zRuuAnERwqW1yAFq6pYmxrxpjiwGvb0Ysc=
-github.com/qdm12/golibs v0.0.0-20210124175817-1904e11e9a8a h1:CdMISOe39ojlQGWIPhosKfDXMxyBe9367sH7SeJZN3Q=
-github.com/qdm12/golibs v0.0.0-20210124175817-1904e11e9a8a/go.mod h1:pikkTN7g7zRuuAnERwqW1yAFq6pYmxrxpjiwGvb0Ysc=
+github.com/qdm12/golibs v0.0.0-20210124192933-79a950eaf217 h1:/eMBq0vbc/KmVPXbwLfssp547pp6APRS1x/JNmPvm0s=
+github.com/qdm12/golibs v0.0.0-20210124192933-79a950eaf217/go.mod h1:pikkTN7g7zRuuAnERwqW1yAFq6pYmxrxpjiwGvb0Ysc=
 github.com/qdm12/updated v0.0.0-20210102005021-dd457d77f94a h1:gkyP+gMEeBgMgyRYGrVNcoy6cL1065IvXsyfB6xboIc=
 github.com/qdm12/updated v0.0.0-20210102005021-dd457d77f94a/go.mod h1:bbJGxEYCnsA8WU4vBcXYU6mOoHyzdP458FIKP4mfLJM=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=

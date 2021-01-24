@@ -2,7 +2,6 @@ package unbound
 
 import (
 	"context"
-	"io"
 	"net"
 	"net/http"
 
@@ -20,7 +19,8 @@ type Configurator interface {
 		puid, pgid int) (err error)
 	UseDNSInternally(IP net.IP)
 	UseDNSSystemWide(ip net.IP, keepNameserver bool) error
-	Start(ctx context.Context, logLevel uint8) (stdout io.ReadCloser, wait func() error, err error)
+	Start(ctx context.Context, verbosityDetailsLevel uint8) (
+		stdoutLines, stderrLines chan string, waitError chan error, err error)
 	WaitForUnbound(ctx context.Context) (err error)
 	Version(ctx context.Context) (version string, err error)
 	BuildBlocked(ctx context.Context, client *http.Client,
