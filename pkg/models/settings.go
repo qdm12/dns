@@ -6,7 +6,10 @@ import (
 	"strings"
 )
 
-const prefix = " |--"
+const (
+	subIndent = " |--"
+	indent    = "    " // used if lines already contain the subIndent
+)
 
 // Settings represents all the user settings for Unbound.
 type Settings struct {
@@ -34,59 +37,62 @@ func (s *Settings) Lines() (lines []string) {
 		enabled  = "enabled"
 	)
 
-	lines = append(lines, "DNS over TLS provider:")
+	lines = append(lines, subIndent+"DNS over TLS providers:")
 	for _, provider := range s.Providers {
-		lines = append(lines, prefix+provider)
+		lines = append(lines, indent+subIndent+provider)
 	}
 
 	lines = append(lines,
-		"Listening port: "+strconv.Itoa(int(s.ListeningPort)))
+		subIndent+"Listening port: "+strconv.Itoa(int(s.ListeningPort)))
 
-	lines = append(lines, s.AccessControl.Lines()...)
+	lines = append(lines, subIndent+"Access control:")
+	for _, line := range s.AccessControl.Lines() {
+		lines = append(lines, indent+line)
+	}
 
 	caching := disabled
 	if s.Caching {
 		caching = enabled
 	}
-	lines = append(lines,
+	lines = append(lines, subIndent+
 		"Caching: "+caching)
 
 	ipv4 := disabled
 	if s.IPv4 {
 		ipv4 = enabled
 	}
-	lines = append(lines,
+	lines = append(lines, subIndent+
 		"IPv4 resolution: "+ipv4)
 
 	ipv6 := disabled
 	if s.IPv6 {
 		ipv6 = enabled
 	}
-	lines = append(lines,
+	lines = append(lines, subIndent+
 		"IPv6 resolution: "+ipv6)
 
-	lines = append(lines,
+	lines = append(lines, subIndent+
 		"Verbosity level: "+strconv.Itoa(int(s.VerbosityLevel))+"/5")
 
-	lines = append(lines,
+	lines = append(lines, subIndent+
 		"Verbosity details level: "+strconv.Itoa(int(s.VerbosityDetailsLevel))+"/4")
 
-	lines = append(lines,
+	lines = append(lines, subIndent+
 		"Validation log level: "+strconv.Itoa(int(s.ValidationLogLevel))+"/2")
 
-	lines = append(lines, "Blocked hostnames:")
+	lines = append(lines, subIndent+"Blocked hostnames:")
 	for _, hostname := range s.BlockedHostnames {
-		lines = append(lines, prefix+hostname)
+		lines = append(lines, indent+subIndent+hostname)
 	}
 
-	lines = append(lines, "Blocked IP addresses:")
+	lines = append(lines, subIndent+"Blocked IP addresses:")
 	for _, ip := range s.BlockedIPs {
-		lines = append(lines, prefix+ip)
+		lines = append(lines, indent+subIndent+ip)
 	}
 
-	lines = append(lines, "Allowed hostnames:")
+	lines = append(lines, subIndent+"Allowed hostnames:")
 	for _, hostname := range s.AllowedHostnames {
-		lines = append(lines, prefix+hostname)
+		lines = append(lines, indent+subIndent+hostname)
 	}
 
 	return lines
@@ -97,11 +103,10 @@ type AccessControlSettings struct {
 }
 
 func (s *AccessControlSettings) Lines() (lines []string) {
-	lines = append(lines, "Access control:")
-	lines = append(lines, prefix+"Allowed:")
+	lines = append(lines, subIndent+"Allowed:")
 	for _, subnet := range s.Allowed {
 		lines = append(lines,
-			"   "+prefix+subnet.String())
+			indent+subIndent+subnet.String())
 	}
 	return lines
 }
