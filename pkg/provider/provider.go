@@ -20,6 +20,7 @@ type DoTServer struct {
 	IPv4 []net.IP
 	IPv6 []net.IP
 	Name string // for TLS verification
+	Port uint16
 }
 
 type DoHServer struct {

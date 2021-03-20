@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"net"
+	"strconv"
 	"sync/atomic"
 
 	"github.com/qdm12/dns/pkg/provider"
@@ -28,7 +29,7 @@ func NewResolver(options ...Option) *net.Resolver {
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 			DoTServer := picker.DoTServer(settings.dotServers)
 			ip := picker.DoTIP(DoTServer, settings.ipv6)
-			tlsAddr := net.JoinHostPort(ip.String(), "853")
+			tlsAddr := net.JoinHostPort(ip.String(), strconv.Itoa(int(DoTServer.Port)))
 
 			conn, err := dialer.DialContext(ctx, "tcp", tlsAddr)
 			if err != nil {
