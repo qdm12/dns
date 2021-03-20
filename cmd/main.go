@@ -53,10 +53,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	}
 	fmt.Println(splash.Splash(buildInfo))
 
-	logger, err := logging.NewLogger(logging.ConsoleEncoding, logging.InfoLevel)
-	if err != nil {
-		panic(err)
-	}
+	logger := logging.New(logging.StdLog)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -98,7 +95,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 
 	const healthServerAddr = "127.0.0.1:9999"
 	healthServer := health.NewServer(healthServerAddr,
-		logger.WithPrefix("healthcheck server: "),
+		logger.NewChild(logging.SetPrefix("healthcheck server: ")),
 		health.IsHealthy)
 	wg.Add(1)
 	go healthServer.Run(ctx, wg)
