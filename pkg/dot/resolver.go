@@ -86,16 +86,24 @@ func (p *picker) DoTServer(servers []provider.DoTServer) provider.DoTServer {
 }
 
 func (p *picker) IP(counter *int64, ips []net.IP) net.IP {
-	index := 0
-	if nIPs := len(ips); nIPs > 1 {
-		index = p.randIndex(counter, nIPs)
+	switch len(ips) {
+	case 0:
+		return nil
+	case 1:
+		return ips[0]
+	default:
+		index := p.randIndex(counter, len(ips))
+		return ips[index]
 	}
-	return ips[index]
 }
 
 func (p *picker) DoTIP(server provider.DoTServer, ipv6 bool) net.IP {
 	if ipv6 {
-		return p.IP(p.counterDoTIPv6, server.IPv6)
+		if ip := p.IP(p.counterDoTIPv6, server.IPv6); ip != nil {
+			return ip
+		}
+		// if there is no IPv6, fall back to an IPv4 address
+		// as all provider have at least an IPv4 address.
 	}
 	return p.IP(p.counterDoTIPv4, server.IPv4)
 }
@@ -110,7 +118,11 @@ func (p *picker) DNSServer(servers []provider.DNSServer) provider.DNSServer {
 
 func (p *picker) DNSIP(server provider.DNSServer, ipv6 bool) net.IP {
 	if ipv6 {
-		return p.IP(p.counterDNSIPv6, server.IPv6)
+		if ip := p.IP(p.counterDNSIPv6, server.IPv6); ip != nil {
+			return ip
+		}
+		// if there is no IPv6, fall back to an IPv4 address
+		// as all provider have at least an IPv4 address.
 	}
 	return p.IP(p.counterDNSIPv4, server.IPv4)
 }
