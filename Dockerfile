@@ -1,5 +1,5 @@
 ARG ALPINE_VERSION=3.12
-ARG GO_VERSION=1.15
+ARG GO_VERSION=1.16
 
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS base
 RUN apk --update add git
