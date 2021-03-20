@@ -5,8 +5,7 @@ import (
 	"net/url"
 )
 
-type cloudflare struct {
-}
+type cloudflare struct{}
 
 func Cloudflare() Provider {
 	return &cloudflare{}
@@ -30,6 +29,7 @@ func (c *cloudflare) DoT() DoTServer {
 			{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x01},
 		},
 		Name: "cloudflare-dns.com",
+		Port: defaultDoTPort,
 	}
 }
 

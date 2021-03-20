@@ -5,6 +5,8 @@ import (
 	"net/url"
 )
 
+const defaultDoTPort uint16 = 853
+
 type Provider interface {
 	DNS() DNSServer
 	DoT() DoTServer
