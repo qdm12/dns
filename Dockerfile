@@ -1,28 +1,52 @@
 ARG ALPINE_VERSION=3.12
 ARG GO_VERSION=1.15
 
-FROM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
+FROM --platform=$BUILDPLATFORM golang:${GO_VERSION}-alpine${ALPINE_VERSION} AS base
 RUN apk --update add git
 ENV CGO_ENABLED=0
-ARG GOLANGCI_LINT_VERSION=v1.33.0
-RUN [ "$(uname -m)" != "x86_64" ] || wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_LINT_VERSION}
 WORKDIR /tmp/gobuild
-COPY .golangci.yml .
 COPY go.mod go.sum ./
-RUN go mod download 2>&1
-COPY cmd/main.go cmd/app/main.go
-COPY internal/ ./internal/
+RUN go mod download
+COPY cmd/ ./cmd/
 COPY pkg/ ./pkg/
-RUN [ "$(uname -m)" != "x86_64" ] || go test ./...
-RUN [ "$(uname -m)" != "x86_64" ] || golangci-lint run --timeout=10m
+COPY internal/ ./internal/
+
+FROM --platform=$BUILDPLATFORM base AS test
+# Note on the go race detector:
+# - we set CGO_ENABLED=1 to have it enabled
+# - we install g++ to support the race detector
+ENV CGO_ENABLED=1
+RUN apk --update --no-cache add g++
+
+FROM --platform=$BUILDPLATFORM base AS lint
+ARG GOLANGCI_LINT_VERSION=v1.37.1
+RUN wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+    sh -s -- -b /usr/local/bin ${GOLANGCI_LINT_VERSION}
+COPY .golangci.yml ./
+RUN golangci-lint run --timeout=10m
+
+FROM --platform=$BUILDPLATFORM base AS tidy
+RUN git init && \
+    git config user.email ci@localhost && \
+    git config user.name ci && \
+    git add -A && git commit -m ci && \
+    sed -i '/\/\/ indirect/d' go.mod && \
+    go mod tidy && \
+    git diff --exit-code -- go.mod
+
+FROM --platform=$BUILDPLATFORM base AS build
+COPY --from=qmcgaw/xcputranslate:v0.4.0 /xcputranslate /usr/local/bin/xcputranslate
+ARG TARGETPLATFORM
 ARG VERSION=unknown
 ARG BUILD_DATE="an unknown date"
 ARG COMMIT=unknown
-RUN go build -o entrypoint -trimpath -ldflags="-s -w \
+RUN GOARCH="$(xcputranslate -field arch -targetplatform ${TARGETPLATFORM})" \
+    GOARM="$(xcputranslate -field arm -targetplatform ${TARGETPLATFORM})" \
+    go build -trimpath -ldflags="-s -w \
     -X 'main.version=$VERSION' \
     -X 'main.buildDate=$BUILD_DATE' \
-    -X 'main.commit=$COMMIT'" \
-    cmd/app/main.go
+    -X 'main.commit=$COMMIT' \
+    " -o entrypoint cmd/main.go
 
 FROM alpine:${ALPINE_VERSION}
 ARG VERSION=unknown
@@ -70,7 +94,7 @@ RUN apk --update --no-cache add unbound libcap ca-certificates && \
     setcap 'cap_net_bind_service=+ep' unbound && \
     apk del libcap && \
     rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-*
-COPY --from=builder --chown=1000 /tmp/gobuild/entrypoint /entrypoint
+COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 USER 1000
 # Downloads and install some files
-RUN /entrypoint  build
+RUN /entrypoint build
