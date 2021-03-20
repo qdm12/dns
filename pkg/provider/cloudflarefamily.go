@@ -5,8 +5,7 @@ import (
 	"net/url"
 )
 
-type cloudflareFamily struct {
-}
+type cloudflareFamily struct{}
 
 func CloudflareFamily() Provider {
 	return &cloudflareFamily{}

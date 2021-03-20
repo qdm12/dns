@@ -5,8 +5,7 @@ import (
 	"net/url"
 )
 
-type cloudflareSecurity struct {
-}
+type cloudflareSecurity struct{}
 
 func CloudflareSecurity() Provider {
 	return &cloudflareSecurity{}
