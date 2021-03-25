@@ -2,6 +2,7 @@ package doh
 
 import (
 	"context"
+	"runtime"
 	"time"
 
 	"github.com/miekg/dns"
@@ -19,6 +20,9 @@ type server struct {
 
 func NewServer(ctx context.Context, logger logging.Logger,
 	options ...Option) Server {
+	if runtime.GOOS == "windows" {
+		panic("DoH server cannot work on Windows")
+	}
 	return &server{
 		dnsServer: dns.Server{
 			Addr:    ":53",
