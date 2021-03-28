@@ -16,6 +16,7 @@ type handler struct {
 	// Internal objects
 	dial          dialFunc
 	udpBufferPool *sync.Pool
+	client        *dns.Client
 }
 
 func newDNSHandler(ctx context.Context, logger logging.Logger,
@@ -37,6 +38,7 @@ func newDNSHandler(ctx context.Context, logger logging.Logger,
 		logger:        logger,
 		dial:          newDoTDial(settings),
 		udpBufferPool: udpBufferPool,
+		client:        &dns.Client{},
 	}
 }
 
@@ -47,23 +49,16 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
 	}
-
 	conn := &dns.Conn{Conn: DoTConn}
-	if err := conn.WriteMsg(r); err != nil {
-		h.logger.Warn("cannot write message to DoT connection: %s", err)
-		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
-		return
-	}
 
-	response, err := conn.ReadMsg()
-	if err != nil {
-		h.logger.Warn("cannot read response from the DoT connection: %s", err)
-		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
-		return
-	}
+	response, _, err := h.client.ExchangeWithConn(r, conn)
 
 	if err := conn.Close(); err != nil {
 		h.logger.Warn("cannot close the DoT connection: %s", err)
+	}
+
+	if err != nil {
+		h.logger.Warn("cannot exchange over DoT connection: %s", err)
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
 	}
