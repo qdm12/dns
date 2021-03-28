@@ -2,7 +2,6 @@ package dot
 
 import (
 	"context"
-	"sync"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/golibs/logging"
@@ -14,9 +13,8 @@ type handler struct {
 	logger logging.Logger
 
 	// Internal objects
-	dial          dialFunc
-	udpBufferPool *sync.Pool
-	client        *dns.Client
+	dial   dialFunc
+	client *dns.Client
 }
 
 func newDNSHandler(ctx context.Context, logger logging.Logger,
@@ -26,19 +24,11 @@ func newDNSHandler(ctx context.Context, logger logging.Logger,
 		option(&settings)
 	}
 
-	const dnsPacketMaxSize = 512
-	udpBufferPool := &sync.Pool{
-		New: func() interface{} {
-			return make([]byte, dnsPacketMaxSize)
-		},
-	}
-
 	return &handler{
-		ctx:           ctx,
-		logger:        logger,
-		dial:          newDoTDial(settings),
-		udpBufferPool: udpBufferPool,
-		client:        &dns.Client{},
+		ctx:    ctx,
+		logger: logger,
+		dial:   newDoTDial(settings),
+		client: &dns.Client{},
 	}
 }
 
