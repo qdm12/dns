@@ -11,7 +11,22 @@ import (
 
 	"github.com/qdm12/golibs/logging"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func Test_Resolver(t *testing.T) {
+	t.Parallel()
+
+	const hostname = "google.com"
+
+	resolver := NewResolver()
+
+	ips, err := resolver.LookupIPAddr(context.Background(), hostname)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, ips)
+	t.Logf("resolved %s to: %v", hostname, ips)
+}
 
 func Test_Server(t *testing.T) {
 	t.Parallel()
