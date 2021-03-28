@@ -5,11 +5,12 @@ package doh
 import (
 	"context"
 	"net"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/qdm12/golibs/logging"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Server(t *testing.T) {
@@ -23,7 +24,6 @@ func Test_Server(t *testing.T) {
 
 	go server.Run(ctx, stopped)
 
-	const hostname = "google.com" // we use google.com as github.com doesn't have an IPv6 :(
 	resolver := &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,
@@ -33,12 +33,30 @@ func Test_Server(t *testing.T) {
 		},
 	}
 
-	ips, err := resolver.LookupIPAddr(ctx, hostname)
+	const parallelResolutions = 1
+	startWg := new(sync.WaitGroup)
+	endWg := new(sync.WaitGroup)
+	startWg.Add(parallelResolutions)
+	endWg.Add(parallelResolutions)
+	hostnames := []string{
+		"google.com", "google.com", "github.com", "amazon.com", "cloudflare.com",
+	}
 
-	require.NoError(t, err)
-	require.NotEmpty(t, ips)
-	t.Logf("resolved %s to: %v", hostname, ips)
+	for i := 0; i < parallelResolutions; i++ {
+		hostnameIndex := i % len(hostnames)
+		hostname := hostnames[hostnameIndex]
+		go func() {
+			startWg.Done()
+			startWg.Wait()
+			ips, err := resolver.LookupIPAddr(ctx, hostname)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, ips)
+			t.Log(ips)
+			endWg.Done()
+		}()
+	}
 
+	endWg.Wait()
 	cancel()
 	<-stopped
 }
