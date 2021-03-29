@@ -3,6 +3,7 @@ package doh
 import (
 	"time"
 
+	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/provider"
 )
 
@@ -33,4 +34,11 @@ func IPv4() Option {
 
 func IPv6() Option {
 	return func(s *settings) { s.ipv6 = true }
+}
+
+func WithCache(cacheType cache.Type, options ...cache.Option) Option {
+	return func(s *settings) {
+		s.cacheType = cacheType
+		s.cacheOptions = options
+	}
 }
