@@ -53,6 +53,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
+	response.SetReply(r)
 	if err := w.WriteMsg(response); err != nil {
 		h.logger.Warn("cannot write DNS message back to client: %s", err)
 	}
