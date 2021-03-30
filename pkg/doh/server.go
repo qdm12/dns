@@ -21,7 +21,7 @@ type server struct {
 func NewServer(ctx context.Context, logger logging.Logger,
 	options ...Option) Server {
 	if runtime.GOOS == "windows" {
-		panic("DoH server cannot work on Windows")
+		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
 	return &server{
 		dnsServer: dns.Server{
