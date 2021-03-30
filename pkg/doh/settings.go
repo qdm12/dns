@@ -12,6 +12,7 @@ type settings struct {
 	providers    []provider.Provider // for the internal HTTP client
 	dohServers   []provider.DoHServer
 	timeout      time.Duration
+	port         uint16
 	ipv6         bool
 	cacheType    cache.Type
 	cacheOptions []cache.Option
@@ -27,6 +28,9 @@ func defaultSettings() (settings settings) {
 	for i := range settings.providers {
 		settings.dohServers[i] = settings.providers[i].DoH()
 	}
+
+	const defaultPort = 53
+	settings.port = defaultPort
 
 	const defaultTimeout = 5 * time.Second
 	settings.timeout = defaultTimeout

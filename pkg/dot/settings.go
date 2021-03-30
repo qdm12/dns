@@ -12,6 +12,7 @@ type settings struct {
 	dotServers   []provider.DoTServer
 	dnsServers   []provider.DNSServer
 	timeout      time.Duration
+	port         uint16
 	ipv6         bool
 	cacheType    cache.Type
 	cacheOptions []cache.Option
@@ -27,6 +28,9 @@ func defaultSettings() (settings settings) {
 	for i := range providers {
 		settings.dotServers[i] = providers[i].DoT()
 	}
+
+	const defaultPort = 53
+	settings.port = defaultPort
 
 	const defaultTimeout = 5 * time.Second
 	settings.timeout = defaultTimeout

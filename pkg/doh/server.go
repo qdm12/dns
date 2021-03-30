@@ -3,6 +3,7 @@ package doh
 import (
 	"context"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/miekg/dns"
@@ -23,11 +24,17 @@ func NewServer(ctx context.Context, logger logging.Logger,
 	if runtime.GOOS == "windows" {
 		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
+
+	settings := defaultSettings()
+	for _, option := range options {
+		option(&settings)
+	}
+
 	return &server{
 		dnsServer: dns.Server{
-			Addr:    ":53",
+			Addr:    ":" + strconv.Itoa(int(settings.port)),
 			Net:     "udp",
-			Handler: newDNSHandler(ctx, logger, options...),
+			Handler: newDNSHandler(ctx, logger, settings),
 		},
 		logger: logger,
 	}

@@ -26,12 +26,7 @@ type handler struct {
 }
 
 func newDNSHandler(ctx context.Context, logger logging.Logger,
-	options ...Option) dns.Handler {
-	settings := defaultSettings()
-	for _, option := range options {
-		option(&settings)
-	}
-
+	settings settings) dns.Handler {
 	return &handler{
 		dohServers: settings.dohServers,
 		ctx:        ctx,

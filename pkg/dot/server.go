@@ -2,6 +2,7 @@ package dot
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/miekg/dns"
@@ -19,11 +20,16 @@ type server struct {
 
 func NewServer(ctx context.Context, logger logging.Logger,
 	options ...Option) Server {
+	settings := defaultSettings()
+	for _, option := range options {
+		option(&settings)
+	}
+
 	return &server{
 		dnsServer: dns.Server{
-			Addr:    ":53",
+			Addr:    ":" + strconv.Itoa(int(settings.port)),
 			Net:     "udp",
-			Handler: newDNSHandler(ctx, logger, options...),
+			Handler: newDNSHandler(ctx, logger, settings),
 		},
 		logger: logger,
 	}

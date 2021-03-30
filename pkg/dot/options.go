@@ -11,6 +11,12 @@ import (
 
 type Option func(s *settings)
 
+func Port(port uint16) Option {
+	return func(s *settings) {
+		s.port = port
+	}
+}
+
 func Providers(first provider.Provider, providers ...provider.Provider) Option {
 	providers = append(providers, first)
 	servers := make([]provider.DoTServer, len(providers))
