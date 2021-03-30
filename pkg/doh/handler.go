@@ -54,10 +54,14 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
 	}
-
 	conn := &dns.Conn{Conn: DoHConn}
 
 	response, _, err := h.client.ExchangeWithConn(r, conn)
+
+	if err := conn.Close(); err != nil {
+		h.logger.Warn("cannot close the DoT connection: %s", err)
+	}
+
 	if err != nil {
 		h.logger.Warn("cannot exchange over DoH connection: %s", err)
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
