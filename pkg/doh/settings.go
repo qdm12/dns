@@ -1,6 +1,7 @@
 package doh
 
 import (
+	"net"
 	"time"
 
 	"github.com/qdm12/dns/pkg/cache"
@@ -14,6 +15,10 @@ type settings struct {
 	ipv6         bool
 	cacheType    cache.Type
 	cacheOptions []cache.Option
+	blacklist    struct {
+		fqdnHostnames []string
+		ips           []net.IP
+	}
 }
 
 func defaultSettings() (settings settings) {
