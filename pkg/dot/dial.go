@@ -9,24 +9,24 @@ import (
 
 type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
 
-func newDoTDial(settings settings) dialFunc {
+func newDoTDial(settings Settings) dialFunc {
 	dialer := &net.Dialer{
-		Timeout: settings.timeout,
+		Timeout: settings.Timeout,
 	}
 
 	picker := newPicker()
 
 	return func(ctx context.Context, _, _ string) (net.Conn, error) {
-		DoTServer := picker.DoTServer(settings.dotServers)
-		ip := picker.DoTIP(DoTServer, settings.ipv6)
+		DoTServer := picker.DoTServer(settings.DoTServers)
+		ip := picker.DoTIP(DoTServer, settings.IPv6)
 		tlsAddr := net.JoinHostPort(ip.String(), strconv.Itoa(int(DoTServer.Port)))
 
 		conn, err := dialer.DialContext(ctx, "tcp", tlsAddr)
 		if err != nil {
-			if len(settings.dnsServers) > 0 {
+			if len(settings.DNSServers) > 0 {
 				// fallback on plain DNS if DoT does not work
-				dnsServer := picker.DNSServer(settings.dnsServers)
-				ip := picker.DNSIP(dnsServer, settings.ipv6)
+				dnsServer := picker.DNSServer(settings.DNSServers)
+				ip := picker.DNSIP(dnsServer, settings.IPv6)
 				plainAddr := net.JoinHostPort(ip.String(), "53")
 				return dialer.DialContext(ctx, "udp", plainAddr)
 			}

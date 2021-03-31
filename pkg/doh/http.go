@@ -19,10 +19,10 @@ var (
 	ErrHTTPStatus = errors.New("bad HTTP status")
 )
 
-func newDoTClient(options ...dot.Option) *http.Client {
+func newDoTClient(settings dot.Settings) *http.Client {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
 	dialer := &net.Dialer{
-		Resolver: dot.NewResolver(options...),
+		Resolver: dot.NewResolver(settings),
 	}
 	httpTransport.DialContext = dialer.DialContext
 	const timeout = 5 * time.Second

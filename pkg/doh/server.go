@@ -20,19 +20,16 @@ type server struct {
 }
 
 func NewServer(ctx context.Context, logger logging.Logger,
-	options ...Option) Server {
+	settings Settings) Server {
 	if runtime.GOOS == "windows" {
 		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
 
-	settings := defaultSettings()
-	for _, option := range options {
-		option(&settings)
-	}
+	settings.setDefaults()
 
 	return &server{
 		dnsServer: dns.Server{
-			Addr:    ":" + strconv.Itoa(int(settings.port)),
+			Addr:    ":" + strconv.Itoa(int(settings.Port)),
 			Net:     "udp",
 			Handler: newDNSHandler(ctx, logger, settings),
 		},

@@ -26,16 +26,15 @@ type handler struct {
 }
 
 func newDNSHandler(ctx context.Context, logger logging.Logger,
-	settings settings) dns.Handler {
+	settings Settings) dns.Handler {
 	return &handler{
-		dohServers: settings.dohServers,
+		dohServers: settings.DoHServers,
 		ctx:        ctx,
 		logger:     logger,
 		dial:       newDoHDial(settings),
 		client:     &dns.Client{},
-		cache:      cache.New(settings.cacheType, settings.cacheOptions...),
-		blist: blacklist.NewMap(
-			settings.blacklist.fqdnHostnames, settings.blacklist.ips),
+		cache:      cache.New(settings.Cache),
+		blist:      blacklist.NewMap(settings.Blacklist),
 	}
 }
 

@@ -5,11 +5,8 @@ import (
 )
 
 // NewResolver creates a DNS over HTTPs resolver.
-func NewResolver(options ...Option) *net.Resolver {
-	settings := defaultSettings()
-	for _, option := range options {
-		option(&settings)
-	}
+func NewResolver(settings Settings) *net.Resolver {
+	settings.setDefaults()
 	return &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,

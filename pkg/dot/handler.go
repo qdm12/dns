@@ -22,15 +22,14 @@ type handler struct {
 }
 
 func newDNSHandler(ctx context.Context, logger logging.Logger,
-	settings settings) dns.Handler {
+	settings Settings) dns.Handler {
 	return &handler{
 		ctx:    ctx,
 		logger: logger,
 		dial:   newDoTDial(settings),
 		client: &dns.Client{},
-		cache:  cache.New(settings.cacheType, settings.cacheOptions...), // defaults to NOOP
-		blist: blacklist.NewMap(
-			settings.blacklist.fqdnHostnames, settings.blacklist.ips),
+		cache:  cache.New(settings.Cache), // defaults to NOOP
+		blist:  blacklist.NewMap(settings.Blacklist),
 	}
 }
 

@@ -19,15 +19,11 @@ type server struct {
 }
 
 func NewServer(ctx context.Context, logger logging.Logger,
-	options ...Option) Server {
-	settings := defaultSettings()
-	for _, option := range options {
-		option(&settings)
-	}
-
+	settings Settings) Server {
+	settings.setDefaults()
 	return &server{
 		dnsServer: dns.Server{
-			Addr:    ":" + strconv.Itoa(int(settings.port)),
+			Addr:    ":" + strconv.Itoa(int(settings.Port)),
 			Net:     "udp",
 			Handler: newDNSHandler(ctx, logger, settings),
 		},

@@ -1,8 +1,6 @@
 package blacklist
 
 import (
-	"net"
-
 	"github.com/miekg/dns"
 )
 
@@ -11,14 +9,14 @@ type mapBased struct {
 	ips           map[string]struct{}
 }
 
-func NewMap(fqdnHostnames []string, ips []net.IP) BlackLister {
-	fqdnHostnamesSet := make(map[string]struct{}, len(fqdnHostnames))
-	for _, fqdnHostname := range fqdnHostnames {
+func NewMap(settings Settings) BlackLister {
+	fqdnHostnamesSet := make(map[string]struct{}, len(settings.FqdnHostnames))
+	for _, fqdnHostname := range settings.FqdnHostnames {
 		fqdnHostnamesSet[fqdnHostname] = struct{}{}
 	}
 
-	ipsSet := make(map[string]struct{}, len(ips))
-	for _, ip := range ips {
+	ipsSet := make(map[string]struct{}, len(settings.IPs))
+	for _, ip := range settings.IPs {
 		ipsSet[ip.String()] = struct{}{}
 	}
 

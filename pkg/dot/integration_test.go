@@ -17,7 +17,7 @@ func Test_Resolver(t *testing.T) {
 
 	const hostname = "google.com"
 
-	resolver := NewResolver()
+	resolver := NewResolver(Settings{})
 
 	ips, err := resolver.LookupIPAddr(context.Background(), hostname)
 
@@ -33,7 +33,7 @@ func Test_Server(t *testing.T) {
 	stopped := make(chan struct{})
 
 	logger := logging.New(logging.StdLog)
-	server := NewServer(ctx, logger)
+	server := NewServer(ctx, logger, Settings{})
 
 	go server.Run(ctx, stopped)
 

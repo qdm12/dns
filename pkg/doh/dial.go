@@ -11,16 +11,15 @@ import (
 
 type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
 
-func newDoHDial(settings settings) dialFunc {
+func newDoHDial(settings Settings) dialFunc {
 	// DoT HTTP client to resolve the DoH URL hostname
-	dotOptions := []dot.Option{
-		dot.Providers(settings.providers[0], settings.providers[1:]...),
-		dot.Timeout(settings.timeout), // http client timeout really
+	DoTSettings := dot.Settings{
+		DoTServers: settings.SelfDNS.DoTServers,
+		DNSServers: settings.SelfDNS.DNSServers,
+		Timeout:    settings.Timeout, // http client timeout really
+		IPv6:       settings.IPv6,
 	}
-	if settings.ipv6 {
-		dotOptions = append(dotOptions, dot.IPv6())
-	}
-	dotClient := newDoTClient(dotOptions...)
+	dotClient := newDoTClient(DoTSettings)
 
 	// HTTP bodies buffer pool
 	bufferPool := &sync.Pool{
@@ -33,7 +32,7 @@ func newDoHDial(settings settings) dialFunc {
 
 	return func(ctx context.Context, _, _ string) (conn net.Conn, err error) {
 		// Pick DoH server pseudo-randomly from the chosen providers
-		DoHServer := picker.DoHServer(settings.dohServers)
+		DoHServer := picker.DoHServer(settings.DoHServers)
 		// Create connection object (no actual IO yet)
 		conn = newDoHConn(ctx, dotClient, bufferPool, DoHServer.URL)
 		return conn, nil

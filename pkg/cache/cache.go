@@ -9,19 +9,16 @@ type Cache interface {
 	Get(request *dns.Msg) (response *dns.Msg)
 }
 
-func New(cacheType Type, options ...Option) Cache {
-	settings := defaultSettings()
-	for _, option := range options {
-		option(&settings)
-	}
+func New(settings Settings) Cache {
+	settings.setDefaults()
 
-	switch cacheType {
+	switch settings.Type {
 	case LRU:
-		return newLRU(settings.maxEntries, settings.ttl)
+		return newLRU(settings.MaxEntries, settings.TTL)
 	case NOOP:
 		return newNoop()
 	default:
 		// Coding error
-		panic("unknown cache type")
+		panic("unknown cache type: " + settings.Type)
 	}
 }
