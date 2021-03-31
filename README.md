@@ -2,7 +2,7 @@
 
 *DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
 
-**Announcement**: *Total rewrite in Go: see the new features [below](#Features)* (in case something break, use the image with tag `:shell`)
+**Announcement**: *The image is being reworked to be a single binary with DoH and DoT without Unbound. The `:latest` Docker images might break compatibility soon.*
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/dns/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/dns)
 
@@ -48,7 +48,7 @@
     </p></details>
 
 - Resolves using IPv4 and IPv6 when available
-- Auto updates block lists and cryptographic files very 24h and restarts Unbound (< 1 second downtime)
+- Auto updates block lists and cryptographic files every 24h and restarts Unbound (< 1 second downtime)
 - Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
 - DNS rebinding protection
 - DNSSEC Validation
@@ -80,6 +80,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | Docker image | Github release |
 | --- | --- |
 | `qmcgaw/dns:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
+| `qmcgaw/dns:v1.4.0` | [v1.4.0](https://github.com/qdm12/dns/releases/tag/v1.4.0) |
 | `qmcgaw/dns:v1.2.1` | [v1.2.1](https://github.com/qdm12/dns/releases/tag/v1.2.1) |
 | `qmcgaw/dns:v1.1.1` | [v1.1.1](https://github.com/qdm12/dns/releases/tag/v1.1.1) |
 | `qmcgaw/cloudflare-dns-server:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
@@ -222,8 +223,7 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
 
 Some packages are exposed publicly through the [pkg](pkg) directory.
 
-The API is at v1.x.x but (shame on me) is not stable and subject to change without
-changing version. If you need it to be stable, please [create an issue](https://github.com/qdm12/dns/issues/new).
+The API is at v1.x.x but (shame on me) is not stable and subject to change without changing major version. If you need it to be stable, please [create an issue](https://github.com/qdm12/dns/issues/new) and I'll see what I can do.
 
 For now, it is used by the [gluetun](https://github.com/qdm12/gluetun) project for its DNS over TLS usage.
 
@@ -268,12 +268,3 @@ For now, it is used by the [gluetun](https://github.com/qdm12/gluetun) project f
     ```
 
 1. See [Contributing](.github/CONTRIBUTING.md) for more information on how to contribute to this repository.
-
-## TO DOs
-
-- GolangCI-lint
-- [ ] Periodic SHUP signal to reload block lists
-- [x] Build Unbound binary at image build stage
-    - [ ] smaller static binary
-    - [ ] Bundled with Go static binary on a Scratch image
-- [ ] Branch with Pihole bundled
