@@ -6,14 +6,10 @@ import (
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/cache"
-	"github.com/qdm12/dns/pkg/provider"
 	"github.com/qdm12/golibs/logging"
 )
 
 type handler struct {
-	// Configuration
-	dohServers []provider.DoHServer
-
 	// External objects
 	ctx    context.Context
 	logger logging.Logger
@@ -28,13 +24,12 @@ type handler struct {
 func newDNSHandler(ctx context.Context, logger logging.Logger,
 	settings Settings) dns.Handler {
 	return &handler{
-		dohServers: settings.DoHServers,
-		ctx:        ctx,
-		logger:     logger,
-		dial:       newDoHDial(settings),
-		client:     &dns.Client{},
-		cache:      cache.New(settings.Cache),
-		blist:      blacklist.NewMap(settings.Blacklist),
+		ctx:    ctx,
+		logger: logger,
+		dial:   newDoHDial(settings),
+		client: &dns.Client{},
+		cache:  cache.New(settings.Cache),
+		blist:  blacklist.NewMap(settings.Blacklist),
 	}
 }
 
