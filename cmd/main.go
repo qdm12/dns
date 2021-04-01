@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	nativeos "os"
+	"os"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -18,7 +18,7 @@ import (
 	"github.com/qdm12/dns/internal/splash"
 	"github.com/qdm12/dns/pkg/unbound"
 	"github.com/qdm12/golibs/logging"
-	"github.com/qdm12/golibs/os"
+	customOS "github.com/qdm12/golibs/os"
 	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
@@ -34,31 +34,71 @@ func main() {
 		Commit:    commit,
 		BuildDate: buildDate,
 	}
+
 	ctx := context.Background()
-	os := os.New()
-	nativeos.Exit(_main(ctx, buildInfo, nativeos.Args, os))
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+
+	args := os.Args
+	logger := logging.New(logging.StdLog)
+	paramsReader := params.NewParamsReader(logger)
+	osIntf := customOS.New()
+
+	errorCh := make(chan error)
+	go func() {
+		errorCh <- _main(ctx, buildInfo, args, logger, paramsReader, osIntf)
+	}()
+
+	signalsCh := make(chan os.Signal, 1)
+	signal.Notify(signalsCh,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		os.Interrupt,
+	)
+
+	select {
+	case <-ctx.Done():
+		logger.Warn("Caught OS signal, shutting down\n")
+		stop()
+	case err := <-errorCh:
+		close(errorCh)
+		if err == nil { // expected exit such as healthcheck
+			os.Exit(0)
+		}
+		logger.Error(err)
+	}
+
+	const shutdownGracePeriod = 5 * time.Second
+	timer := time.NewTimer(shutdownGracePeriod)
+	select {
+	case <-errorCh:
+		if !timer.Stop() {
+			<-timer.C
+		}
+		logger.Info("Shutdown successful")
+	case <-timer.C:
+		logger.Warn("Shutdown timed out")
+	}
+
+	os.Exit(1)
 }
 
-func _main(ctx context.Context, buildInfo models.BuildInformation, args []string, os os.OS) int {
+func _main(ctx context.Context, buildInfo models.BuildInformation,
+	args []string, logger logging.Logger, paramsReader params.Reader,
+	os customOS.OS) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
 		// long running instance of the program about its status
 		client := health.NewClient()
 		if err := client.Query(ctx); err != nil {
-			fmt.Println(err)
-			return 1
+			return err
 		}
-		return 0
+		return nil
 	}
 	fmt.Println(splash.Splash(buildInfo))
 
-	logger := logging.New(logging.StdLog)
-
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	paramsReader := params.NewParamsReader(logger)
 
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
@@ -71,27 +111,26 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 
 	if len(args) > 1 && args[1] == "build" {
 		if err := dnsConf.SetupFiles(ctx); err != nil {
-			logger.Error(err)
-			return 1
+			return err
 		}
-		return 0
+		return nil
 	}
 
 	version, err := dnsConf.Version(ctx)
 	if err != nil {
-		logger.Error(err)
-		return 1
+		return err
 	}
 	logger.Info("Unbound version: %s", version)
 
 	settings, err := settings.GetSettings(paramsReader)
 	if err != nil {
-		logger.Error(err)
-		return 1
+		return err
 	}
 	logger.Info("Settings summary:\n" + settings.String())
 
 	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	crashed := make(chan error)
 
 	const healthServerAddr = "127.0.0.1:9999"
 	healthServer := health.NewServer(healthServerAddr,
@@ -104,42 +143,19 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, args []string
 	logger.Info("using DNS address %s internally", localIP.String())
 	dnsConf.UseDNSInternally(localIP) // use Unbound
 	wg.Add(1)
-	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, client, cancel)
+	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, client, crashed)
 
-	signalsCh := make(chan nativeos.Signal, 1)
-	signal.Notify(signalsCh,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		nativeos.Interrupt,
-	)
 	select {
-	case signal := <-signalsCh:
-		logger.Warn("Caught OS signal %s, shutting down", signal)
-		cancel()
 	case <-ctx.Done():
-		logger.Warn("context canceled, shutting down")
+	case err = <-crashed:
+		cancel()
 	}
-
-	waited := make(chan struct{})
-	timer := time.NewTimer(time.Second)
-	go func() {
-		wg.Wait()
-		close(waited)
-	}()
-	select {
-	case <-waited:
-		if !timer.Stop() {
-			<-timer.C
-		}
-	case <-timer.C:
-		logger.Error("shutdown timed out, force quitting")
-	}
-
-	return 1
+	wg.Wait()
+	return err
 }
 
 func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Settings, //nolint:gocognit
-	logger logging.Logger, dnsConf unbound.Configurator, client *http.Client, fatal func(),
+	logger logging.Logger, dnsConf unbound.Configurator, client *http.Client, crashed chan<- error,
 ) {
 	defer wg.Done()
 	defer logger.Info("unbound loop exited")
@@ -200,18 +216,16 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 		logger.Info("starting unbound")
 		stdoutLines, stderrLines, waitError, err := dnsConf.Start(unboundCtx, settings.Unbound.VerbosityDetailsLevel)
 		if err != nil {
-			logger.Error(err)
-			fatal()
-			continue
+			crashed <- err
+			break
 		}
 
 		go logUnboundStreams(logger, stdoutLines, stderrLines)
 
 		if settings.CheckUnbound {
 			if err := dnsConf.WaitForUnbound(ctx); err != nil {
-				logger.Error(err)
-				fatal()
-				continue
+				crashed <- err
+				break
 			}
 		}
 
@@ -236,8 +250,8 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 			if !timer.Stop() {
 				<-timer.C
 			}
-			logger.Error(waitErr)
-			fatal()
+			crashed <- waitErr
+			break
 		}
 	}
 	unboundCancel()
