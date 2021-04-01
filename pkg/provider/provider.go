@@ -11,6 +11,7 @@ type Provider interface {
 	DNS() DNSServer
 	DoT() DoTServer
 	DoH() DoHServer
+	String() string
 }
 
 type DNSServer struct {

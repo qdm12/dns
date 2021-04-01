@@ -11,6 +11,10 @@ func CloudflareFamily() Provider {
 	return &cloudflareFamily{}
 }
 
+func (c *cloudflareFamily) String() string {
+	return "Cloudflare Family"
+}
+
 func (c *cloudflareFamily) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{1, 1, 1, 3}, {1, 0, 0, 3}},

@@ -11,6 +11,10 @@ func CloudflareSecurity() Provider {
 	return &cloudflareSecurity{}
 }
 
+func (c *cloudflareSecurity) String() string {
+	return "Cloudflare Security"
+}
+
 func (c *cloudflareSecurity) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{1, 1, 1, 2}, {1, 0, 0, 2}},

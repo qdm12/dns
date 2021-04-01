@@ -24,27 +24,27 @@ func Test_Parse(t *testing.T) {
 			err: errors.New(`cannot parse provider: "invalid"`),
 		},
 		"cirafamily": {
-			s:        "cirafamily",
+			s:        "cira family",
 			provider: CiraFamily(),
 		},
 		"ciraprivate": {
-			s:        "ciraprivate",
+			s:        "cira private",
 			provider: CiraPrivate(),
 		},
 		"ciraprotected": {
-			s:        "ciraprotected",
+			s:        "cira protected",
 			provider: CiraProtected(),
 		},
 		"cleanbrowsingadult": {
-			s:        "cleanbrowsingadult",
+			s:        "cleanbrowsing adult",
 			provider: CleanBrowsingAdult(),
 		},
 		"cleanbrowsingfamily": {
-			s:        "cleanbrowsingfamily",
+			s:        "cleanbrowsing family",
 			provider: CleanBrowsingFamily(),
 		},
 		"cleanbrowsingsecurity": {
-			s:        "cleanbrowsingsecurity",
+			s:        "cleanbrowsing security",
 			provider: CleanBrowsingSecurity(),
 		},
 		"cloudflare": {
@@ -52,11 +52,11 @@ func Test_Parse(t *testing.T) {
 			provider: Cloudflare(),
 		},
 		"cloudflarefamily": {
-			s:        "cloudflarefamily",
+			s:        "cloudflare family",
 			provider: CloudflareFamily(),
 		},
 		"cloudflaresecurity": {
-			s:        "cloudflaresecurity",
+			s:        "cloudflare security",
 			provider: CloudflareSecurity(),
 		},
 		"google": {
@@ -72,11 +72,11 @@ func Test_Parse(t *testing.T) {
 			provider: Quad9(),
 		},
 		"quad9secured": {
-			s:        "quad9secured",
+			s:        "quad9 secured",
 			provider: Quad9Secured(),
 		},
 		"quad9unsecured": {
-			s:        "quad9unsecured",
+			s:        "quad9 unsecured",
 			provider: Quad9Unsecured(),
 		},
 		"quadrant": {

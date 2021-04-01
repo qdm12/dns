@@ -11,6 +11,10 @@ func CiraFamily() Provider {
 	return &ciraFamily{}
 }
 
+func (c *ciraFamily) String() string {
+	return "CIRA Family"
+}
+
 func (c *ciraFamily) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{149, 112, 121, 30}, {149, 112, 122, 30}},

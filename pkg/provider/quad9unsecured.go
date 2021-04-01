@@ -11,6 +11,10 @@ func Quad9Unsecured() Provider {
 	return &quad9Unsecured{}
 }
 
+func (q *quad9Unsecured) String() string {
+	return "Quad9 Unsecured"
+}
+
 func (q *quad9Unsecured) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{9, 9, 9, 10}, {149, 112, 112, 10}},

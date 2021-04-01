@@ -11,6 +11,10 @@ func CiraPrivate() Provider {
 	return &ciraPrivate{}
 }
 
+func (c *ciraPrivate) String() string {
+	return "CIRA private"
+}
+
 func (c *ciraPrivate) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{149, 112, 121, 10}, {149, 112, 122, 10}},

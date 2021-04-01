@@ -11,6 +11,10 @@ func LibreDNS() Provider {
 	return &libreDNS{}
 }
 
+func (l *libreDNS) String() string {
+	return "LibreDNS"
+}
+
 func (l *libreDNS) DNS() DNSServer {
 	// see https://libreops.cc/radicaldns.html
 	return DNSServer{

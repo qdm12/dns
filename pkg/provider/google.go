@@ -11,6 +11,10 @@ func Google() Provider {
 	return &google{}
 }
 
+func (g *google) String() string {
+	return "Google"
+}
+
 func (g *google) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{8, 8, 8, 8}, {8, 8, 4, 4}},

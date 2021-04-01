@@ -11,6 +11,10 @@ func CiraProtected() Provider {
 	return &ciraProtected{}
 }
 
+func (c *ciraProtected) String() string {
+	return "CIRA Protected"
+}
+
 func (c *ciraProtected) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{149, 112, 121, 20}, {149, 112, 122, 20}},

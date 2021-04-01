@@ -11,6 +11,10 @@ func Quadrant() Provider {
 	return &quadrant{}
 }
 
+func (q *quadrant) String() string {
+	return "Quadrant"
+}
+
 func (q *quadrant) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{12, 159, 2, 159}},

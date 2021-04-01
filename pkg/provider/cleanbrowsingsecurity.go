@@ -11,6 +11,10 @@ func CleanBrowsingSecurity() Provider {
 	return &cleanBrowsingSecurity{}
 }
 
+func (c *cleanBrowsingSecurity) String() string {
+	return "Cleanbrowsing Security"
+}
+
 func (c *cleanBrowsingSecurity) DNS() DNSServer {
 	return DNSServer{
 		IPv4: []net.IP{{185, 228, 168, 9}, {185, 228, 169, 9}},
