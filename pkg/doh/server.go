@@ -10,6 +10,8 @@ import (
 	"github.com/qdm12/golibs/logging"
 )
 
+//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Server
+
 type Server interface {
 	Run(ctx context.Context, stopped chan<- struct{})
 }

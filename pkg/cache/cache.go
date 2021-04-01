@@ -4,6 +4,8 @@ import (
 	"github.com/miekg/dns"
 )
 
+//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Cache
+
 type Cache interface {
 	Add(request, response *dns.Msg)
 	Get(request *dns.Msg) (response *dns.Msg)
