@@ -31,6 +31,10 @@ type Settings struct {
 }
 
 func (s *Settings) String() string {
+	return strings.Join(s.Lines("   ", " |--"), "\n")
+}
+
+func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	const (
 		disabled = "disabled"
 		enabled  = "enabled"
@@ -54,16 +58,19 @@ func (s *Settings) String() string {
 	if s.UpdatePeriod > 0 {
 		update = fmt.Sprintf("every %s", s.UpdatePeriod)
 	}
-	settingsList := []string{
-		"Unbound settings:\n|--" + strings.Join(s.Unbound.Lines(), "\n|--"),
-		"Username: " + s.Username,
-		"Process UID: " + strconv.Itoa(s.Puid),
-		"Process GID: " + strconv.Itoa(s.Pgid),
-		"Block malicious: " + blockMalicious,
-		"Block ads: " + blockAds,
-		"Block surveillance: " + blockSurveillance,
-		"Check Unbound: " + checkUnbound,
-		"Update: " + update,
+
+	lines = append(lines, subSection+"Unbound settings:")
+	for _, line := range s.Unbound.Lines() {
+		lines = append(lines, indent+line)
 	}
-	return strings.Join(settingsList, "\n")
+	lines = append(lines, subSection+"Username: "+s.Username)
+	lines = append(lines, subSection+"Process UID: "+strconv.Itoa(s.Puid))
+	lines = append(lines, subSection+"Process GID: "+strconv.Itoa(s.Pgid))
+	lines = append(lines, subSection+"Block malicious: "+blockMalicious)
+	lines = append(lines, subSection+"Block ads: "+blockAds)
+	lines = append(lines, subSection+"Block surveillance: "+blockSurveillance)
+	lines = append(lines, subSection+"Check Unbound: "+checkUnbound)
+	lines = append(lines, subSection+"Update: "+update)
+
+	return lines
 }
