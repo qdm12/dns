@@ -88,6 +88,7 @@ func generateUnboundConf(settings models.Settings, blacklistLines []string,
 		"port: " + strconv.Itoa(int(settings.ListeningPort)),
 		// Other
 		`username: "` + username + `"`,
+		`trust-anchor-file: "` + filepath.Join(unboundDir, rootKey) + `"`, // DNSSEC trust anchor file
 		`include: "` + filepath.Join(unboundDir, includeConfFilename) + `"`,
 	}
 
@@ -95,19 +96,6 @@ func generateUnboundConf(settings models.Settings, blacklistLines []string,
 	for _, subnet := range settings.AccessControl.Allowed {
 		line := "access-control: " + subnet.String() + " allow"
 		serverLines = append(serverLines, line)
-	}
-
-	// DNSSEC trust anchor file
-	dnsSec := true
-	for _, provider := range settings.Providers {
-		data, _ := GetProviderData(provider)
-		if !data.SupportsDNSSEC {
-			dnsSec = false
-		}
-	}
-	if dnsSec {
-		trustAnchorFile := `trust-anchor-file: "` + filepath.Join(unboundDir, rootKey) + `"`
-		serverLines = append(serverLines, trustAnchorFile)
 	}
 
 	serverLines = ensureIndentLines(serverLines)
