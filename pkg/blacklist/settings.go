@@ -11,6 +11,7 @@ import (
 type Settings struct {
 	FqdnHostnames []string
 	IPs           []net.IP
+	IPNets        []*net.IPNet
 }
 
 func (s *Settings) BlockHostnames(hostnames []string) {
@@ -36,6 +37,11 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	if len(s.IPs) > 0 {
 		lines = append(lines, subSection+"IP addresses blocked: "+
 			strconv.Itoa(len(s.IPs)))
+	}
+
+	if len(s.IPNets) > 0 {
+		lines = append(lines, subSection+"IP networks blocked: "+
+			strconv.Itoa(len(s.IPNets)))
 	}
 
 	if len(s.FqdnHostnames) > 0 {
