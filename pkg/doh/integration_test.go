@@ -20,7 +20,7 @@ func Test_Resolver(t *testing.T) {
 
 	const hostname = "google.com"
 
-	resolver := NewResolver(Settings{})
+	resolver := NewResolver(ResolverSettings{})
 
 	ips, err := resolver.LookupIPAddr(context.Background(), hostname)
 
@@ -40,7 +40,7 @@ func Test_Server(t *testing.T) {
 	logger.EXPECT().Info("DNS server listening on :53")
 	logger.EXPECT().Warn("DNS server stopped")
 
-	server := NewServer(ctx, logger, Settings{})
+	server := NewServer(ctx, logger, ServerSettings{})
 
 	go server.Run(ctx, stopped)
 

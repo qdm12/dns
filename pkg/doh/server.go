@@ -22,7 +22,7 @@ type server struct {
 }
 
 func NewServer(ctx context.Context, logger logging.Logger,
-	settings Settings) Server {
+	settings ServerSettings) Server {
 	if runtime.GOOS == "windows" {
 		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}

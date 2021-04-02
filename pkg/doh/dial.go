@@ -12,7 +12,7 @@ import (
 
 type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
 
-func newDoHDial(settings Settings) dialFunc {
+func newDoHDial(settings ResolverSettings) dialFunc {
 	dohServers := make([]provider.DoHServer, len(settings.DoHProviders))
 	for i := range settings.DoHProviders {
 		dohServers[i] = settings.DoHProviders[i].DoH()

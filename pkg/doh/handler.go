@@ -22,11 +22,11 @@ type handler struct {
 }
 
 func newDNSHandler(ctx context.Context, logger logging.Logger,
-	settings Settings) dns.Handler {
+	settings ServerSettings) dns.Handler {
 	return &handler{
 		ctx:    ctx,
 		logger: logger,
-		dial:   newDoHDial(settings),
+		dial:   newDoHDial(settings.Resolver),
 		client: &dns.Client{},
 		cache:  cache.New(settings.Cache),
 		blist:  blacklist.NewMap(settings.Blacklist),

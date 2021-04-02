@@ -9,26 +9,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Settings_setDefaults(t *testing.T) {
+func Test_ServerSettings_setDefaults(t *testing.T) {
 	t.Parallel()
 
-	s := Settings{}
+	s := ServerSettings{}
 	s.setDefaults()
 
 	// Check this otherwise things will blow up if no option is passed.
-	assert.GreaterOrEqual(t, len(s.DoHProviders), 1)
-	assert.GreaterOrEqual(t, len(s.SelfDNS.DoTProviders), 1)
-	assert.Empty(t, s.SelfDNS.DNSProviders)
-	assert.GreaterOrEqual(t, int64(s.Timeout), int64(time.Millisecond))
+	assert.GreaterOrEqual(t, len(s.Resolver.DoHProviders), 1)
+	assert.GreaterOrEqual(t, len(s.Resolver.SelfDNS.DoTProviders), 1)
+	assert.Empty(t, s.Resolver.SelfDNS.DNSProviders)
+	assert.GreaterOrEqual(t, int64(s.Resolver.Timeout), int64(time.Millisecond))
 
-	expectedSettings := Settings{
-		DoHProviders: []provider.Provider{provider.Cloudflare()},
-		SelfDNS: SelfDNS{
-			DoTProviders: []provider.Provider{provider.Cloudflare()},
+	expectedSettings := ServerSettings{
+		Resolver: ResolverSettings{
+			DoHProviders: []provider.Provider{provider.Cloudflare()},
+			SelfDNS: SelfDNS{
+				DoTProviders: []provider.Provider{provider.Cloudflare()},
+			},
+			Timeout: 5 * time.Second,
+			IPv6:    false,
 		},
-		Timeout: 5 * time.Second,
-		Port:    53,
-		IPv6:    false,
+		Port: 53,
 		Cache: cache.Settings{
 			Type: cache.NOOP,
 		},
