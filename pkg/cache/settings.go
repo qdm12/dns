@@ -16,7 +16,11 @@ func (s *Settings) SetDefaults() {
 		s.Type = Disabled
 	}
 
-	s.LRU.SetDefaults()
+	switch s.Type {
+	case Disabled:
+	case LRU:
+		s.LRU.SetDefaults()
+	}
 }
 
 func (s *Settings) String() string {
