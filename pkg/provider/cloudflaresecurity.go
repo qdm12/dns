@@ -1,0 +1,49 @@
+package provider
+
+import (
+	"net"
+	"net/url"
+)
+
+type cloudflareSecurity struct{}
+
+func CloudflareSecurity() Provider {
+	return &cloudflareSecurity{}
+}
+
+func (c *cloudflareSecurity) String() string {
+	return "Cloudflare Security"
+}
+
+func (c *cloudflareSecurity) DNS() DNSServer {
+	return DNSServer{
+		IPv4: []net.IP{{1, 1, 1, 2}, {1, 0, 0, 2}},
+		IPv6: []net.IP{
+			{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x11, 0x12},
+			{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x02},
+		},
+	}
+}
+
+func (c *cloudflareSecurity) DoT() DoTServer {
+	return DoTServer{
+		IPv4: []net.IP{{1, 1, 1, 2}, {1, 0, 0, 2}},
+		IPv6: []net.IP{
+			{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x11, 0x12},
+			{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x02},
+		},
+		Name: "security.cloudflare-dns.com",
+		Port: defaultDoTPort,
+	}
+}
+
+func (c *cloudflareSecurity) DoH() DoHServer {
+	// see https://developers.cloudflare.com/1.1.1.1/1.1.1.1-for-families/setup-instructions/dns-over-https
+	return DoHServer{
+		URL: &url.URL{
+			Scheme: "https",
+			Host:   "security.cloudflare-dns.com",
+			Path:   "/dns-query",
+		},
+	}
+}

@@ -1,0 +1,49 @@
+package provider
+
+import (
+	"net"
+	"net/url"
+)
+
+type cleanBrowsingSecurity struct{}
+
+func CleanBrowsingSecurity() Provider {
+	return &cleanBrowsingSecurity{}
+}
+
+func (c *cleanBrowsingSecurity) String() string {
+	return "Cleanbrowsing Security"
+}
+
+func (c *cleanBrowsingSecurity) DNS() DNSServer {
+	return DNSServer{
+		IPv4: []net.IP{{185, 228, 168, 9}, {185, 228, 169, 9}},
+		IPv6: []net.IP{
+			{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2},
+			{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2},
+		},
+	}
+}
+
+func (c *cleanBrowsingSecurity) DoT() DoTServer {
+	return DoTServer{
+		IPv4: []net.IP{{185, 228, 168, 9}, {185, 228, 169, 9}},
+		IPv6: []net.IP{
+			{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2},
+			{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2},
+		},
+		Name: "security-filter-dns.cleanbrowsing.org",
+		Port: defaultDoTPort,
+	}
+}
+
+func (c *cleanBrowsingSecurity) DoH() DoHServer {
+	// See https://cleanbrowsing.org/guides/dnsoverhttps
+	return DoHServer{
+		URL: &url.URL{
+			Scheme: "https",
+			Host:   "doh.cleanbrowsing.org",
+			Path:   "/doh/security-filter/",
+		},
+	}
+}

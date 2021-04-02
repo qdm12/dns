@@ -114,6 +114,10 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 You can bind mount an Unbound configuration file *include.conf* to be included in the Unbound server section with
 `-v $(pwd)/include.conf:/unbound/include.conf:ro`, see [Unbound configuration documentation](https://nlnetlabs.nl/documentation/unbound/unbound.conf/)
 
+## Golang API
+
+If you want to use the Go code I wrote, you can see tiny [examples](examples) of DoT and DoH resolvers and servers using the API developed.
+
 ## Connect clients to it
 
 ### Option 1: Router (recommended)

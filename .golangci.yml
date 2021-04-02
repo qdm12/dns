@@ -22,6 +22,9 @@ issues:
       text: commit is a global variable
       linters:
         - gochecknoglobals
+    - path: pkg/provider/.*\.go
+      linters:
+        - dupl
 
 linters:
   disable-all: true
