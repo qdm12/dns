@@ -18,14 +18,12 @@ type Configurator interface {
 		username string, puid, pgid int) (err error)
 	Start(ctx context.Context, verbosityDetailsLevel uint8) (
 		stdoutLines, stderrLines chan string, waitError chan error, err error)
-	WaitForUnbound(ctx context.Context) (err error)
 	Version(ctx context.Context) (version string, err error)
 }
 
 type configurator struct {
 	openFile      os.OpenFileFunc
 	commander     command.Commander
-	resolver      *net.Resolver
 	dnscrypto     dnscrypto.DNSCrypto
 	unboundEtcDir string
 	unboundPath   string
@@ -37,7 +35,6 @@ func NewConfigurator(logger logging.Logger, openFile os.OpenFileFunc,
 	return &configurator{
 		openFile:      openFile,
 		commander:     command.NewCommander(),
-		resolver:      net.DefaultResolver,
 		dnscrypto:     dnscrypto,
 		unboundEtcDir: unboundEtcDir,
 		unboundPath:   unboundPath,

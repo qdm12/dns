@@ -17,6 +17,7 @@ import (
 	"github.com/qdm12/dns/internal/settings"
 	"github.com/qdm12/dns/internal/splash"
 	"github.com/qdm12/dns/pkg/blacklist"
+	"github.com/qdm12/dns/pkg/check"
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/dns/pkg/unbound"
 	"github.com/qdm12/golibs/logging"
@@ -231,7 +232,7 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 		go logUnboundStreams(logger, stdoutLines, stderrLines)
 
 		if settings.CheckUnbound {
-			if err := dnsConf.WaitForUnbound(ctx); err != nil {
+			if err := check.WaitForDNS(ctx, net.DefaultResolver); err != nil {
 				crashed <- err
 				break
 			}
