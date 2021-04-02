@@ -1,29 +1,22 @@
 package cache
 
 import (
-	"strconv"
 	"strings"
-	"time"
+
+	"github.com/qdm12/dns/pkg/cache/lru"
 )
 
 type Settings struct {
-	Type       Type
-	MaxEntries int
-	TTL        time.Duration
+	Type Type
+	LRU  lru.Settings
 }
 
-func (s *Settings) setDefaults() {
+func (s *Settings) SetDefaults() {
 	if string(s.Type) == "" {
-		s.Type = LRU
+		s.Type = Disabled
 	}
 
-	if s.MaxEntries == 0 {
-		s.MaxEntries = 10e4
-	}
-
-	if s.TTL == 0 {
-		s.TTL = time.Hour
-	}
+	s.LRU.SetDefaults()
 }
 
 func (s *Settings) String() string {
@@ -35,13 +28,17 @@ func (s *Settings) String() string {
 }
 
 func (s *Settings) Lines(indent, subSection string) (lines []string) {
-	if s.Type == NOOP {
-		return []string{subSection + "Type: No-op (disabled)"}
-	}
+	lines = append(lines, subSection+"Type: "+string(s.Type))
 
-	lines = append(lines, "Type: "+string(s.Type))
-	lines = append(lines, "Max entries: "+strconv.Itoa(s.MaxEntries))
-	lines = append(lines, "Entry TTL: "+s.TTL.String())
+	switch s.Type {
+	case LRU:
+		for _, line := range s.LRU.Lines(indent, subSection) {
+			lines = append(lines, subSection+line)
+		}
+	case Disabled:
+	default:
+		lines = append(lines, subSection+"MISSING CODE PATH, PLEASE ADD ME!!")
+	}
 
 	return lines
 }

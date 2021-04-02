@@ -30,10 +30,8 @@ func Test_ServerSettings_setDefaults(t *testing.T) {
 			Timeout: 5 * time.Second,
 			IPv6:    false,
 		},
-		Port: 53,
-		Cache: cache.Settings{
-			Type: cache.NOOP,
-		},
+		Port:  53,
+		Cache: cache.Settings{},
 	}
 	assert.Equal(t, expectedSettings, s)
 }

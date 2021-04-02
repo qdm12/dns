@@ -1,4 +1,4 @@
-package cache
+package lru
 
 import (
 	"container/list"
@@ -8,7 +8,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-type lru struct {
+type LRU struct {
 	// Configuration
 	maxEntries int
 	ttlNano    int64
@@ -22,17 +22,18 @@ type lru struct {
 	timeNow func() time.Time
 }
 
-func newLRU(maxEntries int, ttl time.Duration) *lru {
-	return &lru{
-		maxEntries: maxEntries,
-		ttlNano:    int64(ttl),
-		kv:         make(map[string]*list.Element, maxEntries),
+func New(settings Settings) *LRU {
+	settings.SetDefaults()
+	return &LRU{
+		maxEntries: settings.MaxEntries,
+		ttlNano:    int64(settings.TTL),
+		kv:         make(map[string]*list.Element, settings.MaxEntries),
 		linkedList: list.New(),
 		timeNow:    time.Now,
 	}
 }
 
-func (l *lru) Add(request, response *dns.Msg) {
+func (l *LRU) Add(request, response *dns.Msg) {
 	if len(request.Question) == 0 {
 		// cannot make key if there is no question
 		return
@@ -67,7 +68,7 @@ func (l *lru) Add(request, response *dns.Msg) {
 	}
 }
 
-func (l *lru) Get(request *dns.Msg) (response *dns.Msg) {
+func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	if len(request.Question) == 0 {
 		// cannot make key if there is no question
 		return
@@ -99,7 +100,7 @@ func (l *lru) Get(request *dns.Msg) (response *dns.Msg) {
 // remove removes a list element
 // It is NOT thread safe and its parent should have
 // a locking mechanism to stay thread safe.
-func (l *lru) remove(listElement *list.Element) {
+func (l *LRU) remove(listElement *list.Element) {
 	l.linkedList.Remove(listElement)
 	entryPtr := listElement.Value.(*entry)
 	delete(l.kv, entryPtr.key)
@@ -107,7 +108,7 @@ func (l *lru) remove(listElement *list.Element) {
 
 // It is NOT thread safe and its parent should have
 // a locking mechanism to stay thread safe.
-func (l *lru) removeOldest() {
+func (l *LRU) removeOldest() {
 	listElement := l.linkedList.Back()
 	if listElement != nil {
 		l.remove(listElement)

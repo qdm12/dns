@@ -32,9 +32,8 @@ func (s *ServerSettings) setDefaults() {
 		s.Port = defaultPort
 	}
 
-	if string(s.Cache.Type) == "" {
-		s.Cache.Type = cache.NOOP
-	}
+	// Cache defaults to disabled, see pkg/cache/settings.go
+	s.Cache.SetDefaults()
 }
 
 func (s *ResolverSettings) setDefaults() {

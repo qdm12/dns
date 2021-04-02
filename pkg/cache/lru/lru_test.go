@@ -1,4 +1,4 @@
-package cache
+package lru
 
 import (
 	"testing"
@@ -22,12 +22,16 @@ func Test_lru_e2e(t *testing.T) {
 		maxEntries = 2
 		ttl        = time.Hour
 	)
+	settings := Settings{
+		MaxEntries: maxEntries,
+		TTL:        ttl,
+	}
 
 	requestA, responseA := newTestMsgs("A")
 	requestB, responseB := newTestMsgs("B")
 	requestC, responseC := newTestMsgs("C")
 
-	lru := newLRU(maxEntries, ttl)
+	lru := New(settings)
 
 	lru.Add(requestA, responseA)
 	lru.Add(requestB, responseB)
