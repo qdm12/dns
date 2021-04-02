@@ -9,7 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qdm12/golibs/logging"
+	"github.com/golang/mock/gomock"
+	"github.com/qdm12/golibs/logging/mock_logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -30,11 +31,15 @@ func Test_Resolver(t *testing.T) {
 
 func Test_Server(t *testing.T) {
 	t.Parallel()
+	ctrl := gomock.NewController(t)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	stopped := make(chan struct{})
 
-	logger := logging.New(logging.StdLog)
+	logger := mock_logging.NewMockLogger(ctrl)
+	logger.EXPECT().Info("DNS server listening on :53")
+	logger.EXPECT().Warn("DNS server stopped")
+
 	server := NewServer(ctx, logger, Settings{})
 
 	go server.Run(ctx, stopped)
