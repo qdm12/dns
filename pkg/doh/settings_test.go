@@ -67,7 +67,6 @@ func Test_ServerSettings_Lines(t *testing.T) {
 		" |--Caching:",
 		"     |--Type: lru",
 		"     |--Max entries: 100000",
-		"     |--Entry TTL: 5m0s",
 		" |--Blacklist:",
 		"     |--Hostnames blocked: 1",
 	}

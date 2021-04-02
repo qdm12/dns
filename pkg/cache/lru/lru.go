@@ -11,7 +11,6 @@ import (
 type LRU struct {
 	// Configuration
 	maxEntries int
-	ttlNano    int64
 
 	// State
 	kv         map[string]*list.Element
@@ -26,7 +25,6 @@ func New(settings Settings) *LRU {
 	settings.SetDefaults()
 	return &LRU{
 		maxEntries: settings.MaxEntries,
-		ttlNano:    int64(settings.TTL),
 		kv:         make(map[string]*list.Element, settings.MaxEntries),
 		linkedList: list.New(),
 		timeNow:    time.Now,
@@ -40,7 +38,7 @@ func (l *LRU) Add(request, response *dns.Msg) {
 	}
 
 	key := makeKey(request)
-	creationNano := l.timeNow().UnixNano()
+	expUnix := getExpUnix(response, l.timeNow().Unix())
 	responseCopy := response.Copy()
 
 	l.mutex.Lock()
@@ -49,15 +47,15 @@ func (l *LRU) Add(request, response *dns.Msg) {
 	if listElement, ok := l.kv[key]; ok {
 		l.linkedList.MoveToFront(listElement)
 		entryPtr := listElement.Value.(*entry)
-		entryPtr.creationNano = creationNano
+		entryPtr.expUnix = expUnix
 		entryPtr.response = responseCopy
 		return
 	}
 
 	entry := &entry{
-		key:          key,
-		creationNano: creationNano,
-		response:     responseCopy,
+		key:      key,
+		expUnix:  expUnix,
+		response: responseCopy,
 	}
 
 	listElement := l.linkedList.PushFront(entry)
@@ -75,7 +73,7 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	}
 
 	key := makeKey(request)
-	nowNano := l.timeNow().UnixNano()
+	nowUnix := l.timeNow().Unix()
 
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
@@ -88,7 +86,7 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	l.linkedList.MoveToFront(listElement)
 	entryPtr := listElement.Value.(*entry)
 
-	if nowNano >= entryPtr.creationNano+l.ttlNano {
+	if nowUnix >= entryPtr.expUnix {
 		// expired record
 		l.remove(listElement)
 		return nil
