@@ -4,6 +4,8 @@ import (
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/qdm12/dns/pkg/provider"
 )
 
 const (
@@ -13,7 +15,7 @@ const (
 
 // Settings represents all the user settings for Unbound.
 type Settings struct {
-	Providers             []string
+	Providers             []provider.Provider
 	ListeningPort         uint16
 	Caching               bool
 	IPv4                  bool
@@ -40,7 +42,7 @@ func (s *Settings) Lines() (lines []string) {
 
 	lines = append(lines, subIndent+"DNS over TLS providers:")
 	for _, provider := range s.Providers {
-		lines = append(lines, indent+subIndent+provider)
+		lines = append(lines, indent+subIndent+provider.String())
 	}
 
 	lines = append(lines,

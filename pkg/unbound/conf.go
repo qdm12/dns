@@ -126,10 +126,11 @@ func generateUnboundConf(settings models.Settings, blacklistLines []string,
 	})
 
 	for _, provider := range settings.Providers {
-		providerData, _ := GetProviderData(provider)
-		for _, IP := range providerData.IPs {
+		dotServer := provider.DoT()
+		ips := append(dotServer.IPv4, dotServer.IPv6...)
+		for _, IP := range ips {
 			forwardZoneLines = append(forwardZoneLines,
-				fmt.Sprintf("forward-addr: %s@853#%s", IP.String(), providerData.Host))
+				fmt.Sprintf("forward-addr: %s@853#%s", IP.String(), dotServer.Name))
 		}
 	}
 

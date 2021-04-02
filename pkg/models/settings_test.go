@@ -4,6 +4,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/qdm12/dns/pkg/provider"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +30,10 @@ func Test_Settings_Lines(t *testing.T) {
 		},
 		"full settings": {
 			settings: Settings{
-				Providers:             []string{"quad9", "cloudflare"},
+				Providers: []provider.Provider{
+					provider.Quad9(),
+					provider.Cloudflare(),
+				},
 				ListeningPort:         53,
 				Caching:               true,
 				IPv4:                  true,
@@ -53,8 +57,8 @@ func Test_Settings_Lines(t *testing.T) {
 			},
 			lines: []string{
 				" |--DNS over TLS providers:",
-				"     |--quad9",
-				"     |--cloudflare",
+				"     |--Quad9",
+				"     |--Cloudflare",
 				" |--Listening port: 53",
 				" |--Access control:",
 				"     |--Allowed:",

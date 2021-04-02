@@ -4,6 +4,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/qdm12/dns/pkg/provider"
 	"github.com/qdm12/golibs/logging"
 	libparams "github.com/qdm12/golibs/params"
 	"github.com/qdm12/golibs/verification"
@@ -12,7 +13,7 @@ import (
 // Reader contains methods to obtain parameters.
 type Reader interface {
 	// DNS getters
-	GetProviders() (providers []string, err error)
+	GetProviders() (providers []provider.Provider, err error)
 	GetPrivateAddresses() (privateIPs []net.IP, privateIPNets []*net.IPNet, err error)
 
 	// Unbound getters
