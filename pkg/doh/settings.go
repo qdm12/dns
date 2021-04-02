@@ -81,13 +81,13 @@ func (s *SelfDNS) String() string {
 }
 
 func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
+	lines = append(lines,
+		subSection+"Listening port: "+strconv.Itoa(int(s.Port)))
+
 	lines = append(lines, subSection+"Resolver:")
 	for _, line := range s.Resolver.Lines(indent, subSection) {
 		lines = append(lines, indent+line)
 	}
-
-	lines = append(lines,
-		subSection+"Listening port: "+strconv.Itoa(int(s.Port)))
 
 	lines = append(lines, subSection+"Caching:")
 	for _, line := range s.Cache.Lines(indent, subSection) {
@@ -103,6 +103,15 @@ func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
 }
 
 func (s *ResolverSettings) Lines(indent, subSection string) (lines []string) {
+	connectOver := "IPv4"
+	if s.IPv6 {
+		connectOver = "IPv6"
+	}
+	lines = append(lines, subSection+"Connecting over: "+connectOver)
+
+	lines = append(lines,
+		subSection+"Query timeout: "+s.Timeout.String())
+
 	lines = append(lines, subSection+"DNS over HTTPS providers:")
 	for _, provider := range s.DoHProviders {
 		lines = append(lines, indent+subSection+provider.String())
@@ -112,15 +121,6 @@ func (s *ResolverSettings) Lines(indent, subSection string) (lines []string) {
 	for _, line := range s.SelfDNS.Lines(indent, subSection) {
 		lines = append(lines, indent+line)
 	}
-
-	lines = append(lines,
-		subSection+"Query timeout: "+s.Timeout.String())
-
-	connectOver := "IPv4"
-	if s.IPv6 {
-		connectOver = "IPv6"
-	}
-	lines = append(lines, subSection+"Connecting over: "+connectOver)
 
 	return lines
 }

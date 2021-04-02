@@ -32,9 +32,8 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 
 	switch s.Type {
 	case LRU:
-		for _, line := range s.LRU.Lines(indent, subSection) {
-			lines = append(lines, subSection+line)
-		}
+		lruLines := s.LRU.Lines(indent, subSection)
+		lines = append(lines, lruLines...)
 	case Disabled:
 	default:
 		lines = append(lines, subSection+"MISSING CODE PATH, PLEASE ADD ME!!")
