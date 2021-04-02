@@ -34,10 +34,12 @@ func newDNSHandler(ctx context.Context, logger logging.Logger,
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-	if response := h.cache.Get(r); response != nil {
-		response.SetReply(r)
-		if err := w.WriteMsg(response); err != nil {
-			h.logger.Warn("cannot write DNS message back to client: %s", err)
+	if h.cache != nil {
+		if response := h.cache.Get(r); response != nil {
+			response.SetReply(r)
+			if err := w.WriteMsg(response); err != nil {
+				h.logger.Warn("cannot write DNS message back to client: %s", err)
+			}
 		}
 	}
 
@@ -75,7 +77,9 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		}
 	}
 
-	h.cache.Add(r, response)
+	if h.cache != nil {
+		h.cache.Add(r, response)
+	}
 
 	response.SetReply(r)
 	if err := w.WriteMsg(response); err != nil {
