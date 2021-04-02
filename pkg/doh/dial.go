@@ -19,7 +19,7 @@ func newDoHDial(settings Settings) dialFunc {
 	}
 
 	// DoT HTTP client to resolve the DoH URL hostname
-	DoTSettings := dot.Settings{
+	DoTSettings := dot.ResolverSettings{
 		DoTProviders: settings.SelfDNS.DoTProviders,
 		DNSProviders: settings.SelfDNS.DNSProviders,
 		Timeout:      settings.Timeout, // http client timeout really

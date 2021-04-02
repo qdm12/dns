@@ -19,7 +19,7 @@ var (
 	ErrHTTPStatus = errors.New("bad HTTP status")
 )
 
-func newDoTClient(settings dot.Settings) *http.Client {
+func newDoTClient(settings dot.ResolverSettings) *http.Client {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
 	dialer := &net.Dialer{
 		Resolver: dot.NewResolver(settings),

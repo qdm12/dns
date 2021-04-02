@@ -11,7 +11,7 @@ import (
 
 type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
 
-func newDoTDial(settings Settings) dialFunc {
+func newDoTDial(settings ResolverSettings) dialFunc {
 	dotServers := make([]provider.DoTServer, len(settings.DoTProviders))
 	for i := range settings.DoTProviders {
 		dotServers[i] = settings.DoTProviders[i].DoT()

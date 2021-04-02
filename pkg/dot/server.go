@@ -21,7 +21,7 @@ type server struct {
 }
 
 func NewServer(ctx context.Context, logger logging.Logger,
-	settings Settings) Server {
+	settings ServerSettings) Server {
 	settings.setDefaults()
 	return &server{
 		dnsServer: dns.Server{
