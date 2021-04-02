@@ -104,7 +104,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
 | `CACHING` | `on` | `on` or `off`. It can be useful if you have another DNS (i.e. Pihole) doing the caching as well on top of this container |
 | `PRIVATE_ADDRESS` | All IPv4 and IPv6 CIDRs private ranges | Comma separated list of CIDRs or single IP addresses. Note that the default setting prevents DNS rebinding |
-| `CHECK_UNBOUND` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
+| `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `IPV4` | `on` | `on` or `off`. Uses DNS resolution for IPV4 |
 | `IPV6` | `off` | `on` or `off`. Uses DNS resolution for IPV6. **Do not enable if you don't have IPV6** |
 | `UPDATE_PERIOD` | `24h` | Period to update block lists and restart Unbound. Set to `0` to disable. |

@@ -26,7 +26,7 @@ type Settings struct {
 	BlockMalicious    bool
 	BlockAds          bool
 	BlockSurveillance bool
-	CheckUnbound      bool
+	CheckDNS          bool
 	UpdatePeriod      time.Duration
 }
 
@@ -40,7 +40,7 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		enabled  = "enabled"
 	)
 	blockMalicious, blockSurveillance, blockAds,
-		checkUnbound, update :=
+		checkDNS, update :=
 		disabled, disabled, disabled,
 		disabled, disabled
 	if s.BlockMalicious {
@@ -52,8 +52,8 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	if s.BlockAds {
 		blockAds = enabled
 	}
-	if s.CheckUnbound {
-		checkUnbound = enabled
+	if s.CheckDNS {
+		checkDNS = enabled
 	}
 	if s.UpdatePeriod > 0 {
 		update = fmt.Sprintf("every %s", s.UpdatePeriod)
@@ -69,7 +69,7 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	lines = append(lines, subSection+"Block malicious: "+blockMalicious)
 	lines = append(lines, subSection+"Block ads: "+blockAds)
 	lines = append(lines, subSection+"Block surveillance: "+blockSurveillance)
-	lines = append(lines, subSection+"Check Unbound: "+checkUnbound)
+	lines = append(lines, subSection+"Check DNS: "+checkDNS)
 	lines = append(lines, subSection+"Update: "+update)
 
 	return lines

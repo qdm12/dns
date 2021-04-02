@@ -224,7 +224,7 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 
 		go logUnboundStreams(logger, stdoutLines, stderrLines)
 
-		if settings.CheckUnbound {
+		if settings.CheckDNS {
 			if err := check.WaitForDNS(ctx, net.DefaultResolver); err != nil {
 				crashed <- err
 				break

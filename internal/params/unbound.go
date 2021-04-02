@@ -37,10 +37,11 @@ func (r *reader) GetValidationLogLevel() (validationLogLevel uint8, err error) {
 	return uint8(n), err
 }
 
-// GetCheckUnbound obtains if the program should check Unbound is running correctly
-// at 127.0.0.1:53 from the environment variable CHECK_UNBOUND.
-func (r *reader) GetCheckUnbound() (check bool, err error) {
-	return r.envParams.OnOff("CHECK_UNBOUND", libparams.Default("on"))
+// GetCheckDNS obtains if the program should check the DNS server is
+// running correctly at 127.0.0.1:53 from the environment variable CHECK_DNS.
+func (r *reader) GetCheckDNS() (check bool, err error) {
+	return r.envParams.OnOff("CHECK_DNS", libparams.Default("on"),
+		libparams.RetroKeys([]string{"CHECK_UNBOUND"}, r.onRetroActive))
 }
 
 func (r *reader) GetIPv4() (doIPv4 bool, err error) {

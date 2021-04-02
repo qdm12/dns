@@ -22,7 +22,7 @@ func GetSettings(reader params.Reader) (settings models.Settings, err error) {
 	if err != nil {
 		return settings, err
 	}
-	settings.CheckUnbound, err = reader.GetCheckUnbound()
+	settings.CheckDNS, err = reader.GetCheckDNS()
 	if err != nil {
 		return settings, err
 	}

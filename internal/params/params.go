@@ -22,7 +22,7 @@ type Reader interface {
 	GetVerbosity() (verbosityLevel uint8, err error)
 	GetVerbosityDetails() (verbosityDetailsLevel uint8, err error)
 	GetValidationLogLevel() (validationLogLevel uint8, err error)
-	GetCheckUnbound() (check bool, err error)
+	GetCheckDNS() (check bool, err error)
 	GetIPv4() (doIPv4 bool, err error)
 	GetIPv6() (doIPv6 bool, err error)
 
