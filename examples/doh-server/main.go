@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/doh"
 )
 
@@ -14,7 +15,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	logger := new(Logger)
-	server := doh.NewServer(ctx, logger, doh.ServerSettings{})
+	server := doh.NewServer(ctx, logger, doh.ServerSettings{
+		Cache: cache.Settings{Type: cache.LRU},
+	})
 	stopped := make(chan struct{})
 	go server.Run(ctx, stopped)
 	select {
