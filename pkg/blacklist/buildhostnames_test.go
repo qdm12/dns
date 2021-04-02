@@ -9,7 +9,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/qdm12/dns/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -105,10 +104,10 @@ func Test_builder_Hostnames(t *testing.T) {
 			ctx := context.Background()
 
 			clientCalls := struct {
-				m map[models.URL]int
+				m map[string]int
 				sync.Mutex
 			}{
-				m: make(map[models.URL]int),
+				m: make(map[string]int),
 			}
 			if tc.malicious.blocked {
 				clientCalls.m[maliciousBlockListHostnamesURL] = 0
@@ -122,7 +121,7 @@ func Test_builder_Hostnames(t *testing.T) {
 
 			client := &http.Client{
 				Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
-					url := models.URL(r.URL.String())
+					url := r.URL.String()
 					clientCalls.Lock()
 					defer clientCalls.Unlock()
 					if _, ok := clientCalls.m[url]; !ok {
