@@ -16,8 +16,9 @@ func (s *Settings) SetDefaults() {
 		s.MaxEntries = 10e4
 	}
 
+	const defaultTTL = 5 * time.Minute
 	if s.TTL == 0 {
-		s.TTL = time.Hour
+		s.TTL = defaultTTL
 	}
 }
 
