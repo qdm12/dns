@@ -35,7 +35,7 @@ func (m *MockServer) EXPECT() *MockServerMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockServer) Run(arg0 context.Context, arg1 chan<- struct{}) {
+func (m *MockServer) Run(arg0 context.Context, arg1 chan<- error) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Run", arg0, arg1)
 }

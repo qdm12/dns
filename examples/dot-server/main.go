@@ -15,7 +15,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	logger := new(Logger)
 	server := dot.NewServer(ctx, logger, dot.ServerSettings{})
-	stopped := make(chan struct{})
+	stopped := make(chan error)
 	go server.Run(ctx, stopped)
 	select {
 	case <-ctx.Done():
@@ -25,7 +25,9 @@ func main() {
 		stop() // stop custom handling of OS signals
 		cancel()
 	}
-	<-stopped
+	if err := <-stopped; err != nil {
+		logger.Error(err)
+	}
 }
 
 type Logger struct{}

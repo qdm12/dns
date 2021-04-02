@@ -18,7 +18,7 @@ func main() {
 	server := doh.NewServer(ctx, logger, doh.ServerSettings{
 		Cache: cache.Settings{Type: cache.LRU},
 	})
-	stopped := make(chan struct{})
+	stopped := make(chan error)
 	go server.Run(ctx, stopped)
 	select {
 	case <-ctx.Done():
@@ -28,7 +28,9 @@ func main() {
 		stop() // stop custom handling of OS signals
 		cancel()
 	}
-	<-stopped
+	if err := <-stopped; err != nil {
+		logger.Error(err)
+	}
 }
 
 type Logger struct{}

@@ -34,11 +34,10 @@ func Test_Server(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	stopped := make(chan struct{})
+	stopped := make(chan error)
 
 	logger := mock_logging.NewMockLogger(ctrl)
 	logger.EXPECT().Info("DNS server listening on :53")
-	logger.EXPECT().Warn("DNS server stopped")
 
 	server := NewServer(ctx, logger, ServerSettings{})
 
@@ -78,5 +77,6 @@ func Test_Server(t *testing.T) {
 
 	endWg.Wait()
 	cancel()
-	<-stopped
+	err := <-stopped
+	assert.Nil(t, err)
 }

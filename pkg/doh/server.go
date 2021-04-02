@@ -13,7 +13,7 @@ import (
 //go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Server
 
 type Server interface {
-	Run(ctx context.Context, stopped chan<- struct{})
+	Run(ctx context.Context, stopped chan<- error)
 }
 
 type server struct {
@@ -39,9 +39,7 @@ func NewServer(ctx context.Context, logger logging.Logger,
 	}
 }
 
-func (s *server) Run(ctx context.Context, stopped chan<- struct{}) {
-	defer close(stopped)
-
+func (s *server) Run(ctx context.Context, stopped chan<- error) {
 	go func() { // shutdown goroutine
 		<-ctx.Done()
 
@@ -54,8 +52,5 @@ func (s *server) Run(ctx context.Context, stopped chan<- struct{}) {
 	}()
 
 	s.logger.Info("DNS server listening on :53")
-	if err := s.dnsServer.ListenAndServe(); err != nil {
-		s.logger.Error("DNS server crashed: ", err)
-	}
-	s.logger.Warn("DNS server stopped")
+	stopped <- s.dnsServer.ListenAndServe()
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/qdm12/golibs/logging/mock_logging"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,11 +33,10 @@ func Test_Server(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	stopped := make(chan struct{})
+	stopped := make(chan error)
 
 	logger := mock_logging.NewMockLogger(ctrl)
 	logger.EXPECT().Info("DNS server listening on :53")
-	logger.EXPECT().Warn("DNS server stopped")
 
 	server := NewServer(ctx, logger, ServerSettings{})
 
@@ -59,5 +59,6 @@ func Test_Server(t *testing.T) {
 	t.Logf("resolved %s to: %v", hostname, ips)
 
 	cancel()
-	<-stopped
+	err = <-stopped
+	assert.Nil(t, err)
 }
