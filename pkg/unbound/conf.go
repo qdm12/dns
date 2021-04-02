@@ -14,7 +14,7 @@ import (
 
 func (c *configurator) MakeUnboundConf(settings models.Settings,
 	blockedHostnames []string, blockedIPs []net.IP, blockedIPNets []*net.IPNet,
-	username string, puid, pgid int) (err error) {
+	username string) (err error) {
 	configFilepath := filepath.Join(c.unboundEtcDir, unboundConfigFilename)
 	file, err := c.openFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {

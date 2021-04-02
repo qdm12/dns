@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 type Settings struct {
 	Unbound           models.Settings
 	Username          string
-	Puid, Pgid        int
 	BlockMalicious    bool
 	BlockAds          bool
 	BlockSurveillance bool
@@ -54,8 +52,6 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		lines = append(lines, indent+line)
 	}
 	lines = append(lines, subSection+"Username: "+s.Username)
-	lines = append(lines, subSection+"Process UID: "+strconv.Itoa(s.Puid))
-	lines = append(lines, subSection+"Process GID: "+strconv.Itoa(s.Pgid))
 	lines = append(lines, subSection+"Block malicious: "+blockMalicious)
 	lines = append(lines, subSection+"Block ads: "+blockAds)
 	lines = append(lines, subSection+"Block surveillance: "+blockSurveillance)
