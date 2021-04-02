@@ -44,7 +44,7 @@ func getUnboundSettings(reader params.Reader) (settings models.Settings, err err
 	if err != nil {
 		return settings, err
 	}
-	settings.BlockedIPs, err = reader.GetBlockedIPs()
+	settings.BlockedIPs, settings.BlockedIPNets, err = reader.GetBlockedIPs()
 	if err != nil {
 		return settings, err
 	}
@@ -52,11 +52,12 @@ func getUnboundSettings(reader params.Reader) (settings models.Settings, err err
 	if err != nil {
 		return settings, err
 	}
-	privateAddresses, err := reader.GetPrivateAddresses()
+	privateIPs, privateIPNets, err := reader.GetPrivateAddresses()
 	if err != nil {
 		return settings, err
 	}
-	settings.BlockedIPs = append(settings.BlockedIPs, privateAddresses...)
+	settings.BlockedIPs = append(settings.BlockedIPs, privateIPs...)
+	settings.BlockedIPNets = append(settings.BlockedIPNets, privateIPNets...)
 
 	settings.AccessControl.Allowed = []net.IPNet{
 		{

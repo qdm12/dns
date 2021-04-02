@@ -1,11 +1,8 @@
 package unbound
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"net"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -16,14 +13,18 @@ import (
 )
 
 func (c *configurator) MakeUnboundConf(settings models.Settings,
-	hostnamesLines, ipsLines []string, username string, puid, pgid int) (err error) {
+	blockedHostnames []string, blockedIPs []net.IP, blockedIPNets []*net.IPNet,
+	username string, puid, pgid int) (err error) {
 	configFilepath := filepath.Join(c.unboundEtcDir, unboundConfigFilename)
 	file, err := c.openFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
 
-	lines := generateUnboundConf(settings, hostnamesLines, ipsLines,
+	blacklistLines := convertBlockedToConfigLines(blockedHostnames,
+		blockedIPs, blockedIPNets)
+
+	lines := generateUnboundConf(settings, blacklistLines,
 		c.unboundEtcDir, c.cacertsPath, username)
 	_, err = file.WriteString(strings.Join(lines, "\n"))
 	if err != nil {
@@ -39,8 +40,7 @@ func (c *configurator) MakeUnboundConf(settings models.Settings,
 }
 
 // generateUnboundConf generates an Unbound configuration from the user provided settings.
-func generateUnboundConf(settings models.Settings,
-	hostnamesLines, ipsLines []string,
+func generateUnboundConf(settings models.Settings, blacklistLines []string,
 	unboundDir, cacertsPath, username string) (
 	lines []string) {
 	const (
@@ -115,13 +115,11 @@ func generateUnboundConf(settings models.Settings,
 		return serverLines[i] < serverLines[j]
 	})
 
-	hostnamesLines = ensureIndentLines(hostnamesLines)
-	ipsLines = ensureIndentLines(ipsLines)
+	blacklistLines = ensureIndentLines(blacklistLines)
 
 	lines = append(lines, "server:")
 	lines = append(lines, serverLines...)
-	lines = append(lines, hostnamesLines...)
-	lines = append(lines, ipsLines...)
+	lines = append(lines, blacklistLines...)
 
 	// Forward zone
 	lines = append(lines, "forward-zone:")
@@ -162,203 +160,4 @@ func ensureIndentLines(lines []string) []string {
 		}
 	}
 	return lines
-}
-
-func (c *configurator) BuildBlocked(ctx context.Context, client *http.Client,
-	blockMalicious, blockAds, blockSurveillance bool,
-	blockedHostnames, blockedIPs, allowedHostnames []string) (
-	hostnamesLines, ipsLines []string, errs []error) {
-	chHostnames := make(chan []string)
-	chIPs := make(chan []string)
-	chErrors := make(chan []error)
-	go func() {
-		lines, errs := buildBlockedHostnames(ctx, client,
-			blockMalicious, blockAds, blockSurveillance, blockedHostnames,
-			allowedHostnames)
-		chHostnames <- lines
-		chErrors <- errs
-	}()
-	go func() {
-		lines, errs := buildBlockedIPs(ctx, client, blockMalicious, blockAds, blockSurveillance, blockedIPs)
-		chIPs <- lines
-		chErrors <- errs
-	}()
-	n := 2
-	for n > 0 {
-		select {
-		case lines := <-chHostnames:
-			hostnamesLines = append(hostnamesLines, lines...)
-		case lines := <-chIPs:
-			ipsLines = append(ipsLines, lines...)
-		case routineErrs := <-chErrors:
-			errs = append(errs, routineErrs...)
-			n--
-		}
-	}
-	sort.Slice(hostnamesLines, func(i, j int) bool { // for unit tests really
-		return hostnamesLines[i] < hostnamesLines[j]
-	})
-	sort.Slice(ipsLines, func(i, j int) bool { // for unit tests really
-		return ipsLines[i] < ipsLines[j]
-	})
-	return hostnamesLines, ipsLines, errs
-}
-
-var ErrBadStatusCode = errors.New("bad HTTP status code")
-
-func getList(ctx context.Context, client *http.Client, url string) (results []string, err error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	} else if response.StatusCode != http.StatusOK {
-		_ = response.Body.Close()
-		return nil, fmt.Errorf("%w: %d %s", ErrBadStatusCode, response.StatusCode, response.Status)
-	}
-
-	content, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		_ = response.Body.Close()
-		return nil, err
-	}
-
-	if err := response.Body.Close(); err != nil {
-		return nil, err
-	}
-
-	results = strings.Split(string(content), "\n")
-
-	// remove empty lines
-	last := len(results) - 1
-	for i := range results {
-		if len(results[i]) == 0 {
-			results[i] = results[last]
-			last--
-		}
-	}
-	results = results[:last+1]
-
-	if len(results) == 0 {
-		return nil, nil
-	}
-	return results, nil
-}
-
-func buildBlockedHostnames(ctx context.Context, client *http.Client, blockMalicious, blockAds, blockSurveillance bool,
-	blockedHostnames, allowedHostnames []string) (lines []string, errs []error) {
-	chResults := make(chan []string)
-	chError := make(chan error)
-	listsLeftToFetch := 0
-	if blockMalicious {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, client, string(maliciousBlockListHostnamesURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockAds {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, client, string(adsBlockListHostnamesURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockSurveillance {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, client, string(surveillanceBlockListHostnamesURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	uniqueResults := make(map[string]struct{})
-	for listsLeftToFetch > 0 {
-		select {
-		case results := <-chResults:
-			for _, result := range results {
-				uniqueResults[result] = struct{}{}
-			}
-		case err := <-chError:
-			listsLeftToFetch--
-			if err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
-	for _, blockedHostname := range blockedHostnames {
-		allowed := false
-		for _, allowedHostname := range allowedHostnames {
-			if blockedHostname == allowedHostname || strings.HasSuffix(blockedHostname, "."+allowedHostname) {
-				allowed = true
-			}
-		}
-		if allowed {
-			continue
-		}
-		uniqueResults[blockedHostname] = struct{}{}
-	}
-	for _, allowedHostname := range allowedHostnames {
-		delete(uniqueResults, allowedHostname)
-	}
-	for result := range uniqueResults {
-		lines = append(lines, "  local-zone: \""+result+"\" static")
-	}
-	return lines, errs
-}
-
-func buildBlockedIPs(ctx context.Context, client *http.Client, blockMalicious, blockAds, blockSurveillance bool,
-	blockedIPs []string) (lines []string, errs []error) {
-	chResults := make(chan []string)
-	chError := make(chan error)
-	listsLeftToFetch := 0
-	if blockMalicious {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, client, string(maliciousBlockListIPsURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockAds {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, client, string(adsBlockListIPsURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockSurveillance {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, client, string(surveillanceBlockListIPsURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	uniqueResults := make(map[string]struct{})
-	for listsLeftToFetch > 0 {
-		select {
-		case results := <-chResults:
-			for _, result := range results {
-				uniqueResults[result] = struct{}{}
-			}
-		case err := <-chError:
-			listsLeftToFetch--
-			if err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
-	for _, blockedIP := range blockedIPs {
-		uniqueResults[blockedIP] = struct{}{}
-	}
-	for result := range uniqueResults {
-		lines = append(lines, "  private-address: "+result)
-	}
-	return lines, errs
 }

@@ -1,4 +1,4 @@
-package unbound
+package nameserver
 
 import (
 	"fmt"
@@ -155,10 +155,7 @@ func Test_UseDNSSystemWide(t *testing.T) {
 				return fileCall.file, fileCall.err
 			}
 
-			c := &configurator{
-				openFile: openFile,
-			}
-			err := c.UseDNSSystemWide(tc.ip, tc.keepNameserver)
+			err := UseDNSSystemWide(openFile, tc.ip, tc.keepNameserver)
 			if tc.err != nil {
 				require.Error(t, err)
 				assert.Equal(t, tc.err.Error(), err.Error())

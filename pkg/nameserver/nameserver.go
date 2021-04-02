@@ -1,15 +1,16 @@
-package unbound
+package nameserver
 
 import (
 	"context"
 	"io/ioutil"
 	"net"
-	"os"
 	"strings"
+
+	"github.com/qdm12/golibs/os"
 )
 
 // UseDNSInternally is to change the Go program DNS only.
-func (c *configurator) UseDNSInternally(ip net.IP) {
+func UseDNSInternally(ip net.IP) { //nolint:interfacer
 	net.DefaultResolver.PreferGo = true
 	net.DefaultResolver.Dial = func(ctx context.Context, network, address string) (net.Conn, error) {
 		d := net.Dialer{}
@@ -17,9 +18,11 @@ func (c *configurator) UseDNSInternally(ip net.IP) {
 	}
 }
 
+const resolvConfFilepath = "/etc/resolv.conf"
+
 // UseDNSSystemWide changes the nameserver to use for DNS system wide.
-func (c *configurator) UseDNSSystemWide(ip net.IP, keepNameserver bool) error {
-	file, err := c.openFile(resolvConfFilepath, os.O_RDONLY, 0)
+func UseDNSSystemWide(openFile os.OpenFileFunc, ip net.IP, keepNameserver bool) error { //nolint:interfacer
+	file, err := openFile(resolvConfFilepath, os.O_RDONLY, 0)
 	if err != nil {
 		return err
 	}
@@ -47,7 +50,7 @@ func (c *configurator) UseDNSSystemWide(ip net.IP, keepNameserver bool) error {
 
 	s = strings.Join(lines, "\n") + "\n"
 
-	file, err = c.openFile(resolvConfFilepath, os.O_WRONLY|os.O_TRUNC, 0644)
+	file, err = openFile(resolvConfFilepath, os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}

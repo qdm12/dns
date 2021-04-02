@@ -16,6 +16,8 @@ import (
 	"github.com/qdm12/dns/internal/params"
 	"github.com/qdm12/dns/internal/settings"
 	"github.com/qdm12/dns/internal/splash"
+	"github.com/qdm12/dns/pkg/blacklist"
+	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/dns/pkg/unbound"
 	"github.com/qdm12/golibs/logging"
 	customOS "github.com/qdm12/golibs/os"
@@ -141,7 +143,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 	localIP := net.IP{127, 0, 0, 1}
 	logger.Info("using DNS address %s internally", localIP.String())
-	dnsConf.UseDNSInternally(localIP) // use Unbound
+	nameserver.UseDNSInternally(localIP) // use Unbound
 	wg.Add(1)
 	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, client, crashed)
 
@@ -177,7 +179,9 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 			timer.Reset(settings.UpdatePeriod)
 		}
 
-		var hostnamesLines, ipsLines []string
+		var blockedHostnames []string
+		var blockedIPs []net.IP
+		var blockedIPNets []*net.IPNet
 		if !firstRun {
 			logger.Info("downloading DNSSEC root hints and named root")
 			if err := dnsConf.SetupFiles(ctx); err != nil {
@@ -186,20 +190,24 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 			}
 			logger.Info("downloading and building DNS block lists")
 			var errs []error
-			hostnamesLines, ipsLines, errs = dnsConf.BuildBlocked(ctx, client,
+			blacklistBuilder := blacklist.NewBuilder(client)
+			blockedHostnames, blockedIPs, blockedIPNets, errs = blacklistBuilder.All(ctx,
 				settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-				settings.Unbound.BlockedHostnames, settings.Unbound.BlockedIPs, settings.Unbound.AllowedHostnames,
+				settings.Unbound.BlockedHostnames, settings.Unbound.AllowedHostnames,
+				settings.Unbound.BlockedIPs, settings.Unbound.BlockedIPNets,
 			)
 			for _, err := range errs {
 				logger.Warn(err)
 			}
-			logger.Info("%d hostnames blocked overall", len(hostnamesLines))
-			logger.Info("%d IP addresses blocked overall", len(ipsLines))
+			logger.Info("%d hostnames blocked overall", len(blockedHostnames))
+			logger.Info("%d IP addresses blocked overall", len(blockedIPs))
+			logger.Info("%d IP networks blocked overall", len(blockedIPNets))
 		}
 
 		logger.Info("generating Unbound configuration")
-		if err := dnsConf.MakeUnboundConf(settings.Unbound, hostnamesLines, ipsLines,
-			settings.Username, settings.Puid, settings.Pgid); err != nil {
+		if err := dnsConf.MakeUnboundConf(settings.Unbound, blockedHostnames,
+			blockedIPs, blockedIPNets, settings.Username, settings.Puid,
+			settings.Pgid); err != nil {
 			logAndWait(ctx, logger, err)
 			continue
 		}

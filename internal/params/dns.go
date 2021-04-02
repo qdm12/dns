@@ -27,19 +27,14 @@ func (r *reader) GetProviders() (providers []string, err error) {
 	return providers, nil
 }
 
-// GetPrivateAddresses obtains if Unbound caching should be enable or not
-// from the environment variable PRIVATE_ADDRESS.
-func (r *reader) GetPrivateAddresses() (privateAddresses []string, err error) {
-	privateAddresses, err = r.envParams.CSV("PRIVATE_ADDRESS")
+func (r *reader) GetPrivateAddresses() (privateIPs []net.IP, privateIPNets []*net.IPNet, err error) {
+	values, err := r.envParams.CSV("PRIVATE_ADDRESS")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	for _, address := range privateAddresses {
-		ip := net.ParseIP(address)
-		_, _, err := net.ParseCIDR(address)
-		if ip == nil && err != nil {
-			return nil, fmt.Errorf("private address %q is not a valid IP or CIDR range", address)
-		}
+	privateIPs, privateIPNets, err = convertStringsToIPs(values)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid private IP string: %s", err)
 	}
-	return privateAddresses, nil
+	return privateIPs, privateIPNets, nil
 }

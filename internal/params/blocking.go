@@ -57,19 +57,35 @@ func (r *reader) GetBlockedHostnames() (hostnames []string, err error) {
 	return hostnames, nil
 }
 
-// GetBlockedIPs obtains a list of IP addresses or CIDR ranges to block from
+// GetBlockedIPs obtains a list of IP addresses and IP networks to block from
 // the comma separated list for the environment variable BLOCK_IPS.
-func (r *reader) GetBlockedIPs() (ips []string, err error) {
-	ips, err = r.envParams.CSV("BLOCK_IPS")
+func (r *reader) GetBlockedIPs() (ips []net.IP, ipNets []*net.IPNet, err error) {
+	values, err := r.envParams.CSV("BLOCK_IPS")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	for _, address := range ips {
-		ip := net.ParseIP(address)
-		_, _, err = net.ParseCIDR(address)
-		if ip == nil && err != nil {
-			return nil, fmt.Errorf("blocked address %q is not a valid IP or CIDR range", address)
+	ips, ipNets, err = convertStringsToIPs(values)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid blocked IP string: %s", err)
+	}
+	return ips, ipNets, nil
+}
+
+func convertStringsToIPs(values []string) (ips []net.IP, ipNets []*net.IPNet, err error) {
+	ips = make([]net.IP, 0, len(values))
+	ipNets = make([]*net.IPNet, 0, len(values))
+	for _, value := range values {
+		ip := net.ParseIP(value)
+		if ip != nil {
+			ips = append(ips, ip)
+			continue
 		}
+		_, IPNet, err := net.ParseCIDR(value)
+		if err == nil && IPNet != nil {
+			ipNets = append(ipNets, IPNet)
+			continue
+		}
+		return nil, nil, fmt.Errorf("%s", value)
 	}
-	return ips, nil
+	return ips, ipNets, nil
 }

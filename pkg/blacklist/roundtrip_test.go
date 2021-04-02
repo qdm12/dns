@@ -1,4 +1,4 @@
-package unbound
+package blacklist
 
 import "net/http"
 

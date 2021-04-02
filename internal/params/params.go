@@ -1,6 +1,7 @@
 package params
 
 import (
+	"net"
 	"time"
 
 	"github.com/qdm12/golibs/logging"
@@ -12,7 +13,7 @@ import (
 type Reader interface {
 	// DNS getters
 	GetProviders() (providers []string, err error)
-	GetPrivateAddresses() (privateAddresses []string, err error)
+	GetPrivateAddresses() (privateIPs []net.IP, privateIPNets []*net.IPNet, err error)
 
 	// Unbound getters
 	GetListeningPort() (listeningPort uint16, err error)
@@ -30,7 +31,7 @@ type Reader interface {
 	GetAdsBlocking() (blocking bool, err error)
 	GetUnblockedHostnames() (hostnames []string, err error)
 	GetBlockedHostnames() (hostnames []string, err error)
-	GetBlockedIPs() (IPs []string, err error)
+	GetBlockedIPs() (IPs []net.IP, IPNets []*net.IPNet, err error)
 
 	// Update getters
 	GetUpdatePeriod() (period time.Duration, err error)

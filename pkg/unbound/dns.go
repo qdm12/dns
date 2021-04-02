@@ -3,7 +3,6 @@ package unbound
 import (
 	"context"
 	"net"
-	"net/http"
 
 	"github.com/qdm12/dns/pkg/models"
 	"github.com/qdm12/golibs/command"
@@ -15,18 +14,12 @@ import (
 type Configurator interface {
 	SetupFiles(ctx context.Context) error
 	MakeUnboundConf(settings models.Settings,
-		hostnamesLines, ipsLines []string, username string,
-		puid, pgid int) (err error)
-	UseDNSInternally(IP net.IP)
-	UseDNSSystemWide(ip net.IP, keepNameserver bool) error
+		blockedHostnames []string, blockedIPs []net.IP, blockedIPNets []*net.IPNet,
+		username string, puid, pgid int) (err error)
 	Start(ctx context.Context, verbosityDetailsLevel uint8) (
 		stdoutLines, stderrLines chan string, waitError chan error, err error)
 	WaitForUnbound(ctx context.Context) (err error)
 	Version(ctx context.Context) (version string, err error)
-	BuildBlocked(ctx context.Context, client *http.Client,
-		blockMalicious, blockAds, blockSurveillance bool,
-		blockedHostnames, blockedIPs, allowedHostnames []string) (
-		hostnamesLines, ipsLines []string, errs []error)
 }
 
 type configurator struct {

@@ -13,10 +13,6 @@ const (
 )
 
 const (
-	resolvConfFilepath = "/etc/resolv.conf"
-)
-
-const (
 	// Cloudflare is a DNS over TLS provider.
 	Cloudflare = "cloudflare"
 	// CloudflareSecurity is a DNS over TLS provider blocking malware.
@@ -169,13 +165,3 @@ func GetProviderData(provider string) (data models.ProviderData, ok bool) {
 	data, ok = mapping[provider]
 	return data, ok
 }
-
-//nolint:lll
-const (
-	adsBlockListHostnamesURL          models.URL = "https://raw.githubusercontent.com/qdm12/files/master/ads-hostnames.updated"
-	adsBlockListIPsURL                models.URL = "https://raw.githubusercontent.com/qdm12/files/master/ads-ips.updated"
-	maliciousBlockListHostnamesURL    models.URL = "https://raw.githubusercontent.com/qdm12/files/master/malicious-hostnames.updated"
-	maliciousBlockListIPsURL          models.URL = "https://raw.githubusercontent.com/qdm12/files/master/malicious-ips.updated"
-	surveillanceBlockListHostnamesURL models.URL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-hostnames.updated"
-	surveillanceBlockListIPsURL       models.URL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-ips.updated"
-)
