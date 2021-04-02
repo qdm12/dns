@@ -42,7 +42,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	args := os.Args
-	logger := logging.New(logging.StdLog)
+	logger := logging.NewParent(logging.Settings{})
 	paramsReader := params.NewParamsReader(logger)
 	osIntf := customOS.New()
 
@@ -79,7 +79,7 @@ func main() {
 }
 
 func _main(ctx context.Context, buildInfo models.BuildInformation,
-	args []string, logger logging.Logger, paramsReader params.Reader,
+	args []string, logger logging.ParentLogger, paramsReader params.Reader,
 	os customOS.OS) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
@@ -130,7 +130,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 	const healthServerAddr = "127.0.0.1:9999"
 	healthServer := health.NewServer(healthServerAddr,
-		logger.NewChild(logging.SetPrefix("healthcheck server: ")),
+		logger.NewChild(logging.Settings{Prefix: "healthcheck server: "}),
 		health.IsHealthy)
 	wg.Add(1)
 	go healthServer.Run(ctx, wg)
