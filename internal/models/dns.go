@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/qdm12/dns/pkg/models"
+	"github.com/qdm12/dns/pkg/unbound"
 )
 
 type Settings struct {
-	Unbound           models.Settings
+	Unbound           unbound.Settings
 	Username          string
 	BlockMalicious    bool
 	BlockAds          bool

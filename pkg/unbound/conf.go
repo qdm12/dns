@@ -8,11 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/qdm12/dns/pkg/models"
 	"github.com/qdm12/golibs/os"
 )
 
-func (c *configurator) MakeUnboundConf(settings models.Settings,
+func (c *configurator) MakeUnboundConf(settings Settings,
 	blockedHostnames []string, blockedIPs []net.IP, blockedIPNets []*net.IPNet,
 	username string) (err error) {
 	configFilepath := filepath.Join(c.unboundEtcDir, unboundConfigFilename)
@@ -40,7 +39,7 @@ func (c *configurator) MakeUnboundConf(settings models.Settings,
 }
 
 // generateUnboundConf generates an Unbound configuration from the user provided settings.
-func generateUnboundConf(settings models.Settings, blacklistLines []string,
+func generateUnboundConf(settings Settings, blacklistLines []string,
 	unboundDir, cacertsPath, username string) (
 	lines []string) {
 	const (

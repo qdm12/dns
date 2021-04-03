@@ -5,14 +5,13 @@ import (
 	"strings"
 	"testing"
 
-	dnsmodels "github.com/qdm12/dns/pkg/models"
 	"github.com/qdm12/dns/pkg/provider"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_generateUnboundConf(t *testing.T) {
 	t.Parallel()
-	settings := dnsmodels.Settings{
+	settings := Settings{
 		Providers: []provider.Provider{
 			provider.Cloudflare(),
 			provider.Quad9(),
@@ -24,7 +23,7 @@ func Test_generateUnboundConf(t *testing.T) {
 		ListeningPort:      53,
 		IPv4:               true,
 		IPv6:               true,
-		AccessControl: dnsmodels.AccessControlSettings{
+		AccessControl: AccessControlSettings{
 			Allowed: []net.IPNet{{
 				IP:   net.IPv4zero,
 				Mask: net.IPv4Mask(0, 0, 0, 0),

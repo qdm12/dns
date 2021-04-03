@@ -4,7 +4,6 @@ import (
 	"context"
 	"net"
 
-	"github.com/qdm12/dns/pkg/models"
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/os"
@@ -13,7 +12,7 @@ import (
 
 type Configurator interface {
 	SetupFiles(ctx context.Context) error
-	MakeUnboundConf(settings models.Settings,
+	MakeUnboundConf(settings Settings,
 		blockedHostnames []string, blockedIPs []net.IP, blockedIPNets []*net.IPNet,
 		username string) (err error)
 	Start(ctx context.Context, verbosityDetailsLevel uint8) (

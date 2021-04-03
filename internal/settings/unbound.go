@@ -4,10 +4,10 @@ import (
 	"net"
 
 	"github.com/qdm12/dns/internal/params"
-	"github.com/qdm12/dns/pkg/models"
+	"github.com/qdm12/dns/pkg/unbound"
 )
 
-func getUnboundSettings(reader params.Reader) (settings models.Settings, err error) {
+func getUnboundSettings(reader params.Reader) (settings unbound.Settings, err error) {
 	settings.Providers, err = reader.GetProviders()
 	if err != nil {
 		return settings, err
