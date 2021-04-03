@@ -26,6 +26,7 @@ func Test_Settings_Lines(t *testing.T) {
 				" |--Verbosity level: 0/5",
 				" |--Verbosity details level: 0/4",
 				" |--Validation log level: 0/2",
+				" |--Username: ",
 			},
 		},
 		"full settings": {
@@ -54,6 +55,7 @@ func Test_Settings_Lines(t *testing.T) {
 						Mask: net.IPv4Mask(0, 0, 0, 0),
 					}},
 				},
+				Username: "username",
 			},
 			lines: []string{
 				" |--DNS over TLS providers:",
@@ -69,6 +71,7 @@ func Test_Settings_Lines(t *testing.T) {
 				" |--Verbosity level: 1/5",
 				" |--Verbosity details level: 2/4",
 				" |--Validation log level: 3/2",
+				" |--Username: username",
 				" |--Additional blocked hostnames:",
 				"     |--hostname 1",
 				"     |--hostname 2",

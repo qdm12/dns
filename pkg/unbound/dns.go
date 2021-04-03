@@ -12,9 +12,8 @@ import (
 
 type Configurator interface {
 	SetupFiles(ctx context.Context) error
-	MakeUnboundConf(settings Settings,
-		blockedHostnames []string, blockedIPs []net.IP, blockedIPNets []*net.IPNet,
-		username string) (err error)
+	MakeUnboundConf(settings Settings, blockedHostnames []string,
+		blockedIPs []net.IP, blockedIPNets []*net.IPNet) (err error)
 	Start(ctx context.Context, verbosityDetailsLevel uint8) (
 		stdoutLines, stderrLines chan string, waitError chan error, err error)
 	Version(ctx context.Context) (version string, err error)

@@ -28,6 +28,7 @@ type Settings struct {
 	BlockedIPNets         []*net.IPNet
 	AllowedHostnames      []string
 	AccessControl         AccessControlSettings
+	Username              string
 }
 
 func (s *Settings) String() string {
@@ -82,6 +83,8 @@ func (s *Settings) Lines() (lines []string) {
 
 	lines = append(lines, subIndent+
 		"Validation log level: "+strconv.Itoa(int(s.ValidationLogLevel))+"/2")
+
+	lines = append(lines, subIndent+"Username: "+s.Username)
 
 	if len(s.BlockedHostnames) > 0 {
 		lines = append(lines, subIndent+"Additional blocked hostnames:")

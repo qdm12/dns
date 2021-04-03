@@ -9,7 +9,6 @@ import (
 
 type Settings struct {
 	Unbound           unbound.Settings
-	Username          string // TODO move to Unbound
 	BlockMalicious    bool
 	BlockAds          bool
 	BlockSurveillance bool

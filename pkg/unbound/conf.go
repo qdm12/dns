@@ -12,8 +12,8 @@ import (
 )
 
 func (c *configurator) MakeUnboundConf(settings Settings,
-	blockedHostnames []string, blockedIPs []net.IP, blockedIPNets []*net.IPNet,
-	username string) (err error) {
+	blockedHostnames []string, blockedIPs []net.IP,
+	blockedIPNets []*net.IPNet) (err error) {
 	configFilepath := filepath.Join(c.unboundEtcDir, unboundConfigFilename)
 	file, err := c.openFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
@@ -24,7 +24,7 @@ func (c *configurator) MakeUnboundConf(settings Settings,
 		blockedIPs, blockedIPNets)
 
 	lines := generateUnboundConf(settings, blacklistLines,
-		c.unboundEtcDir, c.cacertsPath, username)
+		c.unboundEtcDir, c.cacertsPath, settings.Username)
 	_, err = file.WriteString(strings.Join(lines, "\n"))
 	if err != nil {
 		_ = file.Close()

@@ -199,7 +199,7 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 
 		logger.Info("generating Unbound configuration")
 		if err := dnsConf.MakeUnboundConf(settings.Unbound, blockedHostnames,
-			blockedIPs, blockedIPNets, settings.Username); err != nil {
+			blockedIPs, blockedIPNets); err != nil {
 			logAndWait(ctx, logger, err)
 			continue
 		}
