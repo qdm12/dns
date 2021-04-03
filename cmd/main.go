@@ -42,12 +42,12 @@ func main() {
 
 	args := os.Args
 	logger := logging.NewParent(logging.Settings{})
-	paramsReader := config.NewParamsReader(logger)
+	configReader := config.NewReader(logger)
 	osIntf := customOS.New()
 
 	errorCh := make(chan error)
 	go func() {
-		errorCh <- _main(ctx, buildInfo, args, logger, paramsReader, osIntf)
+		errorCh <- _main(ctx, buildInfo, args, logger, configReader, osIntf)
 	}()
 
 	select {
@@ -78,7 +78,7 @@ func main() {
 }
 
 func _main(ctx context.Context, buildInfo models.BuildInformation,
-	args []string, logger logging.ParentLogger, paramsReader config.Reader,
+	args []string, logger logging.ParentLogger, configReader config.Reader,
 	os customOS.OS) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
@@ -117,7 +117,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	}
 	logger.Info("Unbound version: %s", version)
 
-	settings, err := config.GetSettings(paramsReader)
+	settings, err := configReader.ReadSettings()
 	if err != nil {
 		return err
 	}

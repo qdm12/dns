@@ -1,16 +1,15 @@
 package config
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/qdm12/dns/pkg/unbound"
+	"github.com/qdm12/golibs/params"
 )
 
 type Settings struct {
 	Unbound           unbound.Settings
-	Username          string
+	Username          string // TODO move to Unbound
 	BlockMalicious    bool
 	BlockAds          bool
 	BlockSurveillance bool
@@ -18,45 +17,33 @@ type Settings struct {
 	UpdatePeriod      time.Duration
 }
 
-func (s *Settings) String() string {
-	return strings.Join(s.Lines("   ", " |--"), "\n")
-}
+func (settings *Settings) get(reader *reader) (err error) {
+	settings.Unbound, err = getUnboundSettings(reader)
+	if err != nil {
+		return err
+	}
+	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
+	if err != nil {
+		return err
+	}
+	settings.BlockSurveillance, err = reader.env.OnOff("BLOCK_SURVEILLANCE", params.Default("off"),
+		params.RetroKeys([]string{"BLOCK_NSA"}, reader.onRetroActive))
+	if err != nil {
+		return err
+	}
+	settings.BlockAds, err = reader.env.OnOff("BLOCK_ADS", params.Default("off"))
+	if err != nil {
+		return err
+	}
+	settings.CheckDNS, err = reader.env.OnOff("CHECK_DNS", params.Default("on"),
+		params.RetroKeys([]string{"CHECK_UNBOUND"}, reader.onRetroActive))
+	if err != nil {
+		return err
+	}
+	settings.UpdatePeriod, err = reader.env.Duration("UPDATE_PERIOD", params.Default("24h"))
+	if err != nil {
+		return err
+	}
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
-	const (
-		disabled = "disabled"
-		enabled  = "enabled"
-	)
-	blockMalicious, blockSurveillance, blockAds,
-		checkDNS, update :=
-		disabled, disabled, disabled,
-		disabled, disabled
-	if s.BlockMalicious {
-		blockMalicious = enabled
-	}
-	if s.BlockSurveillance {
-		blockSurveillance = enabled
-	}
-	if s.BlockAds {
-		blockAds = enabled
-	}
-	if s.CheckDNS {
-		checkDNS = enabled
-	}
-	if s.UpdatePeriod > 0 {
-		update = fmt.Sprintf("every %s", s.UpdatePeriod)
-	}
-
-	lines = append(lines, subSection+"Unbound settings:")
-	for _, line := range s.Unbound.Lines() {
-		lines = append(lines, indent+line)
-	}
-	lines = append(lines, subSection+"Username: "+s.Username)
-	lines = append(lines, subSection+"Block malicious: "+blockMalicious)
-	lines = append(lines, subSection+"Block ads: "+blockAds)
-	lines = append(lines, subSection+"Block surveillance: "+blockSurveillance)
-	lines = append(lines, subSection+"Check DNS: "+checkDNS)
-	lines = append(lines, subSection+"Update: "+update)
-
-	return lines
+	return nil
 }

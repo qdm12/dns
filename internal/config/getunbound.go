@@ -4,54 +4,62 @@ import (
 	"net"
 
 	"github.com/qdm12/dns/pkg/unbound"
+	"github.com/qdm12/golibs/params"
 )
 
-func getUnboundSettings(reader Reader) (settings unbound.Settings, err error) {
-	settings.Providers, err = reader.GetProviders()
+func getUnboundSettings(reader *reader) (settings unbound.Settings, err error) {
+	settings.Providers, err = getProviders(reader)
 	if err != nil {
 		return settings, err
 	}
-	settings.ListeningPort, err = reader.GetListeningPort()
+	settings.ListeningPort, err = reader.env.Port("LISTENINGPORT", params.Default("53"))
 	if err != nil {
 		return settings, err
 	}
-	settings.Caching, err = reader.GetCaching()
+	settings.Caching, err = reader.env.OnOff("CACHING", params.Default("off"))
 	if err != nil {
 		return settings, err
 	}
-	settings.IPv4, err = reader.GetIPv4()
+	settings.IPv4, err = reader.env.OnOff("IPV4", params.Default("on"))
 	if err != nil {
 		return settings, err
 	}
-	settings.IPv6, err = reader.GetIPv6()
+	settings.IPv6, err = reader.env.OnOff("IPV6", params.Default("off"))
 	if err != nil {
 		return settings, err
 	}
-	settings.VerbosityLevel, err = reader.GetVerbosity()
+
+	verbosityDetails, err := reader.env.IntRange("VERBOSITY", 0, 5, params.Default("1"))
 	if err != nil {
 		return settings, err
 	}
-	settings.VerbosityDetailsLevel, err = reader.GetVerbosityDetails()
+	settings.VerbosityLevel = uint8(verbosityDetails)
+
+	verbosityDetailsLevel, err := reader.env.IntRange("VERBOSITY_DETAILS", 0, 4, params.Default("0"))
 	if err != nil {
 		return settings, err
 	}
-	settings.ValidationLogLevel, err = reader.GetValidationLogLevel()
+	settings.VerbosityDetailsLevel = uint8(verbosityDetailsLevel)
+
+	validationLogLevel, err := reader.env.IntRange("VALIDATION_LOGLEVEL", 0, 2, params.Default("0"))
 	if err != nil {
 		return settings, err
 	}
-	settings.BlockedHostnames, err = reader.GetBlockedHostnames()
+	settings.ValidationLogLevel = uint8(validationLogLevel)
+
+	settings.BlockedHostnames, err = getBlockedHostnames(reader)
 	if err != nil {
 		return settings, err
 	}
-	settings.BlockedIPs, settings.BlockedIPNets, err = reader.GetBlockedIPs()
+	settings.BlockedIPs, settings.BlockedIPNets, err = getBlockedIPs(reader)
 	if err != nil {
 		return settings, err
 	}
-	settings.AllowedHostnames, err = reader.GetUnblockedHostnames()
+	settings.AllowedHostnames, err = getUnblockedHostnames(reader)
 	if err != nil {
 		return settings, err
 	}
-	privateIPs, privateIPNets, err := reader.GetPrivateAddresses()
+	privateIPs, privateIPNets, err := getPrivateAddresses(reader)
 	if err != nil {
 		return settings, err
 	}
