@@ -1,13 +1,12 @@
-package settings
+package config
 
 import (
 	"net"
 
-	"github.com/qdm12/dns/internal/params"
 	"github.com/qdm12/dns/pkg/unbound"
 )
 
-func getUnboundSettings(reader params.Reader) (settings unbound.Settings, err error) {
+func getUnboundSettings(reader Reader) (settings unbound.Settings, err error) {
 	settings.Providers, err = reader.GetProviders()
 	if err != nil {
 		return settings, err

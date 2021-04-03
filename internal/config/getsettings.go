@@ -1,11 +1,6 @@
-package settings
+package config
 
-import (
-	"github.com/qdm12/dns/internal/models"
-	"github.com/qdm12/dns/internal/params"
-)
-
-func GetSettings(reader params.Reader) (settings models.Settings, err error) {
+func GetSettings(reader Reader) (settings Settings, err error) {
 	settings.Unbound, err = getUnboundSettings(reader)
 	if err != nil {
 		return settings, err

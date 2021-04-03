@@ -1,4 +1,4 @@
-package params
+package config
 
 import (
 	libparams "github.com/qdm12/golibs/params"

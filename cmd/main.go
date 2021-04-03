@@ -11,10 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/qdm12/dns/internal/config"
 	"github.com/qdm12/dns/internal/health"
 	"github.com/qdm12/dns/internal/models"
-	"github.com/qdm12/dns/internal/params"
-	"github.com/qdm12/dns/internal/settings"
 	"github.com/qdm12/dns/internal/splash"
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/check"
@@ -43,7 +42,7 @@ func main() {
 
 	args := os.Args
 	logger := logging.NewParent(logging.Settings{})
-	paramsReader := params.NewParamsReader(logger)
+	paramsReader := config.NewParamsReader(logger)
 	osIntf := customOS.New()
 
 	errorCh := make(chan error)
@@ -79,7 +78,7 @@ func main() {
 }
 
 func _main(ctx context.Context, buildInfo models.BuildInformation,
-	args []string, logger logging.ParentLogger, paramsReader params.Reader,
+	args []string, logger logging.ParentLogger, paramsReader config.Reader,
 	os customOS.OS) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
@@ -118,7 +117,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	}
 	logger.Info("Unbound version: %s", version)
 
-	settings, err := settings.GetSettings(paramsReader)
+	settings, err := config.GetSettings(paramsReader)
 	if err != nil {
 		return err
 	}
@@ -150,7 +149,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	return err
 }
 
-func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Settings, //nolint:gocognit
+func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings, //nolint:gocognit
 	logger logging.Logger, dnsConf unbound.Configurator, client *http.Client, crashed chan<- error,
 ) {
 	defer wg.Done()
