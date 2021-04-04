@@ -25,21 +25,17 @@ func (s *BuilderSettings) String() string {
 }
 
 func (s *BuilderSettings) Lines(indent, subSection string) (lines []string) {
-	const no = "no"
-	const yes = "yes"
-	blockMalicious, blockSurveillance, blockAds := no, no, no
+	var blockedCategories []string
 	if s.BlockMalicious {
-		blockMalicious = yes
+		blockedCategories = append(blockedCategories, "malicious")
 	}
 	if s.BlockSurveillance {
-		blockSurveillance = yes
+		blockedCategories = append(blockedCategories, "surveillance")
 	}
 	if s.BlockAds {
-		blockAds = yes
+		blockedCategories = append(blockedCategories, "ads")
 	}
-	lines = append(lines, subSection+"Block malicious: "+blockMalicious)
-	lines = append(lines, subSection+"Block ads: "+blockAds)
-	lines = append(lines, subSection+"Block surveillance: "+blockSurveillance)
+	lines = append(lines, subSection+"Blocked categories: "+strings.Join(blockedCategories, ", "))
 
 	if len(s.AllowedHosts) > 0 {
 		lines = append(lines, subSection+"Additional hostnames blocked: "+
