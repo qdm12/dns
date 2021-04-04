@@ -184,11 +184,8 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 			logger.Info("downloading and building DNS block lists")
 			var errs []error
 			blacklistBuilder := blacklist.NewBuilder(client)
-			blockedHostnames, blockedIPs, blockedIPNets, errs = blacklistBuilder.All(ctx,
-				settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-				settings.Unbound.BlockedHostnames, settings.Unbound.AllowedHostnames,
-				settings.Unbound.BlockedIPs, settings.Unbound.BlockedIPNets,
-			)
+			blockedHostnames, blockedIPs, blockedIPNets, errs =
+				blacklistBuilder.All(ctx, settings.Blacklist)
 			for _, err := range errs {
 				logger.Warn(err)
 			}

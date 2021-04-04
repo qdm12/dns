@@ -3,11 +3,49 @@ package config
 import (
 	"fmt"
 	"net"
+
+	"github.com/qdm12/dns/pkg/blacklist"
+	"github.com/qdm12/golibs/params"
 )
 
-// getUnblockedHostnames obtains a list of hostnames to unblock from block lists
+func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, err error) {
+	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
+	if err != nil {
+		return settings, err
+	}
+	settings.BlockSurveillance, err = reader.env.OnOff("BLOCK_SURVEILLANCE", params.Default("off"),
+		params.RetroKeys([]string{"BLOCK_NSA"}, reader.onRetroActive))
+	if err != nil {
+		return settings, err
+	}
+	settings.BlockAds, err = reader.env.OnOff("BLOCK_ADS", params.Default("off"))
+	if err != nil {
+		return settings, err
+	}
+	settings.AllowedHosts, err = getAllowedHostnames(reader)
+	if err != nil {
+		return settings, err
+	}
+	settings.AddBlockedHosts, err = getBlockedHostnames(reader)
+	if err != nil {
+		return settings, err
+	}
+	settings.AddBlockedIPs, settings.AddBlockedIPNets, err = getBlockedIPs(reader)
+	if err != nil {
+		return settings, err
+	}
+	privateIPs, privateIPNets, err := getPrivateAddresses(reader)
+	if err != nil {
+		return settings, err
+	}
+	settings.AddBlockedIPs = append(settings.AddBlockedIPs, privateIPs...)
+	settings.AddBlockedIPNets = append(settings.AddBlockedIPNets, privateIPNets...)
+	return settings, nil
+}
+
+// getAllowedHostnames obtains a list of hostnames to unblock from block lists
 // from the comma separated list for the environment variable UNBLOCK.
-func getUnblockedHostnames(reader *reader) (hostnames []string, err error) {
+func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
 	hostnames, err = reader.env.CSV("UNBLOCK")
 	if err != nil {
 		return nil, err

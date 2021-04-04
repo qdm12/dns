@@ -5,10 +5,7 @@ import (
 	"net"
 )
 
-func (b *builder) All(ctx context.Context,
-	blockMalicious, blockAds, blockSurveillance bool,
-	additionalBlockedHostnames, allowedHostnames []string,
-	additionalBlockedIPs []net.IP, additionalBlockedIPNets []*net.IPNet) (
+func (b *builder) All(ctx context.Context, settings BuilderSettings) (
 	blockedHostnames []string, blockedIPs []net.IP,
 	blockedIPNets []*net.IPNet, errs []error) {
 	chHostnames := make(chan []string)
@@ -18,16 +15,16 @@ func (b *builder) All(ctx context.Context,
 
 	go func() {
 		blockedHostnames, errs := b.Hostnames(ctx,
-			blockMalicious, blockAds, blockSurveillance,
-			additionalBlockedHostnames, allowedHostnames)
+			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
+			settings.AddBlockedHosts, settings.AllowedHosts)
 		chHostnames <- blockedHostnames
 		chErrors <- errs
 	}()
 
 	go func() {
 		blockedIPs, blockedIPNets, errs := b.IPs(ctx,
-			blockMalicious, blockAds, blockSurveillance,
-			additionalBlockedIPs, additionalBlockedIPNets)
+			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
+			settings.AddBlockedIPs, settings.AddBlockedIPNets)
 		chIPs <- blockedIPs
 		chIPNets <- blockedIPNets
 		chErrors <- errs

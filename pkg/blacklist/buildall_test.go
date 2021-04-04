@@ -3,7 +3,7 @@ package blacklist
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -15,136 +15,153 @@ import (
 
 func Test_builder_All(t *testing.T) {
 	t.Parallel()
-	type blockParams struct {
-		blocked            bool
-		contentHostnames   []byte
-		clientHostnamesErr error
-		contentIps         []byte
-		clientIpsErr       error
+	type httpCase struct {
+		content []byte
+		err     error
 	}
 	tests := map[string]struct {
-		malicious                  blockParams
-		ads                        blockParams
-		surveillance               blockParams
-		additionalBlockedHostnames []string
-		allowedHostnames           []string
-		additionalBlockedIPs       []net.IP
-		additionalBlockedIPNets    []*net.IPNet
-		blockedHostnames           []string
-		blockedIPs                 []string // string format for easier comparison
-		blockedIPNets              []string // string format for easier comparison
-		errsString                 []string // string format for easier comparison
+		settings          BuilderSettings
+		maliciousHosts    httpCase
+		maliciousIPs      httpCase
+		adsHosts          httpCase
+		adsIPs            httpCase
+		surveillanceHosts httpCase
+		surveillanceIPs   httpCase
+		blockedHostnames  []string
+		blockedIPs        []string // string format for easier comparison
+		blockedIPNets     []string // string format for easier comparison
+		errsString        []string // string format for easier comparison
 	}{
 		"none blocked": {},
 		"all blocked without lists": {
-			malicious: blockParams{
-				blocked: true,
-			},
-			ads: blockParams{
-				blocked: true,
-			},
-			surveillance: blockParams{
-				blocked: true,
+			settings: BuilderSettings{
+				BlockMalicious:    true,
+				BlockAds:          true,
+				BlockSurveillance: true,
 			},
 		},
 		"all blocked with lists": {
-			malicious: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("malicious.com"),
-				contentIps:       []byte("1.2.3.4"),
+			settings: BuilderSettings{
+				BlockMalicious:    true,
+				BlockAds:          true,
+				BlockSurveillance: true,
 			},
-			ads: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("ads.com"),
-				contentIps:       []byte("1.2.3.5"),
+			maliciousHosts: httpCase{
+				content: []byte("malicious.com"),
 			},
-			surveillance: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("surveillance.com"),
-				contentIps:       []byte("1.2.3.6"),
+			maliciousIPs: httpCase{
+				content: []byte("1.2.3.4"),
+			},
+			adsHosts: httpCase{
+				content: []byte("ads.com"),
+			},
+			adsIPs: httpCase{
+				content: []byte("1.2.3.5"),
+			},
+			surveillanceHosts: httpCase{
+				content: []byte("surveillance.com"),
+			},
+			surveillanceIPs: httpCase{
+				content: []byte("1.2.3.6"),
 			},
 			blockedHostnames: []string{"ads.com", "malicious.com", "surveillance.com"},
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
 		"all blocked with allowed hostnames": {
-			malicious: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("malicious.com"),
-				contentIps:       []byte("1.2.3.4"),
+			settings: BuilderSettings{
+				BlockMalicious:    true,
+				BlockAds:          true,
+				BlockSurveillance: true,
+				AllowedHosts:      []string{"ads.com"},
 			},
-			ads: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("ads.com"),
-				contentIps:       []byte("1.2.3.5"),
+			maliciousHosts: httpCase{
+				content: []byte("malicious.com"),
 			},
-			surveillance: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("surveillance.com"),
-				contentIps:       []byte("1.2.3.6"),
+			maliciousIPs: httpCase{
+				content: []byte("1.2.3.4"),
 			},
-			allowedHostnames: []string{"ads.com"},
+			adsHosts: httpCase{
+				content: []byte("ads.com"),
+			},
+			adsIPs: httpCase{
+				content: []byte("1.2.3.5"),
+			},
+			surveillanceHosts: httpCase{
+				content: []byte("surveillance.com"),
+			},
+			surveillanceIPs: httpCase{
+				content: []byte("1.2.3.6"),
+			},
 			blockedHostnames: []string{"malicious.com", "surveillance.com"},
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
-		"all blocked with additional blocked IP addresses": {
-			malicious: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("malicious.com"),
-				contentIps:       []byte("1.2.3.4"),
+		"blocked with additional blocked IP addresses": {
+			settings: BuilderSettings{
+				BlockMalicious: true,
+				AddBlockedIPs:  []net.IP{{1, 2, 3, 7}},
 			},
-			ads: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("ads.com"),
-				contentIps:       []byte("1.2.3.5"),
+			maliciousHosts: httpCase{
+				content: []byte("malicious.com"),
 			},
-			surveillance: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("surveillance.com"),
-				contentIps:       []byte("1.2.3.6"),
+			maliciousIPs: httpCase{
+				content: []byte("1.2.3.4"),
 			},
-			additionalBlockedIPs: []net.IP{{1, 2, 3, 7}},
-			blockedHostnames:     []string{"ads.com", "malicious.com", "surveillance.com"},
-			blockedIPs:           []string{"1.2.3.4", "1.2.3.5", "1.2.3.6", "1.2.3.7"},
+			blockedHostnames: []string{"malicious.com"},
+			blockedIPs:       []string{"1.2.3.4", "1.2.3.7"},
 		},
 		"all blocked with lists and one error": {
-			malicious: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("malicious.com"),
-				contentIps:       []byte("1.2.3.4"),
+			settings: BuilderSettings{
+				BlockMalicious:    true,
+				BlockAds:          true,
+				BlockSurveillance: true,
 			},
-			ads: blockParams{
-				blocked:            true,
-				contentHostnames:   []byte("ads.com"),
-				clientHostnamesErr: fmt.Errorf("ads error"),
-				contentIps:         []byte("1.2.3.5"),
+			maliciousHosts: httpCase{
+				content: []byte("malicious.com"),
 			},
-			surveillance: blockParams{
-				blocked:          true,
-				contentHostnames: []byte("surveillance.com"),
-				contentIps:       []byte("1.2.3.6"),
+			maliciousIPs: httpCase{
+				content: []byte("1.2.3.4"),
 			},
-			additionalBlockedIPs: []net.IP{{1, 2, 3, 7}},
-			blockedHostnames:     []string{"malicious.com", "surveillance.com"},
-			blockedIPs:           []string{"1.2.3.4", "1.2.3.5", "1.2.3.6", "1.2.3.7"},
+			adsHosts: httpCase{
+				err: errors.New("ads error"),
+			},
+			adsIPs: httpCase{
+				content: []byte("1.2.3.5"),
+			},
+			surveillanceHosts: httpCase{
+				content: []byte("surveillance.com"),
+			},
+			surveillanceIPs: httpCase{
+				content: []byte("1.2.3.6"),
+			},
+			blockedHostnames: []string{"malicious.com", "surveillance.com"},
+			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 			errsString: []string{
 				`Get "https://raw.githubusercontent.com/qdm12/files/master/ads-hostnames.updated": ads error`,
 			},
 		},
 		"all blocked with errors": {
-			malicious: blockParams{
-				blocked:            true,
-				clientIpsErr:       fmt.Errorf("malicious ips"),
-				clientHostnamesErr: fmt.Errorf("malicious hostnames"),
+			settings: BuilderSettings{
+				BlockMalicious:    true,
+				BlockAds:          true,
+				BlockSurveillance: true,
 			},
-			ads: blockParams{
-				blocked:            true,
-				clientIpsErr:       fmt.Errorf("ads ips"),
-				clientHostnamesErr: fmt.Errorf("ads hostnames"),
+			maliciousHosts: httpCase{
+				err: errors.New("malicious hostnames"),
 			},
-			surveillance: blockParams{
-				blocked:            true,
-				clientIpsErr:       fmt.Errorf("surveillance ips"),
-				clientHostnamesErr: fmt.Errorf("surveillance hostnames"),
+			maliciousIPs: httpCase{
+				err: errors.New("malicious ips"),
+			},
+			adsHosts: httpCase{
+				err: errors.New("ads hostnames"),
+			},
+			adsIPs: httpCase{
+				err: errors.New("ads ips"),
+			},
+			surveillanceHosts: httpCase{
+				err: errors.New("surveillance hostnames"),
+			},
+			surveillanceIPs: httpCase{
+				err: errors.New("surveillance ips"),
 			},
 			errsString: []string{
 				`Get "https://raw.githubusercontent.com/qdm12/files/master/malicious-ips.updated": malicious ips`,
@@ -168,15 +185,15 @@ func Test_builder_All(t *testing.T) {
 			}{
 				m: make(map[string]int),
 			}
-			if tc.malicious.blocked {
+			if tc.settings.BlockMalicious {
 				clientCalls.m[maliciousBlockListIPsURL] = 0
 				clientCalls.m[maliciousBlockListHostnamesURL] = 0
 			}
-			if tc.ads.blocked {
+			if tc.settings.BlockAds {
 				clientCalls.m[adsBlockListIPsURL] = 0
 				clientCalls.m[adsBlockListHostnamesURL] = 0
 			}
-			if tc.surveillance.blocked {
+			if tc.settings.BlockSurveillance {
 				clientCalls.m[surveillanceBlockListIPsURL] = 0
 				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
 			}
@@ -195,23 +212,23 @@ func Test_builder_All(t *testing.T) {
 					var err error
 					switch url {
 					case maliciousBlockListIPsURL:
-						body = tc.malicious.contentIps
-						err = tc.malicious.clientIpsErr
+						body = tc.maliciousIPs.content
+						err = tc.maliciousIPs.err
 					case maliciousBlockListHostnamesURL:
-						body = tc.malicious.contentHostnames
-						err = tc.malicious.clientHostnamesErr
+						body = tc.maliciousHosts.content
+						err = tc.maliciousHosts.err
 					case adsBlockListIPsURL:
-						body = tc.ads.contentIps
-						err = tc.ads.clientIpsErr
+						body = tc.adsIPs.content
+						err = tc.adsIPs.err
 					case adsBlockListHostnamesURL:
-						body = tc.ads.contentHostnames
-						err = tc.ads.clientHostnamesErr
+						body = tc.adsHosts.content
+						err = tc.adsHosts.err
 					case surveillanceBlockListIPsURL:
-						body = tc.surveillance.contentIps
-						err = tc.surveillance.clientIpsErr
+						body = tc.surveillanceIPs.content
+						err = tc.surveillanceIPs.err
 					case surveillanceBlockListHostnamesURL:
-						body = tc.surveillance.contentHostnames
-						err = tc.surveillance.clientHostnamesErr
+						body = tc.surveillanceHosts.content
+						err = tc.surveillanceHosts.err
 					default: // just in case if the test is badly written
 						t.Errorf("unknown URL %q", url)
 						return nil, nil
@@ -228,10 +245,8 @@ func Test_builder_All(t *testing.T) {
 
 			builder := NewBuilder(client)
 
-			blockedHostnames, blockedIPs, blockedIPNets, errs := builder.All(ctx,
-				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
-				tc.additionalBlockedHostnames, tc.allowedHostnames,
-				tc.additionalBlockedIPs, tc.additionalBlockedIPNets)
+			blockedHostnames, blockedIPs, blockedIPNets, errs :=
+				builder.All(ctx, tc.settings)
 
 			assert.ElementsMatch(t, tc.blockedHostnames, blockedHostnames)
 			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(blockedIPs))

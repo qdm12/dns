@@ -16,8 +16,6 @@ func Test_generateUnboundConf(t *testing.T) {
 			provider.Cloudflare(),
 			provider.Quad9(),
 		},
-		AllowedHostnames:   []string{"a"},
-		BlockedIPs:         []net.IP{{8, 0, 1, 2}, {9, 9, 9, 9}},
 		VerbosityLevel:     2,
 		ValidationLogLevel: 3,
 		ListeningPort:      53,

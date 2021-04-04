@@ -47,25 +47,6 @@ func getUnboundSettings(reader *reader) (settings unbound.Settings, err error) {
 	}
 	settings.ValidationLogLevel = uint8(validationLogLevel)
 
-	settings.BlockedHostnames, err = getBlockedHostnames(reader)
-	if err != nil {
-		return settings, err
-	}
-	settings.BlockedIPs, settings.BlockedIPNets, err = getBlockedIPs(reader)
-	if err != nil {
-		return settings, err
-	}
-	settings.AllowedHostnames, err = getUnblockedHostnames(reader)
-	if err != nil {
-		return settings, err
-	}
-	privateIPs, privateIPNets, err := getPrivateAddresses(reader)
-	if err != nil {
-		return settings, err
-	}
-	settings.BlockedIPs = append(settings.BlockedIPs, privateIPs...)
-	settings.BlockedIPNets = append(settings.BlockedIPNets, privateIPNets...)
-
 	settings.AccessControl.Allowed = []net.IPNet{
 		{
 			IP:   net.IPv4zero,

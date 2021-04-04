@@ -42,13 +42,6 @@ func Test_Settings_Lines(t *testing.T) {
 				VerbosityLevel:        1,
 				VerbosityDetailsLevel: 2,
 				ValidationLogLevel:    3,
-				BlockedHostnames:      []string{"hostname 1", "hostname 2"},
-				BlockedIPs:            []net.IP{{1, 1, 1, 2}, {2, 2, 2, 2}},
-				BlockedIPNets: []*net.IPNet{{
-					IP:   net.IP{5, 5, 5, 5},
-					Mask: net.IPMask{255, 255, 0, 0},
-				}},
-				AllowedHostnames: []string{"hostname 3", "hostname 4"},
 				AccessControl: AccessControlSettings{
 					Allowed: []net.IPNet{{
 						IP:   net.IPv4zero,
@@ -72,17 +65,6 @@ func Test_Settings_Lines(t *testing.T) {
 				" |--Verbosity details level: 2/4",
 				" |--Validation log level: 3/2",
 				" |--Username: username",
-				" |--Additional blocked hostnames:",
-				"     |--hostname 1",
-				"     |--hostname 2",
-				" |--Additional blocked IP addresses:",
-				"     |--1.1.1.2",
-				"     |--2.2.2.2",
-				" |--Additional blocked IP networks:",
-				"     |--5.5.5.5/16",
-				" |--Allowed hostnames:",
-				"     |--hostname 3",
-				"     |--hostname 4",
 			},
 		},
 	}

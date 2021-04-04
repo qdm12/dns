@@ -23,10 +23,6 @@ type Settings struct {
 	VerbosityLevel        uint8
 	VerbosityDetailsLevel uint8
 	ValidationLogLevel    uint8
-	BlockedHostnames      []string
-	BlockedIPs            []net.IP
-	BlockedIPNets         []*net.IPNet
-	AllowedHostnames      []string
 	AccessControl         AccessControlSettings
 	Username              string
 }
@@ -85,34 +81,6 @@ func (s *Settings) Lines() (lines []string) {
 		"Validation log level: "+strconv.Itoa(int(s.ValidationLogLevel))+"/2")
 
 	lines = append(lines, subIndent+"Username: "+s.Username)
-
-	if len(s.BlockedHostnames) > 0 {
-		lines = append(lines, subIndent+"Additional blocked hostnames:")
-		for _, hostname := range s.BlockedHostnames {
-			lines = append(lines, indent+subIndent+hostname)
-		}
-	}
-
-	if len(s.BlockedIPs) > 0 {
-		lines = append(lines, subIndent+"Additional blocked IP addresses:")
-		for _, ip := range s.BlockedIPs {
-			lines = append(lines, indent+subIndent+ip.String())
-		}
-	}
-
-	if len(s.BlockedIPNets) > 0 {
-		lines = append(lines, subIndent+"Additional blocked IP networks:")
-		for _, IPNet := range s.BlockedIPNets {
-			lines = append(lines, indent+subIndent+IPNet.String())
-		}
-	}
-
-	if len(s.AllowedHostnames) > 0 {
-		lines = append(lines, subIndent+"Allowed hostnames:")
-		for _, hostname := range s.AllowedHostnames {
-			lines = append(lines, indent+subIndent+hostname)
-		}
-	}
 
 	return lines
 }

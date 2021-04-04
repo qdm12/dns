@@ -7,10 +7,7 @@ import (
 )
 
 type Builder interface {
-	All(ctx context.Context,
-		blockMalicious, blockAds, blockSurveillance bool,
-		additionalBlockedHostnames, allowedHostnames []string,
-		additionalBlockedIPs []net.IP, additionalBlockedIPNets []*net.IPNet) (
+	All(ctx context.Context, settings BuilderSettings) (
 		blockedHostnames []string, blockedIPs []net.IP,
 		blockedIPNets []*net.IPNet, errs []error)
 	Hostnames(ctx context.Context,
