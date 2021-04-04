@@ -15,7 +15,7 @@ type Settings struct {
 	IPNets        []*net.IPNet
 }
 
-// AddBlockHostnames transforms the slice of hostnames given to
+// BlockHostnames transforms the slice of hostnames given to
 // FQDN hostnames and sets these to the settings.
 func (s *Settings) BlockHostnames(hostnames []string) {
 	s.FqdnHostnames = make([]string, len(hostnames))

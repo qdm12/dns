@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/provider"
 )
 
@@ -25,6 +26,7 @@ type Settings struct {
 	ValidationLogLevel    uint8
 	AccessControl         AccessControlSettings
 	Username              string
+	Blacklist             blacklist.Settings
 }
 
 func (s *Settings) String() string {

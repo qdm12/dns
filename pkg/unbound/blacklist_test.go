@@ -4,6 +4,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,21 +12,21 @@ func Test_convertBlockedToConfigLines(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		blockedHostnames []string
-		blockedIPs       []net.IP
-		blockedIPNets    []*net.IPNet
-		configLines      []string
+		settings    blacklist.Settings
+		configLines []string
 	}{
 		"none blocked": {
 			configLines: []string{},
 		},
 		"all blocked": {
-			blockedHostnames: []string{"sitea", "siteb"},
-			blockedIPs:       []net.IP{{1, 2, 3, 4}, {4, 3, 2, 1}},
-			blockedIPNets: []*net.IPNet{{
-				IP:   net.IP{5, 5, 5, 5},
-				Mask: net.IPMask{255, 255, 0, 0},
-			}},
+			settings: blacklist.Settings{
+				FqdnHostnames: []string{"sitea", "siteb"},
+				IPs:           []net.IP{{1, 2, 3, 4}, {4, 3, 2, 1}},
+				IPNets: []*net.IPNet{{
+					IP:   net.IP{5, 5, 5, 5},
+					Mask: net.IPMask{255, 255, 0, 0},
+				}},
+			},
 			configLines: []string{
 				"  local-zone: \"sitea\" static",
 				"  local-zone: \"siteb\" static",
@@ -40,8 +41,7 @@ func Test_convertBlockedToConfigLines(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			configLines := convertBlockedToConfigLines(tc.blockedHostnames,
-				tc.blockedIPs, tc.blockedIPNets)
+			configLines := convertBlockedToConfigLines(tc.settings)
 
 			assert.Equal(t, tc.configLines, configLines)
 		})

@@ -172,9 +172,6 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 			timer.Reset(settings.UpdatePeriod)
 		}
 
-		var blockedHostnames []string
-		var blockedIPs []net.IP
-		var blockedIPNets []*net.IPNet
 		if !firstRun {
 			logger.Info("downloading DNSSEC root hints and named root")
 			if err := dnsConf.SetupFiles(ctx); err != nil {
@@ -182,9 +179,8 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 				continue
 			}
 			logger.Info("downloading and building DNS block lists")
-			var errs []error
 			blacklistBuilder := blacklist.NewBuilder(client)
-			blockedHostnames, blockedIPs, blockedIPNets, errs =
+			blockedHostnames, blockedIPs, blockedIPNets, errs :=
 				blacklistBuilder.All(ctx, settings.Blacklist)
 			for _, err := range errs {
 				logger.Warn(err)
@@ -192,11 +188,15 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 			logger.Info("%d hostnames blocked overall", len(blockedHostnames))
 			logger.Info("%d IP addresses blocked overall", len(blockedIPs))
 			logger.Info("%d IP networks blocked overall", len(blockedIPNets))
+			settings.Unbound.Blacklist = blacklist.Settings{
+				FqdnHostnames: blockedHostnames,
+				IPs:           blockedIPs,
+				IPNets:        blockedIPNets,
+			}
 		}
 
 		logger.Info("generating Unbound configuration")
-		if err := dnsConf.MakeUnboundConf(settings.Unbound, blockedHostnames,
-			blockedIPs, blockedIPNets); err != nil {
+		if err := dnsConf.MakeUnboundConf(settings.Unbound); err != nil {
 			logAndWait(ctx, logger, err)
 			continue
 		}
