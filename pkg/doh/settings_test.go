@@ -27,6 +27,7 @@ func Test_ServerSettings_setDefaults(t *testing.T) {
 			DoHProviders: []provider.Provider{provider.Cloudflare()},
 			SelfDNS: SelfDNS{
 				DoTProviders: []provider.Provider{provider.Cloudflare()},
+				Timeout:      5 * time.Second,
 				IPv6:         false,
 			},
 			Timeout: 5 * time.Second,
@@ -62,6 +63,7 @@ func Test_ServerSettings_Lines(t *testing.T) {
 		"         |--Cloudflare",
 		"     |--Internal DNS:",
 		"         |--Connecting using IPv4 DNS addresses",
+		"         |--Query timeout: 5s",
 		"         |--DNS over TLS providers:",
 		"             |--Cloudflare",
 		" |--Caching:",

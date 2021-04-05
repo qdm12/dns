@@ -27,6 +27,7 @@ type SelfDNS struct {
 	// for the internal HTTP client to resolve the DoH url hostname.
 	DoTProviders []provider.Provider
 	DNSProviders []provider.Provider
+	Timeout      time.Duration
 	IPv6         bool
 }
 
@@ -56,6 +57,11 @@ func (s *ResolverSettings) setDefaults() {
 }
 
 func (s *SelfDNS) setDefaults() {
+	if s.Timeout == 0 {
+		const defaultTimeout = 5 * time.Second
+		s.Timeout = defaultTimeout
+	}
+
 	if len(s.DoTProviders) == 0 {
 		s.DoTProviders = []provider.Provider{provider.Cloudflare()}
 	}
@@ -126,6 +132,8 @@ func (s *SelfDNS) Lines(indent, subSection string) (lines []string) {
 	}
 	lines = append(lines, subSection+"Connecting using "+
 		connectOver+" DNS addresses")
+
+	lines = append(lines, subSection+"Query timeout: "+s.Timeout.String())
 
 	if len(s.DoTProviders) > 0 {
 		lines = append(lines, subSection+"DNS over TLS providers:")
