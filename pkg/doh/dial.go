@@ -23,7 +23,7 @@ func newDoHDial(settings ResolverSettings) dialFunc {
 		DoTProviders: settings.SelfDNS.DoTProviders,
 		DNSProviders: settings.SelfDNS.DNSProviders,
 		Timeout:      settings.Timeout, // http client timeout really
-		IPv6:         settings.IPv6,
+		IPv6:         settings.SelfDNS.IPv6,
 	}
 	dotClient := newDoTClient(DoTSettings)
 

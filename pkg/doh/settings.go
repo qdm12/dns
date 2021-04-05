@@ -21,13 +21,13 @@ type ResolverSettings struct {
 	DoHProviders []provider.Provider
 	SelfDNS      SelfDNS
 	Timeout      time.Duration
-	IPv6         bool
 }
 
 type SelfDNS struct {
 	// for the internal HTTP client to resolve the DoH url hostname.
 	DoTProviders []provider.Provider
 	DNSProviders []provider.Provider
+	IPv6         bool
 }
 
 func (s *ServerSettings) setDefaults() {
@@ -103,12 +103,6 @@ func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
 }
 
 func (s *ResolverSettings) Lines(indent, subSection string) (lines []string) {
-	connectOver := "IPv4"
-	if s.IPv6 {
-		connectOver = "IPv6"
-	}
-	lines = append(lines, subSection+"Connecting over: "+connectOver)
-
 	lines = append(lines,
 		subSection+"Query timeout: "+s.Timeout.String())
 
@@ -126,6 +120,13 @@ func (s *ResolverSettings) Lines(indent, subSection string) (lines []string) {
 }
 
 func (s *SelfDNS) Lines(indent, subSection string) (lines []string) {
+	connectOver := "IPv4"
+	if s.IPv6 {
+		connectOver = "IPv6"
+	}
+	lines = append(lines, subSection+"Connecting using "+
+		connectOver+" DNS addresses")
+
 	if len(s.DoTProviders) > 0 {
 		lines = append(lines, subSection+"DNS over TLS providers:")
 		for _, provider := range s.DoTProviders {
