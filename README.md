@@ -80,7 +80,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 | Docker image | Github release |
 | --- | --- |
 | `qmcgaw/dns:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
-| `qmcgaw/dns:v1.4.0` | [v1.4.0](https://github.com/qdm12/dns/releases/tag/v1.4.0) |
+| `qmcgaw/dns:v1.5.1` | [v1.5.1](https://github.com/qdm12/dns/releases/tag/v1.5.1) |
+| `qmcgaw/dns:v1.4.1` | [v1.4.1](https://github.com/qdm12/dns/releases/tag/v1.4.1) |
 | `qmcgaw/dns:v1.2.1` | [v1.2.1](https://github.com/qdm12/dns/releases/tag/v1.2.1) |
 | `qmcgaw/dns:v1.1.1` | [v1.1.1](https://github.com/qdm12/dns/releases/tag/v1.1.1) |
 | `qmcgaw/cloudflare-dns-server:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
