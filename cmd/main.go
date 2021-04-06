@@ -165,13 +165,13 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 	timer := time.NewTimer(time.Hour)
 
 	firstRun := true
-	restart := false
 
 	var (
 		unboundCtx               context.Context
 		unboundCancel            context.CancelFunc
 		waitError                chan error
 		stdoutLines, stderrLines chan string
+		err                      error
 	)
 
 	for ctx.Err() == nil {
@@ -213,7 +213,7 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 			continue
 		}
 
-		if restart {
+		if !firstRun {
 			unboundCancel()
 			<-waitError
 			close(waitError)
@@ -223,7 +223,7 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 		unboundCtx, unboundCancel = context.WithCancel(ctx)
 
 		logger.Info("starting unbound")
-		stdoutLines, stderrLines, waitError, err := dnsConf.Start(unboundCtx, settings.Unbound.VerbosityDetailsLevel)
+		stdoutLines, stderrLines, waitError, err = dnsConf.Start(unboundCtx, settings.Unbound.VerbosityDetailsLevel)
 		if err != nil {
 			crashed <- err
 			break
@@ -260,7 +260,8 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings models.Set
 				<-timer.C
 			}
 			crashed <- waitErr
-			break
+			unboundCancel()
+			return
 		}
 	}
 	unboundCancel()
@@ -288,7 +289,6 @@ func logUnboundStreams(logger logging.Logger, stdout, stderr <-chan string) {
 		case line, ok = <-stderr:
 		}
 		if !ok {
-			fmt.Println("EXITIIIITTT")
 			return
 		}
 		logger.Info(line)
