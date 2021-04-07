@@ -18,11 +18,10 @@ import (
 	"github.com/qdm12/dns/internal/splash"
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/check"
+	"github.com/qdm12/dns/pkg/doh"
+	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/nameserver"
-	"github.com/qdm12/dns/pkg/unbound"
-	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
-	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
 var (
@@ -93,29 +92,14 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
-	// Create configurators
-	dnsCrypto := dnscrypto.New(client, "", "") // TODO checksums for build
-	cmder := command.NewCmder()
-	const unboundEtcDir = "/unbound"
-	const unboundPath = "/unbound/unbound"
-	const cacertsPath = "/unbound/ca-certificates.crt"
-	dnsConf := unbound.NewConfigurator(logger, cmder, dnsCrypto,
-		unboundEtcDir, unboundPath, cacertsPath)
-
-	if len(args) > 1 && args[1] == "build" {
-		return dnsConf.SetupFiles(ctx)
-	}
-
-	version, err := dnsConf.Version(ctx)
-	if err != nil {
-		return err
-	}
-	logger.Info("Unbound version: " + version)
 
 	settings, err := configReader.ReadSettings()
 	if err != nil {
 		return err
 	}
+	logger = logger.NewChild(logging.Settings{
+		Level: settings.LogLevel,
+	})
 	logger.Info("Settings summary:\n" + settings.String())
 
 	wg := &sync.WaitGroup{}
@@ -131,9 +115,9 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 	localIP := net.IP{127, 0, 0, 1}
 	logger.Info("using DNS address " + localIP.String() + " internally")
-	nameserver.UseDNSInternally(localIP) // use Unbound
+	nameserver.UseDNSInternally(localIP) // use the DoT/DoH server
 	wg.Add(1)
-	go unboundRunLoop(ctx, wg, settings, logger, dnsConf, client, crashed)
+	go runLoop(ctx, wg, settings, logger, client, crashed)
 
 	select {
 	case <-ctx.Done():
@@ -144,8 +128,8 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	return err
 }
 
-func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings, //nolint:gocognit
-	logger logging.Logger, dnsConf unbound.Configurator, client *http.Client, crashed chan<- error,
+func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
+	logger logging.Logger, client *http.Client, crashed chan<- error,
 ) {
 	defer wg.Done()
 	defer logger.Info("unbound loop exited")
@@ -154,11 +138,9 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 	firstRun := true
 
 	var (
-		unboundCtx               context.Context
-		unboundCancel            context.CancelFunc
-		waitError                chan error
-		stdoutLines, stderrLines chan string
-		err                      error
+		serverCtx    context.Context
+		serverCancel context.CancelFunc
+		waitError    chan error
 	)
 
 	for ctx.Err() == nil {
@@ -167,12 +149,13 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 			timer.Reset(settings.UpdatePeriod)
 		}
 
+		serverSettings := dot.ServerSettings{
+			Resolver: settings.DoT.Resolver,
+			Port:     settings.DoT.Port,
+			Cache:    settings.DoT.Cache,
+		}
+
 		if !firstRun {
-			logger.Info("downloading DNSSEC root hints and named root")
-			if err := dnsConf.SetupFiles(ctx); err != nil {
-				logAndWait(ctx, logger, err)
-				continue
-			}
 			logger.Info("downloading and building DNS block lists")
 			blacklistBuilder := blacklist.NewBuilder(client)
 			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
@@ -183,97 +166,61 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 			logger.Info(strconv.Itoa(len(blockedHostnames)) + " hostnames blocked overall")
 			logger.Info(strconv.Itoa(len(blockedIPs)) + " IP addresses blocked overall")
 			logger.Info(strconv.Itoa(len(blockedIPPrefixes)) + " IP networks blocked overall")
-			settings.Unbound.Blacklist = blacklist.Settings{
-				FqdnHostnames: blockedHostnames,
-				IPs:           blockedIPs,
-				IPPrefixes:    blockedIPPrefixes,
-			}
-		}
-
-		logger.Info("generating Unbound configuration")
-		if err := dnsConf.MakeUnboundConf(settings.Unbound); err != nil {
-			logAndWait(ctx, logger, err)
-			continue
+			serverSettings.Blacklist.IPs = blockedIPs
+			serverSettings.Blacklist.IPPrefixes = blockedIPPrefixes
+			serverSettings.Blacklist.BlockHostnames(blockedHostnames)
 		}
 
 		if !firstRun {
-			unboundCancel()
+			serverCancel()
 			<-waitError
 			close(waitError)
-			close(stdoutLines)
-			close(stderrLines)
 		}
-		unboundCtx, unboundCancel = context.WithCancel(ctx)
+		serverCtx, serverCancel = context.WithCancel(ctx)
 
-		logger.Info("starting unbound")
-		stdoutLines, stderrLines, waitError, err = dnsConf.Start(unboundCtx, settings.Unbound.VerbosityDetailsLevel)
-		if err != nil {
-			crashed <- err
-			break
+		var server models.Server
+		switch settings.UpstreamType {
+		case config.DoT:
+			server = dot.NewServer(serverCtx, logger, serverSettings)
+		case config.DoH:
+			server = doh.NewServer(serverCtx, logger, settings.DoH)
 		}
 
-		go logUnboundStreams(logger, stdoutLines, stderrLines)
+		logger.Info("starting DNS server")
+		waitError = make(chan error)
+		go server.Run(serverCtx, waitError)
 
 		if settings.CheckDNS {
 			if err := check.WaitForDNS(ctx, net.DefaultResolver); err != nil {
 				crashed <- err
-				break
+				serverCancel()
+				return
 			}
 		}
 
 		if firstRun {
-			logger.Info("restarting Unbound the first time to get updated files")
+			logger.Info("restarting DNS server the first time to get updated files")
 			firstRun = false
 			continue
 		}
 
 		select {
 		case <-timer.C:
-			logger.Info("planned restart of unbound")
+			logger.Info("planned periodic restart of DNS server")
 		case <-ctx.Done():
 			if !timer.Stop() {
 				<-timer.C
 			}
-			logger.Warn("context canceled: exiting unbound run loop")
+			logger.Warn("context canceled: exiting DNS server run loop")
 		case waitErr := <-waitError:
 			close(waitError)
-			close(stdoutLines)
-			close(stderrLines)
 			if !timer.Stop() {
 				<-timer.C
 			}
 			crashed <- waitErr
-			unboundCancel()
+			serverCancel()
 			return
 		}
 	}
-	unboundCancel()
-}
-
-func logAndWait(ctx context.Context, logger logging.Logger, err error) {
-	const wait = 10 * time.Second
-	logger.Error(err.Error() + ", retrying in " + wait.String())
-	timer := time.NewTimer(wait)
-	select {
-	case <-timer.C:
-	case <-ctx.Done():
-		if !timer.Stop() {
-			<-timer.C
-		}
-	}
-}
-
-func logUnboundStreams(logger logging.Logger, stdout, stderr <-chan string) {
-	var line string
-	var ok bool
-	for {
-		select {
-		case line, ok = <-stdout:
-		case line, ok = <-stderr:
-		}
-		if !ok {
-			return
-		}
-		logger.Info(line)
-	}
+	serverCancel() // for the linter
 }

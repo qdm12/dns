@@ -2,9 +2,9 @@
 
 *DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
 
-**Announcement**: *You can now try `:v2.0.0-beta` with [this documentation](https://github.com/qdm12/dns/tree/v2.0.0-beta).
+**Announcement**: *The `:latest` image is now based on v2 which is a pure Go implementation for a DNS server connecting over DoT and DoH with a bunch of features.*
 
-**The `:latest` Docker image might break compatibility in the coming days/weeks**
+**The `:latest` Docker image breaks compatibility with previous images based on v1.x.x versions**
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/dns/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/dns)
 
@@ -33,19 +33,18 @@
     - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
     - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
 
-- Split-horizon DNS (randomly pick one of the DoT providers specified for each request)
+- Split-horizon DNS (randomly picks one of the DoT/DoH providers specified for each request)
 - Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
 - Block custom hostnames and IP addresses using environment variables
 - **One line setup**
 - Runs without root
-- Small 41.1MB Docker image (uncompressed, amd64)
+- Small **14MB** Docker image (uncompressed, amd64)
 
     <details><summary>Click to show base components</summary><p>
 
     - [Alpine 3.13](https://alpinelinux.org)
-    - [Unbound 1.13.0](https://nlnetlabs.nl/downloads/unbound) from Alpine packages
     - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-    - Go static binary entrypoint built from this source
+    - Go static binary built from this source
 
     </p></details>
 
@@ -53,11 +52,14 @@
 - Auto updates block lists and cryptographic files every 24h and restarts Unbound (< 1 second downtime)
 - Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
 - DNS rebinding protection
-- DNSSEC Validation
-
-    [![DNSSEC Validation](https://github.com/qdm12/dns/blob/master/readme/rootcanary.org.png?raw=true)](https://www.rootcanary.org/test.html)
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
+
+### Roadmap
+
+1. DNSSEC validation
+2. Custom redirection from hostname to IP address
+3. Prometheus metrics with Grafana dashboard
 
 ## Setup
 
@@ -82,9 +84,12 @@ If you run an old Docker version or Kernel, you might want to run the container 
 
 ## Docker tags 🐳
 
+💁 [Migrate from v1.x.x to v2.x.x](#Migrate)
+
 | Docker image | Github release |
 | --- | --- |
 | `qmcgaw/dns:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
+| `qmcgaw/dns:v2.0.0-beta` | [v2.0.0-beta](https://github.com/qdm12/dns/tree/v2.0.0-beta) |
 | `qmcgaw/dns:v1.5.1` | [v1.5.1](https://github.com/qdm12/dns/releases/tag/v1.5.1) |
 | `qmcgaw/dns:v1.4.1` | [v1.4.1](https://github.com/qdm12/dns/releases/tag/v1.4.1) |
 | `qmcgaw/dns:v1.2.1` | [v1.2.1](https://github.com/qdm12/dns/releases/tag/v1.2.1) |
@@ -98,27 +103,35 @@ If you run an old Docker version or Kernel, you might want to run the container 
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
-| `PROVIDERS` | `cloudflare` | Comma separated list of DNS-over-TLS providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
-| `VERBOSITY` | `1` | From 0 (no log) to 5 (full debug log) |
-| `VERBOSITY_DETAILS` | `0` | From 0 to 4 (higher means more details) |
+| `DOT_PROVIDERS` | `cloudflare,google` | Comma separated list of DNS-over-TLS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
+| `DOH_PROVIDERS` | `cloudflare,google` | Comma separated list of DNS-over-HTTPS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
+| `DNS_PLAINTEXT_PROVIDERS` | `cloudflare` | Comma separated list of plaintext DNS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
 | `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
 | `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
+| `ALLOWED_HOSTNAMES` | | comma separated list of hostnames to leave unblocked |
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
-| `UNBLOCK` | | comma separated list of hostnames to leave unblocked |
-| `LISTENINGPORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `CACHING` | `on` | `on` or `off`. It can be useful if you have another DNS (i.e. Pihole) doing the caching as well on top of this container |
-| `PRIVATE_ADDRESS` | All IPv4 and IPv6 CIDRs private ranges | Comma separated list of CIDRs or single IP addresses. Note that the default setting prevents DNS rebinding |
+| `BLOCK_IPNETS` |  | comma separated list of IP networks (CIDR) to block from being returned to clients |
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
+| `DOT_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over TLS |
+| `DOH_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over HTTPS |
+| `LISTENING_PORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
+| `CACHE_TYPE` | `lru` | `lru` or `disabled`. LRU caches DNS responses by least recently used |
+| `CACHE_LRU_MAX_ENTRIES` | `10000` | Number of elements to keep in the LRU cache. |
+| `REBINDING_PROTECTION` | `on` | `on` or `off`. Enabling will prevent the server from returning any private IP address to the client. |
 | `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
-| `IPV4` | `on` | `on` or `off`. Uses DNS resolution for IPV4 |
-| `IPV6` | `off` | `on` or `off`. Uses DNS resolution for IPV6. **Do not enable if you don't have IPV6** |
+| `DOT_CONNECT_IPV6` | `off` | `on` or `off`. Connects to the DNS resolvers over IPv6 instead of IPv4 |
 | `UPDATE_PERIOD` | `24h` | Period to update block lists and restart Unbound. Set to `0` to disable. |
 
-## Extra configuration
+## Migrate
 
-You can bind mount an Unbound configuration file *include.conf* to be included in the Unbound server section with
-`-v $(pwd)/include.conf:/unbound/include.conf:ro`, see [Unbound configuration documentation](https://nlnetlabs.nl/documentation/unbound/unbound.conf/)
+The `v2` version of the image (starting with `v2.0.0`) is a DNS server connecting to authoritative nameservers over TLS or HTTPS, and completely written from scratch in Go.
+
+There are several changes between the `v1` images and `v2`:
+
+- The following environment variables are now deprecated: `LISTENINGPORT`, `PROVIDERS`, `PROVIDER`, `CACHING`, `IPV4`, `IPV6`, `UNBLOCK`, `PRIVATE_ADDRESS`, `CHECK_UNBOUND`, `VERBOSITY`, `VERBOSITY_DETAILS`, `VALIDATION_LOGLEVEL`. You will receive a warning log with how to replace it, if you set them when running the v2.x.x image (or `:latest`).
+- You can no longer bind mount an Unbound configuration file
 
 ## Golang API
 
@@ -233,7 +246,8 @@ Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the cont
 
 Some packages are exposed publicly through the [pkg](pkg) directory.
 
-The API is at v1.x.x but (shame on me) is not stable and subject to change without changing major version. If you need it to be stable, please [create an issue](https://github.com/qdm12/dns/issues/new) and I'll see what I can do.
+- The current API is at v2.x.x and is meant to be (mostly) stable and should not introduce breaking changes.
+- The API at v1.x.x was (shame on me) unstable and there were many breaking changes between feature versions.
 
 For now, it is used by the [gluetun](https://github.com/qdm12/gluetun) project for its DNS over TLS usage.
 
