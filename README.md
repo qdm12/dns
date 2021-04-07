@@ -40,10 +40,10 @@
 
     <details><summary>Click to show base components</summary><p>
 
-    - [Alpine 3.12](https://alpinelinux.org)
-    - [Unbound 1.10.1](https://nlnetlabs.nl/downloads/unbound) ~built from source~ (from Alpine packages)
+    - [Alpine 3.13](https://alpinelinux.org)
+    - [Unbound 1.13.0](https://nlnetlabs.nl/downloads/unbound) from Alpine packages
     - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-    - Go static binary built from this source
+    - Go static binary entrypoint built from this source
 
     </p></details>
 
