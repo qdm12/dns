@@ -30,8 +30,3 @@ func (r *reader) ReadSettings() (s Settings, err error) {
 	err = s.get(r)
 	return s, err
 }
-
-func (r *reader) onRetroActive(oldKey, newKey string) {
-	r.logger.Warn("You are using the old environment variable " +
-		oldKey + ", please consider changing it to " + newKey)
-}

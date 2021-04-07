@@ -60,41 +60,34 @@ LABEL \
     org.opencontainers.image.url="https://github.com/qdm12/dns" \
     org.opencontainers.image.documentation="https://github.com/qdm12/dns/blob/master/README.md" \
     org.opencontainers.image.source="https://github.com/qdm12/dns" \
-    org.opencontainers.image.title="DNS over TLS upstream server" \
-    org.opencontainers.image.description="Runs a local DNS server connected to Cloudflare DNS server 1.1.1.1 over TLS (and more)"
+    org.opencontainers.image.title="DNS over TLS or HTTPS upstream server" \
+    org.opencontainers.image.description="Runs a local DNS server connected to nameservers with DNS over TLS or DNS over HTTPs"
 EXPOSE 53/udp
 ENV \
-    PROVIDERS=cloudflare \
-    PRIVATE_ADDRESS=127.0.0.1/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,::1/128,fc00::/7,fe80::/10,::ffff:7f00:1/104,::ffff:a00:0/104,::ffff:a9fe:0/112,::ffff:ac10:0/108,::ffff:c0a8:0/112 \
-    LISTENINGPORT=53 \
-    VERBOSITY=1 \
-    VERBOSITY_DETAILS=0 \
-    VALIDATION_LOGLEVEL=0 \
-    CACHING=on \
+    UPSTREAM_TYPE=DoT \
+    DOT_RESOLVERS=cloudflare,google \
+    DOH_RESOLVERS=cloudflare,google \
+    DNS_PLAINTEXT_RESOLVERS=cloudflare \
+    DOT_TIMEOUT=3s \
+    DOH_TIMEOUT=3s \
+    LISTENING_PORT=53 \
+    LOG_LEVEL=info \
+    CACHE_TYPE=lru \
     IPV4=on \
     IPV6=off \
     BLOCK_MALICIOUS=on \
     BLOCK_SURVEILLANCE=off \
     BLOCK_ADS=off \
     BLOCK_IPS= \
+    BLOCK_IPNETS= \
     BLOCK_HOSTNAMES= \
-    UNBLOCK= \
+    ALLOWED_HOSTNAMES= \
     CHECK_DNS=on \
     UPDATE_PERIOD=24h
 ENTRYPOINT /entrypoint
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD /entrypoint healthcheck
-WORKDIR /unbound
-RUN apk --update --no-cache add unbound libcap ca-certificates && \
-    mv /usr/sbin/unbound . && \
-    mv /etc/ssl/certs/ca-certificates.crt . && \
-    chown 1000 -R . && \
-    chmod 700 . && \
-    chmod 400 ca-certificates.crt && \
-    chmod 500 unbound && \
-    setcap 'cap_net_bind_service=+ep' unbound && \
-    apk del libcap && \
-    rm -rf /var/cache/apk/* /etc/unbound/* /usr/sbin/unbound-*
 COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 USER 1000
 # Downloads and install some files
-RUN /entrypoint build
+# TODO once DNSSEC is operational
+# RUN /entrypoint build
