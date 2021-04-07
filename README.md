@@ -2,7 +2,9 @@
 
 *DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
 
-**Announcement**: *The image is being reworked to be a single binary with DoH and DoT without Unbound. The `:latest` Docker images might break compatibility soon.*
+**Announcement**: *You can now try `:v2.0.0-beta` with [this documentation](https://github.com/qdm12/dns/tree/v2.0.0-beta).
+
+**The `:latest` Docker image might break compatibility in the coming days/weeks**
 
 [![Cloudflare DNS over TLS Docker](https://github.com/qdm12/dns/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/dns)
 
