@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/kyokomi/emoji"
-	"github.com/qdm12/dns/internal/constants"
 	"github.com/qdm12/dns/internal/models"
 )
 
@@ -18,7 +17,7 @@ func Splash(buildInfo models.BuildInformation) string {
 		"Running version %s built on %s (commit %s)",
 		buildInfo.Version, buildInfo.BuildDate, buildInfo.Commit))
 	lines = append(lines, "")
-	lines = append(lines, announcement()...)
+	lines = append(lines, printAnnouncement()...)
 	lines = append(lines, "")
 	lines = append(lines, links()...)
 	return strings.Join(lines, "\n")
@@ -35,20 +34,20 @@ func title() []string {
 	}
 }
 
-func announcement() []string {
-	if len(constants.Announcement) == 0 {
+func printAnnouncement() []string {
+	if len(announcement) == 0 {
 		return nil
 	}
-	expirationDate, _ := time.Parse("2006-01-02", constants.AnnouncementExpiration) // error covered by a unit test
+	expirationDate, _ := time.Parse("2006-01-02", announcementExpiration) // error covered by a unit test
 	if time.Now().After(expirationDate) {
 		return nil
 	}
-	return []string{emoji.Sprint(":mega: ") + constants.Announcement}
+	return []string{emoji.Sprint(":mega: ") + announcement}
 }
 
 func links() []string {
 	return []string{
-		emoji.Sprint(":wrench: ") + "Need help? " + constants.IssueLink,
+		emoji.Sprint(":wrench: ") + "Need help? " + issueLink,
 		emoji.Sprint(":computer: ") + "Email? quentin.mcgaw@gmail.com",
 		emoji.Sprint(":coffee: ") + "Slack? Join from the Slack button on Github",
 		emoji.Sprint(":money_with_wings: ") + "Help me? https://github.com/sponsors/qdm12",

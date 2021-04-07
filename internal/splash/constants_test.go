@@ -1,4 +1,4 @@
-package constants
+package splash
 
 import (
 	"testing"
@@ -9,9 +9,9 @@ import (
 
 func Test_AnnouncementExpiration(t *testing.T) {
 	t.Parallel()
-	if len(AnnouncementExpiration) == 0 {
+	if len(announcementExpiration) == 0 {
 		return
 	}
-	_, err := time.Parse("2006-01-02", AnnouncementExpiration)
+	_, err := time.Parse("2006-01-02", announcementExpiration)
 	assert.NoError(t, err)
 }
