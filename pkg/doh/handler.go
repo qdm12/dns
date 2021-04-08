@@ -40,6 +40,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 			if err := w.WriteMsg(response); err != nil {
 				h.logger.Warn("cannot write DNS message back to client: %s", err)
 			}
+			return
 		}
 	}
 
@@ -48,6 +49,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		if err := w.WriteMsg(response); err != nil {
 			h.logger.Warn("cannot write DNS message back to client: %s", err)
 		}
+		return
 	}
 
 	DoHConn, err := h.dial(h.ctx, "", "")
@@ -75,6 +77,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		if err := w.WriteMsg(response); err != nil {
 			h.logger.Warn("cannot write DNS message back to client: %s", err)
 		}
+		return
 	}
 
 	if h.cache != nil {
