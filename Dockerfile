@@ -47,6 +47,9 @@ RUN GOARCH="$(xcputranslate -field arch -targetplatform ${TARGETPLATFORM})" \
     -X 'main.buildDate=$BUILD_DATE' \
     -X 'main.commit=$COMMIT' \
     " -o entrypoint cmd/main.go
+RUN apk --update --no-cache add libcap && \
+    setcap 'cap_net_bind_service=+ep' entrypoint && \
+    apk del libcap
 
 FROM alpine:${ALPINE_VERSION}
 ARG VERSION=unknown
