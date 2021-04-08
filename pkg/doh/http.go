@@ -48,7 +48,7 @@ func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.P
 		return nil, err
 	}
 
-	request.Header.Set("Content-Type", "application/dns-udpwireformat")
+	request.Header.Set("Content-Type", "application/dns-message")
 
 	response, err := client.Do(request)
 
