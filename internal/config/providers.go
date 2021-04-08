@@ -9,17 +9,17 @@ import (
 
 // getDoTProviders obtains the DoT resolver providers to use.
 func getDoTProviders(reader *reader) (providers []provider.Provider, err error) {
-	return getProviders(reader, "DOT_PROVIDERS", "cloudflare,google")
+	return getProviders(reader, "DOT_RESOLVERS", "cloudflare,google")
 }
 
 // getDoHProviders obtains the DoH resolver providers to use.
 func getDoHProviders(reader *reader) (providers []provider.Provider, err error) {
-	return getProviders(reader, "DOH_PROVIDERS", "cloudflare,google")
+	return getProviders(reader, "DOH_RESOLVERS", "cloudflare,google")
 }
 
 // getDNSProviders obtains the plaintext fallback DNS resolver providers to use.
 func getDNSProviders(reader *reader) (providers []provider.Provider, err error) {
-	return getProviders(reader, "DNS_PLAINTEXT_PROVIDERS", "cloudflare")
+	return getProviders(reader, "DNS_PLAINTEXT_RESOLVERS", "cloudflare")
 }
 
 // getProviders obtains the DNS resolver providers to use from the environment
