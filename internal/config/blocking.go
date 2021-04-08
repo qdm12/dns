@@ -140,8 +140,8 @@ func getPrivateIPPrefixes() (privateIPPrefixes []netaddr.IPPrefix, err error) {
 		"169.254.0.0/16",
 		"::1/128",
 		"fc00::/7",
-		// "fe80::/10", - TODO intepreted as 0.0.0.0/0
-		"::ffff:0:0/96",
+		"fe80::/10",
+		// "::ffff:0:0/96",  - TODO intepreted as 0.0.0.0/0
 	}
 	privateIPPrefixes = make([]netaddr.IPPrefix, len(privateCIDRs))
 	for i := range privateCIDRs {
