@@ -47,7 +47,7 @@ func (s *server) Run(ctx context.Context, stopped chan<- error) {
 		ctx, cancel := context.WithTimeout(context.Background(), graceTime)
 		defer cancel()
 		if err := s.dnsServer.ShutdownContext(ctx); err != nil {
-			s.logger.Error("DNS server shutdown error: ", err)
+			s.logger.Error("DNS server shutdown error: " + err.Error())
 		}
 	}()
 

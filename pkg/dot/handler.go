@@ -38,7 +38,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		if response := h.cache.Get(r); response != nil {
 			response.SetReply(r)
 			if err := w.WriteMsg(response); err != nil {
-				h.logger.Warn("cannot write DNS message back to client: %s", err)
+				h.logger.Warn("cannot write DNS message back to client: " + err.Error())
 			}
 			return
 		}
@@ -47,14 +47,14 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	if h.blist.FilterRequest(r) {
 		response := new(dns.Msg).SetRcode(r, dns.RcodeRefused)
 		if err := w.WriteMsg(response); err != nil {
-			h.logger.Warn("cannot write DNS message back to client: %s", err)
+			h.logger.Warn("cannot write DNS message back to client: " + err.Error())
 		}
 		return
 	}
 
 	DoTConn, err := h.dial(h.ctx, "", "")
 	if err != nil {
-		h.logger.Warn("cannot dial: %s", err)
+		h.logger.Warn("cannot dial: " + err.Error())
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
 	}
@@ -63,11 +63,11 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	response, _, err := h.client.ExchangeWithConn(r, conn)
 
 	if err := conn.Close(); err != nil {
-		h.logger.Warn("cannot close the DoT connection: %s", err)
+		h.logger.Warn("cannot close the DoT connection: " + err.Error())
 	}
 
 	if err != nil {
-		h.logger.Warn("cannot exchange over DoT connection: %s", err)
+		h.logger.Warn("cannot exchange over DoT connection: " + err.Error())
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
 	}
@@ -75,7 +75,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	if h.blist.FilterResponse(response) {
 		response := new(dns.Msg).SetRcode(r, dns.RcodeRefused)
 		if err := w.WriteMsg(response); err != nil {
-			h.logger.Warn("cannot write DNS message back to client: %s", err)
+			h.logger.Warn("cannot write DNS message back to client: " + err.Error())
 		}
 		return
 	}
@@ -86,6 +86,6 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	response.SetReply(r)
 	if err := w.WriteMsg(response); err != nil {
-		h.logger.Warn("cannot write DNS message back to client: %s", err)
+		h.logger.Warn("cannot write DNS message back to client: " + err.Error())
 	}
 }
