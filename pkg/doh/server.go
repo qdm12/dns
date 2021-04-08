@@ -51,6 +51,6 @@ func (s *server) Run(ctx context.Context, stopped chan<- error) {
 		}
 	}()
 
-	s.logger.Info("DNS server listening on :53")
+	s.logger.Info("DNS server listening on " + s.dnsServer.Addr)
 	stopped <- s.dnsServer.ListenAndServe()
 }
