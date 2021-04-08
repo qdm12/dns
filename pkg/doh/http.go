@@ -49,6 +49,7 @@ func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.P
 	}
 
 	request.Header.Set("Content-Type", "application/dns-message")
+	request.Header.Set("Accept", "application/dns-message")
 
 	response, err := client.Do(request)
 
