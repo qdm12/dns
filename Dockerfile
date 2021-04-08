@@ -51,7 +51,10 @@ RUN apk --update --no-cache add libcap && \
     setcap 'cap_net_bind_service=+ep' entrypoint && \
     apk del libcap
 
-FROM alpine:${ALPINE_VERSION}
+FROM --platform=$BUILDPLATFORM alpine:${ALPINE_VERSION} AS alpine
+RUN apk --update add ca-certificates tzdata
+
+FROM scratch
 ARG VERSION=unknown
 ARG BUILD_DATE="an unknown date"
 ARG COMMIT=unknown
@@ -65,6 +68,8 @@ LABEL \
     org.opencontainers.image.source="https://github.com/qdm12/dns" \
     org.opencontainers.image.title="DNS over TLS or HTTPS upstream server" \
     org.opencontainers.image.description="Runs a local DNS server connected to nameservers with DNS over TLS or DNS over HTTPs"
+COPY --from=alpine --chown=1000 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=alpine --chown=1000 /usr/share/zoneinfo /usr/share/zoneinfo
 EXPOSE 53/udp
 ENV \
     UPSTREAM_TYPE=DoT \
@@ -87,7 +92,7 @@ ENV \
     ALLOWED_HOSTNAMES= \
     CHECK_DNS=on \
     UPDATE_PERIOD=24h
-ENTRYPOINT /entrypoint
+ENTRYPOINT ["/entrypoint"]
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD /entrypoint healthcheck
 COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 USER 1000
