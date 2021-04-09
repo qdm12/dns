@@ -93,7 +93,7 @@ ENV \
     CHECK_DNS=on \
     UPDATE_PERIOD=24h
 ENTRYPOINT ["/entrypoint"]
-HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD /entrypoint healthcheck
+HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD ["/entrypoint", "healthcheck"]
 COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 USER 1000
 # Downloads and install some files
