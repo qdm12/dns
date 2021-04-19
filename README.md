@@ -61,6 +61,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 ## Setup
 
+1. ⚠️ Raspberry Pi users running 32 bit systems, you need to do [this](https://github.com/alpinelinux/docker-alpine/issues/135#issuecomment-812287338) on your host to run the container.
 1. Launch the container with
 
     ```sh
