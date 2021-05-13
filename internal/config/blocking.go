@@ -96,8 +96,11 @@ func convertStringsToIPs(values []string) (ips []net.IP, ipNets []*net.IPNet, er
 			ips = append(ips, ip)
 			continue
 		}
-		_, IPNet, err := net.ParseCIDR(value)
+		ip, IPNet, err := net.ParseCIDR(value)
 		if err == nil && IPNet != nil {
+			if ip != nil {
+				IPNet.IP = ip
+			}
 			ipNets = append(ipNets, IPNet)
 			continue
 		}
