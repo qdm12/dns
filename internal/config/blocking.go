@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
-	"net"
 
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/golibs/params"
+	"inet.af/netaddr"
 )
 
 func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, err error) {
@@ -30,16 +30,16 @@ func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, e
 	if err != nil {
 		return settings, err
 	}
-	settings.AddBlockedIPs, settings.AddBlockedIPNets, err = getBlockedIPs(reader)
+	settings.AddBlockedIPs, settings.AddBlockedIPPrefixes, err = getBlockedIPs(reader)
 	if err != nil {
 		return settings, err
 	}
-	privateIPs, privateIPNets, err := getPrivateAddresses(reader)
+	privateIPs, privateIPPrefixes, err := getPrivateAddresses(reader)
 	if err != nil {
 		return settings, err
 	}
 	settings.AddBlockedIPs = append(settings.AddBlockedIPs, privateIPs...)
-	settings.AddBlockedIPNets = append(settings.AddBlockedIPNets, privateIPNets...)
+	settings.AddBlockedIPPrefixes = append(settings.AddBlockedIPPrefixes, privateIPPrefixes...)
 	return settings, nil
 }
 
@@ -75,36 +75,35 @@ func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
 
 // getBlockedIPs obtains a list of IP addresses and IP networks to block from
 // the comma separated list for the environment variable BLOCK_IPS.
-func getBlockedIPs(reader *reader) (ips []net.IP, ipNets []*net.IPNet, err error) {
+func getBlockedIPs(reader *reader) (ips []netaddr.IP,
+	ipPrefixes []netaddr.IPPrefix, err error) {
 	values, err := reader.env.CSV("BLOCK_IPS")
 	if err != nil {
 		return nil, nil, err
 	}
-	ips, ipNets, err = convertStringsToIPs(values)
+	ips, ipPrefixes, err = convertStringsToIPs(values)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid blocked IP string: %s", err)
 	}
-	return ips, ipNets, nil
+	return ips, ipPrefixes, nil
 }
 
-func convertStringsToIPs(values []string) (ips []net.IP, ipNets []*net.IPNet, err error) {
-	ips = make([]net.IP, 0, len(values))
-	ipNets = make([]*net.IPNet, 0, len(values))
+func convertStringsToIPs(values []string) (ips []netaddr.IP,
+	ipPrefixes []netaddr.IPPrefix, err error) {
+	ips = make([]netaddr.IP, 0, len(values))
+	ipPrefixes = make([]netaddr.IPPrefix, 0, len(values))
 	for _, value := range values {
-		ip := net.ParseIP(value)
-		if ip != nil {
+		ip, err := netaddr.ParseIP(value)
+		if err == nil {
 			ips = append(ips, ip)
 			continue
 		}
-		ip, IPNet, err := net.ParseCIDR(value)
-		if err == nil && IPNet != nil {
-			if ip != nil {
-				IPNet.IP = ip
-			}
-			ipNets = append(ipNets, IPNet)
+		ipPrefix, err := netaddr.ParseIPPrefix(value)
+		if err == nil {
+			ipPrefixes = append(ipPrefixes, ipPrefix)
 			continue
 		}
 		return nil, nil, fmt.Errorf("%s", value)
 	}
-	return ips, ipNets, nil
+	return ips, ipPrefixes, nil
 }

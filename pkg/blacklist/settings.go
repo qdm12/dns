@@ -1,18 +1,18 @@
 package blacklist
 
 import (
-	"net"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/miekg/dns"
+	"inet.af/netaddr"
 )
 
 type Settings struct {
 	FqdnHostnames []string
-	IPs           []net.IP
-	IPNets        []*net.IPNet
+	IPs           []netaddr.IP
+	IPPrefixes    []netaddr.IPPrefix
 }
 
 // BlockHostnames transforms the slice of hostnames given to
@@ -66,9 +66,9 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 			strconv.Itoa(len(s.IPs)))
 	}
 
-	if len(s.IPNets) > 0 {
+	if len(s.IPPrefixes) > 0 {
 		lines = append(lines, subSection+"IP networks blocked: "+
-			strconv.Itoa(len(s.IPNets)))
+			strconv.Itoa(len(s.IPPrefixes)))
 	}
 
 	if len(s.FqdnHostnames) > 0 {

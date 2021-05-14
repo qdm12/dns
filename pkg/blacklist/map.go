@@ -4,12 +4,13 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
+	"inet.af/netaddr"
 )
 
 type mapBased struct {
 	fqdnHostnames map[string]struct{}
-	ips           map[string]struct{}
-	ipNets        []*net.IPNet
+	ips           map[netaddr.IP]struct{}
+	ipPrefixes    []netaddr.IPPrefix
 }
 
 func NewMap(settings Settings) BlackLister {
@@ -18,15 +19,15 @@ func NewMap(settings Settings) BlackLister {
 		fqdnHostnamesSet[fqdnHostname] = struct{}{}
 	}
 
-	ipsSet := make(map[string]struct{}, len(settings.IPs))
+	ipsSet := make(map[netaddr.IP]struct{}, len(settings.IPs))
 	for _, ip := range settings.IPs {
-		ipsSet[ip.String()] = struct{}{}
+		ipsSet[ip] = struct{}{}
 	}
 
 	return &mapBased{
 		fqdnHostnames: fqdnHostnamesSet,
 		ips:           ipsSet,
-		ipNets:        settings.IPNets,
+		ipPrefixes:    settings.IPPrefixes,
 	}
 }
 
@@ -60,12 +61,17 @@ func (m *mapBased) FilterResponse(response *dns.Msg) (blocked bool) {
 }
 
 func (m *mapBased) isIPBlocked(ip net.IP) (blocked bool) {
-	ipStr := ip.String()
-	if _, blocked := m.ips[ipStr]; blocked {
+	netaddrIP, ok := netaddr.FromStdIP(ip)
+	if !ok {
+		return true
+	}
+
+	if _, blocked := m.ips[netaddrIP]; blocked {
 		return blocked
 	}
-	for _, ipNet := range m.ipNets {
-		if ipNet.Contains(ip) {
+
+	for _, ipPrefix := range m.ipPrefixes {
+		if ipPrefix.Contains(netaddrIP) {
 			return true
 		}
 	}

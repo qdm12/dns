@@ -1,10 +1,9 @@
 package config
 
 import (
-	"net"
-
 	"github.com/qdm12/dns/pkg/unbound"
 	"github.com/qdm12/golibs/params"
+	"inet.af/netaddr"
 )
 
 func getUnboundSettings(reader *reader) (settings unbound.Settings, err error) {
@@ -47,15 +46,9 @@ func getUnboundSettings(reader *reader) (settings unbound.Settings, err error) {
 	}
 	settings.ValidationLogLevel = uint8(validationLogLevel)
 
-	settings.AccessControl.Allowed = []net.IPNet{
-		{
-			IP:   net.IPv4zero,
-			Mask: net.IPv4Mask(0, 0, 0, 0),
-		},
-		{
-			IP:   net.IPv6zero,
-			Mask: net.IPMask{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		},
+	settings.AccessControl.Allowed = []netaddr.IPPrefix{
+		{IP: netaddr.IPv4(0, 0, 0, 0)},
+		{IP: netaddr.IPv6Raw([16]byte{})},
 	}
 	return settings, nil
 }

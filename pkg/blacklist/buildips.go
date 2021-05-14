@@ -1,10 +1,10 @@
 package blacklist
 
 import (
-	"bytes"
 	"context"
-	"net"
 	"sort"
+
+	"inet.af/netaddr"
 )
 
 const (
@@ -15,8 +15,8 @@ const (
 
 func (b *builder) IPs(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
-	additionalBlockedIPs []net.IP, additionalBlockedIPNets []*net.IPNet) (
-	blockedIPs []net.IP, blockedIPNets []*net.IPNet, errs []error) {
+	additionalBlockedIPs []netaddr.IP, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
+	blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
 	listsLeftToFetch := 0
@@ -63,33 +63,34 @@ func (b *builder) IPs(ctx context.Context,
 		uniqueResults[blockedIP.String()] = struct{}{}
 	}
 
-	for _, blockedIPNet := range additionalBlockedIPNets {
-		uniqueResults[blockedIPNet.String()] = struct{}{}
+	for _, blockedIPPrefix := range additionalBlockedIPPrefixes {
+		uniqueResults[blockedIPPrefix.String()] = struct{}{}
 	}
 
-	blockedIPs = make([]net.IP, 0, len(uniqueResults))
-	blockedIPNets = make([]*net.IPNet, 0, len(uniqueResults))
+	blockedIPs = make([]netaddr.IP, 0, len(uniqueResults))
+	blockedIPPrefixes = make([]netaddr.IPPrefix, 0, len(uniqueResults))
 
 	for s := range uniqueResults {
-		ip := net.ParseIP(s)
-		if ip != nil {
+		ip, err := netaddr.ParseIP(s)
+		if err == nil {
 			blockedIPs = append(blockedIPs, ip)
-			continue // TODO with net.ParseCIDR() ?
+			continue
 		}
-		_, cidr, err := net.ParseCIDR(s)
-		if err == nil && cidr != nil {
-			blockedIPNets = append(blockedIPNets, cidr)
+
+		ipPrefix, err := netaddr.ParseIPPrefix(s)
+		if err == nil {
+			blockedIPPrefixes = append(blockedIPPrefixes, ipPrefix)
 			continue
 		}
 	}
 
 	sort.Slice(blockedIPs, func(i, j int) bool {
-		return bytes.Compare([]byte(blockedIPs[i]), []byte(blockedIPs[j])) < 0
+		return blockedIPs[i].Compare(blockedIPs[j]) < 0
 	})
 
-	sort.Slice(blockedIPNets, func(i, j int) bool {
-		return blockedIPNets[i].String() < blockedIPNets[j].String()
+	sort.Slice(blockedIPPrefixes, func(i, j int) bool {
+		return blockedIPPrefixes[i].String() < blockedIPPrefixes[j].String()
 	})
 
-	return blockedIPs, blockedIPNets, errs
+	return blockedIPs, blockedIPPrefixes, errs
 }

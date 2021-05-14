@@ -180,18 +180,18 @@ func unboundRunLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Set
 			}
 			logger.Info("downloading and building DNS block lists")
 			blacklistBuilder := blacklist.NewBuilder(client)
-			blockedHostnames, blockedIPs, blockedIPNets, errs :=
+			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
 				blacklistBuilder.All(ctx, settings.Blacklist)
 			for _, err := range errs {
 				logger.Warn(err)
 			}
 			logger.Info("%d hostnames blocked overall", len(blockedHostnames))
 			logger.Info("%d IP addresses blocked overall", len(blockedIPs))
-			logger.Info("%d IP networks blocked overall", len(blockedIPNets))
+			logger.Info("%d IP networks blocked overall", len(blockedIPPrefixes))
 			settings.Unbound.Blacklist = blacklist.Settings{
 				FqdnHostnames: blockedHostnames,
 				IPs:           blockedIPs,
-				IPNets:        blockedIPNets,
+				IPPrefixes:    blockedIPPrefixes,
 			}
 		}
 

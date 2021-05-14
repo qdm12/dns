@@ -2,22 +2,23 @@ package blacklist
 
 import (
 	"context"
-	"net"
 	"net/http"
+
+	"inet.af/netaddr"
 )
 
 type Builder interface {
 	All(ctx context.Context, settings BuilderSettings) (
-		blockedHostnames []string, blockedIPs []net.IP,
-		blockedIPNets []*net.IPNet, errs []error)
+		blockedHostnames []string, blockedIPs []netaddr.IP,
+		blockedIPPrefixes []netaddr.IPPrefix, errs []error)
 	Hostnames(ctx context.Context,
 		blockMalicious, blockAds, blockSurveillance bool,
 		additionalBlockedHostnames, allowedHostnames []string) (
 		blockedHostnames []string, errs []error)
 	IPs(ctx context.Context,
 		blockMalicious, blockAds, blockSurveillance bool,
-		additionalBlockedIPs []net.IP, additionalBlockedIPNets []*net.IPNet) (
-		blockedIPs []net.IP, blockedIPNets []*net.IPNet, errs []error)
+		additionalBlockedIPs []netaddr.IP, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
+		blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix, errs []error)
 }
 
 func NewBuilder(client *http.Client) Builder {

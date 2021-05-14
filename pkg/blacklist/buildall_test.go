@@ -5,12 +5,12 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"inet.af/netaddr"
 )
 
 func Test_builder_All(t *testing.T) {
@@ -29,7 +29,7 @@ func Test_builder_All(t *testing.T) {
 		surveillanceIPs   httpCase
 		blockedHostnames  []string
 		blockedIPs        []string // string format for easier comparison
-		blockedIPNets     []string // string format for easier comparison
+		blockedIPPrefixes []string // string format for easier comparison
 		errsString        []string // string format for easier comparison
 	}{
 		"none blocked": {},
@@ -98,7 +98,7 @@ func Test_builder_All(t *testing.T) {
 		"blocked with additional blocked IP addresses": {
 			settings: BuilderSettings{
 				BlockMalicious: true,
-				AddBlockedIPs:  []net.IP{{1, 2, 3, 7}},
+				AddBlockedIPs:  []netaddr.IP{netaddr.IPv4(1, 2, 3, 7)},
 			},
 			maliciousHosts: httpCase{
 				content: []byte("malicious.com"),
@@ -245,12 +245,12 @@ func Test_builder_All(t *testing.T) {
 
 			builder := NewBuilder(client)
 
-			blockedHostnames, blockedIPs, blockedIPNets, errs :=
+			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
 				builder.All(ctx, tc.settings)
 
 			assert.ElementsMatch(t, tc.blockedHostnames, blockedHostnames)
 			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(blockedIPs))
-			assert.ElementsMatch(t, tc.blockedIPNets, convertIPNetsToString(blockedIPNets))
+			assert.ElementsMatch(t, tc.blockedIPPrefixes, convertIPPrefixesToString(blockedIPPrefixes))
 			assert.ElementsMatch(t, tc.errsString, convertErrorsToString(errs))
 
 			for url, count := range clientCalls.m {

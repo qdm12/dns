@@ -1,11 +1,11 @@
 package unbound
 
 import (
-	"net"
 	"testing"
 
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/stretchr/testify/assert"
+	"inet.af/netaddr"
 )
 
 func Test_convertBlockedToConfigLines(t *testing.T) {
@@ -21,10 +21,13 @@ func Test_convertBlockedToConfigLines(t *testing.T) {
 		"all blocked": {
 			settings: blacklist.Settings{
 				FqdnHostnames: []string{"sitea", "siteb"},
-				IPs:           []net.IP{{1, 2, 3, 4}, {4, 3, 2, 1}},
-				IPNets: []*net.IPNet{{
-					IP:   net.IP{5, 5, 5, 5},
-					Mask: net.IPMask{255, 255, 0, 0},
+				IPs: []netaddr.IP{
+					netaddr.IPv4(1, 2, 3, 4),
+					netaddr.IPv4(4, 3, 2, 1),
+				},
+				IPPrefixes: []netaddr.IPPrefix{{
+					IP:   netaddr.IPv4(5, 5, 5, 5),
+					Bits: 16,
 				}},
 			},
 			configLines: []string{

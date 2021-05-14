@@ -7,15 +7,16 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
+	"inet.af/netaddr"
 )
 
 func Test_mapBased(t *testing.T) {
 	t.Parallel()
 
 	settings := Settings{
-		IPs: []net.IP{
-			{2, 2, 2, 2},
-			{3, 3, 3, 3},
+		IPs: []netaddr.IP{
+			netaddr.IPv4(2, 2, 2, 2),
+			netaddr.IPv4(3, 3, 3, 3),
 		},
 	}
 
@@ -60,9 +61,9 @@ func Test_mapBased_threadSafety(t *testing.T) {
 	t.Parallel()
 
 	settings := Settings{
-		IPs: []net.IP{
-			{2, 2, 2, 2},
-			{3, 3, 3, 3},
+		IPs: []netaddr.IP{
+			netaddr.IPv4(2, 2, 2, 2),
+			netaddr.IPv4(3, 3, 3, 3),
 		},
 		FqdnHostnames: []string{"github.com."},
 	}

@@ -1,19 +1,20 @@
 package blacklist
 
 import (
-	"net"
 	"strconv"
 	"strings"
+
+	"inet.af/netaddr"
 )
 
 type BuilderSettings struct {
-	BlockMalicious    bool
-	BlockAds          bool
-	BlockSurveillance bool
-	AllowedHosts      []string
-	AddBlockedHosts   []string
-	AddBlockedIPs     []net.IP
-	AddBlockedIPNets  []*net.IPNet
+	BlockMalicious       bool
+	BlockAds             bool
+	BlockSurveillance    bool
+	AllowedHosts         []string
+	AddBlockedHosts      []string
+	AddBlockedIPs        []netaddr.IP
+	AddBlockedIPPrefixes []netaddr.IPPrefix
 }
 
 func (s *BuilderSettings) String() string {
@@ -47,9 +48,9 @@ func (s *BuilderSettings) Lines(indent, subSection string) (lines []string) {
 			strconv.Itoa(len(s.AddBlockedIPs)))
 	}
 
-	if len(s.AddBlockedIPNets) > 0 {
+	if len(s.AddBlockedIPPrefixes) > 0 {
 		lines = append(lines, subSection+"Additional IP networks blocked: "+
-			strconv.Itoa(len(s.AddBlockedIPNets)))
+			strconv.Itoa(len(s.AddBlockedIPPrefixes)))
 	}
 
 	return lines

@@ -2,15 +2,16 @@ package blacklist
 
 import (
 	"context"
-	"net"
+
+	"inet.af/netaddr"
 )
 
 func (b *builder) All(ctx context.Context, settings BuilderSettings) (
-	blockedHostnames []string, blockedIPs []net.IP,
-	blockedIPNets []*net.IPNet, errs []error) {
+	blockedHostnames []string, blockedIPs []netaddr.IP,
+	blockedIPPrefixes []netaddr.IPPrefix, errs []error) {
 	chHostnames := make(chan []string)
-	chIPs := make(chan []net.IP)
-	chIPNets := make(chan []*net.IPNet)
+	chIPs := make(chan []netaddr.IP)
+	chIPPrefixes := make(chan []netaddr.IPPrefix)
 	chErrors := make(chan []error)
 
 	go func() {
@@ -22,22 +23,22 @@ func (b *builder) All(ctx context.Context, settings BuilderSettings) (
 	}()
 
 	go func() {
-		blockedIPs, blockedIPNets, errs := b.IPs(ctx,
+		blockedIPs, blockedIPPrefixes, errs := b.IPs(ctx,
 			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-			settings.AddBlockedIPs, settings.AddBlockedIPNets)
+			settings.AddBlockedIPs, settings.AddBlockedIPPrefixes)
 		chIPs <- blockedIPs
-		chIPNets <- blockedIPNets
+		chIPPrefixes <- blockedIPPrefixes
 		chErrors <- errs
 	}()
 
 	blockedHostnames = <-chHostnames
 	blockedIPs = <-chIPs
-	blockedIPNets = <-chIPNets
+	blockedIPPrefixes = <-chIPPrefixes
 
 	routineErrs := <-chErrors
 	errs = append(errs, routineErrs...)
 	routineErrs = <-chErrors
 	errs = append(errs, routineErrs...)
 
-	return blockedHostnames, blockedIPs, blockedIPNets, errs
+	return blockedHostnames, blockedIPs, blockedIPPrefixes, errs
 }

@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"inet.af/netaddr"
 )
 
 func Test_builder_IPs(t *testing.T) {
@@ -21,14 +21,14 @@ func Test_builder_IPs(t *testing.T) {
 		clientErr error
 	}
 	tests := map[string]struct {
-		malicious               blockParams
-		ads                     blockParams
-		surveillance            blockParams
-		additionalBlockedIPs    []net.IP
-		additionalBlockedIPNets []*net.IPNet
-		blockedIPs              []string // string format for easier comparison
-		blockedIPNets           []string // string format for easier comparison
-		errsString              []string // string format for easier comparison
+		malicious                   blockParams
+		ads                         blockParams
+		surveillance                blockParams
+		additionalBlockedIPs        []netaddr.IP
+		additionalBlockedIPPrefixes []netaddr.IPPrefix
+		blockedIPs                  []string // string format for easier comparison
+		blockedIPPrefixes           []string // string format for easier comparison
+		errsString                  []string // string format for easier comparison
 	}{
 		"nothing blocked": {},
 		"only malicious blocked": {
@@ -36,8 +36,8 @@ func Test_builder_IPs(t *testing.T) {
 				blocked: true,
 				content: []byte("1.2.3.4\n99.99.99.99/24"),
 			},
-			blockedIPs:    []string{"1.2.3.4"},
-			blockedIPNets: []string{"99.99.99.0/24"},
+			blockedIPs:        []string{"1.2.3.4"},
+			blockedIPPrefixes: []string{"99.99.99.99/24"},
 		},
 		"all blocked with some duplicates": {
 			malicious: blockParams{
@@ -52,8 +52,8 @@ func Test_builder_IPs(t *testing.T) {
 				blocked: true,
 				content: []byte("254.254.254.1\n1.2.3.4"),
 			},
-			blockedIPs:    []string{"1.2.3.4", "254.254.254.1"},
-			blockedIPNets: []string{"66.67.68.0/28"},
+			blockedIPs:        []string{"1.2.3.4", "254.254.254.1"},
+			blockedIPPrefixes: []string{"66.67.68.10/28"},
 		},
 		"all blocked with one errored": {
 			malicious: blockParams{
@@ -68,8 +68,8 @@ func Test_builder_IPs(t *testing.T) {
 				blocked:   true,
 				clientErr: fmt.Errorf("surveillance error"),
 			},
-			blockedIPs:    []string{"1.2.3.4", "254.254.254.1"},
-			blockedIPNets: []string{"66.67.68.0/28"},
+			blockedIPs:        []string{"1.2.3.4", "254.254.254.1"},
+			blockedIPPrefixes: []string{"66.67.68.10/28"},
 			errsString: []string{
 				`Get "https://raw.githubusercontent.com/qdm12/files/master/surveillance-ips.updated": surveillance error`,
 			},
@@ -83,13 +83,13 @@ func Test_builder_IPs(t *testing.T) {
 				blocked: true,
 				content: []byte("254.254.254.1"),
 			},
-			additionalBlockedIPs: []net.IP{{254, 254, 254, 1}},
-			additionalBlockedIPNets: []*net.IPNet{{
-				IP:   net.IP{55, 55, 55, 0},
-				Mask: net.IPv4Mask(255, 255, 255, 0),
+			additionalBlockedIPs: []netaddr.IP{netaddr.IPv4(254, 254, 254, 1)},
+			additionalBlockedIPPrefixes: []netaddr.IPPrefix{{
+				IP:   netaddr.IPv4(55, 55, 55, 0),
+				Bits: 24,
 			}},
-			blockedIPs:    []string{"1.2.3.4", "254.254.254.1"},
-			blockedIPNets: []string{"66.67.68.0/28", "55.55.55.0/24"},
+			blockedIPs:        []string{"1.2.3.4", "254.254.254.1"},
+			blockedIPPrefixes: []string{"66.67.68.10/28", "55.55.55.0/24"},
 		},
 	}
 	for name, tc := range tests {
@@ -153,12 +153,12 @@ func Test_builder_IPs(t *testing.T) {
 
 			builder := NewBuilder(client)
 
-			blockedIPs, blockedIPNets, errs := builder.IPs(ctx,
+			blockedIPs, blockedIPPrefixes, errs := builder.IPs(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
-				tc.additionalBlockedIPs, tc.additionalBlockedIPNets)
+				tc.additionalBlockedIPs, tc.additionalBlockedIPPrefixes)
 
 			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(blockedIPs))
-			assert.ElementsMatch(t, tc.blockedIPNets, convertIPNetsToString(blockedIPNets))
+			assert.ElementsMatch(t, tc.blockedIPPrefixes, convertIPPrefixesToString(blockedIPPrefixes))
 			assert.ElementsMatch(t, tc.errsString, convertErrorsToString(errs))
 		})
 	}

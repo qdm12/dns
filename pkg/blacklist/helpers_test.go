@@ -1,8 +1,10 @@
 package blacklist
 
-import "net"
+import (
+	"inet.af/netaddr"
+)
 
-func convertIPsToString(ips []net.IP) (ipStrings []string) {
+func convertIPsToString(ips []netaddr.IP) (ipStrings []string) {
 	ipStrings = make([]string, len(ips))
 	for i := range ips {
 		ipStrings[i] = ips[i].String()
@@ -10,12 +12,12 @@ func convertIPsToString(ips []net.IP) (ipStrings []string) {
 	return ipStrings
 }
 
-func convertIPNetsToString(ipNets []*net.IPNet) (ipNetStrings []string) {
-	ipNetStrings = make([]string, len(ipNets))
-	for i := range ipNets {
-		ipNetStrings[i] = ipNets[i].String()
+func convertIPPrefixesToString(ipPrefixes []netaddr.IPPrefix) (ipPrefixStrings []string) {
+	ipPrefixStrings = make([]string, len(ipPrefixes))
+	for i := range ipPrefixes {
+		ipPrefixStrings[i] = ipPrefixes[i].String()
 	}
-	return ipNetStrings
+	return ipPrefixStrings
 }
 
 func convertErrorsToString(errors []error) (errorStrings []string) {

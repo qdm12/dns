@@ -1,12 +1,12 @@
 package unbound
 
 import (
-	"net"
 	"strconv"
 	"strings"
 
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/provider"
+	"inet.af/netaddr"
 )
 
 const (
@@ -88,7 +88,7 @@ func (s *Settings) Lines() (lines []string) {
 }
 
 type AccessControlSettings struct {
-	Allowed []net.IPNet
+	Allowed []netaddr.IPPrefix
 }
 
 func (s *AccessControlSettings) Lines() (lines []string) {
