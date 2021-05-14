@@ -111,7 +111,7 @@ If you run an old Docker version or Kernel, you might want to run the container 
 | `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
 | `ALLOWED_HOSTNAMES` | | comma separated list of hostnames to leave unblocked |
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
-| `BLOCK_IPNETS` |  | comma separated list of IP networks (CIDR) to block from being returned to clients |
+| `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDR) to block from being returned to clients |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
 | `DOT_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over TLS |
 | `DOH_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over HTTPS |
