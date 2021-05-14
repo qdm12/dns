@@ -112,9 +112,9 @@ func getBlockedIPs(reader *reader) (ips []netaddr.IP, err error) {
 var ErrIPPrefixStringNotValid = errors.New("IP prefix string is not valid")
 
 // getBlockedIPPrefixes obtains a list of IP networks (CIDR notation) to block from
-// the comma separated list for the environment variable BLOCK_IPNETS.
+// the comma separated list for the environment variable BLOCK_CIDRS.
 func getBlockedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err error) {
-	values, err := reader.env.CSV("BLOCK_IPNETS")
+	values, err := reader.env.CSV("BLOCK_CIDRS")
 	if err != nil {
 		return nil, err
 	}
