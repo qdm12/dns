@@ -133,15 +133,22 @@ func getBlockedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err er
 
 func getPrivateIPPrefixes() (privateIPPrefixes []netaddr.IPPrefix, err error) {
 	privateCIDRs := []string{
+		// IPv4 private addresses
 		"127.0.0.1/8",
 		"10.0.0.0/8",
 		"172.16.0.0/12",
 		"192.168.0.0/16",
 		"169.254.0.0/16",
+		// IPv6 private addresses
 		"::1/128",
 		"fc00::/7",
 		"fe80::/10",
-		// "::ffff:0:0/96",  - TODO intepreted as 0.0.0.0/0
+		// Private IPv4 addresses wrapped in IPv6
+		"::ffff:7f00:1/104", // 127.0.0.1/8
+		"::ffff:a00:0/104",  // 10.0.0.0/8
+		"::ffff:ac10:0/108", // 172.16.0.0/12
+		"::ffff:c0a8:0/112", // 192.168.0.0/16
+		"::ffff:a9fe:0/112", // 169.254.0.0/16
 	}
 	privateIPPrefixes = make([]netaddr.IPPrefix, len(privateCIDRs))
 	for i := range privateCIDRs {
