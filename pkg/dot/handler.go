@@ -37,18 +37,14 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	if h.cache != nil {
 		if response := h.cache.Get(r); response != nil {
 			response.SetReply(r)
-			if err := w.WriteMsg(response); err != nil {
-				h.logger.Warn("cannot write DNS message back to client: " + err.Error())
-			}
+			_ = w.WriteMsg(response)
 			return
 		}
 	}
 
 	if h.blist.FilterRequest(r) {
 		response := new(dns.Msg).SetRcode(r, dns.RcodeRefused)
-		if err := w.WriteMsg(response); err != nil {
-			h.logger.Warn("cannot write DNS message back to client: " + err.Error())
-		}
+		_ = w.WriteMsg(response)
 		return
 	}
 
@@ -74,9 +70,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	if h.blist.FilterResponse(response) {
 		response := new(dns.Msg).SetRcode(r, dns.RcodeRefused)
-		if err := w.WriteMsg(response); err != nil {
-			h.logger.Warn("cannot write DNS message back to client: " + err.Error())
-		}
+		_ = w.WriteMsg(response)
 		return
 	}
 
@@ -85,7 +79,5 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	response.SetReply(r)
-	if err := w.WriteMsg(response); err != nil {
-		h.logger.Warn("cannot write DNS message back to client: " + err.Error())
-	}
+	_ = w.WriteMsg(response)
 }

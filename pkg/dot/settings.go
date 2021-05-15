@@ -7,12 +7,14 @@ import (
 
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/cache"
+	"github.com/qdm12/dns/pkg/middlewares/log"
 	"github.com/qdm12/dns/pkg/provider"
 )
 
 type ServerSettings struct {
 	Resolver  ResolverSettings
 	Port      uint16
+	Log       log.Settings
 	Cache     cache.Settings
 	Blacklist blacklist.Settings
 }
