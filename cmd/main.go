@@ -149,11 +149,7 @@ func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
 			timer.Reset(settings.UpdatePeriod)
 		}
 
-		serverSettings := dot.ServerSettings{
-			Resolver: settings.DoT.Resolver,
-			Port:     settings.DoT.Port,
-			Cache:    settings.DoT.Cache,
-		}
+		serverSettings := settings.DoT
 
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
