@@ -44,5 +44,10 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 
 	lines = append(lines, subSection+"Log level: "+s.LogLevel.String())
 
+	lines = append(lines, subSection+"Query log settings:")
+	for _, line := range s.DoT.Log.Lines(indent, subSection) {
+		lines = append(lines, indent+line)
+	}
+
 	return lines
 }

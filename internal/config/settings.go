@@ -47,6 +47,14 @@ func (settings *Settings) get(reader *reader) (err error) {
 		return err
 	}
 
+	// Log settings
+	logSettings, err := getLogSettings(reader.env)
+	if err != nil {
+		return err
+	}
+	settings.DoT.Log = logSettings
+	settings.DoH.Log = logSettings
+
 	// Cache settings
 	cacheSettings, err := getCacheSettings(reader)
 	if err != nil {

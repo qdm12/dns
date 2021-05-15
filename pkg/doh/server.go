@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/pkg/middlewares/log"
 	"github.com/qdm12/golibs/logging"
 )
 
@@ -29,11 +30,15 @@ func NewServer(ctx context.Context, logger logging.Logger,
 
 	settings.setDefaults()
 
+	handler := newDNSHandler(ctx, logger, settings)
+	logMiddleware := log.New(logger, settings.Log)
+	handler = logMiddleware(handler)
+
 	return &server{
 		dnsServer: dns.Server{
 			Addr:    ":" + strconv.Itoa(int(settings.Port)),
 			Net:     "udp",
-			Handler: newDNSHandler(ctx, logger, settings),
+			Handler: handler,
 		},
 		logger: logger,
 	}
