@@ -39,8 +39,13 @@ func (s *BuilderSettings) Lines(indent, subSection string) (lines []string) {
 	lines = append(lines, subSection+"Blocked categories: "+strings.Join(blockedCategories, ", "))
 
 	if len(s.AllowedHosts) > 0 {
-		lines = append(lines, subSection+"Additional hostnames blocked: "+
+		lines = append(lines, subSection+"Hostnames unblocked: "+
 			strconv.Itoa(len(s.AllowedHosts)))
+	}
+
+	if len(s.AddBlockedHosts) > 0 {
+		lines = append(lines, subSection+"Additional hostnames blocked: "+
+			strconv.Itoa(len(s.AddBlockedHosts)))
 	}
 
 	if len(s.AddBlockedIPs) > 0 {
