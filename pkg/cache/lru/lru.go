@@ -58,12 +58,12 @@ func (l *LRU) Add(request, response *dns.Msg) {
 		response: responseCopy,
 	}
 
-	listElement := l.linkedList.PushFront(entry)
-	l.kv[key] = listElement
-
-	if l.maxEntries > 0 && l.linkedList.Len() > l.maxEntries {
+	if l.maxEntries > 0 && l.linkedList.Len() == l.maxEntries {
 		l.removeOldest()
 	}
+
+	listElement := l.linkedList.PushFront(entry)
+	l.kv[key] = listElement
 }
 
 func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
