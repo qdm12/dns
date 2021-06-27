@@ -132,7 +132,7 @@ func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
 	logger logging.Logger, client *http.Client, crashed chan<- error,
 ) {
 	defer wg.Done()
-	defer logger.Info("unbound loop exited")
+	defer logger.Info("run loop exited")
 	timer := time.NewTimer(time.Hour)
 
 	firstRun := true
