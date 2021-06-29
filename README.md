@@ -78,6 +78,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 1. See the [Connect clients to it](#connect-clients-to-it) section, you can also refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
 
+If you run an old Docker version or Kernel, you might want to run the container as root with `--user="0"` (see [this issue](https://github.com/qdm12/dns/issues/79) for context).
+
 ## Docker tags 🐳
 
 | Docker image | Github release |
