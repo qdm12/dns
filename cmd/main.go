@@ -121,6 +121,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 	select {
 	case <-ctx.Done():
+		<-crashed
 	case err = <-crashed:
 		cancel()
 	}
@@ -143,7 +144,7 @@ func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
 		waitError    chan error
 	)
 
-	for ctx.Err() == nil {
+	for {
 		timer.Stop()
 		if settings.UpdatePeriod > 0 {
 			timer.Reset(settings.UpdatePeriod)
@@ -165,9 +166,7 @@ func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
 			serverSettings.Blacklist.IPs = blockedIPs
 			serverSettings.Blacklist.IPPrefixes = blockedIPPrefixes
 			serverSettings.Blacklist.BlockHostnames(blockedHostnames)
-		}
 
-		if !firstRun {
 			serverCancel()
 			<-waitError
 			close(waitError)
@@ -204,19 +203,26 @@ func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
 		case <-timer.C:
 			logger.Info("planned periodic restart of DNS server")
 		case <-ctx.Done():
+			logger.Warn("context canceled: exiting DNS server run loop")
 			if !timer.Stop() {
 				<-timer.C
 			}
-			logger.Warn("context canceled: exiting DNS server run loop")
+			if err := <-waitError; err != nil {
+				logger.Error(err.Error())
+			}
+			close(waitError)
+			serverCancel()
+			crashed <- nil
+			return
+
 		case waitErr := <-waitError:
 			close(waitError)
 			if !timer.Stop() {
 				<-timer.C
 			}
-			crashed <- waitErr
 			serverCancel()
+			crashed <- waitErr
 			return
 		}
 	}
-	serverCancel() // for the linter
 }
