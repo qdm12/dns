@@ -20,13 +20,13 @@ func main() {
 	select {
 	case <-ctx.Done():
 		logger.Warn("\nCaught an OS signal, terminating...")
-	case <-stopped:
-		logger.Warn("DoH server crashed")
+		if err := <-stopped; err != nil {
+			logger.Error(err.Error())
+		}
+	case err := <-stopped:
+		logger.Warn("DoH server crashed: " + err.Error())
 		stop() // stop custom handling of OS signals
 		cancel()
-	}
-	if err := <-stopped; err != nil {
-		logger.Error(err.Error())
 	}
 }
 
