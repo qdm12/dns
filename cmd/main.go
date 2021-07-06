@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"sync"
 	"syscall"
 	"time"
 
@@ -22,6 +21,7 @@ import (
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/golibs/logging"
+	"github.com/qdm12/goshutdown"
 )
 
 var (
@@ -87,9 +87,6 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	}
 	fmt.Println(splash.Splash(buildInfo))
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
 
@@ -102,38 +99,39 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	})
 	logger.Info("Settings summary:\n" + settings.String())
 
-	wg := &sync.WaitGroup{}
-	defer wg.Wait()
-	crashed := make(chan error)
-
 	const healthServerAddr = "127.0.0.1:9999"
 	healthServer := health.NewServer(healthServerAddr,
 		logger.NewChild(logging.Settings{Prefix: "healthcheck server: "}),
 		health.IsHealthy)
-	wg.Add(1)
-	go healthServer.Run(ctx, wg)
+	healthServerHandler, healthServerCtx, healthServerDone := goshutdown.NewGoRoutineHandler(
+		"health server", goshutdown.GoRoutineSettings{})
+	go healthServer.Run(healthServerCtx, healthServerDone)
 
 	localIP := net.IP{127, 0, 0, 1}
 	logger.Info("using DNS address " + localIP.String() + " internally")
 	nameserver.UseDNSInternally(localIP) // use the DoT/DoH server
-	wg.Add(1)
-	go runLoop(ctx, wg, settings, logger, client, crashed)
+
+	dnsServerHandler, dnsServerCtx, dnsServerDone := goshutdown.NewGoRoutineHandler(
+		"dns server", goshutdown.GoRoutineSettings{})
+	crashed := make(chan error)
+	go runLoop(dnsServerCtx, dnsServerDone, settings, logger, client, crashed)
+
+	group := goshutdown.NewGroupHandler("", goshutdown.GroupSettings{})
+	group.Add(healthServerHandler, dnsServerHandler)
 
 	select {
 	case <-ctx.Done():
-		<-crashed
-	case err = <-crashed:
-		cancel()
+	case err := <-crashed:
+		logger.Error(err)
 	}
-	wg.Wait()
-	return err
+
+	return group.Shutdown(context.Background())
 }
 
-func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
+func runLoop(ctx context.Context, dnsServerDone chan<- struct{}, settings config.Settings,
 	logger logging.Logger, client *http.Client, crashed chan<- error,
 ) {
-	defer wg.Done()
-	defer logger.Info("run loop exited")
+	defer close(dnsServerDone)
 	timer := time.NewTimer(time.Hour)
 
 	firstRun := true
@@ -203,7 +201,7 @@ func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
 		case <-timer.C:
 			logger.Info("planned periodic restart of DNS server")
 		case <-ctx.Done():
-			logger.Warn("context canceled: exiting DNS server run loop")
+			logger.Warn("exiting DNS server run loop (" + ctx.Err().Error() + ")")
 			if !timer.Stop() {
 				<-timer.C
 			}
@@ -212,7 +210,6 @@ func runLoop(ctx context.Context, wg *sync.WaitGroup, settings config.Settings,
 			}
 			close(waitError)
 			serverCancel()
-			crashed <- nil
 			return
 
 		case waitErr := <-waitError:
