@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var ErrDNSFailure = errors.New("DNS is not working")
+var ErrDNSMalfunction = errors.New("DNS is not working")
 
 func WaitForDNS(ctx context.Context, resolver *net.Resolver) (err error) {
 	const maxTries = 10
@@ -43,5 +43,5 @@ func WaitForDNS(ctx context.Context, resolver *net.Resolver) (err error) {
 			return ctx.Err()
 		}
 	}
-	return fmt.Errorf("%w: after %d tries: %s", ErrDNSFailure, maxTries, err)
+	return fmt.Errorf("%w: after %d tries: %s", ErrDNSMalfunction, maxTries, err)
 }
