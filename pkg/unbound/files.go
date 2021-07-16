@@ -14,9 +14,5 @@ func (c *configurator) createEmptyIncludeConf() error {
 		return err
 	}
 
-	if err := file.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return file.Close()
 }

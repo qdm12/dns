@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/qdm12/dns/pkg/blacklist"
@@ -43,6 +44,8 @@ func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, e
 	return settings, nil
 }
 
+var errAllowedHostnameInvalid = errors.New("allowed hostname is invalid")
+
 // getAllowedHostnames obtains a list of hostnames to unblock from block lists
 // from the comma separated list for the environment variable UNBLOCK.
 func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
@@ -52,11 +55,13 @@ func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
 	}
 	for _, hostname := range hostnames {
 		if !reader.verifier.MatchHostname(hostname) {
-			return nil, fmt.Errorf("unblocked hostname %q does not seem valid", hostname)
+			return nil, fmt.Errorf("%w: %s", errAllowedHostnameInvalid, hostname)
 		}
 	}
 	return hostnames, nil
 }
+
+var errBlockedHostnameInvalid = errors.New("blocked hostname is invalid")
 
 // getBlockedHostnames obtains a list of hostnames to block from the comma
 // separated list for the environment variable BLOCK_HOSTNAMES.
@@ -67,7 +72,7 @@ func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
 	}
 	for _, hostname := range hostnames {
 		if !reader.verifier.MatchHostname(hostname) {
-			return nil, fmt.Errorf("blocked hostname %q does not seem valid", hostname)
+			return nil, fmt.Errorf("%w: %s", errBlockedHostnameInvalid, hostname)
 		}
 	}
 	return hostnames, nil
@@ -83,10 +88,12 @@ func getBlockedIPs(reader *reader) (ips []netaddr.IP,
 	}
 	ips, ipPrefixes, err = convertStringsToIPs(values)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid blocked IP string: %s", err)
+		return nil, nil, fmt.Errorf("%w: %s", ErrInvalidIPString, err)
 	}
 	return ips, ipPrefixes, nil
 }
+
+var ErrInvalidIPString = errors.New("invalid IP string")
 
 func convertStringsToIPs(values []string) (ips []netaddr.IP,
 	ipPrefixes []netaddr.IPPrefix, err error) {
@@ -103,7 +110,7 @@ func convertStringsToIPs(values []string) (ips []netaddr.IP,
 			ipPrefixes = append(ipPrefixes, ipPrefix)
 			continue
 		}
-		return nil, nil, fmt.Errorf("%s", value)
+		return nil, nil, fmt.Errorf("%w: %s", ErrInvalidIPString, value)
 	}
 	return ips, ipPrefixes, nil
 }

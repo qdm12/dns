@@ -16,11 +16,7 @@ func (c *configurator) SetupFiles(ctx context.Context) error {
 		return err
 	}
 
-	if err := c.createEmptyIncludeConf(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.createEmptyIncludeConf()
 }
 
 func (c *configurator) downloadRootHints(ctx context.Context) error {
@@ -40,11 +36,7 @@ func (c *configurator) downloadRootHints(ctx context.Context) error {
 		return err
 	}
 
-	if err := file.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return file.Close()
 }
 
 func (c *configurator) downloadRootKeys(ctx context.Context) error {
@@ -68,9 +60,5 @@ func (c *configurator) downloadRootKeys(ctx context.Context) error {
 		return err
 	}
 
-	if err := file.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return file.Close()
 }

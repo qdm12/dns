@@ -10,21 +10,17 @@ issues:
       linters:
         - dupl
         - maligned
+        - goerr113
     - path: main\.go
       text: File is not `goimports`-ed
       linters:
         - goimports
-    - path: cmd/
-      text: buildDate is a global variable
-      linters:
-        - gochecknoglobals
-    - path: cmd/
-      text: commit is a global variable
-      linters:
-        - gochecknoglobals
     - path: pkg/provider/.*\.go
       linters:
         - dupl
+    - text: "mnd: Magic number: 0644*"
+      linters:
+        - gomnd
 
 linters:
   disable-all: true
@@ -45,29 +41,32 @@ linters:
     - gocritic
     - gocyclo
     - godot
+    - goerr113
     - goheader
     - goimports
-    - golint
     - gomnd
     - goprintffuncname
     - gosec
     - gosimple
     - govet
+    - importas
     - ineffassign
-    - interfacer
     - lll
-    - maligned
     - misspell
     - nakedret
     - nestif
+    - nilerr
     - noctx
     - nolintlint
     - prealloc
+    - predeclared
+    - revive
     - rowserrcheck
-    - scopelint
     - sqlclosecheck
     - staticcheck
     - structcheck
+    - thelper
+    - tparallel
     - typecheck
     - unconvert
     - unparam

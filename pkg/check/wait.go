@@ -2,10 +2,13 @@ package check
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"time"
 )
+
+var ErrDNSFailure = errors.New("DNS is not working")
 
 func WaitForDNS(ctx context.Context, resolver *net.Resolver) (err error) {
 	const maxTries = 10
@@ -40,5 +43,5 @@ func WaitForDNS(ctx context.Context, resolver *net.Resolver) (err error) {
 			return ctx.Err()
 		}
 	}
-	return fmt.Errorf("DNS is not working after %d tries: %s", maxTries, err)
+	return fmt.Errorf("%w: after %d tries: %s", ErrDNSFailure, maxTries, err)
 }

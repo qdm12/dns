@@ -26,8 +26,8 @@ import (
 
 var (
 	version   string
-	buildDate string
-	commit    string
+	buildDate string //nolint:gochecknoglobals
+	commit    string //nolint:gochecknoglobals
 )
 
 func main() {
@@ -85,10 +85,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 		// built-in healthcheck, in an ephemeral fashion to query the
 		// long running instance of the program about its status
 		client := health.NewClient()
-		if err := client.Query(ctx); err != nil {
-			return err
-		}
-		return nil
+		return client.Query(ctx)
 	}
 	fmt.Println(splash.Splash(buildInfo))
 
@@ -105,10 +102,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	dnsConf := unbound.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundEtcDir, unboundPath, cacertsPath)
 
 	if len(args) > 1 && args[1] == "build" {
-		if err := dnsConf.SetupFiles(ctx); err != nil {
-			return err
-		}
-		return nil
+		return dnsConf.SetupFiles(ctx)
 	}
 
 	version, err := dnsConf.Version(ctx)

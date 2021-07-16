@@ -1,10 +1,13 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"inet.af/netaddr"
 )
+
+var errPrivateIPInvalid = errors.New("invalid private IP address string")
 
 func getPrivateAddresses(reader *reader) (privateIPs []netaddr.IP,
 	privateIPPrefixes []netaddr.IPPrefix, err error) {
@@ -14,7 +17,7 @@ func getPrivateAddresses(reader *reader) (privateIPs []netaddr.IP,
 	}
 	privateIPs, privateIPPrefixes, err = convertStringsToIPs(values)
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid private IP string: %s", err)
+		return nil, nil, fmt.Errorf("%w: %s", errPrivateIPInvalid, err)
 	}
 	return privateIPs, privateIPPrefixes, nil
 }

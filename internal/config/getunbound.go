@@ -28,19 +28,19 @@ func getUnboundSettings(reader *reader) (settings unbound.Settings, err error) {
 		return settings, err
 	}
 
-	verbosityDetails, err := reader.env.IntRange("VERBOSITY", 0, 5, params.Default("1"))
+	verbosityDetails, err := reader.env.IntRange("VERBOSITY", 0, 5, params.Default("1")) //nolint:gomnd
 	if err != nil {
 		return settings, err
 	}
 	settings.VerbosityLevel = uint8(verbosityDetails)
 
-	verbosityDetailsLevel, err := reader.env.IntRange("VERBOSITY_DETAILS", 0, 4, params.Default("0"))
+	verbosityDetailsLevel, err := reader.env.IntRange("VERBOSITY_DETAILS", 0, 4, params.Default("0")) //nolint:gomnd
 	if err != nil {
 		return settings, err
 	}
 	settings.VerbosityDetailsLevel = uint8(verbosityDetailsLevel)
 
-	validationLogLevel, err := reader.env.IntRange("VALIDATION_LOGLEVEL", 0, 2, params.Default("0"))
+	validationLogLevel, err := reader.env.IntRange("VALIDATION_LOGLEVEL", 0, 2, params.Default("0")) //nolint:gomnd
 	if err != nil {
 		return settings, err
 	}

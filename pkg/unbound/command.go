@@ -2,6 +2,7 @@ package unbound
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"path/filepath"
@@ -23,6 +24,8 @@ func (c *configurator) Start(ctx context.Context, verbosityDetailsLevel uint8) (
 	return c.commander.Start(cmd)
 }
 
+var ErrVersionNotFound = errors.New("unbound version not found")
+
 func (c *configurator) Version(ctx context.Context) (version string, err error) {
 	cmd := exec.CommandContext(ctx, c.unboundPath, "-V") //nolint:gosec
 
@@ -41,7 +44,7 @@ func (c *configurator) Version(ctx context.Context) (version string, err error) 
 		}
 	}
 	if version == "" {
-		return "", fmt.Errorf("unbound version was not found in %q", output)
+		return "", fmt.Errorf("%w: %s", ErrVersionNotFound, output)
 	}
 	return version, nil
 }

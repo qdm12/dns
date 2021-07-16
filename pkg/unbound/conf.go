@@ -27,11 +27,7 @@ func (c *configurator) MakeUnboundConf(settings Settings) (err error) {
 		return err
 	}
 
-	if err := file.Close(); err != nil {
-		return err
-	}
-
-	return nil
+	return file.Close()
 }
 
 // generateUnboundConf generates an Unbound configuration from the user provided settings.
@@ -122,7 +118,8 @@ func generateUnboundConf(settings Settings, blacklistLines []string,
 
 	for _, provider := range settings.Providers {
 		dotServer := provider.DoT()
-		ips := append(dotServer.IPv4, dotServer.IPv6...)
+		ips := dotServer.IPv4
+		ips = append(ips, dotServer.IPv6...)
 		for _, IP := range ips {
 			forwardZoneLines = append(forwardZoneLines,
 				fmt.Sprintf("forward-addr: %s@853#%s", IP.String(), dotServer.Name))

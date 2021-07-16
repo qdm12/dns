@@ -58,7 +58,7 @@ func Test_Version(t *testing.T) {
 		err       error
 	}{
 		"no data": {
-			err: fmt.Errorf(`unbound version was not found in ""`),
+			err: fmt.Errorf(`unbound version not found: `),
 		},
 		"2 lines with version": {
 			runOutput: "Version  \nVersion 1.0-a hello\n",
