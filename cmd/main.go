@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/qdm12/dns/internal/config"
 	"github.com/qdm12/dns/internal/health"
