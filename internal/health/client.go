@@ -28,7 +28,7 @@ func NewClient() Client {
 	}
 }
 
-var ErrUnhealthy = errors.New("unhealthy")
+var ErrUnhealthy = errors.New("program is unhealthy")
 
 // Query sends an HTTP request to the other instance of
 // the program, and to its internal healthcheck server.

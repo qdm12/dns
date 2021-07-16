@@ -29,7 +29,7 @@ func Test_New(t *testing.T) {
 	next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {})
 	handler := middleware(next)
 
-	var writer dns.ResponseWriter = nil // nil as next does not use it
+	var writer dns.ResponseWriter // nil as next does not use it
 	handler.ServeDNS(writer, request)
 }
 
