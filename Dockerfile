@@ -58,11 +58,10 @@ RUN apk --update --no-cache add libcap && \
     apk del libcap
 
 FROM --platform=${BUILDPLATFORM} alpine:${ALPINE_VERSION} AS alpine
-RUN apk --update add ca-certificates tzdata
+RUN apk --update add ca-certificates
 
 FROM scratch
 COPY --from=alpine --chown=1000 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=alpine --chown=1000 /usr/share/zoneinfo /usr/share/zoneinfo
 EXPOSE 53/udp
 ENTRYPOINT ["/entrypoint"]
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD ["/entrypoint", "healthcheck"]
