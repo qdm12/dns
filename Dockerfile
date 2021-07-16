@@ -57,11 +57,7 @@ RUN apk --update --no-cache add libcap && \
     setcap 'cap_net_bind_service=+ep' entrypoint && \
     apk del libcap
 
-FROM --platform=${BUILDPLATFORM} alpine:${ALPINE_VERSION} AS alpine
-RUN apk --update add ca-certificates
-
 FROM scratch
-COPY --from=alpine --chown=1000 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 EXPOSE 53/udp
 ENTRYPOINT ["/entrypoint"]
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD ["/entrypoint", "healthcheck"]
