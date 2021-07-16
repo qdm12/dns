@@ -63,8 +63,9 @@ github.com/phayes/permbits v0.0.0-20190612203442-39d7c581d2ee/go.mod h1:3uODdxMg
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/qdm12/golibs v0.0.0-20210603202746-e5494e9c2ebb h1:5WkOssTWl6Tv2H7VFb2jwB08A7BxxNCebkkpvz1PzrY=
 github.com/qdm12/golibs v0.0.0-20210603202746-e5494e9c2ebb/go.mod h1:15RBzkun0i8XB7ADIoLJWp9ITRgsz3LroEI2FiOXLRg=
+github.com/qdm12/golibs v0.0.0-20210716185557-66793f4ddd80 h1:rvH2MSs8RXEfuXivzoYCim6tRNPzdqjBzqJq8w4Tc0k=
+github.com/qdm12/golibs v0.0.0-20210716185557-66793f4ddd80/go.mod h1:15RBzkun0i8XB7ADIoLJWp9ITRgsz3LroEI2FiOXLRg=
 github.com/qdm12/updated v0.0.0-20210603204757-205acfe6937e h1:4q+uFLawkaQRq3yARYLsjJPZd2wYwxn4g6G/5v0xW1g=
 github.com/qdm12/updated v0.0.0-20210603204757-205acfe6937e/go.mod h1:UvJRGkZ9XL3/D7e7JiTTVLm1F3Cymd3/gFpD6frEpBo=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=

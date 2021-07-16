@@ -3,9 +3,12 @@ package unbound
 import (
 	"context"
 	"fmt"
+	"os/exec"
+	"syscall"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/command/mock_command"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,9 +22,10 @@ func Test_Start(t *testing.T) {
 
 	ctx := context.Background()
 	commander := mock_command.NewMockCommander(mockCtrl)
-	commander.EXPECT().
-		Start(ctx, unboundPath, "-d", "-c", "/unbound/unbound.conf", "-vv").
-		DoAndReturn(func(ctx context.Context, name string, arg ...string) (
+	cmd := exec.CommandContext(ctx, unboundPath, "-d", "-c", "/unbound/unbound.conf", "-vv")
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	commander.EXPECT().Start(cmd).
+		DoAndReturn(func(cmd command.Cmd) (
 			stdoutLines, stderrLines chan string, waitError chan error, err error) {
 			stdoutLines = make(chan string)
 			stderrLines = make(chan string)
@@ -75,8 +79,10 @@ func Test_Version(t *testing.T) {
 
 			const unboundEtcDir = "/unbound"
 			const unboundPath = "/usr/sbin/unbound"
-			commander.EXPECT().Run(ctx, unboundPath, "-V").
-				Return(tc.runOutput, tc.runErr).Times(1)
+
+			cmd := exec.CommandContext(ctx, unboundPath, "-V")
+
+			commander.EXPECT().Run(cmd).Return(tc.runOutput, tc.runErr)
 			c := &configurator{
 				commander:     commander,
 				unboundEtcDir: unboundEtcDir,

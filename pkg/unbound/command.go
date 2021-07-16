@@ -3,8 +3,10 @@ package unbound
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 func (c *configurator) Start(ctx context.Context, verbosityDetailsLevel uint8) (
@@ -14,11 +16,17 @@ func (c *configurator) Start(ctx context.Context, verbosityDetailsLevel uint8) (
 	if verbosityDetailsLevel > 0 {
 		args = append(args, "-"+strings.Repeat("v", int(verbosityDetailsLevel)))
 	}
-	return c.commander.Start(ctx, c.unboundPath, args...)
+
+	cmd := exec.CommandContext(ctx, c.unboundPath, args...) //nolint:gosec
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	return c.commander.Start(cmd)
 }
 
 func (c *configurator) Version(ctx context.Context) (version string, err error) {
-	output, err := c.commander.Run(ctx, c.unboundPath, "-V")
+	cmd := exec.CommandContext(ctx, c.unboundPath, "-V") //nolint:gosec
+
+	output, err := c.commander.Run(cmd)
 	if err != nil {
 		return "", fmt.Errorf("unbound version: %w", err)
 	}
