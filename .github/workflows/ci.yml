@@ -98,7 +98,3 @@ jobs:
           tags: |
             qmcgaw/dns:${{ steps.vars.outputs.version }}
           push: true
-      # - if: github.event.ref == 'refs/heads/master'
-      #   name: Microbadger hook
-      #   run: curl -X POST https://hooks.microbadger.com/images/qmcgaw/dns/TODO
-      #   continue-on-error: true
