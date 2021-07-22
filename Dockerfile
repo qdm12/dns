@@ -31,7 +31,7 @@ FROM --platform=${BUILDPLATFORM} base AS lint
 COPY .golangci.yml ./
 RUN golangci-lint run --timeout=10m
 
-FROM --platform=$BUILDPLATFORM base AS tidy
+FROM --platform=${BUILDPLATFORM} base AS tidy
 RUN git init && \
     git config user.email ci@localhost && \
     git config user.name ci && \
@@ -84,12 +84,12 @@ ENV \
     CHECK_DNS=on \
     UPDATE_PERIOD=24h
 ARG VERSION=unknown
-ARG BUILD_DATE="an unknown date"
+ARG CREATED="an unknown date"
 ARG COMMIT=unknown
 LABEL \
     org.opencontainers.image.authors="quentin.mcgaw@gmail.com" \
     org.opencontainers.image.version=$VERSION \
-    org.opencontainers.image.created=$BUILD_DATE \
+    org.opencontainers.image.created=$CREATED \
     org.opencontainers.image.revision=$COMMIT \
     org.opencontainers.image.url="https://github.com/qdm12/dns" \
     org.opencontainers.image.documentation="https://github.com/qdm12/dns/blob/master/README.md" \
