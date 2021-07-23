@@ -19,7 +19,7 @@ func UseDNSInternally(ip net.IP) { //nolint:interfacer
 
 // UseDNSSystemWide changes the nameserver to use for DNS system wide.
 // If resolvConfPath is empty, it defaults to /etc/resolv.conf.
-func UseDNSSystemWide(resolvConfPath string, ip net.IP, keepNameserver bool) error { //nolint:interfacer
+func UseDNSSystemWide(resolvConfPath string, ip net.IP, keepNameserver bool) error {
 	const defaultResolvConfPath = "/etc/resolv.conf"
 	if resolvConfPath == "" {
 		resolvConfPath = defaultResolvConfPath
