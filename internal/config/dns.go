@@ -13,7 +13,7 @@ func getPrivateAddresses(reader *reader) (privateIPs []netaddr.IP,
 	privateIPPrefixes []netaddr.IPPrefix, err error) {
 	values, err := reader.env.CSV("PRIVATE_ADDRESS")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("environment variable PRIVATE_ADDRESS: %w", err)
 	}
 	privateIPs, privateIPPrefixes, err = convertStringsToIPs(values)
 	if err != nil {

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/qdm12/dns/pkg/blacklist"
@@ -29,11 +30,11 @@ func (settings *Settings) get(reader *reader) (err error) {
 	settings.CheckDNS, err = reader.env.OnOff("CHECK_DNS", params.Default("on"),
 		params.RetroKeys([]string{"CHECK_UNBOUND"}, reader.onRetroActive))
 	if err != nil {
-		return err
+		return fmt.Errorf("environment variable CHECK_DNS: %w", err)
 	}
 	settings.UpdatePeriod, err = reader.env.Duration("UPDATE_PERIOD", params.Default("24h"))
 	if err != nil {
-		return err
+		return fmt.Errorf("environment variable UPDATE_PERIOD: %w", err)
 	}
 
 	return nil

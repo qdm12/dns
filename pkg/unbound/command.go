@@ -21,7 +21,7 @@ func (c *configurator) Start(ctx context.Context, verbosityDetailsLevel uint8) (
 	cmd := exec.CommandContext(ctx, c.unboundPath, args...) //nolint:gosec
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
-	return c.commander.Start(cmd)
+	return c.cmder.Start(cmd)
 }
 
 var ErrVersionNotFound = errors.New("unbound version not found")
@@ -29,7 +29,7 @@ var ErrVersionNotFound = errors.New("unbound version not found")
 func (c *configurator) Version(ctx context.Context) (version string, err error) {
 	cmd := exec.CommandContext(ctx, c.unboundPath, "-V") //nolint:gosec
 
-	output, err := c.commander.Run(cmd)
+	output, err := c.cmder.Run(cmd)
 	if err != nil {
 		return "", fmt.Errorf("unbound version: %w", err)
 	}

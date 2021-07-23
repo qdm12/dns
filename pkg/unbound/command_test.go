@@ -21,11 +21,11 @@ func Test_Start(t *testing.T) {
 	const unboundPath = "/usr/sbin/unbound"
 
 	ctx := context.Background()
-	commander := mock_command.NewMockCommander(mockCtrl)
+	cmder := mock_command.NewMockRunStarter(mockCtrl)
 	cmd := exec.CommandContext(ctx, unboundPath, "-d", "-c", "/unbound/unbound.conf", "-vv")
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	commander.EXPECT().Start(cmd).
-		DoAndReturn(func(cmd command.Cmd) (
+	cmder.EXPECT().Start(cmd).
+		DoAndReturn(func(cmd command.ExecCmd) (
 			stdoutLines, stderrLines chan string, waitError chan error, err error) {
 			stdoutLines = make(chan string)
 			stderrLines = make(chan string)
@@ -35,7 +35,7 @@ func Test_Start(t *testing.T) {
 		})
 
 	c := &configurator{
-		commander:     commander,
+		cmder:         cmder,
 		unboundEtcDir: unboundEtcDir,
 		unboundPath:   unboundPath,
 	}
@@ -74,7 +74,7 @@ func Test_Version(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			mockCtrl := gomock.NewController(t)
-			commander := mock_command.NewMockCommander(mockCtrl)
+			cmder := mock_command.NewMockRunStarter(mockCtrl)
 			ctx := context.Background()
 
 			const unboundEtcDir = "/unbound"
@@ -82,9 +82,9 @@ func Test_Version(t *testing.T) {
 
 			cmd := exec.CommandContext(ctx, unboundPath, "-V")
 
-			commander.EXPECT().Run(cmd).Return(tc.runOutput, tc.runErr)
+			cmder.EXPECT().Run(cmd).Return(tc.runOutput, tc.runErr)
 			c := &configurator{
-				commander:     commander,
+				cmder:         cmder,
 				unboundEtcDir: unboundEtcDir,
 				unboundPath:   unboundPath,
 			}

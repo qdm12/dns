@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/qdm12/dns/pkg/provider"
@@ -13,7 +14,7 @@ func getProviders(reader *reader) (providers []provider.Provider, err error) {
 	words, err := reader.env.CSV("PROVIDERS", params.Default("cloudflare"),
 		params.RetroKeys([]string{"PROVIDER"}, reader.onRetroActive))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("environment variable PROVIDERS: %w", err)
 	}
 
 	for _, word := range words {
@@ -28,7 +29,7 @@ func getProviders(reader *reader) (providers []provider.Provider, err error) {
 
 		provider, err := provider.Parse(word)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("environment variable PROVIDERS: %w", err)
 		}
 
 		providers = append(providers, provider)

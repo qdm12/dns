@@ -17,17 +17,18 @@ type Configurator interface {
 }
 
 type configurator struct {
-	commander     command.Commander
+	cmder         command.RunStarter
 	dnscrypto     dnscrypto.DNSCrypto
 	unboundEtcDir string
 	unboundPath   string
 	cacertsPath   string
 }
 
-func NewConfigurator(logger logging.Logger, dnscrypto dnscrypto.DNSCrypto,
+func NewConfigurator(logger logging.Logger,
+	cmder command.RunStarter, dnscrypto dnscrypto.DNSCrypto,
 	unboundEtcDir, unboundPath, cacertsPath string) Configurator {
 	return &configurator{
-		commander:     command.NewCommander(),
+		cmder:         cmder,
 		dnscrypto:     dnscrypto,
 		unboundEtcDir: unboundEtcDir,
 		unboundPath:   unboundPath,

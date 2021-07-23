@@ -12,16 +12,16 @@ import (
 func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, err error) {
 	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
 	if err != nil {
-		return settings, err
+		return settings, fmt.Errorf("environment variable BLOCK_MALICIOUS: %w", err)
 	}
 	settings.BlockSurveillance, err = reader.env.OnOff("BLOCK_SURVEILLANCE", params.Default("off"),
 		params.RetroKeys([]string{"BLOCK_NSA"}, reader.onRetroActive))
 	if err != nil {
-		return settings, err
+		return settings, fmt.Errorf("environment variable BLOCK_SURVEILLANCE: %w", err)
 	}
 	settings.BlockAds, err = reader.env.OnOff("BLOCK_ADS", params.Default("off"))
 	if err != nil {
-		return settings, err
+		return settings, fmt.Errorf("environment variable BLOCK_SURVEILLANCE: %w", err)
 	}
 	settings.AllowedHosts, err = getAllowedHostnames(reader)
 	if err != nil {
@@ -51,7 +51,7 @@ var errAllowedHostnameInvalid = errors.New("allowed hostname is invalid")
 func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
 	hostnames, err = reader.env.CSV("UNBLOCK")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("environment variable UNBLOCK: %w", err)
 	}
 	for _, hostname := range hostnames {
 		if !reader.verifier.MatchHostname(hostname) {
@@ -68,7 +68,7 @@ var errBlockedHostnameInvalid = errors.New("blocked hostname is invalid")
 func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
 	hostnames, err = reader.env.CSV("BLOCK_HOSTNAMES")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("environment variable BLOCK_HOSTNAMES: %w", err)
 	}
 	for _, hostname := range hostnames {
 		if !reader.verifier.MatchHostname(hostname) {
@@ -84,11 +84,11 @@ func getBlockedIPs(reader *reader) (ips []netaddr.IP,
 	ipPrefixes []netaddr.IPPrefix, err error) {
 	values, err := reader.env.CSV("BLOCK_IPS")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("environment variable BLOCK_IPS: %w", err)
 	}
 	ips, ipPrefixes, err = convertStringsToIPs(values)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%w: %s", ErrInvalidIPString, err)
+		return nil, nil, fmt.Errorf("environment variable BLOCK_IPS: %w: %s", ErrInvalidIPString, err)
 	}
 	return ips, ipPrefixes, nil
 }

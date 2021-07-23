@@ -26,13 +26,13 @@ func main() {
 		cancel()
 	}
 	if err := <-stopped; err != nil {
-		logger.Error(err)
+		logger.Error(err.Error())
 	}
 }
 
 type Logger struct{}
 
-func (l *Logger) Debug(args ...interface{}) { log.Println(args...) }
-func (l *Logger) Info(args ...interface{})  { log.Println(args...) }
-func (l *Logger) Warn(args ...interface{})  { log.Println(args...) }
-func (l *Logger) Error(args ...interface{}) { log.Println(args...) }
+func (l *Logger) Debug(s string) { log.Println(s) }
+func (l *Logger) Info(s string)  { log.Println(s) }
+func (l *Logger) Warn(s string)  { log.Println(s) }
+func (l *Logger) Error(s string) { log.Println(s) }
