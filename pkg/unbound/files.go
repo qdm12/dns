@@ -9,7 +9,7 @@ const includeConfFilename = "include.conf"
 
 func (c *configurator) createEmptyIncludeConf() error {
 	filepath := filepath.Join(c.unboundEtcDir, includeConfFilename)
-	file, err := c.openFile(filepath, os.O_CREATE, 0644)
+	file, err := os.OpenFile(filepath, os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}

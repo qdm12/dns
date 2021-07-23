@@ -2,17 +2,16 @@ package unbound
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/qdm12/golibs/os"
 )
 
 func (c *configurator) MakeUnboundConf(settings Settings) (err error) {
 	configFilepath := filepath.Join(c.unboundEtcDir, unboundConfigFilename)
-	file, err := c.openFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(configFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}

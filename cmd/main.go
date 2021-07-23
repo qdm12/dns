@@ -20,7 +20,6 @@ import (
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/dns/pkg/unbound"
 	"github.com/qdm12/golibs/logging"
-	customOS "github.com/qdm12/golibs/os"
 	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
@@ -43,11 +42,10 @@ func main() {
 	args := os.Args
 	logger := logging.NewParent(logging.Settings{})
 	configReader := config.NewReader(logger)
-	osIntf := customOS.New()
 
 	errorCh := make(chan error)
 	go func() {
-		errorCh <- _main(ctx, buildInfo, args, logger, configReader, osIntf)
+		errorCh <- _main(ctx, buildInfo, args, logger, configReader)
 	}()
 
 	select {
@@ -78,8 +76,7 @@ func main() {
 }
 
 func _main(ctx context.Context, buildInfo models.BuildInformation,
-	args []string, logger logging.ParentLogger, configReader config.Reader,
-	os customOS.OS) error {
+	args []string, logger logging.ParentLogger, configReader config.Reader) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
@@ -99,7 +96,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	const unboundEtcDir = "/unbound"
 	const unboundPath = "/unbound/unbound"
 	const cacertsPath = "/unbound/ca-certificates.crt"
-	dnsConf := unbound.NewConfigurator(logger, os.OpenFile, dnsCrypto, unboundEtcDir, unboundPath, cacertsPath)
+	dnsConf := unbound.NewConfigurator(logger, dnsCrypto, unboundEtcDir, unboundPath, cacertsPath)
 
 	if len(args) > 1 && args[1] == "build" {
 		return dnsConf.SetupFiles(ctx)

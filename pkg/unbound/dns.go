@@ -5,7 +5,6 @@ import (
 
 	"github.com/qdm12/golibs/command"
 	"github.com/qdm12/golibs/logging"
-	"github.com/qdm12/golibs/os"
 	"github.com/qdm12/updated/pkg/dnscrypto"
 )
 
@@ -18,7 +17,6 @@ type Configurator interface {
 }
 
 type configurator struct {
-	openFile      os.OpenFileFunc
 	commander     command.Commander
 	dnscrypto     dnscrypto.DNSCrypto
 	unboundEtcDir string
@@ -26,10 +24,9 @@ type configurator struct {
 	cacertsPath   string
 }
 
-func NewConfigurator(logger logging.Logger, openFile os.OpenFileFunc,
-	dnscrypto dnscrypto.DNSCrypto, unboundEtcDir, unboundPath, cacertsPath string) Configurator {
+func NewConfigurator(logger logging.Logger, dnscrypto dnscrypto.DNSCrypto,
+	unboundEtcDir, unboundPath, cacertsPath string) Configurator {
 	return &configurator{
-		openFile:      openFile,
 		commander:     command.NewCommander(),
 		dnscrypto:     dnscrypto,
 		unboundEtcDir: unboundEtcDir,
