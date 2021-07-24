@@ -124,7 +124,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	select {
 	case <-ctx.Done():
 	case err := <-crashed:
-		logger.Error(err)
+		logger.Error(err.Error())
 	}
 
 	return group.Shutdown(context.Background())

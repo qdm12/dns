@@ -21,7 +21,7 @@ func Test_New(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	logger := mock_logging.NewMockLogger(ctrl)
-	logger.EXPECT().Info([]interface{}{"question CLASS0 None"})
+	logger.EXPECT().Info("question CLASS0 None")
 	settings := Settings{LogRequests: true}
 
 	middleware := New(logger, settings)
@@ -102,10 +102,10 @@ func Test_handler_ServeDNS(t *testing.T) {
 
 			logger := mock_logging.NewMockLogger(ctrl)
 			if testCase.logErr != nil {
-				logger.EXPECT().Error([]interface{}{*testCase.logErr})
+				logger.EXPECT().Error(*testCase.logErr)
 			}
 			if testCase.logInfo != nil {
-				logger.EXPECT().Info([]interface{}{*testCase.logInfo})
+				logger.EXPECT().Info(*testCase.logInfo)
 			}
 
 			next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {

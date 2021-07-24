@@ -53,8 +53,6 @@ func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, e
 	return settings, nil
 }
 
-var errAllowedHostnameInvalid = errors.New("allowed hostname is invalid")
-
 // getAllowedHostnames obtains a list of hostnames to unblock from block lists
 // from the comma separated list for the environment variable UNBLOCK.
 func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
