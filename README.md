@@ -6,20 +6,34 @@
 
 **The `:latest` Docker image might break compatibility in the coming days/weeks**
 
-[![Cloudflare DNS over TLS Docker](https://github.com/qdm12/dns/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/dns)
+[![Title](https://github.com/qdm12/dns/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/dns)
 
-[![Size](https://img.shields.io/docker/image-size/qmcgaw/dns?sort=semver&label=Last%20released%20image)](https://hub.docker.com/r/qmcgaw/dns/tags?page=1&ordering=last_updated)
-[![Size](https://img.shields.io/docker/image-size/qmcgaw/dns/latest?label=Latest%20image)](https://hub.docker.com/r/qmcgaw/dns/tags)
+[![Build status](https://github.com/qdm12/dns/actions/workflows/build.yml/badge.svg)](https://github.com/qdm12/dns/actions/workflows/build.yml)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
-[![Docker Pulls](https://img.shields.io/docker/pulls/qmcgaw/dns.svg)](https://hub.docker.com/r/qmcgaw/dns)
+[![dockeri.co](https://dockeri.co/image/qmcgaw/dns)](https://hub.docker.com/r/qmcgaw/dns)
+[![dockeri.co](https://dockeri.co/image/qmcgaw/cloudflare-dns-server)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
 
-[![Docker Stars](https://img.shields.io/docker/pulls/qmcgaw/cloudflare-dns-server.svg)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
-[![Docker Stars](https://img.shields.io/docker/stars/qmcgaw/dns.svg)](https://hub.docker.com/r/qmcgaw/dns)
+![Last release](https://img.shields.io/github/release/qdm12/dns?label=Last%20release)
+![Last Docker tag](https://img.shields.io/docker/v/qmcgaw/dns?sort=semver&label=Last%20Docker%20tag)
+[![Last release size](https://img.shields.io/docker/image-size/qmcgaw/dns?sort=semver&label=Last%20released%20image)](https://hub.docker.com/r/qmcgaw/dns/tags?page=1&ordering=last_updated)
+![GitHub last release date](https://img.shields.io/github/release-date/qdm12/dns?label=Last%20release%20date)
+![Commits since release](https://img.shields.io/github/commits-since/qdm12/dns/latest?sort=semver)
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/qdm12/dns.svg)](https://github.com/qdm12/dns/commits)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/y/qdm12/dns.svg)](https://github.com/qdm12/dns/commits)
+[![Latest size](https://img.shields.io/docker/image-size/qmcgaw/dns/latest?label=Latest%20image)](https://hub.docker.com/r/qmcgaw/dns/tags)
+
+[![GitHub last commit](https://img.shields.io/github/last-commit/qdm12/dns.svg)](https://github.com/qdm12/dns/commits/main)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/y/qdm12/dns.svg)](https://github.com/qdm12/dns/graphs/contributors)
+[![GitHub closed PRs](https://img.shields.io/github/issues-pr-closed/qdm12/dns.svg)](https://github.com/qdm12/dns/pulls?q=is%3Apr+is%3Aclosed)
 [![GitHub issues](https://img.shields.io/github/issues/qdm12/dns.svg)](https://github.com/qdm12/dns/issues)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed/qdm12/dns.svg)](https://github.com/qdm12/dns/issues?q=is%3Aissue+is%3Aclosed)
+
+[![Lines of code](https://img.shields.io/tokei/lines/github/qdm12/dns)](https://github.com/qdm12/dns)
+![Code size](https://img.shields.io/github/languages/code-size/qdm12/dns)
+![GitHub repo size](https://img.shields.io/github/repo-size/qdm12/dns)
+![Go version](https://img.shields.io/github/go-mod/go-version/qdm12/dns)
+
+[![MIT](https://img.shields.io/github/license/qdm12/dns)](https://github.com/qdm12/dns/master/LICENSE)
+![Visitors count](https://visitor-badge.laobi.icu/badge?page_id=dns.readme)
 
 ## Features
 
