@@ -1,6 +1,6 @@
 # DNS over TLS upstream server Docker container
 
-*DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking*
+DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking
 
 **Announcement**: *You can now try `:v2.0.0-beta` with [this documentation](https://github.com/qdm12/dns/tree/v2.0.0-beta).
 
@@ -38,31 +38,23 @@
 ## Features
 
 - It can be connected to one or more of the following DNS-over-TLS providers:
-
-    - [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
-    - [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
-    - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
-    - [LibreDNS](https://libredns.gr)
-    - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
-    - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
-    - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
-
+  - [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
+  - [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
+  - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
+  - [LibreDNS](https://libredns.gr)
+  - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
+  - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
+  - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
 - Split-horizon DNS (randomly pick one of the DoT providers specified for each request)
 - Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
 - Block custom hostnames and IP addresses using environment variables
 - **One line setup**
 - Runs without root
 - Small 41.1MB Docker image (uncompressed, amd64)
-
-    <details><summary>Click to show base components</summary><p>
-
-    - [Alpine 3.13](https://alpinelinux.org)
-    - [Unbound 1.13.0](https://nlnetlabs.nl/downloads/unbound) from Alpine packages
-    - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-    - Go static binary entrypoint built from this source
-
-    </p></details>
-
+  - [Alpine 3.13](https://alpinelinux.org)
+  - [Unbound 1.13.0](https://nlnetlabs.nl/downloads/unbound) from Alpine packages
+  - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
+  - Go static binary entrypoint built from this source
 - Resolves using IPv4 and IPv6 when available
 - Auto updates block lists and cryptographic files every 24h and restarts Unbound (< 1 second downtime)
 - Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
@@ -142,7 +134,7 @@ If you want to use the Go code I wrote, you can see tiny [examples](examples) of
 
 ### Option 1: Router (recommended)
 
-*All machines connected to your router will use the 1.1.1.1 encrypted DNS by default*
+All machines connected to your router will use the 1.1.1.1 encrypted DNS by default
 
 Configure your router to use the LAN IP address of your Docker host as its primary DNS address.
 
@@ -150,7 +142,7 @@ Configure your router to use the LAN IP address of your Docker host as its prima
 - Change the DNS settings, which are usually located in *Connection settings / Advanced / DNS server*
 - If a secondary fallback DNS address is required, use a dull ip address such as the router's IP 192.168.1.1 to force traffic to only go through this container
 
-![](https://github.com/qdm12/dns/blob/master/readme/diagram-router.png?raw=true)
+![Diagram router](https://github.com/qdm12/dns/blob/master/readme/diagram-router.png?raw=true)
 
 To ensure network clients cannot use another DNS, you might want to
 
@@ -162,7 +154,7 @@ To ensure network clients cannot use another DNS, you might want to
 
 You have to configure each machine connected to your router to use the Docker host as their DNS server.
 
-![](https://github.com/qdm12/dns/blob/master/readme/diagram-clients.png?raw=true)
+![Diagram clients](https://github.com/qdm12/dns/blob/master/readme/diagram-clients.png?raw=true)
 
 #### Docker containers
 
@@ -190,28 +182,28 @@ If the containers are in the same Docker network, you can simply set the `dns` t
 
 1. Open the control panel and follow the instructions shown on the screenshots below.
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows1.png?raw=true)
+![Windows screenshot 1](https://github.com/qdm12/dns/blob/master/readme/windows1.png?raw=true)
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows2.png?raw=true)
+![Windows screenshot 2](https://github.com/qdm12/dns/blob/master/readme/windows2.png?raw=true)
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows3.png?raw=true)
+![Windows screenshot 3](https://github.com/qdm12/dns/blob/master/readme/windows3.png?raw=true)
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows4.png?raw=true)
+![Windows screenshot 4](https://github.com/qdm12/dns/blob/master/readme/windows4.png?raw=true)
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows5.png?raw=true)
+![Windows screenshot 5](https://github.com/qdm12/dns/blob/master/readme/windows5.png?raw=true)
 
 Enter the IP Address of your Docker host as the **Preferred DNS server** (`192.168.1.210` in my case)
 You can set the Cloudflare DNS server address 1.1.1.1 as an alternate DNS server although you might want to
 leave this blank so that no domain name request is in plaintext.
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows6.png?raw=true)
+![Windows screenshot 6](https://github.com/qdm12/dns/blob/master/readme/windows6.png?raw=true)
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows7.png?raw=true)
+![Windows screenshot 7](https://github.com/qdm12/dns/blob/master/readme/windows7.png?raw=true)
 
 When closing, Windows should try to identify any potential problems.
 If everything is fine, you should see the following message:
 
-![](https://github.com/qdm12/dns/blob/master/readme/windows8.png?raw=true)
+![Windows screenshot 8](https://github.com/qdm12/dns/blob/master/readme/windows8.png?raw=true)
 
 #### Mac OS
 
@@ -241,7 +233,7 @@ This container requires the following connections:
 1. Verify that you use Cloudflare DNS servers: [https://www.dnsleaktest.com](https://www.dnsleaktest.com) with the Standard or Extended test
 1. Verify that DNS SEC is enabled: [https://en.internet.nl/connection](https://en.internet.nl/connection)
 
-Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. Hence https://1.1.1.1/help does not detect a direct connection to them.
+Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. Hence [https://1.1.1.1/help](https://1.1.1.1/help) does not detect a direct connection to them.
 
 ## Go API
 
@@ -253,42 +245,39 @@ For now, it is used by the [gluetun](https://github.com/qdm12/gluetun) project f
 
 ## Development
 
-1. Setup your environment
+### Development setup
 
-    <details><summary>Using VSCode and Docker</summary><p>
+#### Using VSCode and Docker
 
-    1. Install [Docker](https://docs.docker.com/install/)
-       - On Windows, share a drive with Docker Desktop and have the project on that partition
-       - On OSX, share your project directory with Docker Desktop
-    1. With [Visual Studio Code](https://code.visualstudio.com/download), install the [remote containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-    1. In Visual Studio Code, press on `F1` and select `Remote-Containers: Open Folder in Container...`
-    1. Your dev environment is ready to go!... and it's running in a container :+1:
+1. Install [Docker](https://docs.docker.com/install/)
+    - On Windows, share a drive with Docker Desktop and have the project on that partition
+    - On OSX, share your project directory with Docker Desktop
+1. With [Visual Studio Code](https://code.visualstudio.com/download), install the [remote containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+1. In Visual Studio Code, press on `F1` and select `Remote-Containers: Open Folder in Container...`
+1. Your dev environment is ready to go!... and it's running in a container :+1:
 
-    </p></details>
+#### Locally
 
-    <details><summary>Locally</summary><p>
-
-    Install [Go](https://golang.org/dl/), [Docker](https://www.docker.com/products/docker-desktop) and [Git](https://git-scm.com/downloads); then:
+1. Install [Go](https://golang.org/dl/), [Docker](https://www.docker.com/products/docker-desktop) and [Git](https://git-scm.com/downloads)
+1. Install dependencies
 
     ```sh
     go mod download
     ```
 
-    And finally install [golangci-lint](https://github.com/golangci/golangci-lint#install)
+1. Install [golangci-lint](https://github.com/golangci/golangci-lint#install)
 
-    </p></details>
+### Commands available
 
-1. Commands available:
+```sh
+# Build the binary
+go build cmd/main.go
+# Test the code
+go test ./...
+# Lint the code
+golangci-lint run
+# Build the Docker image
+docker build -t qmcgaw/dns .
+```
 
-    ```sh
-    # Build the binary
-    go build cmd/main.go
-    # Test the code
-    go test ./...
-    # Lint the code
-    golangci-lint run
-    # Build the Docker image
-    docker build -t qmcgaw/dns .
-    ```
-
-1. See [Contributing](.github/CONTRIBUTING.md) for more information on how to contribute to this repository.
+See [Contributing](.github/CONTRIBUTING.md) for more information on how to contribute to this repository.
