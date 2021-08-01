@@ -51,8 +51,8 @@ DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers w
 - **One line setup**
 - Runs without root
 - Small 41.1MB Docker image (uncompressed, amd64)
-  - [Alpine 3.13](https://alpinelinux.org)
-  - [Unbound 1.13.0](https://nlnetlabs.nl/downloads/unbound) from Alpine packages
+  - [Alpine 3.14](https://alpinelinux.org)
+  - [Unbound 1.13.1](https://nlnetlabs.nl/downloads/unbound) from Alpine packages
   - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
   - Go static binary entrypoint built from this source
 - Resolves using IPv4 and IPv6 when available
