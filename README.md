@@ -87,6 +87,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 If you run an old Docker version or Kernel, you might want to run the container as root with `--user="0"` (see [this issue](https://github.com/qdm12/dns/issues/79) for context).
 
+If you're running Kubernetes, there is a separate article on [how to set up K8s](https://github.com/qdm12/dns/blob/v2.0.0-beta/KUBERNETES.md).
+
 ## Docker tags 🐳
 
 💁 [Migrate from v1.x.x to v2.x.x](#Migrate)
