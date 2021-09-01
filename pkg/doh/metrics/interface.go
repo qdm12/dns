@@ -23,8 +23,7 @@ type Interface interface {
 
 type DialMetrics interface {
 	DoHDialMetrics
-	dotmetrics.DoTDialMetrics
-	dotmetrics.DNSDialMetrics
+	dotmetrics.DialMetrics
 }
 
 type DoHDialMetrics interface {

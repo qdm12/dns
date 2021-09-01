@@ -7,26 +7,19 @@ import (
 )
 
 type counters struct {
-	dotDialProvider *prometheus.CounterVec
-	dotDialAddress  *prometheus.CounterVec
-	dnsDialProvider *prometheus.CounterVec
-	dnsDialAddress  *prometheus.CounterVec
+	dotDial *prometheus.CounterVec
+	dnsDial *prometheus.CounterVec
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
 	c = &counters{
-		dotDialProvider: helpers.NewCounterVec(settings.Prefix, "dot_dial_provider",
-			"DNS over TLS dials by provider", []string{"provider", "outcome"}),
-		dotDialAddress: helpers.NewCounterVec(settings.Prefix, "dot_dial_address",
-			"DNS over TLS dials by address", []string{"address", "outcome"}),
-		dnsDialProvider: helpers.NewCounterVec(settings.Prefix, "dns_dial_provider",
-			"DNS dials by provider", []string{"provider", "outcome"}),
-		dnsDialAddress: helpers.NewCounterVec(settings.Prefix, "dns_dial_address",
-			"DNS dials by address", []string{"address", "outcome"}),
+		dotDial: helpers.NewCounterVec(settings.Prefix, "dot_dial",
+			"DNS over TLS dials by provider, address and outcome", []string{"provider", "address", "outcome"}),
+		dnsDial: helpers.NewCounterVec(settings.Prefix, "dns_dial_provider",
+			"DNS dials by provider, address and outcome", []string{"provider", "address", "outcome"}),
 	}
 
-	err = helpers.Register(settings.Registry, c.dotDialProvider, c.dotDialAddress,
-		c.dnsDialProvider, c.dnsDialAddress)
+	err = helpers.Register(settings.Registry, c.dotDial, c.dnsDial)
 	if err != nil {
 		return nil, err
 	}
@@ -34,18 +27,10 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 	return c, nil
 }
 
-func (c *counters) DoTDialProviderInc(provider, outcome string) {
-	c.dotDialProvider.WithLabelValues(provider, outcome).Inc()
+func (c *counters) DoTDialInc(provider, address, outcome string) {
+	c.dotDial.WithLabelValues(provider, outcome).Inc()
 }
 
-func (c *counters) DoTDialAddressInc(address, outcome string) {
-	c.dotDialAddress.WithLabelValues(address, outcome).Inc()
-}
-
-func (c *counters) DNSDialProviderInc(provider, outcome string) {
-	c.dnsDialProvider.WithLabelValues(provider, outcome).Inc()
-}
-
-func (c *counters) DNSDialAddressInc(address, outcome string) {
-	c.dnsDialAddress.WithLabelValues(address, outcome).Inc()
+func (c *counters) DNSDialInc(provider, address, outcome string) {
+	c.dnsDial.WithLabelValues(provider, outcome).Inc()
 }

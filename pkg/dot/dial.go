@@ -40,8 +40,7 @@ func newDoTDial(settings ResolverSettings) dialFunc {
 		if err != nil {
 			warner.Warn(err.Error())
 
-			metrics.DoTDialProviderInc(DoTServer.Name, "error")
-			metrics.DoTDialAddressInc(tlsAddr, "error")
+			metrics.DoTDialInc(DoTServer.Name, tlsAddr, "error")
 
 			if len(dnsServers) > 0 {
 				// fallback on plain DNS if DoT does not work
@@ -52,19 +51,16 @@ func newDoTDial(settings ResolverSettings) dialFunc {
 				conn, err := dialer.DialContext(ctx, "udp", plainAddr)
 				if err != nil {
 					warner.Warn(err.Error())
-					metrics.DNSDialProviderInc(ipStr, "error")
-					metrics.DNSDialAddressInc(plainAddr, "error")
+					metrics.DNSDialInc(ipStr, plainAddr, "error")
 					return conn, err
 				}
-				metrics.DNSDialProviderInc(ipStr, "success")
-				metrics.DNSDialAddressInc(plainAddr, "success")
+				metrics.DNSDialInc(ipStr, plainAddr, "success")
 				return conn, nil
 			}
 			return nil, err
 		}
 
-		metrics.DoTDialProviderInc(DoTServer.Name, "success")
-		metrics.DoTDialAddressInc(tlsAddr, "success")
+		metrics.DoTDialInc(DoTServer.Name, tlsAddr, "success")
 
 		tlsConf := &tls.Config{
 			MinVersion: tls.VersionTLS12,
