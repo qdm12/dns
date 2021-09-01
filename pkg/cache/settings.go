@@ -4,23 +4,21 @@ import (
 	"strings"
 
 	"github.com/qdm12/dns/pkg/cache/lru"
+	"github.com/qdm12/dns/pkg/cache/noop"
 )
 
 type Settings struct {
-	Type Type
+	Type string
 	LRU  lru.Settings
+	Noop noop.Settings
 }
 
 func (s *Settings) SetDefaults() {
-	if string(s.Type) == "" {
-		s.Type = Disabled
+	if s.Type == "" {
+		s.Type = noop.CacheType
 	}
 
-	switch s.Type {
-	case Disabled:
-	case LRU:
-		s.LRU.SetDefaults()
-	}
+	// cache implementations defaults set by their constructor
 }
 
 func (s *Settings) String() string {
@@ -32,13 +30,11 @@ func (s *Settings) String() string {
 }
 
 func (s *Settings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"Type: "+string(s.Type))
-
 	switch s.Type {
-	case LRU:
+	case lru.CacheType:
 		lruLines := s.LRU.Lines(indent, subSection)
 		lines = append(lines, lruLines...)
-	case Disabled:
+	case noop.CacheType:
 	default:
 		lines = append(lines, subSection+"MISSING CODE PATH, PLEASE ADD ME!!")
 	}

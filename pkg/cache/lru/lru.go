@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/pkg/cache/metrics"
 )
 
 type LRU struct {
@@ -17,16 +18,24 @@ type LRU struct {
 	linkedList *list.List
 	mutex      sync.Mutex
 
+	// External objects
+	metrics metrics.Interface
+
 	// Mock fields
 	timeNow func() time.Time
 }
 
 func New(settings Settings) *LRU {
-	settings.SetDefaults()
+	settings.setDefaults()
+
+	settings.Metrics.SetCacheType(CacheType)
+	settings.Metrics.CacheMaxEntriesSet(settings.MaxEntries)
+
 	return &LRU{
 		maxEntries: settings.MaxEntries,
 		kv:         make(map[string]*list.Element, settings.MaxEntries),
 		linkedList: list.New(),
+		metrics:    settings.Metrics,
 		timeNow:    time.Now,
 	}
 }
@@ -34,6 +43,7 @@ func New(settings Settings) *LRU {
 func (l *LRU) Add(request, response *dns.Msg) {
 	if len(request.Question) == 0 {
 		// cannot make key if there is no question
+		l.metrics.CacheInsertEmptyInc()
 		return
 	}
 
@@ -49,6 +59,7 @@ func (l *LRU) Add(request, response *dns.Msg) {
 		entryPtr := listElement.Value.(*entry)
 		entryPtr.expUnix = expUnix
 		entryPtr.response = responseCopy
+		l.metrics.CacheMoveInc()
 		return
 	}
 
@@ -64,12 +75,14 @@ func (l *LRU) Add(request, response *dns.Msg) {
 
 	listElement := l.linkedList.PushFront(entry)
 	l.kv[key] = listElement
+	l.metrics.CacheInsertInc()
 }
 
 func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	if len(request.Question) == 0 {
 		// cannot make key if there is no question
-		return
+		l.metrics.CacheGetEmptyInc()
+		return nil
 	}
 
 	key := makeKey(request)
@@ -80,8 +93,11 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 
 	listElement, ok := l.kv[key]
 	if !ok {
+		l.metrics.CacheMissInc()
 		return nil
 	}
+
+	l.metrics.CacheHitInc()
 
 	l.linkedList.MoveToFront(listElement)
 	entryPtr := listElement.Value.(*entry)
@@ -89,6 +105,7 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	if nowUnix >= entryPtr.expUnix {
 		// expired record
 		l.remove(listElement)
+		l.metrics.CacheExpiredInc()
 		return nil
 	}
 
@@ -102,6 +119,7 @@ func (l *LRU) remove(listElement *list.Element) {
 	l.linkedList.Remove(listElement)
 	entryPtr := listElement.Value.(*entry)
 	delete(l.kv, entryPtr.key)
+	l.metrics.CacheRemoveInc()
 }
 
 // It is NOT thread safe and its parent should have

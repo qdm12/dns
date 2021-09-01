@@ -4,11 +4,11 @@ package log
 
 import (
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/middlewares/stateful"
-	"github.com/qdm12/golibs/logging"
 )
 
-func New(logger logging.Logger, settings Settings) func(dns.Handler) dns.Handler {
+func New(logger log.Logger, settings Settings) func(dns.Handler) dns.Handler {
 	return func(next dns.Handler) dns.Handler {
 		return &handler{
 			logger:   logger,
@@ -19,7 +19,7 @@ func New(logger logging.Logger, settings Settings) func(dns.Handler) dns.Handler
 }
 
 type handler struct {
-	logger   logging.Logger
+	logger   log.Logger
 	next     dns.Handler
 	settings Settings
 }

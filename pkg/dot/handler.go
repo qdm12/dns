@@ -6,30 +6,29 @@ import (
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/cache"
-	"github.com/qdm12/golibs/logging"
+	"github.com/qdm12/dns/pkg/log"
 )
 
 type handler struct {
 	// External objects
 	ctx    context.Context
-	logger logging.Logger
+	logger log.Logger
 
 	// Internal objects
 	dial   dialFunc
 	client *dns.Client
-	cache  cache.Cache
+	cache  cache.Interface
 	blist  blacklist.BlackLister
 }
 
-func newDNSHandler(ctx context.Context, logger logging.Logger,
-	settings ServerSettings) dns.Handler {
+func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
 	return &handler{
 		ctx:    ctx,
-		logger: logger,
+		logger: settings.Logger,
 		dial:   newDoTDial(settings.Resolver),
 		client: &dns.Client{},
-		cache:  cache.New(settings.Cache), // defaults to NOOP
-		blist:  blacklist.NewMap(settings.Blacklist),
+		cache:  settings.Cache,
+		blist:  settings.Blacklister,
 	}
 }
 

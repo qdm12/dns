@@ -126,8 +126,10 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `DOT_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over TLS |
 | `DOH_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over HTTPS |
 | `LISTENING_PORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `CACHE_TYPE` | `lru` | `lru` or `disabled`. LRU caches DNS responses by least recently used |
+| `CACHE_TYPE` | `lru` | `lru` or `noop`. LRU caches DNS responses by least recently used |
 | `CACHE_LRU_MAX_ENTRIES` | `10000` | Number of elements to keep in the LRU cache. |
+| `METRICS_TYPE` | `noop` | `noop` or `prometheus` |
+| `METRICS_PROMETHEUS_ADDRESS` | `:9090` | HTTP Prometheus server listening address  |
 | `REBINDING_PROTECTION` | `on` | `on` or `off`. Enabling will prevent the server from returning any private IP address to the client. |
 | `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `DOT_CONNECT_IPV6` | `off` | `on` or `off`. Connects to the DNS resolvers over IPv6 instead of IPv4 |

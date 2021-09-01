@@ -13,6 +13,9 @@ import (
 type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
 
 func newDoHDial(settings ResolverSettings) dialFunc {
+	// note: settings are already defaulted
+	metrics := settings.Metrics
+
 	dohServers := make([]provider.DoHServer, len(settings.DoHProviders))
 	for i := range settings.DoHProviders {
 		dohServers[i] = settings.DoHProviders[i].DoH()
@@ -24,6 +27,8 @@ func newDoHDial(settings ResolverSettings) dialFunc {
 		DNSProviders: settings.SelfDNS.DNSProviders,
 		Timeout:      settings.Timeout, // http client timeout really
 		IPv6:         settings.SelfDNS.IPv6,
+		Warner:       settings.Warner,
+		Metrics:      metrics,
 	}
 	dotClient := newDoTClient(DoTSettings)
 
@@ -39,6 +44,9 @@ func newDoHDial(settings ResolverSettings) dialFunc {
 	return func(ctx context.Context, _, _ string) (conn net.Conn, err error) {
 		// Pick DoH server pseudo-randomly from the chosen providers
 		DoHServer := picker.DoHServer(dohServers)
+
+		metrics.DoHDialURLInc(DoHServer.URL.String())
+
 		// Create connection object (no actual IO yet)
 		conn = newDoHConn(ctx, dotClient, bufferPool, DoHServer.URL)
 		return conn, nil

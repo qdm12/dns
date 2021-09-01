@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package dot
@@ -9,6 +10,11 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/miekg/dns"
+	"github.com/qdm12/dns/internal/mockhelp"
+	"github.com/qdm12/dns/pkg/blacklist/mock_blacklist"
+	"github.com/qdm12/dns/pkg/cache/mock_cache"
+	"github.com/qdm12/dns/pkg/dot/metrics/mock_metrics"
 	"github.com/qdm12/golibs/logging/mock_logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,20 +35,13 @@ func Test_Resolver(t *testing.T) {
 }
 
 func Test_Server(t *testing.T) {
-	t.Parallel()
-	ctrl := gomock.NewController(t)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	stopped := make(chan error)
 
-	logger := mock_logging.NewMockLogger(ctrl)
-	logger.EXPECT().Info("DNS server listening on :53")
-
-	server := NewServer(ctx, logger, ServerSettings{})
+	server := NewServer(ctx, ServerSettings{})
 
 	go server.Run(ctx, stopped)
 
-	const hostname = "google.com" // we use google.com as github.com doesn't have an IPv6 :(
 	resolver := &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,
@@ -52,6 +51,7 @@ func Test_Server(t *testing.T) {
 		},
 	}
 
+	const hostname = "google.com" // we use google.com as github.com doesn't have an IPv6 :(
 	ips, err := resolver.LookupIPAddr(ctx, hostname)
 
 	require.NoError(t, err)
@@ -61,4 +61,164 @@ func Test_Server(t *testing.T) {
 	cancel()
 	err = <-stopped
 	assert.Nil(t, err)
+}
+
+func Test_Server_Mocks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	stopped := make(chan error)
+
+	expectedRequestA := &dns.Msg{
+		MsgHdr: dns.MsgHdr{
+			Opcode:           dns.OpcodeQuery,
+			Rcode:            dns.RcodeSuccess,
+			RecursionDesired: true,
+		},
+		Question: []dns.Question{{
+			Name:   "google.com.",
+			Qtype:  dns.TypeA,
+			Qclass: dns.ClassINET,
+		}},
+	}
+	expectedResponseA := &dns.Msg{
+		MsgHdr: dns.MsgHdr{
+			Opcode:             dns.OpcodeQuery,
+			Rcode:              dns.RcodeSuccess,
+			Response:           true,
+			RecursionDesired:   true,
+			RecursionAvailable: true,
+		},
+		Question: []dns.Question{{
+			Name:   "google.com.",
+			Qtype:  dns.TypeA,
+			Qclass: dns.ClassINET,
+		}},
+		Answer: []dns.RR{
+			&dns.A{
+				Hdr: dns.RR_Header{
+					Name:   "google.com.",
+					Rrtype: dns.TypeA,
+					Class:  dns.ClassINET,
+				},
+				A: net.IP{1, 2, 3, 4}, // compared on length
+			},
+		},
+	}
+
+	expectedRequestAAAA := &dns.Msg{
+		MsgHdr: dns.MsgHdr{
+			Opcode:           dns.OpcodeQuery,
+			Rcode:            dns.RcodeSuccess,
+			RecursionDesired: true,
+		},
+		Question: []dns.Question{{
+			Name:   "google.com.",
+			Qtype:  dns.TypeAAAA,
+			Qclass: dns.ClassINET,
+		}},
+	}
+	expectedResponseAAAA := &dns.Msg{
+		MsgHdr: dns.MsgHdr{
+			Opcode:             dns.OpcodeQuery,
+			Rcode:              dns.RcodeSuccess,
+			Response:           true,
+			RecursionDesired:   true,
+			RecursionAvailable: true,
+		},
+		Question: []dns.Question{{
+			Name:   "google.com.",
+			Qtype:  dns.TypeAAAA,
+			Qclass: dns.ClassINET,
+		}},
+		Answer: []dns.RR{
+			&dns.AAAA{
+				Hdr: dns.RR_Header{
+					Name:   "google.com.",
+					Rrtype: dns.TypeAAAA,
+					Class:  dns.ClassINET,
+				},
+				AAAA: net.IP{1, 2, 3, 4}, // compared on length > 0
+			},
+		},
+	}
+
+	cache := mock_cache.NewMockInterface(ctrl)
+	cache.EXPECT().
+		Get(mockhelp.NewMatcherRequest(expectedRequestA)).
+		Return(nil)
+	cache.EXPECT().
+		Get(mockhelp.NewMatcherRequest(expectedRequestAAAA)).
+		Return(nil)
+
+	cache.EXPECT().Add(
+		mockhelp.NewMatcherRequest(expectedRequestA),
+		mockhelp.NewMatcherResponse(expectedResponseA))
+	cache.EXPECT().Add(
+		mockhelp.NewMatcherRequest(expectedRequestAAAA),
+		mockhelp.NewMatcherResponse(expectedResponseAAAA))
+
+	blackLister := mock_blacklist.NewMockBlackLister(ctrl)
+	blackLister.EXPECT().
+		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestA)).
+		Return(false)
+	blackLister.EXPECT().
+		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestAAAA)).
+		Return(false)
+	blackLister.EXPECT().
+		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseA)).
+		Return(false)
+	blackLister.EXPECT().
+		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
+		Return(false)
+
+	logger := mock_logging.NewMockLogger(ctrl)
+	logger.EXPECT().Info("DNS server listening on :53")
+
+	metrics := mock_metrics.NewMockInterface(ctrl)
+	metrics.EXPECT().
+		DoTDialProviderInc("cloudflare-dns.com", "success").
+		Times(2)
+	metrics.EXPECT().
+		DoTDialAddressInc(mockhelp.NewMatcherStringSuffix(".1:853"), "success").
+		Times(2)
+	// middleware metrics
+	metrics.EXPECT().InFlightRequestsInc().Times(2)
+	metrics.EXPECT().InFlightRequestsDec().Times(2)
+	metrics.EXPECT().RequestsInc().Times(2)
+	metrics.EXPECT().ResponsesInc().Times(2)
+	metrics.EXPECT().QuestionsInc("IN", "A")
+	metrics.EXPECT().QuestionsInc("IN", "AAAA")
+	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
+
+	server := NewServer(ctx, ServerSettings{
+		Cache:       cache,
+		Blacklister: blackLister,
+		Logger:      logger,
+		Metrics:     metrics,
+		Resolver: ResolverSettings{
+			Metrics: metrics,
+		},
+	})
+
+	go server.Run(ctx, stopped)
+
+	resolver := &net.Resolver{
+		PreferGo:     true,
+		StrictErrors: true,
+		Dial: func(ctx context.Context, network string, address string) (net.Conn, error) {
+			dialer := &net.Dialer{Timeout: time.Second}
+			return dialer.DialContext(ctx, "udp", "127.0.0.1:53")
+		},
+	}
+
+	const hostname = "google.com"
+	ips, err := resolver.LookupIPAddr(ctx, hostname)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, ips)
+	t.Log(ips)
+
+	cancel()
+	err = <-stopped
+	assert.NoError(t, err)
 }

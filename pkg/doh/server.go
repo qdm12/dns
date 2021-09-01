@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/middlewares/log"
-	"github.com/qdm12/golibs/logging"
+	"github.com/qdm12/dns/pkg/log"
+	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
+	metricsmiddleware "github.com/qdm12/dns/pkg/middlewares/metrics"
 )
 
 //go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Server
@@ -19,20 +20,25 @@ type Server interface {
 
 type server struct {
 	dnsServer dns.Server
-	logger    logging.Logger
+	logger    log.Logger
 }
 
-func NewServer(ctx context.Context, logger logging.Logger,
-	settings ServerSettings) Server {
+func NewServer(ctx context.Context, settings ServerSettings) Server {
+	settings.setDefaults()
+
+	logger := settings.Logger
+
 	if runtime.GOOS == "windows" {
 		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
 
-	settings.setDefaults()
+	handler := newDNSHandler(ctx, settings)
 
-	handler := newDNSHandler(ctx, logger, settings)
-	logMiddleware := log.New(logger, settings.Log)
+	logMiddleware := logmiddleware.New(logger, settings.Log)
 	handler = logMiddleware(handler)
+
+	metricsMiddleware := metricsmiddleware.New(settings.Metrics)
+	handler = metricsMiddleware(handler)
 
 	return &server{
 		dnsServer: dns.Server{

@@ -13,14 +13,17 @@ import (
 	_ "time/tzdata"
 
 	_ "github.com/breml/rootcerts"
+	"github.com/qdm12/dns/internal/cache"
 	"github.com/qdm12/dns/internal/config"
 	"github.com/qdm12/dns/internal/health"
+	"github.com/qdm12/dns/internal/metrics"
 	"github.com/qdm12/dns/internal/models"
 	"github.com/qdm12/dns/internal/splash"
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/check"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
+	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/goshutdown"
@@ -113,13 +116,29 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	logger.Info("using DNS address " + localIP.String() + " internally")
 	nameserver.UseDNSInternally(localIP) // use the DoT/DoH server
 
+	settings.PatchLogger(logger)
+
+	metricsServer, err := metrics.Setup(&settings, logger)
+	if err != nil {
+		return err
+	}
+
+	// Use the same cache across DNS server restarts
+	cache.Setup(&settings)
+
+	blacklistBuilder := blacklist.NewBuilder(client)
+
 	dnsServerHandler, dnsServerCtx, dnsServerDone := goshutdown.NewGoRoutineHandler(
 		"dns server", goshutdown.GoRoutineSettings{})
 	crashed := make(chan error)
-	go runLoop(dnsServerCtx, dnsServerDone, settings, logger, client, crashed)
+	go runLoop(dnsServerCtx, dnsServerDone, crashed, settings, logger, blacklistBuilder)
+
+	metricsServerHandler, metricsServerCtx, metricsServerDone := goshutdown.NewGoRoutineHandler(
+		"metrics server", goshutdown.GoRoutineSettings{})
+	go metricsServer.Run(metricsServerCtx, metricsServerDone)
 
 	group := goshutdown.NewGroupHandler("", goshutdown.GroupSettings{})
-	group.Add(healthServerHandler, dnsServerHandler)
+	group.Add(healthServerHandler, metricsServerHandler, dnsServerHandler)
 
 	select {
 	case <-ctx.Done():
@@ -130,9 +149,9 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	return group.Shutdown(context.Background())
 }
 
-func runLoop(ctx context.Context, dnsServerDone chan<- struct{}, settings config.Settings,
-	logger logging.Logger, client *http.Client, crashed chan<- error,
-) {
+func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
+	crashed chan<- error, settings config.Settings,
+	logger log.Logger, blacklistBuilder blacklist.Builder) {
 	defer close(dnsServerDone)
 	timer := time.NewTimer(time.Hour)
 
@@ -150,11 +169,9 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{}, settings config
 			timer.Reset(settings.UpdatePeriod)
 		}
 
-		serverSettings := settings.DoT
-
+		var blackListerSettings blacklist.Settings
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
-			blacklistBuilder := blacklist.NewBuilder(client)
 			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
 				blacklistBuilder.All(ctx, settings.Blacklist)
 			for _, err := range errs {
@@ -163,22 +180,26 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{}, settings config
 			logger.Info(strconv.Itoa(len(blockedHostnames)) + " hostnames blocked overall")
 			logger.Info(strconv.Itoa(len(blockedIPs)) + " IP addresses blocked overall")
 			logger.Info(strconv.Itoa(len(blockedIPPrefixes)) + " IP networks blocked overall")
-			serverSettings.Blacklist.IPs = blockedIPs
-			serverSettings.Blacklist.IPPrefixes = blockedIPPrefixes
-			serverSettings.Blacklist.BlockHostnames(blockedHostnames)
+			blackListerSettings.IPs = blockedIPs
+			blackListerSettings.IPPrefixes = blockedIPPrefixes
+			blackListerSettings.BlockHostnames(blockedHostnames)
 
 			serverCancel()
 			<-waitError
 			close(waitError)
 		}
+
+		blackLister := blacklist.NewMap(blackListerSettings)
+		settings.PatchBlacklister(blackLister)
+
 		serverCtx, serverCancel = context.WithCancel(ctx)
 
 		var server models.Server
 		switch settings.UpstreamType {
 		case config.DoT:
-			server = dot.NewServer(serverCtx, logger, serverSettings)
+			server = dot.NewServer(serverCtx, settings.DoT)
 		case config.DoH:
-			server = doh.NewServer(serverCtx, logger, settings.DoH)
+			server = doh.NewServer(serverCtx, settings.DoH)
 		}
 
 		logger.Info("starting DNS server")
