@@ -28,9 +28,9 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 }
 
 func (c *counters) DoTDialInc(provider, address, outcome string) {
-	c.dotDial.WithLabelValues(provider, outcome).Inc()
+	c.dotDial.WithLabelValues(provider, address, outcome).Inc()
 }
 
 func (c *counters) DNSDialInc(provider, address, outcome string) {
-	c.dnsDial.WithLabelValues(provider, outcome).Inc()
+	c.dnsDial.WithLabelValues(provider, address, outcome).Inc()
 }
