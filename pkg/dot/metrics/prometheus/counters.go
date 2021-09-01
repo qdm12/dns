@@ -13,9 +13,9 @@ type counters struct {
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
 	c = &counters{
-		dotDial: helpers.NewCounterVec(settings.Prefix, "dot_dial",
+		dotDial: helpers.NewCounterVec(settings.Prefix, "dns_over_tls_dials",
 			"DNS over TLS dials by provider, address and outcome", []string{"provider", "address", "outcome"}),
-		dnsDial: helpers.NewCounterVec(settings.Prefix, "dns_dial_provider",
+		dnsDial: helpers.NewCounterVec(settings.Prefix, "dns_plaintext_fallback_dials",
 			"DNS dials by provider, address and outcome", []string{"provider", "address", "outcome"}),
 	}
 

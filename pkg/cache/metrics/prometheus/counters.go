@@ -20,7 +20,7 @@ type counters struct {
 func newCounters(settings prom.Settings) (c *counters, err error) {
 	prefix := settings.Prefix
 	c = &counters{
-		insert:      helpers.NewCounter(prefix, "cache_add", "DNS cache insertions"),
+		insert:      helpers.NewCounter(prefix, "cache_insert", "DNS cache insertions"),
 		move:        helpers.NewCounter(prefix, "cache_move", "DNS cache move"),
 		remove:      helpers.NewCounter(prefix, "cache_remove", "DNS cache remove"),
 		insertEmpty: helpers.NewCounter(prefix, "cache_insertEmpty", "DNS cache insertEmpty"),
