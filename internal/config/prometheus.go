@@ -8,7 +8,8 @@ import (
 
 type Prometheus struct {
 	// Server listening address for prometheus server.
-	Address string
+	Address   string
+	Subsystem string
 }
 
 func getPrometheusSettings(reader *reader) (settings Prometheus,
@@ -21,6 +22,11 @@ func getPrometheusSettings(reader *reader) (settings Prometheus,
 	}
 	if err != nil {
 		return settings, fmt.Errorf("environment variable METRICS_PROMETHEUS_ADDRESS: %w", err)
+	}
+
+	settings.Subsystem, err = reader.env.Get("METRICS_PROMETHEUS_SUBSYSTEM", params.Default("dns"))
+	if err != nil {
+		return settings, fmt.Errorf("environment variable METRICS_PROMETHEUS_SUBSYSTEM: %w", err)
 	}
 
 	return settings, nil

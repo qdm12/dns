@@ -8,6 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/qdm12/dns/internal/config"
 	cache "github.com/qdm12/dns/pkg/cache/metrics/prometheus"
 	doh "github.com/qdm12/dns/pkg/doh/metrics/prometheus"
 	dot "github.com/qdm12/dns/pkg/dot/metrics/prometheus"
@@ -28,7 +29,8 @@ type Logger interface {
 	Error(s string)
 }
 
-func Setup(address string, logger Logger) (server *Server,
+func Setup(settings config.Prometheus, logger Logger) (
+	server *Server,
 	cacheMetrics *cache.Metrics,
 	dotMetrics *dot.Metrics,
 	dohMetrics *doh.Metrics,
@@ -36,7 +38,7 @@ func Setup(address string, logger Logger) (server *Server,
 	promRegistry := prometheus.NewRegistry()
 
 	metricsSettings := promshared.Settings{
-		Prefix:   "dns",
+		Prefix:   settings.Subsystem,
 		Registry: promRegistry,
 	}
 
@@ -71,7 +73,7 @@ func Setup(address string, logger Logger) (server *Server,
 
 	handler := promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{})
 	server = &Server{
-		address: address,
+		address: settings.Address,
 		handler: handler,
 		logger:  logger,
 	}

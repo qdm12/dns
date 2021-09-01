@@ -29,7 +29,7 @@ func setupPrometheus(settings *config.Settings, parentLogger logging.ParentLogge
 	loggerSettings := logging.Settings{Prefix: "prometheus server"}
 	logger := parentLogger.NewChild(loggerSettings)
 	promServer, cacheMetrics, dotMetrics, dohMetrics, err :=
-		prometheus.Setup(settings.Metrics.Prometheus.Address, logger)
+		prometheus.Setup(settings.Metrics.Prometheus, logger)
 	if err != nil {
 		return nil, err
 	}
