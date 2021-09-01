@@ -3,7 +3,7 @@ package prometheus
 import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/internal/metrics/prometheus/helpers"
-	prom "github.com/qdm12/dns/pkg/prometheus"
+	prom "github.com/qdm12/dns/pkg/metrics/prometheus"
 )
 
 type labels struct {

@@ -11,8 +11,8 @@ import (
 	cache "github.com/qdm12/dns/pkg/cache/metrics/prometheus"
 	doh "github.com/qdm12/dns/pkg/doh/metrics/prometheus"
 	dot "github.com/qdm12/dns/pkg/dot/metrics/prometheus"
+	promshared "github.com/qdm12/dns/pkg/metrics/prometheus"
 	middleware "github.com/qdm12/dns/pkg/middlewares/metrics/prometheus"
-	promshared "github.com/qdm12/dns/pkg/prometheus"
 )
 
 var (

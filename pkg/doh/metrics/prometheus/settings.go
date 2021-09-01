@@ -3,9 +3,9 @@ package prometheus
 import (
 	dot "github.com/qdm12/dns/pkg/dot/metrics"
 	dotnoop "github.com/qdm12/dns/pkg/dot/metrics/noop"
+	prom "github.com/qdm12/dns/pkg/metrics/prometheus"
 	middleware "github.com/qdm12/dns/pkg/middlewares/metrics"
 	middlewarenoop "github.com/qdm12/dns/pkg/middlewares/metrics/noop"
-	prom "github.com/qdm12/dns/pkg/prometheus"
 )
 
 type Settings struct {
