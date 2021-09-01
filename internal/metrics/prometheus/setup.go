@@ -38,22 +38,31 @@ func Setup(address string, logger Logger) (server *Server,
 		Registry: promRegistry,
 	}
 
-	cacheMetrics, err = cache.New(metricsSettings)
+	cacheMetrics, err = cache.New(
+		cache.Settings{Prometheus: metricsSettings})
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrCache, err)
 	}
 
-	middlewareMetrics, err := middleware.New(metricsSettings)
+	middlewareMetrics, err := middleware.New(
+		middleware.Settings{Prometheus: metricsSettings})
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrMiddleware, err)
 	}
 
-	dotMetrics, err = dot.New(metricsSettings, middlewareMetrics)
+	dotMetrics, err = dot.New(dot.Settings{
+		Prometheus:        metricsSettings,
+		MiddlewareMetrics: middlewareMetrics,
+	})
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOT, err)
 	}
 
-	dohMetrics, err = doh.New(metricsSettings, dotMetrics, middlewareMetrics)
+	dohMetrics, err = doh.New(doh.Settings{
+		Prometheus:        metricsSettings,
+		DoTDialMetrics:    dotMetrics,
+		MiddlewareMetrics: middlewareMetrics,
+	})
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOH, err)
 	}

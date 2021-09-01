@@ -5,8 +5,6 @@ package prometheus
 import (
 	"errors"
 	"fmt"
-
-	prom "github.com/qdm12/dns/pkg/prometheus"
 )
 
 type Metrics struct {
@@ -21,20 +19,22 @@ var (
 	ErrNewLabels   = errors.New("failed creating labels metrics")
 )
 
-func New(settings prom.Settings) (metrics *Metrics, err error) {
+func New(settings Settings) (metrics *Metrics, err error) {
+	settings.setDefaults()
+
 	metrics = new(Metrics)
 
-	metrics.counters, err = newCounters(settings)
+	metrics.counters, err = newCounters(settings.Prometheus)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrNewCounters, err)
 	}
 
-	metrics.gauges, err = newGauges(settings)
+	metrics.gauges, err = newGauges(settings.Prometheus)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrNewGauges, err)
 	}
 
-	metrics.labels, err = newLabels(settings)
+	metrics.labels, err = newLabels(settings.Prometheus)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrNewLabels, err)
 	}

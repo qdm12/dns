@@ -7,11 +7,13 @@ import (
 	"github.com/qdm12/dns/pkg/middlewares/stateful"
 )
 
-func New(metrics Interface) func(dns.Handler) dns.Handler {
+func New(settings Settings) func(dns.Handler) dns.Handler {
+	settings.setDefaults()
+
 	return func(next dns.Handler) dns.Handler {
 		return &handler{
 			next:    next,
-			metrics: metrics,
+			metrics: settings.Metrics,
 		}
 	}
 }

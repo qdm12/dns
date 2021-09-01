@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	middleware "github.com/qdm12/dns/pkg/middlewares/metrics"
-	prom "github.com/qdm12/dns/pkg/prometheus"
 )
 
 type middlewareInterface = middleware.Interface
@@ -20,17 +19,17 @@ var (
 	ErrNewCounters = errors.New("failed creating metrics counters")
 )
 
-func New(settings prom.Settings,
-	middlewareMetrics middleware.Interface) (
-	metrics *Metrics, err error) {
+func New(settings Settings) (metrics *Metrics, err error) {
+	settings.setDefaults()
+
 	metrics = new(Metrics)
 
-	metrics.counters, err = newCounters(settings)
+	metrics.counters, err = newCounters(settings.Prometheus)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrNewCounters, err)
 	}
 
-	metrics.middlewareInterface = middlewareMetrics
+	metrics.middlewareInterface = settings.MiddlewareMetrics
 
 	return metrics, nil
 }

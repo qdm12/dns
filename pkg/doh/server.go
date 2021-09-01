@@ -37,7 +37,8 @@ func NewServer(ctx context.Context, settings ServerSettings) Server {
 	logMiddleware := logmiddleware.New(logger, settings.Log)
 	handler = logMiddleware(handler)
 
-	metricsMiddleware := metricsmiddleware.New(settings.Metrics)
+	metricsMiddleware := metricsmiddleware.New(
+		metricsmiddleware.Settings{Metrics: settings.Metrics})
 	handler = metricsMiddleware(handler)
 
 	return &server{

@@ -7,7 +7,6 @@ import (
 
 	dotmetrics "github.com/qdm12/dns/pkg/dot/metrics"
 	middleware "github.com/qdm12/dns/pkg/middlewares/metrics"
-	prom "github.com/qdm12/dns/pkg/prometheus"
 )
 
 type (
@@ -25,19 +24,18 @@ var (
 	ErrNewCounters = errors.New("failed creating counters metrics")
 )
 
-func New(settings prom.Settings,
-	dotDialMetrics dotmetrics.DialMetrics,
-	middlewareMetrics middleware.Interface,
-) (metrics *Metrics, err error) {
+func New(settings Settings) (metrics *Metrics, err error) {
+	settings.setDefaults()
+
 	metrics = new(Metrics)
 
-	metrics.counters, err = newCounters(settings)
+	metrics.counters, err = newCounters(settings.Prometheus)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrNewCounters, err)
 	}
 
-	metrics.dotDialMetrics = dotDialMetrics
-	metrics.middlewareInterface = middlewareMetrics
+	metrics.dotDialMetrics = settings.DoTDialMetrics
+	metrics.middlewareInterface = settings.MiddlewareMetrics
 
 	return metrics, nil
 }
