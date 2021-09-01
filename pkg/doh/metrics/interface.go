@@ -27,5 +27,5 @@ type DialMetrics interface {
 }
 
 type DoHDialMetrics interface {
-	DoHDialURLInc(url string)
+	DoHDialInc(url string)
 }

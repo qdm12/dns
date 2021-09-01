@@ -24,6 +24,6 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 	return c, nil
 }
 
-func (c *counters) DoHDialURLInc(url string) {
+func (c *counters) DoHDialInc(url string) {
 	c.dohDialURL.WithLabelValues(url).Inc()
 }

@@ -45,7 +45,7 @@ func newDoHDial(settings ResolverSettings) dialFunc {
 		// Pick DoH server pseudo-randomly from the chosen providers
 		DoHServer := picker.DoHServer(dohServers)
 
-		metrics.DoHDialURLInc(DoHServer.URL.String())
+		metrics.DoHDialInc(DoHServer.URL.String())
 
 		// Create connection object (no actual IO yet)
 		conn = newDoHConn(ctx, dotClient, bufferPool, DoHServer.URL)

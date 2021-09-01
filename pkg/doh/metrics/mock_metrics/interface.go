@@ -57,16 +57,16 @@ func (mr *MockInterfaceMockRecorder) DNSDialInc(arg0, arg1, arg2 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DNSDialInc", reflect.TypeOf((*MockInterface)(nil).DNSDialInc), arg0, arg1, arg2)
 }
 
-// DoHDialURLInc mocks base method.
-func (m *MockInterface) DoHDialURLInc(arg0 string) {
+// DoHDialInc mocks base method.
+func (m *MockInterface) DoHDialInc(arg0 string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoHDialURLInc", arg0)
+	m.ctrl.Call(m, "DoHDialInc", arg0)
 }
 
-// DoHDialURLInc indicates an expected call of DoHDialURLInc.
-func (mr *MockInterfaceMockRecorder) DoHDialURLInc(arg0 interface{}) *gomock.Call {
+// DoHDialInc indicates an expected call of DoHDialInc.
+func (mr *MockInterfaceMockRecorder) DoHDialInc(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoHDialURLInc", reflect.TypeOf((*MockInterface)(nil).DoHDialURLInc), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoHDialInc", reflect.TypeOf((*MockInterface)(nil).DoHDialInc), arg0)
 }
 
 // DoTDialInc mocks base method.

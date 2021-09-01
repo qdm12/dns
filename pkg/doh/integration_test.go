@@ -199,7 +199,7 @@ func Test_Server_Mocks(t *testing.T) {
 			mockhelp.NewMatcherStringSuffix(".1:853"), "success").
 		Times(2)
 	metrics.EXPECT().
-		DoHDialURLInc("https://cloudflare-dns.com/dns-query").
+		DoHDialInc("https://cloudflare-dns.com/dns-query").
 		Times(2)
 	// middleware metrics
 	metrics.EXPECT().InFlightRequestsInc().Times(2)
