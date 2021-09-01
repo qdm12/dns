@@ -1,3 +1,4 @@
+// Package metrics sets up metrics and patch the given settings
 package metrics
 
 import (

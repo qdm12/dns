@@ -1,3 +1,4 @@
+// Package prometheus defines shared elements for Prometheus.
 package prometheus
 
 import "github.com/prometheus/client_golang/prometheus"

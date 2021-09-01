@@ -1,3 +1,5 @@
+// Package prometheus offers a Setup function to setup a Prometheus
+// HTTP server together with all the metrics registered.
 package prometheus
 
 import (

@@ -1,3 +1,5 @@
+// Package metrics defines metric interfaces for the
+// DoH server and resolver.
 package metrics
 
 import (

@@ -1,3 +1,5 @@
+// Package metrics defines the DNS metrics middleware and a
+// metric interface to give to the middleware constructor.
 package metrics
 
 import (

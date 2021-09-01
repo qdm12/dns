@@ -1,3 +1,4 @@
+// Package metrics defines an interface valid for all caches.
 package metrics
 
 import (
