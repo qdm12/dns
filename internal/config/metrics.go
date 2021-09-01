@@ -31,11 +31,6 @@ type Metrics struct {
 	Prometheus Prometheus
 }
 
-type Prometheus struct {
-	// Server listening address for prometheus server.
-	Address string
-}
-
 func getMetricsSettings(reader *reader) (settings Metrics,
 	err error) {
 	settings.Type, err = reader.env.Inside("METRICS_TYPE",
@@ -44,14 +39,9 @@ func getMetricsSettings(reader *reader) (settings Metrics,
 		return settings, fmt.Errorf("environment variable METRICS_TYPE: %w", err)
 	}
 
-	var warning string
-	settings.Prometheus.Address, warning, err = reader.env.ListeningAddress(
-		"METRICS_PROMETHEUS_ADDRESS", params.Default(":9090"))
-	if warning != "" {
-		reader.logger.Warn("METRICS_PROMETHEUS_ADDRESS: " + warning)
-	}
+	settings.Prometheus, err = getPrometheusSettings(reader)
 	if err != nil {
-		return settings, fmt.Errorf("environment variable METRICS_PROMETHEUS_ADDRESS: %w", err)
+		return settings, err
 	}
 
 	return settings, nil
