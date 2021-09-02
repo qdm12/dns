@@ -13,6 +13,7 @@ func Setup(settings *config.Settings) {
 			Metrics:    settings.Cache.LRU.Metrics,
 		})
 		settings.PatchCache(cache)
+		return
 	}
 
 	// noop
