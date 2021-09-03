@@ -20,7 +20,7 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 			"Requests received by the server"),
 		questions: helpers.NewCounterVec(settings.Prefix, "questions_received",
 			"Questions contained in requests received by the server", []string{"class", "type"}),
-		rcode: helpers.NewCounterVec(settings.Prefix, "responses_rcode",
+		rcode: helpers.NewCounterVec(settings.Prefix, "response_rcodes",
 			"Response codes", []string{"rcode"}),
 		answers: helpers.NewCounterVec(settings.Prefix, "answers_sent",
 			"Answers contained in responses sent by the server", []string{"class", "type"}),
