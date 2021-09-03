@@ -65,6 +65,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	if err != nil {
+		_ = conn.Close()
 		h.logger.Warn("cannot exchange over DoH connection: " + err.Error())
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
