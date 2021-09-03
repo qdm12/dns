@@ -15,11 +15,9 @@ func newGauges(settings prom.Settings) (g *gauges, err error) {
 		maxEntries: helpers.NewGauge(settings.Prefix, "cache_max_entries", "DNS cache maximum number of entries"),
 	}
 
-	countersToRegister := []prometheus.Gauge{g.maxEntries}
-	for _, gauge := range countersToRegister {
-		if err = settings.Registry.Register(gauge); err != nil {
-			return g, err
-		}
+	err = helpers.Register(settings.Registry, g.maxEntries)
+	if err != nil {
+		return nil, err
 	}
 
 	return g, nil

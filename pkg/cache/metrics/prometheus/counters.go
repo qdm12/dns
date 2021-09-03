@@ -30,13 +30,11 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 		miss:        helpers.NewCounter(prefix, "cache_miss", "DNS cache miss"),
 	}
 
-	countersToRegister := []prometheus.Counter{
+	err = helpers.Register(settings.Registry,
 		c.insert, c.move, c.remove, c.insertEmpty, c.getEmpty,
-		c.hit, c.expired, c.miss}
-	for _, counter := range countersToRegister {
-		if err = settings.Registry.Register(counter); err != nil {
-			return c, err
-		}
+		c.hit, c.expired, c.miss)
+	if err != nil {
+		return nil, err
 	}
 
 	return c, nil
