@@ -60,8 +60,8 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 	response, _, err := h.client.ExchangeWithConn(r, conn)
 
-	if err := conn.Close(); err != nil {
-		h.logger.Warn("cannot close the DoT connection: " + err.Error())
+	if closeErr := conn.Close(); closeErr != nil {
+		h.logger.Warn("cannot close the DoT connection: " + closeErr.Error())
 	}
 
 	if err != nil {
