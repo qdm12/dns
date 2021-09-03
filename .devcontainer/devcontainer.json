@@ -66,11 +66,11 @@
         "go.vetOnSave": "workspace",
         "editor.formatOnSave": true,
         "go.toolsEnvVars": {
-            "GOFLAGS": "-tags=",
+            "GOFLAGS": "-tags=integration",
             "CGO_ENABLED": 1 // for the race detector
         },
         "gopls.env": {
-            "GOFLAGS": "-tags="
+            "GOFLAGS": "-tags=integration"
         },
         "go.testEnvVars": {
             "": "",
