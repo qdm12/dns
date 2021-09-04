@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 
+	filtermetrics "github.com/qdm12/dns/pkg/blacklist/metrics"
 	cachemetrics "github.com/qdm12/dns/pkg/cache/metrics"
 	dohmetrics "github.com/qdm12/dns/pkg/doh/metrics"
 	dotmetrics "github.com/qdm12/dns/pkg/dot/metrics"
@@ -11,10 +12,12 @@ import (
 
 func (settings *Settings) PatchMetrics(
 	cacheMetrics cachemetrics.Interface,
+	filterMetrics filtermetrics.Interface,
 	dotMetrics dotmetrics.Interface,
 	dohMetrics dohmetrics.Interface) {
 	settings.Cache.LRU.Metrics = cacheMetrics
 	settings.Cache.Noop.Metrics = cacheMetrics
+	settings.Filter.Metrics = filterMetrics
 	settings.DoT.Metrics = dotMetrics
 	settings.DoT.Resolver.Metrics = dotMetrics
 	settings.DoH.Metrics = dohMetrics

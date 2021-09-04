@@ -17,6 +17,7 @@ type Settings struct {
 	DoT          dot.ServerSettings
 	DoH          doh.ServerSettings
 	Cache        cache.Settings
+	Filter       blacklist.Settings
 	Metrics      Metrics
 	Blacklist    blacklist.BuilderSettings
 	CheckDNS     bool

@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/pkg/blacklist/metrics"
+	"github.com/qdm12/dns/pkg/blacklist/metrics/noop"
 	"inet.af/netaddr"
 )
 
@@ -13,6 +15,13 @@ type Settings struct {
 	FqdnHostnames []string
 	IPs           []netaddr.IP
 	IPPrefixes    []netaddr.IPPrefix
+	Metrics       metrics.Interface
+}
+
+func (s *Settings) setDefaults() {
+	if s.Metrics == nil {
+		s.Metrics = noop.New()
+	}
 }
 
 // BlockHostnames transforms the slice of hostnames given to

@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/qdm12/dns/internal/config"
+	filter "github.com/qdm12/dns/pkg/blacklist/metrics/prometheus"
 	cache "github.com/qdm12/dns/pkg/cache/metrics/prometheus"
 	doh "github.com/qdm12/dns/pkg/doh/metrics/prometheus"
 	dot "github.com/qdm12/dns/pkg/dot/metrics/prometheus"
@@ -32,6 +33,7 @@ type Logger interface {
 func Setup(settings config.Prometheus, logger Logger) (
 	server *Server,
 	cacheMetrics *cache.Metrics,
+	filterMetrics *filter.Metrics,
 	dotMetrics *dot.Metrics,
 	dohMetrics *doh.Metrics,
 	err error) {
@@ -45,13 +47,19 @@ func Setup(settings config.Prometheus, logger Logger) (
 	cacheMetrics, err = cache.New(
 		cache.Settings{Prometheus: metricsSettings})
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrCache, err)
+		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrCache, err)
+	}
+
+	filterMetrics, err = filter.New(
+		filter.Settings{Prometheus: metricsSettings})
+	if err != nil {
+		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrCache, err)
 	}
 
 	middlewareMetrics, err := middleware.New(
 		middleware.Settings{Prometheus: metricsSettings})
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrMiddleware, err)
+		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrMiddleware, err)
 	}
 
 	dotMetrics, err = dot.New(dot.Settings{
@@ -59,7 +67,7 @@ func Setup(settings config.Prometheus, logger Logger) (
 		MiddlewareMetrics: middlewareMetrics,
 	})
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOT, err)
+		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOT, err)
 	}
 
 	dohMetrics, err = doh.New(doh.Settings{
@@ -68,7 +76,7 @@ func Setup(settings config.Prometheus, logger Logger) (
 		MiddlewareMetrics: middlewareMetrics,
 	})
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOH, err)
+		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOH, err)
 	}
 
 	handler := promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{})
@@ -78,5 +86,5 @@ func Setup(settings config.Prometheus, logger Logger) (
 		logger:  logger,
 	}
 
-	return server, cacheMetrics, dotMetrics, dohMetrics, nil
+	return server, cacheMetrics, filterMetrics, dotMetrics, dohMetrics, nil
 }

@@ -28,19 +28,19 @@ func setupPrometheus(settings *config.Settings, parentLogger logging.ParentLogge
 	runner *prometheus.Server, err error) {
 	loggerSettings := logging.Settings{Prefix: "prometheus server"}
 	logger := parentLogger.NewChild(loggerSettings)
-	promServer, cacheMetrics, dotMetrics, dohMetrics, err :=
+	promServer, cacheMetrics, filterMetrics, dotMetrics, dohMetrics, err :=
 		prometheus.Setup(settings.Metrics.Prometheus, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	settings.PatchMetrics(cacheMetrics, dotMetrics, dohMetrics)
+	settings.PatchMetrics(cacheMetrics, filterMetrics, dotMetrics, dohMetrics)
 
 	return promServer, nil
 }
 
 func setupNoop(settings *config.Settings) (runner *noop.DummyRunner) {
-	runner, cacheMetrics, dotMetrics, dohMetrics := noop.Setup()
-	settings.PatchMetrics(cacheMetrics, dotMetrics, dohMetrics)
+	runner, cacheMetrics, filterMetrics, dotMetrics, dohMetrics := noop.Setup()
+	settings.PatchMetrics(cacheMetrics, filterMetrics, dotMetrics, dohMetrics)
 	return runner
 }

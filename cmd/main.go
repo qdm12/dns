@@ -169,7 +169,6 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			timer.Reset(settings.UpdatePeriod)
 		}
 
-		var blackListerSettings blacklist.Settings
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
 			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
@@ -180,16 +179,16 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			logger.Info(strconv.Itoa(len(blockedHostnames)) + " hostnames blocked overall")
 			logger.Info(strconv.Itoa(len(blockedIPs)) + " IP addresses blocked overall")
 			logger.Info(strconv.Itoa(len(blockedIPPrefixes)) + " IP networks blocked overall")
-			blackListerSettings.IPs = blockedIPs
-			blackListerSettings.IPPrefixes = blockedIPPrefixes
-			blackListerSettings.BlockHostnames(blockedHostnames)
+			settings.Filter.IPs = blockedIPs
+			settings.Filter.IPPrefixes = blockedIPPrefixes
+			settings.Filter.BlockHostnames(blockedHostnames)
 
 			serverCancel()
 			<-waitError
 			close(waitError)
 		}
 
-		blackLister := blacklist.NewMap(blackListerSettings)
+		blackLister := blacklist.NewMap(settings.Filter)
 		settings.PatchBlacklister(blackLister)
 
 		serverCtx, serverCancel = context.WithCancel(ctx)
