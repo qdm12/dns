@@ -56,7 +56,7 @@ DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers w
   - Go static binary built from this source
 - Resolves using IPv4 and IPv6 when available
 - Auto updates block lists and cryptographic files every 24h and restarts Unbound (< 1 second downtime)
-- Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
+- Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and v6, ppc64le, s390x and riscv64 🎆
 - [Metrics](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
 - DNS rebinding protection
 
