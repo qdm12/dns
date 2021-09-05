@@ -50,7 +50,7 @@ DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers w
 - Block custom hostnames and IP addresses using environment variables
 - **One line setup**
 - Runs without root
-- Small **14MB** Docker image (uncompressed, amd64)
+- Small **12MB** Docker image (uncompressed, amd64)
   - [Alpine 3.14](https://alpinelinux.org)
   - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
   - Go static binary built from this source
