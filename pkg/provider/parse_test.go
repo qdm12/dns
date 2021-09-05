@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,11 +16,11 @@ func Test_Parse(t *testing.T) {
 		err      error
 	}{
 		"empty string": {
-			err: errors.New(`cannot parse provider: ""`),
+			err: ErrParse,
 		},
 		"bad provider string": {
 			s:   "invalid",
-			err: errors.New(`cannot parse provider: "invalid"`),
+			err: ErrParse,
 		},
 		"cirafamily": {
 			s:        "cira family",

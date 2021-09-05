@@ -27,14 +27,14 @@ func getDNSProviders(reader *reader) (providers []provider.Provider, err error) 
 func getProviders(reader *reader, key, defaultValue string) (providers []provider.Provider, err error) {
 	words, err := reader.env.CSV(key, params.Default(defaultValue))
 	if err != nil {
-		return nil, fmt.Errorf("environment variable PROVIDERS: %w", err)
+		return nil, fmt.Errorf("environment variable %s: %w", key, err)
 	}
 
 	providers = make([]provider.Provider, 0, len(words))
 	for _, word := range words {
 		provider, err := provider.Parse(word)
 		if err != nil {
-			return nil, fmt.Errorf("environment variable PROVIDERS: %w", err)
+			return nil, fmt.Errorf("environment variable %s: %w: %s", key, err, word)
 		}
 
 		providers = append(providers, provider)

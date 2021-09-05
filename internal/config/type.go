@@ -28,6 +28,6 @@ func getUpstreamType(env params.Interface) (ut UpstreamType, err error) {
 	case strings.ToLower(string(DoH)):
 		return DoH, nil
 	default:
-		return "", fmt.Errorf("%w: %s", ErrInvalidUpstreamType, s)
+		return "", fmt.Errorf("environment variable UPSTREAM_TYPE: %w: %s", ErrInvalidUpstreamType, s)
 	}
 }

@@ -64,11 +64,13 @@ func getFilterSettings(reader *reader) (settings builder.Settings, err error) {
 func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
 	hostnames, err = reader.env.CSV("ALLOWED_HOSTNAMES")
 	if err != nil {
-		return nil, fmt.Errorf("environment variable UNBLOCK: %w", err)
+		return nil, fmt.Errorf("environment variable ALLOWED_HOSTNAMES: %w", err)
 	}
 	for _, hostname := range hostnames {
 		if !reader.verifier.MatchHostname(hostname) {
-			return nil, fmt.Errorf("%w: allowed hostname: %s", errHostnameInvalid, hostname)
+			return nil, fmt.Errorf(
+				"environment variable ALLOWED_HOSTNAMES: %w: %s",
+				errHostnameInvalid, hostname)
 		}
 	}
 	return hostnames, nil
@@ -85,7 +87,9 @@ func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
 	}
 	for _, hostname := range hostnames {
 		if !reader.verifier.MatchHostname(hostname) {
-			return nil, fmt.Errorf("%w: blocked hostname: %s", errHostnameInvalid, hostname)
+			return nil, fmt.Errorf(
+				"environment variable BLOCK_HOSTNAMES: %w: %s",
+				errHostnameInvalid, hostname)
 		}
 	}
 	return hostnames, nil
@@ -105,7 +109,9 @@ func getBlockedIPs(reader *reader) (ips []netaddr.IP, err error) {
 	for _, value := range values {
 		ip, err := netaddr.ParseIP(value)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", errIPStringInvalid, err)
+			return nil, fmt.Errorf(
+				"environment variable BLOCK_IPS: %w: %s",
+				errIPStringInvalid, err)
 		}
 		ips = append(ips, ip)
 	}
@@ -120,14 +126,14 @@ var errBlockedIPPrefixInvalid = errors.New("blocked IP prefix CIDR is invalid")
 func getBlockedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err error) {
 	values, err := reader.env.CSV("BLOCK_CIDRS")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("environment variable BLOCK_CIDRS: %w", err)
 	}
 
 	ipPrefixes = make([]netaddr.IPPrefix, len(values))
 	for _, value := range values {
 		ipPrefix, err := netaddr.ParseIPPrefix(value)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", errBlockedIPPrefixInvalid, err)
+			return nil, fmt.Errorf("environment variable BLOCK_CIDRS: %w: %s", errBlockedIPPrefixInvalid, err)
 		}
 		ipPrefixes = append(ipPrefixes, ipPrefix)
 	}

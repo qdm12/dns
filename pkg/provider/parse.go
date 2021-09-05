@@ -2,11 +2,10 @@ package provider
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
-var ErrParse = errors.New("cannot parse provider")
+var ErrParse = errors.New("provider does not match any known providers")
 
 func Parse(s string) (provider Provider, err error) {
 	for _, provider := range All() {
@@ -14,5 +13,5 @@ func Parse(s string) (provider Provider, err error) {
 			return provider, nil
 		}
 	}
-	return nil, fmt.Errorf("%w: %q", ErrParse, s)
+	return nil, ErrParse
 }
