@@ -1,7 +1,7 @@
 package lru
 
 import (
-	"strconv"
+	"fmt"
 
 	"github.com/miekg/dns"
 )
@@ -14,7 +14,7 @@ type entry struct {
 
 func makeKey(request *dns.Msg) (key string) {
 	question := request.Question[0]
-	key = question.Name + "|" + strconv.Itoa(int(question.Qtype)) + "|" + strconv.Itoa(int(question.Qclass))
+	key = question.Name + "|" + fmt.Sprint(question.Qtype) + "|" + fmt.Sprint(question.Qclass)
 	return key
 }
 

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 	_ "time/tzdata"
@@ -175,9 +174,9 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			for _, err := range errs {
 				logger.Warn(err.Error())
 			}
-			logger.Info(strconv.Itoa(len(blockedHostnames)) + " hostnames blocked overall")
-			logger.Info(strconv.Itoa(len(blockedIPs)) + " IP addresses blocked overall")
-			logger.Info(strconv.Itoa(len(blockedIPPrefixes)) + " IP networks blocked overall")
+			logger.Info(fmt.Sprint(len(blockedHostnames)) + " hostnames blocked overall")
+			logger.Info(fmt.Sprint(len(blockedIPs)) + " IP addresses blocked overall")
+			logger.Info(fmt.Sprint(len(blockedIPPrefixes)) + " IP networks blocked overall")
 			settings.Filter.IPs = blockedIPs
 			settings.Filter.IPPrefixes = blockedIPPrefixes
 			settings.Filter.BlockHostnames(blockedHostnames)

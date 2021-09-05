@@ -1,7 +1,7 @@
 package dot
 
 import (
-	"strconv"
+	"fmt"
 	"strings"
 	"time"
 
@@ -113,7 +113,7 @@ func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
 	}
 
 	lines = append(lines,
-		subSection+"Listening port: "+strconv.Itoa(int(s.Port)))
+		subSection+"Listening port: "+fmt.Sprint(s.Port))
 
 	return lines
 }

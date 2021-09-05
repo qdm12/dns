@@ -3,8 +3,8 @@ package dot
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
-	"strconv"
 
 	"github.com/qdm12/dns/pkg/provider"
 )
@@ -34,7 +34,7 @@ func newDoTDial(settings ResolverSettings) dialFunc {
 	return func(ctx context.Context, _, _ string) (net.Conn, error) {
 		DoTServer := picker.DoTServer(dotServers)
 		ip := picker.DoTIP(DoTServer, settings.IPv6)
-		tlsAddr := net.JoinHostPort(ip.String(), strconv.Itoa(int(DoTServer.Port)))
+		tlsAddr := net.JoinHostPort(ip.String(), fmt.Sprint(DoTServer.Port))
 
 		conn, err := dialer.DialContext(ctx, "tcp", tlsAddr)
 		if err != nil {

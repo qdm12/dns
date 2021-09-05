@@ -1,7 +1,7 @@
 package doh
 
 import (
-	"strconv"
+	"fmt"
 	"strings"
 	"time"
 
@@ -134,7 +134,7 @@ func (s *SelfDNS) String() string {
 
 func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
 	lines = append(lines,
-		subSection+"Listening port: "+strconv.Itoa(int(s.Port)))
+		subSection+"Listening port: "+fmt.Sprint(s.Port))
 
 	lines = append(lines, subSection+"Resolver:")
 	for _, line := range s.Resolver.Lines(indent, subSection) {
