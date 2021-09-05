@@ -33,12 +33,10 @@ func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-	if h.cache != nil {
-		if response := h.cache.Get(r); response != nil {
-			response.SetReply(r)
-			_ = w.WriteMsg(response)
-			return
-		}
+	if response := h.cache.Get(r); response != nil {
+		response.SetReply(r)
+		_ = w.WriteMsg(response)
+		return
 	}
 
 	if h.filter.FilterRequest(r) {
@@ -73,9 +71,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
-	if h.cache != nil {
-		h.cache.Add(r, response)
-	}
+	h.cache.Add(r, response)
 
 	response.SetReply(r)
 	_ = w.WriteMsg(response)
