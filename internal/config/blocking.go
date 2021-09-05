@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/qdm12/dns/pkg/filter"
@@ -60,23 +59,20 @@ func getFilterSettings(reader *reader) (settings builder.Settings, err error) {
 }
 
 // getAllowedHostnames obtains a list of hostnames to unblock from block lists
-// from the comma separated list for the environment variable UNBLOCK.
+// from the comma separated list for the environment variable ALLOWED_HOSTNAMES.
 func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
 	hostnames, err = reader.env.CSV("ALLOWED_HOSTNAMES")
 	if err != nil {
 		return nil, fmt.Errorf("environment variable ALLOWED_HOSTNAMES: %w", err)
 	}
-	for _, hostname := range hostnames {
-		if !reader.verifier.MatchHostname(hostname) {
-			return nil, fmt.Errorf(
-				"environment variable ALLOWED_HOSTNAMES: %w: %s",
-				errHostnameInvalid, hostname)
-		}
+
+	err = checkHostnames(reader.verifier, hostnames)
+	if err != nil {
+		return nil, fmt.Errorf("environment variable ALLOWED_HOSTNAMES: %w", err)
 	}
+
 	return hostnames, nil
 }
-
-var errHostnameInvalid = errors.New("hostname is invalid")
 
 // getBlockedHostnames obtains a list of hostnames to block from the comma
 // separated list for the environment variable BLOCK_HOSTNAMES.
@@ -85,17 +81,14 @@ func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("environment variable BLOCK_HOSTNAMES: %w", err)
 	}
-	for _, hostname := range hostnames {
-		if !reader.verifier.MatchHostname(hostname) {
-			return nil, fmt.Errorf(
-				"environment variable BLOCK_HOSTNAMES: %w: %s",
-				errHostnameInvalid, hostname)
-		}
+
+	err = checkHostnames(reader.verifier, hostnames)
+	if err != nil {
+		return nil, fmt.Errorf("environment variable BLOCK_HOSTNAMES: %w", err)
 	}
+
 	return hostnames, nil
 }
-
-var errIPStringInvalid = errors.New("IP address string is invalid")
 
 // getBlockedIPs obtains a list of IP addresses to block from
 // the comma separated list for the environment variable BLOCK_IPS.
@@ -105,21 +98,13 @@ func getBlockedIPs(reader *reader) (ips []netaddr.IP, err error) {
 		return nil, fmt.Errorf("environment variable BLOCK_IPS: %w", err)
 	}
 
-	ips = make([]netaddr.IP, len(values))
-	for _, value := range values {
-		ip, err := netaddr.ParseIP(value)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"environment variable BLOCK_IPS: %w: %s",
-				errIPStringInvalid, err)
-		}
-		ips = append(ips, ip)
+	ips, err = parseIPStrings(values)
+	if err != nil {
+		return nil, fmt.Errorf("environment variable BLOCK_IPS: %w", err)
 	}
 
 	return ips, nil
 }
-
-var errBlockedIPPrefixInvalid = errors.New("blocked IP prefix CIDR is invalid")
 
 // getBlockedIPPrefixes obtains a list of IP networks (CIDR notation) to block from
 // the comma separated list for the environment variable BLOCK_CIDRS.
@@ -129,13 +114,9 @@ func getBlockedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err er
 		return nil, fmt.Errorf("environment variable BLOCK_CIDRS: %w", err)
 	}
 
-	ipPrefixes = make([]netaddr.IPPrefix, len(values))
-	for _, value := range values {
-		ipPrefix, err := netaddr.ParseIPPrefix(value)
-		if err != nil {
-			return nil, fmt.Errorf("environment variable BLOCK_CIDRS: %w: %s", errBlockedIPPrefixInvalid, err)
-		}
-		ipPrefixes = append(ipPrefixes, ipPrefix)
+	ipPrefixes, err = parseIPPrefixStrings(values)
+	if err != nil {
+		return nil, fmt.Errorf("environment variable BLOCK_CIDRS: %w", err)
 	}
 
 	return ipPrefixes, nil
