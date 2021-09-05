@@ -1,4 +1,4 @@
-package filter
+package builder
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ func Test_builder_All(t *testing.T) {
 		err     error
 	}
 	tests := map[string]struct {
-		settings          BuilderSettings
+		settings          Settings
 		maliciousHosts    httpCase
 		maliciousIPs      httpCase
 		adsHosts          httpCase
@@ -34,14 +34,14 @@ func Test_builder_All(t *testing.T) {
 	}{
 		"none blocked": {},
 		"all blocked without lists": {
-			settings: BuilderSettings{
+			settings: Settings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
 			},
 		},
 		"all blocked with lists": {
-			settings: BuilderSettings{
+			settings: Settings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -68,7 +68,7 @@ func Test_builder_All(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
 		"all blocked with allowed hostnames": {
-			settings: BuilderSettings{
+			settings: Settings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -96,7 +96,7 @@ func Test_builder_All(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
 		"blocked with additional blocked IP addresses": {
-			settings: BuilderSettings{
+			settings: Settings{
 				BlockMalicious: true,
 				AddBlockedIPs:  []netaddr.IP{netaddr.IPv4(1, 2, 3, 7)},
 			},
@@ -110,7 +110,7 @@ func Test_builder_All(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.7"},
 		},
 		"all blocked with lists and one error": {
-			settings: BuilderSettings{
+			settings: Settings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -140,7 +140,7 @@ func Test_builder_All(t *testing.T) {
 			},
 		},
 		"all blocked with errors": {
-			settings: BuilderSettings{
+			settings: Settings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -243,7 +243,7 @@ func Test_builder_All(t *testing.T) {
 				}),
 			}
 
-			builder := NewBuilder(client)
+			builder := New(client)
 
 			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
 				builder.All(ctx, tc.settings)

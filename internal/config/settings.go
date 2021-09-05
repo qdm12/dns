@@ -8,6 +8,7 @@ import (
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/filter"
+	"github.com/qdm12/dns/pkg/filter/builder"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/params"
 )
@@ -19,7 +20,7 @@ type Settings struct {
 	Cache         cache.Settings
 	Filter        filter.Settings
 	Metrics       Metrics
-	FilterBuilder filter.BuilderSettings
+	FilterBuilder builder.Settings
 	CheckDNS      bool
 	LogLevel      logging.Level
 	UpdatePeriod  time.Duration

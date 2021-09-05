@@ -23,6 +23,7 @@ import (
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/filter"
+	"github.com/qdm12/dns/pkg/filter/builder"
 	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/golibs/logging"
@@ -126,7 +127,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	// Use the same cache across DNS server restarts
 	cache.Setup(&settings)
 
-	filterBuilder := filter.NewBuilder(client)
+	filterBuilder := builder.New(client)
 
 	dnsServerHandler, dnsServerCtx, dnsServerDone := goshutdown.NewGoRoutineHandler(
 		"dns server", goshutdown.GoRoutineSettings{})
@@ -151,7 +152,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 	crashed chan<- error, settings config.Settings,
-	logger log.Logger, filterBuilder filter.Builder) {
+	logger log.Logger, filterBuilder builder.Interface) {
 	defer close(dnsServerDone)
 	timer := time.NewTimer(time.Hour)
 

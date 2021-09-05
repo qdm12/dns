@@ -1,4 +1,4 @@
-package filter
+package builder
 
 import (
 	"strconv"
@@ -7,7 +7,7 @@ import (
 	"inet.af/netaddr"
 )
 
-type BuilderSettings struct {
+type Settings struct {
 	BlockMalicious       bool
 	BlockAds             bool
 	BlockSurveillance    bool
@@ -17,7 +17,7 @@ type BuilderSettings struct {
 	AddBlockedIPPrefixes []netaddr.IPPrefix
 }
 
-func (s *BuilderSettings) String() string {
+func (s *Settings) String() string {
 	const (
 		subSection = " |--"
 		indent     = "    " // used if lines already contain the subSection
@@ -25,7 +25,7 @@ func (s *BuilderSettings) String() string {
 	return strings.Join(s.Lines(indent, subSection), "\n")
 }
 
-func (s *BuilderSettings) Lines(indent, subSection string) (lines []string) {
+func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	var blockedCategories []string
 	if s.BlockMalicious {
 		blockedCategories = append(blockedCategories, "malicious")

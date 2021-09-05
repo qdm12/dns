@@ -1,4 +1,4 @@
-package filter
+package builder
 
 import (
 	"bytes"
@@ -155,7 +155,7 @@ func Test_builder_Hostnames(t *testing.T) {
 				}),
 			}
 
-			builder := NewBuilder(client)
+			builder := New(client)
 
 			blockedHostnames, errs := builder.Hostnames(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,

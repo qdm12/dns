@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/qdm12/dns/pkg/filter"
+	"github.com/qdm12/dns/pkg/filter/builder"
 	"github.com/qdm12/golibs/params"
 	"inet.af/netaddr"
 )
@@ -14,7 +15,7 @@ func (settings *Settings) PatchFilter(filter filter.Filter) {
 	settings.DoH.Filter = filter
 }
 
-func getFilterSettings(reader *reader) (settings filter.BuilderSettings, err error) {
+func getFilterSettings(reader *reader) (settings builder.Settings, err error) {
 	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable BLOCK_MALICIOUS: %w", err)

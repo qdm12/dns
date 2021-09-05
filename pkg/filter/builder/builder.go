@@ -1,4 +1,4 @@
-package filter
+package builder
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"inet.af/netaddr"
 )
 
-type Builder interface {
-	All(ctx context.Context, settings BuilderSettings) (
+type Interface interface {
+	All(ctx context.Context, settings Settings) (
 		blockedHostnames []string, blockedIPs []netaddr.IP,
 		blockedIPPrefixes []netaddr.IPPrefix, errs []error)
 	Hostnames(ctx context.Context,
@@ -21,7 +21,7 @@ type Builder interface {
 		blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix, errs []error)
 }
 
-func NewBuilder(client *http.Client) Builder {
+func New(client *http.Client) Interface {
 	return &builder{
 		client: client,
 		// TODO cache blocked IPs and hostnames after first request?

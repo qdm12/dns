@@ -1,4 +1,4 @@
-package filter
+package builder
 
 import (
 	"bytes"
@@ -151,7 +151,7 @@ func Test_builder_IPs(t *testing.T) {
 				}),
 			}
 
-			builder := NewBuilder(client)
+			builder := New(client)
 
 			blockedIPs, blockedIPPrefixes, errs := builder.IPs(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,

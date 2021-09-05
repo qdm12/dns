@@ -1,4 +1,4 @@
-package filter
+package builder
 
 import (
 	"inet.af/netaddr"
