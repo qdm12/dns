@@ -78,7 +78,7 @@ ENV \
     BLOCK_SURVEILLANCE=off \
     BLOCK_ADS=off \
     BLOCK_IPS= \
-    BLOCK_IPNETS= \
+    BLOCK_CIDRS= \
     BLOCK_HOSTNAMES= \
     ALLOWED_HOSTNAMES= \
     METRICS_TYPE=noop \

@@ -124,7 +124,7 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
 | `ALLOWED_HOSTNAMES` | | comma separated list of hostnames to leave unblocked |
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
-| `BLOCK_IPNETS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
+| `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
 | `LOG_REQUESTS` | `off` | `on` or `off` to log DNS requests at the `info` level |
 | `LOG_RESPONSES` | `off` | `on` or `off` to log DNS responses at the `info` level |
