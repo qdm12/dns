@@ -57,6 +57,7 @@ DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers w
 - Resolves using IPv4 and IPv6 when available
 - Auto updates block lists and cryptographic files every 24h and restarts Unbound (< 1 second downtime)
 - Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
+- [Metrics](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
 - DNS rebinding protection
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
@@ -65,7 +66,6 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 1. DNSSEC validation
 2. Custom redirection from hostname to IP address
-3. Prometheus metrics with Grafana dashboard
 
 ## Setup
 
@@ -84,6 +84,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
     More environment variables are described in the [environment variables](#environment-variables) section.
 
 1. See the [Connect clients to it](#connect-clients-to-it) section, you can also refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
+
+〽️ [Metrics setup](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
 
 If you run an old Docker version or Kernel, you might want to run the container as root with `--user="0"` (see [this issue](https://github.com/qdm12/dns/issues/79) for context).
 
