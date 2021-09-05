@@ -112,16 +112,19 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
+| `UPSTREAM_TYPE` | `DoT` | Upstream DNS connection type: `DoT` for DNS over TLS or `DoH` for DNS over HTTPS |
 | `DOT_RESOLVERS` | `cloudflare,google` | Comma separated list of DNS-over-TLS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
 | `DOH_RESOLVERS` | `cloudflare,google` | Comma separated list of DNS-over-HTTPS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
 | `DNS_PLAINTEXT_RESOLVERS` | `cloudflare` | Comma separated list of plaintext DNS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
+| `DOT_TIMEOUT` | `3s` | DNS over TLS dial timeout |
+| `DOH_TIMEOUT` | `3s` | DNS over HTTPs exchange timeout |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
 | `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
 | `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
 | `ALLOWED_HOSTNAMES` | | comma separated list of hostnames to leave unblocked |
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
-| `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDR) to block from being returned to clients |
+| `BLOCK_IPNETS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
 | `LOG_REQUESTS` | `off` | `on` or `off` to log DNS requests at the `info` level |
 | `LOG_RESPONSES` | `off` | `on` or `off` to log DNS responses at the `info` level |

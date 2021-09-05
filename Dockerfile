@@ -73,8 +73,7 @@ ENV \
     LOG_LEVEL=info \
     CACHE_TYPE=lru \
     CACHE_LRU_MAX_ENTRIES=10000 \
-    IPV4=on \
-    IPV6=off \
+    DOT_CONNECT_IPV6=off \
     BLOCK_MALICIOUS=on \
     BLOCK_SURVEILLANCE=off \
     BLOCK_ADS=off \
