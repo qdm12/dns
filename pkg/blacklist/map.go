@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/pkg/blacklist/metrics"
 	"inet.af/netaddr"
 )
 
@@ -11,30 +12,43 @@ type mapBased struct {
 	fqdnHostnames map[string]struct{}
 	ips           map[netaddr.IP]struct{}
 	ipPrefixes    []netaddr.IPPrefix
+	metrics       metrics.Interface
 }
 
 func NewMap(settings Settings) BlackLister {
+	settings.setDefaults()
+	metrics := settings.Metrics
+
 	fqdnHostnamesSet := make(map[string]struct{}, len(settings.FqdnHostnames))
 	for _, fqdnHostname := range settings.FqdnHostnames {
 		fqdnHostnamesSet[fqdnHostname] = struct{}{}
 	}
+	metrics.SetBlockedHostnames(len(fqdnHostnamesSet))
 
 	ipsSet := make(map[netaddr.IP]struct{}, len(settings.IPs))
 	for _, ip := range settings.IPs {
 		ipsSet[ip] = struct{}{}
 	}
+	metrics.SetBlockedIPs(len(ipsSet))
+
+	metrics.SetBlockedIPPrefixes(len(settings.IPPrefixes))
 
 	return &mapBased{
 		fqdnHostnames: fqdnHostnamesSet,
 		ips:           ipsSet,
 		ipPrefixes:    settings.IPPrefixes,
+		metrics:       metrics,
 	}
 }
 
 func (m *mapBased) FilterRequest(request *dns.Msg) (blocked bool) {
 	for _, question := range request.Question {
 		fqdnHostname := question.Name
-		if _, blocked := m.fqdnHostnames[fqdnHostname]; blocked {
+		_, blocked = m.fqdnHostnames[fqdnHostname]
+		if blocked {
+			class := dns.ClassToString[question.Qclass]
+			qType := dns.TypeToString[question.Qtype]
+			m.metrics.HostnamesFilteredInc(class, qType)
 			return blocked
 		}
 	}
@@ -44,19 +58,22 @@ func (m *mapBased) FilterRequest(request *dns.Msg) (blocked bool) {
 func (m *mapBased) FilterResponse(response *dns.Msg) (blocked bool) {
 	for _, rr := range response.Answer {
 		// only filter A and AAAA responses for now
-		switch rr.Header().Rrtype {
+		rrType := rr.Header().Rrtype
+		switch rrType {
 		case dns.TypeA:
 			record := rr.(*dns.A)
-			if blocked := m.isIPBlocked(record.A); blocked {
-				return blocked
-			}
+			blocked = m.isIPBlocked(record.A)
 		case dns.TypeAAAA:
 			record := rr.(*dns.AAAA)
-			if blocked := m.isIPBlocked(record.AAAA); blocked {
-				return blocked
-			}
+			blocked = m.isIPBlocked(record.AAAA)
+		}
+
+		if blocked {
+			m.metrics.IPsFilteredInc(dns.TypeToString[rrType])
+			return true
 		}
 	}
+
 	return false
 }
 

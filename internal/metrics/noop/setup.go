@@ -1,0 +1,29 @@
+// Package noop initializes all No-op metrics objects.
+package noop
+
+import (
+	"context"
+
+	filter "github.com/qdm12/dns/pkg/blacklist/metrics/noop"
+	cache "github.com/qdm12/dns/pkg/cache/metrics/noop"
+	doh "github.com/qdm12/dns/pkg/doh/metrics/noop"
+	dot "github.com/qdm12/dns/pkg/dot/metrics/noop"
+)
+
+type DummyRunner struct{}
+
+func (d *DummyRunner) Run(ctx context.Context, done chan<- struct{}) {
+	close(done)
+}
+
+func Setup() (dummy *DummyRunner,
+	cacheMetrics *cache.Metrics,
+	filterMetrics *filter.Metrics,
+	dotMetrics *dot.Metrics,
+	dohMetrics *doh.Metrics) {
+	cacheMetrics = cache.New()
+	filterMetrics = filter.New()
+	dotMetrics = dot.New()
+	dohMetrics = doh.New()
+	return new(DummyRunner), cacheMetrics, filterMetrics, dotMetrics, dohMetrics
+}

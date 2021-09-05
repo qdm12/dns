@@ -1,0 +1,29 @@
+package prometheus
+
+import (
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/qdm12/dns/internal/metrics/prometheus/helpers"
+	prom "github.com/qdm12/dns/pkg/metrics/prometheus"
+)
+
+type labels struct {
+	cacheLabels *prometheus.GaugeVec
+}
+
+func newLabels(settings prom.Settings) (l *labels, err error) {
+	l = &labels{
+		cacheLabels: helpers.NewGaugeVec(
+			settings.Prefix, "cache_labels", "DNS cache labels", []string{"type"}),
+	}
+
+	err = helpers.Register(settings.Registry, l.cacheLabels)
+	if err != nil {
+		return nil, err
+	}
+
+	return l, nil
+}
+
+func (l *labels) SetCacheType(cacheType string) {
+	l.cacheLabels.WithLabelValues(cacheType).Set(0)
+}

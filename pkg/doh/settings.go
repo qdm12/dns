@@ -7,22 +7,44 @@ import (
 
 	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/cache"
-	"github.com/qdm12/dns/pkg/middlewares/log"
+	cachenoop "github.com/qdm12/dns/pkg/cache/noop"
+	"github.com/qdm12/dns/pkg/doh/metrics"
+	metricsnoop "github.com/qdm12/dns/pkg/doh/metrics/noop"
+	"github.com/qdm12/dns/pkg/log"
+	lognoop "github.com/qdm12/dns/pkg/log/noop"
+	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
 	"github.com/qdm12/dns/pkg/provider"
 )
 
 type ServerSettings struct {
-	Resolver  ResolverSettings
-	Port      uint16
-	Log       log.Settings
-	Cache     cache.Settings
-	Blacklist blacklist.Settings
+	Resolver ResolverSettings
+	Port     uint16
+	Log      logmiddleware.Settings
+	// Cache is the cache to use in the server.
+	// It defaults to a No-Op cache implementation with
+	// a No-Op cache metrics implementation.
+	Cache cache.Interface
+	// Blacklister is the blacklist filter for DNS requests and
+	// responses. It defaults to a No-Op blacklister implementation.
+	Blacklister blacklist.BlackLister
+	// Logger is the logger to log information.
+	// It defaults to a No-Op logger implementation.
+	Logger log.Logger
+	// Metrics is the metrics interface to record metric data.
+	// It defaults to a No-Op metrics implementation.
+	Metrics metrics.Interface
 }
 
 type ResolverSettings struct {
 	DoHProviders []provider.Provider
 	SelfDNS      SelfDNS
 	Timeout      time.Duration
+	// Warner is the warning logger to log dial errors.
+	// It defaults to a No-Op warner implementation.
+	Warner log.Warner
+	// Metrics is the metrics interface to record metric data.
+	// It defaults to a No-Op metrics implementation.
+	Metrics metrics.DialMetrics
 }
 
 type SelfDNS struct {
@@ -41,8 +63,22 @@ func (s *ServerSettings) setDefaults() {
 		s.Port = defaultPort
 	}
 
-	// Cache defaults to disabled, see pkg/cache/settings.go
-	s.Cache.SetDefaults()
+	if s.Blacklister == nil {
+		s.Blacklister = blacklist.NewMap(blacklist.Settings{})
+	}
+
+	if s.Logger == nil {
+		s.Logger = lognoop.New()
+	}
+
+	if s.Metrics == nil {
+		s.Metrics = metricsnoop.New()
+	}
+
+	if s.Cache == nil {
+		// no-op metrics for no-op cache
+		s.Cache = cachenoop.New(cachenoop.Settings{})
+	}
 }
 
 func (s *ResolverSettings) setDefaults() {
@@ -55,6 +91,14 @@ func (s *ResolverSettings) setDefaults() {
 	if s.Timeout == 0 {
 		const defaultTimeout = 5 * time.Second
 		s.Timeout = defaultTimeout
+	}
+
+	if s.Warner == nil {
+		s.Warner = lognoop.New()
+	}
+
+	if s.Metrics == nil {
+		s.Metrics = metricsnoop.New()
 	}
 }
 
@@ -94,16 +138,6 @@ func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
 
 	lines = append(lines, subSection+"Resolver:")
 	for _, line := range s.Resolver.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
-
-	lines = append(lines, subSection+"Caching:")
-	for _, line := range s.Cache.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
-
-	lines = append(lines, subSection+"Blacklist:")
-	for _, line := range s.Blacklist.Lines(indent, subSection) {
 		lines = append(lines, indent+line)
 	}
 

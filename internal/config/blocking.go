@@ -9,6 +9,11 @@ import (
 	"inet.af/netaddr"
 )
 
+func (settings *Settings) PatchBlacklister(blacklister blacklist.BlackLister) {
+	settings.DoT.Blacklister = blacklister
+	settings.DoH.Blacklister = blacklister
+}
+
 func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, err error) {
 	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
 	if err != nil {

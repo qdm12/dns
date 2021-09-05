@@ -7,6 +7,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/kyokomi/emoji v2.2.4+incompatible
 	github.com/miekg/dns v1.1.43
+	github.com/prometheus/client_golang v1.10.0
 	github.com/qdm12/golibs v0.0.0-20210723175634-a75ca7fd74c2
 	github.com/qdm12/goshutdown v0.1.0
 	github.com/stretchr/testify v1.7.0

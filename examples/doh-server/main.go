@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/qdm12/dns/pkg/cache"
+	"github.com/qdm12/dns/pkg/cache/lru"
 	"github.com/qdm12/dns/pkg/doh"
 )
 
@@ -15,14 +15,15 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	logger := new(Logger)
-	server := doh.NewServer(ctx, logger, doh.ServerSettings{
-		Cache: cache.Settings{Type: cache.LRU},
+	server := doh.NewServer(ctx, doh.ServerSettings{
+		Cache:  lru.New(lru.Settings{}),
+		Logger: logger,
 	})
 	stopped := make(chan error)
 	go server.Run(ctx, stopped)
 	select {
 	case <-ctx.Done():
-		logger.Warn("\nCaught an OS signal, terminating...")
+		logger.Warn("Caught an OS signal, terminating...")
 		<-stopped
 	case err := <-stopped:
 		logger.Warn("DoH server crashed: " + err.Error())

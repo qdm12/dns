@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/qdm12/dns/pkg/blacklist"
+	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/golibs/logging"
@@ -15,6 +16,9 @@ type Settings struct {
 	UpstreamType UpstreamType
 	DoT          dot.ServerSettings
 	DoH          doh.ServerSettings
+	Cache        cache.Settings
+	Filter       blacklist.Settings
+	Metrics      Metrics
 	Blacklist    blacklist.BuilderSettings
 	CheckDNS     bool
 	LogLevel     logging.Level
@@ -37,6 +41,12 @@ func (settings *Settings) get(reader *reader) (err error) {
 	settings.DoT.Port = listeningPort
 	settings.DoH.Port = listeningPort
 
+	// Metrics settings
+	settings.Metrics, err = getMetricsSettings(reader)
+	if err != nil {
+		return err
+	}
+
 	// Resolver settings
 	settings.DoT.Resolver, err = getDoTSettings(reader)
 	if err != nil {
@@ -56,12 +66,10 @@ func (settings *Settings) get(reader *reader) (err error) {
 	settings.DoH.Log = logSettings
 
 	// Cache settings
-	cacheSettings, err := getCacheSettings(reader)
+	settings.Cache, err = getCacheSettings(reader)
 	if err != nil {
 		return err
 	}
-	settings.DoT.Cache = cacheSettings
-	settings.DoH.Cache = cacheSettings
 
 	// DoT and DoH blacklist settings are set later at runtime
 	// using settings.Blacklist

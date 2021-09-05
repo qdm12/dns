@@ -24,6 +24,16 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		}
 	}
 
+	lines = append(lines, subSection+"Cache settings:")
+	for _, line := range s.Cache.Lines(indent, subSection) {
+		lines = append(lines, indent+line)
+	}
+
+	lines = append(lines, subSection+"Metrics settings:")
+	for _, line := range s.Metrics.Lines(indent, subSection) {
+		lines = append(lines, indent+line)
+	}
+
 	lines = append(lines, subSection+"Blacklist settings:")
 	for _, line := range s.Blacklist.Lines(indent, subSection) {
 		lines = append(lines, indent+line)

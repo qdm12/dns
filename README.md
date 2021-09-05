@@ -57,6 +57,7 @@ DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers w
 - Resolves using IPv4 and IPv6 when available
 - Auto updates block lists and cryptographic files every 24h and restarts Unbound (< 1 second downtime)
 - Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and ppc64le 🎆
+- [Metrics](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
 - DNS rebinding protection
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
@@ -65,7 +66,6 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
 1. DNSSEC validation
 2. Custom redirection from hostname to IP address
-3. Prometheus metrics with Grafana dashboard
 
 ## Setup
 
@@ -84,6 +84,8 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
     More environment variables are described in the [environment variables](#environment-variables) section.
 
 1. See the [Connect clients to it](#connect-clients-to-it) section, you can also refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
+
+〽️ [Metrics setup](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
 
 If you run an old Docker version or Kernel, you might want to run the container as root with `--user="0"` (see [this issue](https://github.com/qdm12/dns/issues/79) for context).
 
@@ -126,8 +128,11 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `DOT_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over TLS |
 | `DOH_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over HTTPS |
 | `LISTENING_PORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
-| `CACHE_TYPE` | `lru` | `lru` or `disabled`. LRU caches DNS responses by least recently used |
+| `CACHE_TYPE` | `lru` | `lru` or `noop`. LRU caches DNS responses by least recently used |
 | `CACHE_LRU_MAX_ENTRIES` | `10000` | Number of elements to keep in the LRU cache. |
+| `METRICS_TYPE` | `noop` | `noop` or `prometheus` |
+| `METRICS_PROMETHEUS_ADDRESS` | `:9090` | HTTP Prometheus server listening address |
+| `METRICS_PROMETHEUS_SUBSYSTEM` | `dns` | Prometheus metrics prefix/subsystem |
 | `REBINDING_PROTECTION` | `on` | `on` or `off`. Enabling will prevent the server from returning any private IP address to the client. |
 | `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `DOT_CONNECT_IPV6` | `off` | `on` or `off`. Connects to the DNS resolvers over IPv6 instead of IPv4 |

@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/middlewares/log"
-	"github.com/qdm12/golibs/logging"
+	"github.com/qdm12/dns/pkg/log"
+	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
+	metricsmiddleware "github.com/qdm12/dns/pkg/middlewares/metrics"
 )
 
 //go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Server
@@ -18,16 +19,20 @@ type Server interface {
 
 type server struct {
 	dnsServer dns.Server
-	logger    logging.Logger
+	logger    log.Logger
 }
 
-func NewServer(ctx context.Context, logger logging.Logger,
-	settings ServerSettings) Server {
+func NewServer(ctx context.Context, settings ServerSettings) Server {
 	settings.setDefaults()
 
-	handler := newDNSHandler(ctx, logger, settings)
-	logMiddleware := log.New(logger, settings.Log)
+	handler := newDNSHandler(ctx, settings)
+
+	logMiddleware := logmiddleware.New(settings.Logger, settings.Log)
 	handler = logMiddleware(handler)
+
+	metricsMiddleware := metricsmiddleware.New(
+		metricsmiddleware.Settings{Metrics: settings.Metrics})
+	handler = metricsMiddleware(handler)
 
 	return &server{
 		dnsServer: dns.Server{
@@ -35,7 +40,7 @@ func NewServer(ctx context.Context, logger logging.Logger,
 			Net:     "udp",
 			Handler: handler,
 		},
-		logger: logger,
+		logger: settings.Logger,
 	}
 }
 
