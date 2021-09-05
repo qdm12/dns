@@ -19,10 +19,10 @@ import (
 	"github.com/qdm12/dns/internal/metrics"
 	"github.com/qdm12/dns/internal/models"
 	"github.com/qdm12/dns/internal/splash"
-	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/check"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
+	"github.com/qdm12/dns/pkg/filter"
 	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/golibs/logging"
@@ -126,12 +126,12 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	// Use the same cache across DNS server restarts
 	cache.Setup(&settings)
 
-	blacklistBuilder := blacklist.NewBuilder(client)
+	filterBuilder := filter.NewBuilder(client)
 
 	dnsServerHandler, dnsServerCtx, dnsServerDone := goshutdown.NewGoRoutineHandler(
 		"dns server", goshutdown.GoRoutineSettings{})
 	crashed := make(chan error)
-	go runLoop(dnsServerCtx, dnsServerDone, crashed, settings, logger, blacklistBuilder)
+	go runLoop(dnsServerCtx, dnsServerDone, crashed, settings, logger, filterBuilder)
 
 	metricsServerHandler, metricsServerCtx, metricsServerDone := goshutdown.NewGoRoutineHandler(
 		"metrics server", goshutdown.GoRoutineSettings{})
@@ -151,7 +151,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 	crashed chan<- error, settings config.Settings,
-	logger log.Logger, blacklistBuilder blacklist.Builder) {
+	logger log.Logger, filterBuilder filter.Builder) {
 	defer close(dnsServerDone)
 	timer := time.NewTimer(time.Hour)
 
@@ -172,7 +172,7 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
 			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
-				blacklistBuilder.All(ctx, settings.Blacklist)
+				filterBuilder.All(ctx, settings.FilterBuilder)
 			for _, err := range errs {
 				logger.Warn(err.Error())
 			}
@@ -188,8 +188,8 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			close(waitError)
 		}
 
-		blackLister := blacklist.NewMap(settings.Filter)
-		settings.PatchBlacklister(blackLister)
+		filter := filter.NewMap(settings.Filter)
+		settings.PatchFilter(filter)
 
 		serverCtx, serverCancel = context.WithCancel(ctx)
 

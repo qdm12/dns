@@ -1,10 +1,10 @@
-package blacklist
+package filter
 
 import (
 	"net"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/blacklist/metrics"
+	"github.com/qdm12/dns/pkg/filter/metrics"
 	"inet.af/netaddr"
 )
 
@@ -15,7 +15,7 @@ type mapBased struct {
 	metrics       metrics.Interface
 }
 
-func NewMap(settings Settings) BlackLister {
+func NewMap(settings Settings) Filter {
 	settings.setDefaults()
 	metrics := settings.Metrics
 

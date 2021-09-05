@@ -1,4 +1,4 @@
-// Package noop defines a No-op metric implementation for the blacklister.
+// Package noop defines a No-op metric implementation for the filter.
 package noop
 
 type Metrics struct{}

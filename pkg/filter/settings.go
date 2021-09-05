@@ -1,4 +1,4 @@
-package blacklist
+package filter
 
 import (
 	"sort"
@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/blacklist/metrics"
-	"github.com/qdm12/dns/pkg/blacklist/metrics/noop"
+	"github.com/qdm12/dns/pkg/filter/metrics"
+	"github.com/qdm12/dns/pkg/filter/metrics/noop"
 	"inet.af/netaddr"
 )
 
@@ -67,7 +67,7 @@ func (s *Settings) String() string {
 
 func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	if len(s.IPs) == 0 && len(s.FqdnHostnames) == 0 {
-		return []string{subSection + "Blacklisting is disabled"}
+		return []string{subSection + "Filtering is disabled"}
 	}
 
 	if len(s.IPs) > 0 {

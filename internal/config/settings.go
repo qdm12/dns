@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
+	"github.com/qdm12/dns/pkg/filter"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/params"
 )
 
 type Settings struct {
-	UpstreamType UpstreamType
-	DoT          dot.ServerSettings
-	DoH          doh.ServerSettings
-	Cache        cache.Settings
-	Filter       blacklist.Settings
-	Metrics      Metrics
-	Blacklist    blacklist.BuilderSettings
-	CheckDNS     bool
-	LogLevel     logging.Level
-	UpdatePeriod time.Duration
+	UpstreamType  UpstreamType
+	DoT           dot.ServerSettings
+	DoH           doh.ServerSettings
+	Cache         cache.Settings
+	Filter        filter.Settings
+	Metrics       Metrics
+	FilterBuilder filter.BuilderSettings
+	CheckDNS      bool
+	LogLevel      logging.Level
+	UpdatePeriod  time.Duration
 }
 
 func (settings *Settings) get(reader *reader) (err error) {
@@ -71,11 +71,11 @@ func (settings *Settings) get(reader *reader) (err error) {
 		return err
 	}
 
-	// DoT and DoH blacklist settings are set later at runtime
-	// using settings.Blacklist
+	// DoT and DoH filter settings are set later at runtime
+	// using settings.FilterBuilder
 
-	// Blacklist building settings
-	settings.Blacklist, err = getBlacklistSettings(reader)
+	// Filter block lists building settings
+	settings.FilterBuilder, err = getFilterSettings(reader)
 	if err != nil {
 		return err
 	}

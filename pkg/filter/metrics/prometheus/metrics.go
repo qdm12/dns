@@ -1,5 +1,5 @@
 // Package prometheus defines a Prometheus metric implementation
-// for the blacklister.
+// for the filter.
 package prometheus
 
 import (

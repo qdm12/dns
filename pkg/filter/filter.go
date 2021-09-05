@@ -1,10 +1,10 @@
-package blacklist
+package filter
 
 import "github.com/miekg/dns"
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . BlackLister
+//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Filter
 
-type BlackLister interface {
+type Filter interface {
 	FilterRequest(request *dns.Msg) (blocked bool)
 	FilterResponse(response *dns.Msg) (blocked bool)
 }

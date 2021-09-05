@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/cache"
+	"github.com/qdm12/dns/pkg/filter"
 	"github.com/qdm12/dns/pkg/log"
 )
 
@@ -18,7 +18,7 @@ type handler struct {
 	dial   dialFunc
 	client *dns.Client
 	cache  cache.Interface
-	blist  blacklist.BlackLister
+	filter filter.Filter
 }
 
 func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
@@ -28,7 +28,7 @@ func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
 		dial:   newDoHDial(settings.Resolver),
 		client: &dns.Client{},
 		cache:  settings.Cache,
-		blist:  settings.Blacklister,
+		filter: settings.Filter,
 	}
 }
 
@@ -43,7 +43,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		}
 	}
 
-	if h.blist.FilterRequest(r) {
+	if h.filter.FilterRequest(r) {
 		response := new(dns.Msg).SetRcode(r, dns.RcodeRefused)
 		_ = w.WriteMsg(response)
 		return
@@ -70,7 +70,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
-	if h.blist.FilterResponse(response) {
+	if h.filter.FilterResponse(response) {
 		response := new(dns.Msg).SetRcode(r, dns.RcodeRefused)
 		_ = w.WriteMsg(response)
 		return

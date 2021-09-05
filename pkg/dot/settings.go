@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/qdm12/dns/pkg/blacklist"
 	"github.com/qdm12/dns/pkg/cache"
 	cachenoop "github.com/qdm12/dns/pkg/cache/noop"
 	"github.com/qdm12/dns/pkg/dot/metrics"
 	metricsnoop "github.com/qdm12/dns/pkg/dot/metrics/noop"
+	"github.com/qdm12/dns/pkg/filter"
 	"github.com/qdm12/dns/pkg/log"
 	lognoop "github.com/qdm12/dns/pkg/log/noop"
 	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
@@ -24,9 +24,9 @@ type ServerSettings struct {
 	// It defaults to a No-Op cache implementation with
 	// a No-Op cache metrics implementation.
 	Cache cache.Interface
-	// Blacklister is the blacklist filter for DNS requests and
-	// responses. It defaults to a No-Op blacklister implementation.
-	Blacklister blacklist.BlackLister
+	// Filter is the filter for DNS requests and responses.
+	// It defaults to a No-Op filter implementation.
+	Filter filter.Filter
 	// Logger is the logger to log information.
 	// It defaults to a No-Op logger implementation.
 	Logger log.Logger
@@ -56,8 +56,8 @@ func (s *ServerSettings) setDefaults() {
 		s.Port = defaultPort
 	}
 
-	if s.Blacklister == nil {
-		s.Blacklister = blacklist.NewMap(blacklist.Settings{})
+	if s.Filter == nil {
+		s.Filter = filter.NewMap(filter.Settings{})
 	}
 
 	if s.Logger == nil {

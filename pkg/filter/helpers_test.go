@@ -1,4 +1,4 @@
-package blacklist
+package filter
 
 import (
 	"inet.af/netaddr"

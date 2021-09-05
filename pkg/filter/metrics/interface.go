@@ -1,9 +1,9 @@
-// Package metrics defines a metrics interface for the blacklister.
+// Package metrics defines a metrics interface for the filter.
 package metrics
 
 import (
-	"github.com/qdm12/dns/pkg/blacklist/metrics/noop"
-	"github.com/qdm12/dns/pkg/blacklist/metrics/prometheus"
+	"github.com/qdm12/dns/pkg/filter/metrics/noop"
+	"github.com/qdm12/dns/pkg/filter/metrics/prometheus"
 )
 
 var (

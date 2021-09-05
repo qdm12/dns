@@ -4,17 +4,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/qdm12/dns/pkg/blacklist"
+	"github.com/qdm12/dns/pkg/filter"
 	"github.com/qdm12/golibs/params"
 	"inet.af/netaddr"
 )
 
-func (settings *Settings) PatchBlacklister(blacklister blacklist.BlackLister) {
-	settings.DoT.Blacklister = blacklister
-	settings.DoH.Blacklister = blacklister
+func (settings *Settings) PatchFilter(filter filter.Filter) {
+	settings.DoT.Filter = filter
+	settings.DoH.Filter = filter
 }
 
-func getBlacklistSettings(reader *reader) (settings blacklist.BuilderSettings, err error) {
+func getFilterSettings(reader *reader) (settings filter.BuilderSettings, err error) {
 	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable BLOCK_MALICIOUS: %w", err)

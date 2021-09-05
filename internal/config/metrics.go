@@ -3,10 +3,10 @@ package config
 import (
 	"fmt"
 
-	filtermetrics "github.com/qdm12/dns/pkg/blacklist/metrics"
 	cachemetrics "github.com/qdm12/dns/pkg/cache/metrics"
 	dohmetrics "github.com/qdm12/dns/pkg/doh/metrics"
 	dotmetrics "github.com/qdm12/dns/pkg/dot/metrics"
+	filtermetrics "github.com/qdm12/dns/pkg/filter/metrics"
 	"github.com/qdm12/golibs/params"
 )
 

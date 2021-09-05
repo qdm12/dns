@@ -12,9 +12,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/internal/mockhelp"
-	"github.com/qdm12/dns/pkg/blacklist/mock_blacklist"
 	"github.com/qdm12/dns/pkg/cache/mock_cache"
 	"github.com/qdm12/dns/pkg/dot/metrics/mock_metrics"
+	"github.com/qdm12/dns/pkg/filter/mock_filter"
 	"github.com/qdm12/golibs/logging/mock_logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -158,17 +158,17 @@ func Test_Server_Mocks(t *testing.T) {
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
 		mockhelp.NewMatcherResponse(expectedResponseAAAA))
 
-	blackLister := mock_blacklist.NewMockBlackLister(ctrl)
-	blackLister.EXPECT().
+	filter := mock_filter.NewMockFilter(ctrl)
+	filter.EXPECT().
 		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestA)).
 		Return(false)
-	blackLister.EXPECT().
+	filter.EXPECT().
 		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestAAAA)).
 		Return(false)
-	blackLister.EXPECT().
+	filter.EXPECT().
 		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseA)).
 		Return(false)
-	blackLister.EXPECT().
+	filter.EXPECT().
 		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
 		Return(false)
 
@@ -191,10 +191,10 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
 
 	server := NewServer(ctx, ServerSettings{
-		Cache:       cache,
-		Blacklister: blackLister,
-		Logger:      logger,
-		Metrics:     metrics,
+		Cache:   cache,
+		Filter:  filter,
+		Logger:  logger,
+		Metrics: metrics,
 		Resolver: ResolverSettings{
 			Metrics: metrics,
 		},

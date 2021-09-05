@@ -1,4 +1,4 @@
-package blacklist
+package filter
 
 import (
 	"net"
@@ -22,20 +22,20 @@ func Test_mapBased(t *testing.T) {
 
 	settings.BlockHostnames([]string{"github.com", "google.com"})
 
-	blacklister := NewMap(settings)
+	filter := NewMap(settings)
 
-	assert.True(t, blacklister.FilterRequest(&dns.Msg{
+	assert.True(t, filter.FilterRequest(&dns.Msg{
 		Question: []dns.Question{
 			{Name: "google.com."},
 		},
 	}))
-	assert.False(t, blacklister.FilterRequest(&dns.Msg{
+	assert.False(t, filter.FilterRequest(&dns.Msg{
 		Question: []dns.Question{
 			{Name: "duckduckgo.com."},
 		},
 	}))
 
-	assert.True(t, blacklister.FilterResponse(&dns.Msg{
+	assert.True(t, filter.FilterResponse(&dns.Msg{
 		Answer: []dns.RR{
 			&dns.A{
 				Hdr: dns.RR_Header{Rrtype: dns.TypeA},
@@ -47,7 +47,7 @@ func Test_mapBased(t *testing.T) {
 			},
 		},
 	}))
-	assert.False(t, blacklister.FilterResponse(&dns.Msg{
+	assert.False(t, filter.FilterResponse(&dns.Msg{
 		Answer: []dns.RR{
 			&dns.A{
 				Hdr: dns.RR_Header{Rrtype: dns.TypeA},
@@ -78,7 +78,7 @@ func Test_mapBased_threadSafety(t *testing.T) {
 		},
 		}}
 
-	blacklister := NewMap(settings)
+	filter := NewMap(settings)
 
 	startWg := new(sync.WaitGroup)
 	endWg := new(sync.WaitGroup)
@@ -91,8 +91,8 @@ func Test_mapBased_threadSafety(t *testing.T) {
 			defer endWg.Done()
 			startWg.Done()
 			startWg.Wait()
-			_ = blacklister.FilterRequest(request)
-			_ = blacklister.FilterResponse(response)
+			_ = filter.FilterRequest(request)
+			_ = filter.FilterResponse(response)
 		}()
 	}
 
