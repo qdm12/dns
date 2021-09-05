@@ -13,14 +13,14 @@ type Reader interface {
 }
 
 type reader struct {
-	env      params.Env
+	env      params.Interface
 	logger   logging.Logger
 	verifier verification.Verifier
 }
 
 func NewReader(logger logging.Logger) Reader {
 	return &reader{
-		env:      params.NewEnv(),
+		env:      params.New(),
 		logger:   logger,
 		verifier: verification.NewVerifier(),
 	}

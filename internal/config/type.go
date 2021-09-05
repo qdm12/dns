@@ -17,7 +17,7 @@ const (
 
 var ErrInvalidUpstreamType = errors.New("invalid upstream type")
 
-func getUpstreamType(env params.Env) (ut UpstreamType, err error) {
+func getUpstreamType(env params.Interface) (ut UpstreamType, err error) {
 	s, err := env.Get("UPSTREAM_TYPE", params.Default(string(DoT)))
 	if err != nil {
 		return "", fmt.Errorf("environment variable UPSTREAM_TYPE: %w", err)

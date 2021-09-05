@@ -11,7 +11,7 @@ func (settings *Settings) PatchLogger(logger pkglog.Logger) {
 	settings.DoH.Logger = logger
 }
 
-func getLogSettings(env params.Env) (settings log.Settings, err error) {
+func getLogSettings(env params.Interface) (settings log.Settings, err error) {
 	settings.LogRequests, err = env.OnOff("LOG_REQUESTS", params.Default("off"))
 	if err != nil {
 		return settings, err

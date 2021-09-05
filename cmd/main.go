@@ -47,7 +47,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	args := os.Args
-	logger := logging.NewParent(logging.Settings{})
+	logger := logging.New(logging.Settings{})
 	configReader := config.NewReader(logger)
 
 	errorCh := make(chan error)
@@ -100,9 +100,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	if err != nil {
 		return err
 	}
-	logger = logger.NewChild(logging.Settings{
-		Level: settings.LogLevel,
-	})
+	logger.PatchLevel(settings.LogLevel)
 	logger.Info("Settings summary:\n" + settings.String())
 
 	const healthServerAddr = "127.0.0.1:9999"

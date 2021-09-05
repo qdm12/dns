@@ -56,7 +56,7 @@ func Test_getLogSettings(t *testing.T) {
 
 			assignableDefault := gomock.AssignableToTypeOf(params.Default(""))
 
-			env := mock_params.NewMockEnv(ctrl)
+			env := mock_params.NewMockInterface(ctrl)
 			env.EXPECT().
 				OnOff("LOG_REQUESTS", assignableDefault).
 				Return(testCase.logRequests.on, testCase.logRequests.err)
