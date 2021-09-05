@@ -15,7 +15,8 @@ const (
 
 func (b *builder) IPs(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
-	additionalBlockedIPs []netaddr.IP, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
+	allowedIPs, additionalBlockedIPs []netaddr.IP,
+	allowedIPPrefixes, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
 	blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix, errs []error) {
 	chResults := make(chan []string)
 	chError := make(chan error)
@@ -62,9 +63,15 @@ func (b *builder) IPs(ctx context.Context,
 	for _, blockedIP := range additionalBlockedIPs {
 		uniqueResults[blockedIP.String()] = struct{}{}
 	}
+	for _, allowedIP := range allowedIPs {
+		delete(uniqueResults, allowedIP.String())
+	}
 
 	for _, blockedIPPrefix := range additionalBlockedIPPrefixes {
 		uniqueResults[blockedIPPrefix.String()] = struct{}{}
+	}
+	for _, allowedIPPrefix := range allowedIPPrefixes {
+		delete(uniqueResults, allowedIPPrefix.String())
 	}
 
 	blockedIPs = make([]netaddr.IP, 0, len(uniqueResults))

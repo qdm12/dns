@@ -12,6 +12,8 @@ type Settings struct {
 	BlockAds             bool
 	BlockSurveillance    bool
 	AllowedHosts         []string
+	AllowedIPs           []netaddr.IP
+	AllowedIPPrefixes    []netaddr.IPPrefix
 	AddBlockedHosts      []string
 	AddBlockedIPs        []netaddr.IP
 	AddBlockedIPPrefixes []netaddr.IPPrefix
@@ -41,6 +43,16 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	if len(s.AllowedHosts) > 0 {
 		lines = append(lines, subSection+"Hostnames unblocked: "+
 			strconv.Itoa(len(s.AllowedHosts)))
+	}
+
+	if len(s.AllowedIPs) > 0 {
+		lines = append(lines, subSection+"IP addresses unblocked: "+
+			strconv.Itoa(len(s.AllowedIPs)))
+	}
+
+	if len(s.AddBlockedIPPrefixes) > 0 {
+		lines = append(lines, subSection+"IP networks unblocked: "+
+			strconv.Itoa(len(s.AllowedIPPrefixes)))
 	}
 
 	if len(s.AddBlockedHosts) > 0 {

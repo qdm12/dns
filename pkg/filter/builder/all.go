@@ -25,7 +25,8 @@ func (b *builder) All(ctx context.Context, settings Settings) (
 	go func() {
 		blockedIPs, blockedIPPrefixes, errs := b.IPs(ctx,
 			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
-			settings.AddBlockedIPs, settings.AddBlockedIPPrefixes)
+			settings.AllowedIPs, settings.AddBlockedIPs,
+			settings.AllowedIPPrefixes, settings.AddBlockedIPPrefixes)
 		chIPs <- blockedIPs
 		chIPPrefixes <- blockedIPPrefixes
 		chErrors <- errs

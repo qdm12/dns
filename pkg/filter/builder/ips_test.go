@@ -24,7 +24,9 @@ func Test_builder_IPs(t *testing.T) {
 		malicious                   blockParams
 		ads                         blockParams
 		surveillance                blockParams
+		allowedIPs                  []netaddr.IP
 		additionalBlockedIPs        []netaddr.IP
+		allowedIPPrefixes           []netaddr.IPPrefix
 		additionalBlockedIPPrefixes []netaddr.IPPrefix
 		blockedIPs                  []string // string format for easier comparison
 		blockedIPPrefixes           []string // string format for easier comparison
@@ -155,7 +157,8 @@ func Test_builder_IPs(t *testing.T) {
 
 			blockedIPs, blockedIPPrefixes, errs := builder.IPs(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
-				tc.additionalBlockedIPs, tc.additionalBlockedIPPrefixes)
+				tc.allowedIPs, tc.additionalBlockedIPs,
+				tc.allowedIPPrefixes, tc.additionalBlockedIPPrefixes)
 
 			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(blockedIPs))
 			assert.ElementsMatch(t, tc.blockedIPPrefixes, convertIPPrefixesToString(blockedIPPrefixes))

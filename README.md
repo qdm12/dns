@@ -123,6 +123,8 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
 | `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
 | `ALLOWED_HOSTNAMES` | | comma separated list of hostnames to leave unblocked |
+| `ALLOWED_IPS` | | comma separated list of IP addresses to leave unblocked |
+| `ALLOWED_CIDRS` | | comma separated list of IP networks (CIDRs) to leave unblocked |
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
 | `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |

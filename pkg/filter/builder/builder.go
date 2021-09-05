@@ -17,7 +17,8 @@ type Interface interface {
 		blockedHostnames []string, errs []error)
 	IPs(ctx context.Context,
 		blockMalicious, blockAds, blockSurveillance bool,
-		additionalBlockedIPs []netaddr.IP, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
+		allowedIPs, additionalBlockedIPs []netaddr.IP,
+		allowedIPPrefixes, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
 		blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix, errs []error)
 }
 

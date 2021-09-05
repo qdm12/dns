@@ -31,6 +31,14 @@ func getFilterSettings(reader *reader) (settings builder.Settings, err error) {
 	if err != nil {
 		return settings, err
 	}
+	settings.AllowedIPs, err = getAllowedIPs(reader)
+	if err != nil {
+		return settings, err
+	}
+	settings.AddBlockedIPPrefixes, err = getAllowedIPPrefixes(reader)
+	if err != nil {
+		return settings, err
+	}
 	settings.AddBlockedHosts, err = getBlockedHostnames(reader)
 	if err != nil {
 		return settings, err
@@ -90,6 +98,22 @@ func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
 	return hostnames, nil
 }
 
+// getAllowedIPs obtains a list of IPs to unblock from block lists
+// from the comma separated list for the environment variable ALLOWED_IPS.
+func getAllowedIPs(reader *reader) (ips []netaddr.IP, err error) {
+	ipStrings, err := reader.env.CSV("ALLOWED_IPS")
+	if err != nil {
+		return nil, fmt.Errorf("environment variable ALLOWED_IPS: %w", err)
+	}
+
+	ips, err = parseIPStrings(ipStrings)
+	if err != nil {
+		return nil, fmt.Errorf("environment variable ALLOWED_IPS: %w", err)
+	}
+
+	return ips, nil
+}
+
 // getBlockedIPs obtains a list of IP addresses to block from
 // the comma separated list for the environment variable BLOCK_IPS.
 func getBlockedIPs(reader *reader) (ips []netaddr.IP, err error) {
@@ -104,6 +128,22 @@ func getBlockedIPs(reader *reader) (ips []netaddr.IP, err error) {
 	}
 
 	return ips, nil
+}
+
+// getAllowedIPPrefixes obtains a list of IP Prefixes to unblock from block lists
+// from the comma separated list for the environment variable ALLOWED_CIDRS.
+func getAllowedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err error) {
+	ipPrefixStrings, err := reader.env.CSV("ALLOWED_CIDRS")
+	if err != nil {
+		return nil, fmt.Errorf("environment variable ALLOWED_CIDRS: %w", err)
+	}
+
+	ipPrefixes, err = parseIPPrefixStrings(ipPrefixStrings)
+	if err != nil {
+		return nil, fmt.Errorf("environment variable ALLOWED_CIDRS: %w", err)
+	}
+
+	return ipPrefixes, nil
 }
 
 // getBlockedIPPrefixes obtains a list of IP networks (CIDR notation) to block from
