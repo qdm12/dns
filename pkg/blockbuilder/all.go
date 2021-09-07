@@ -6,7 +6,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func (b *Builder) All(ctx context.Context, settings Settings) (
+func (b *Builder) BuildAll(ctx context.Context, settings BuildSettings) (
 	result Result) {
 	chHostnames := make(chan []string)
 	chIPs := make(chan []netaddr.IP)

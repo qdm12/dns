@@ -1,6 +1,7 @@
 package blockbuilder
 
 import (
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -8,6 +9,16 @@ import (
 )
 
 type Settings struct {
+	Client *http.Client
+}
+
+func (s *Settings) setDefault() {
+	if s.Client == nil {
+		s.Client = http.DefaultClient
+	}
+}
+
+type BuildSettings struct {
 	BlockMalicious       bool
 	BlockAds             bool
 	BlockSurveillance    bool
@@ -19,7 +30,7 @@ type Settings struct {
 	AddBlockedIPPrefixes []netaddr.IPPrefix
 }
 
-func (s *Settings) String() string {
+func (s *BuildSettings) String() string {
 	const (
 		subSection = " |--"
 		indent     = "    " // used if lines already contain the subSection
@@ -27,7 +38,7 @@ func (s *Settings) String() string {
 	return strings.Join(s.Lines(indent, subSection), "\n")
 }
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
+func (s *BuildSettings) Lines(indent, subSection string) (lines []string) {
 	var blockedCategories []string
 	if s.BlockMalicious {
 		blockedCategories = append(blockedCategories, "malicious")

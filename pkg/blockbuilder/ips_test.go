@@ -13,7 +13,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func Test_builder_IPs(t *testing.T) {
+func Test_Builder_IPs(t *testing.T) {
 	t.Parallel()
 	type blockParams struct {
 		blocked   bool
@@ -153,7 +153,8 @@ func Test_builder_IPs(t *testing.T) {
 				}),
 			}
 
-			builder := New(client)
+			settings := Settings{Client: client}
+			builder := New(settings)
 
 			blockedIPs, blockedIPPrefixes, errs := builder.buildIPs(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,

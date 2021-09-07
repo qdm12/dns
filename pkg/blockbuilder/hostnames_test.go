@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_builder_Hostnames(t *testing.T) {
+func Test_Builder_Hostnames(t *testing.T) {
 	t.Parallel()
 	type blockParams struct {
 		blocked   bool
@@ -155,7 +155,8 @@ func Test_builder_Hostnames(t *testing.T) {
 				}),
 			}
 
-			builder := New(client)
+			settings := Settings{Client: client}
+			builder := New(settings)
 
 			blockedHostnames, errs := builder.buildHostnames(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,

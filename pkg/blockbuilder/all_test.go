@@ -13,14 +13,14 @@ import (
 	"inet.af/netaddr"
 )
 
-func Test_builder_All(t *testing.T) {
+func Test_Builder_BuildAll(t *testing.T) {
 	t.Parallel()
 	type httpCase struct {
 		content []byte
 		err     error
 	}
 	tests := map[string]struct {
-		settings          Settings
+		buildSettings     BuildSettings
 		maliciousHosts    httpCase
 		maliciousIPs      httpCase
 		adsHosts          httpCase
@@ -34,14 +34,14 @@ func Test_builder_All(t *testing.T) {
 	}{
 		"none blocked": {},
 		"all blocked without lists": {
-			settings: Settings{
+			buildSettings: BuildSettings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
 			},
 		},
 		"all blocked with lists": {
-			settings: Settings{
+			buildSettings: BuildSettings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -68,7 +68,7 @@ func Test_builder_All(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
 		"all blocked with allowed hostnames": {
-			settings: Settings{
+			buildSettings: BuildSettings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -96,7 +96,7 @@ func Test_builder_All(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
 		"blocked with additional blocked IP addresses": {
-			settings: Settings{
+			buildSettings: BuildSettings{
 				BlockMalicious: true,
 				AddBlockedIPs:  []netaddr.IP{netaddr.IPv4(1, 2, 3, 7)},
 			},
@@ -110,7 +110,7 @@ func Test_builder_All(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.7"},
 		},
 		"all blocked with lists and one error": {
-			settings: Settings{
+			buildSettings: BuildSettings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -140,7 +140,7 @@ func Test_builder_All(t *testing.T) {
 			},
 		},
 		"all blocked with errors": {
-			settings: Settings{
+			buildSettings: BuildSettings{
 				BlockMalicious:    true,
 				BlockAds:          true,
 				BlockSurveillance: true,
@@ -185,15 +185,15 @@ func Test_builder_All(t *testing.T) {
 			}{
 				m: make(map[string]int),
 			}
-			if tc.settings.BlockMalicious {
+			if tc.buildSettings.BlockMalicious {
 				clientCalls.m[maliciousBlockListIPsURL] = 0
 				clientCalls.m[maliciousBlockListHostnamesURL] = 0
 			}
-			if tc.settings.BlockAds {
+			if tc.buildSettings.BlockAds {
 				clientCalls.m[adsBlockListIPsURL] = 0
 				clientCalls.m[adsBlockListHostnamesURL] = 0
 			}
-			if tc.settings.BlockSurveillance {
+			if tc.buildSettings.BlockSurveillance {
 				clientCalls.m[surveillanceBlockListIPsURL] = 0
 				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
 			}
@@ -243,9 +243,10 @@ func Test_builder_All(t *testing.T) {
 				}),
 			}
 
-			builder := New(client)
+			settings := Settings{Client: client}
+			builder := New(settings)
 
-			result := builder.All(ctx, tc.settings)
+			result := builder.BuildAll(ctx, tc.buildSettings)
 
 			assert.ElementsMatch(t, tc.blockedHostnames, result.BlockedHostnames)
 			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(result.BlockedIPs))

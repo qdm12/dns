@@ -8,12 +8,14 @@ import (
 var _ Interface = (*Builder)(nil)
 
 type Interface interface {
-	All(ctx context.Context, settings Settings) Result
+	BuildAll(ctx context.Context, settings BuildSettings) Result
 }
 
-func New(client *http.Client) *Builder {
+func New(settings Settings) *Builder {
+	settings.setDefault()
+
 	return &Builder{
-		client: client,
+		client: settings.Client,
 		// TODO cache blocked IPs and hostnames after first request?
 	}
 }
