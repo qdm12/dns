@@ -54,7 +54,7 @@ func Test_ServerSettings_setDefaults(t *testing.T) {
 			Warner:  logger,
 			Metrics: metrics,
 		},
-		Port: 53,
+		Address: ":53",
 	}
 	assert.Equal(t, expectedSettings, s)
 }
@@ -68,7 +68,7 @@ func Test_ServerSettings_Lines(t *testing.T) {
 	lines := s.Lines(indent, subSection)
 
 	expectedLines := []string{
-		" |--Listening port: 53",
+		" |--Listening address: :53",
 		" |--Resolver:",
 		"     |--Query timeout: 5s",
 		"     |--DNS over HTTPS providers:",

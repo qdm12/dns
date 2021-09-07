@@ -8,7 +8,7 @@ import (
 
 func (reader *Reader) checkOutdatedVariables() {
 	outdatedToNew := map[string][]string{
-		"LISTENINGPORT":       {"LISTENING_PORT"},
+		"LISTENINGPORT":       {"LISTENING_ADDRESS"},
 		"PROVIDERS":           {"DOT_PROVIDERS", "DOH_PROVIDERS", "DNS_PLAINTEXT_PROVIDERS"},
 		"PROVIDER":            {"DOT_PROVIDERS", "DOH_PROVIDERS", "DNS_PLAINTEXT_PROVIDERS"},
 		"CACHING":             {"CACHE_TYPE", "CACHE_MAX_ENTRIES"},

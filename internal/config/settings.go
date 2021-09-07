@@ -33,13 +33,14 @@ func (settings *Settings) get(reader *Reader) (err error) {
 		return err
 	}
 
-	// DNS listening port
-	listeningPort, err := reader.env.Port("LISTENING_PORT", params.Default("53"))
+	// DNS listening address
+	listeningAddress, _, err := reader.env.ListeningAddress("LISTENING_ADDRESS", params.Default(":53"))
+	// Note: warning discarded since we can bind to privileged port such as 53.
 	if err != nil {
-		return fmt.Errorf("environment variable LISTENING_PORT: %w", err)
+		return fmt.Errorf("environment variable LISTENING_ADDRESS: %w", err)
 	}
-	settings.DoT.Port = listeningPort
-	settings.DoH.Port = listeningPort
+	settings.DoT.Address = listeningAddress
+	settings.DoH.Address = listeningAddress
 
 	// Metrics settings
 	settings.Metrics, err = getMetricsSettings(reader)

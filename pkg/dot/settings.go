@@ -1,7 +1,6 @@
 package dot
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -19,7 +18,7 @@ import (
 
 type ServerSettings struct {
 	Resolver      ResolverSettings
-	Port          uint16
+	Address       string
 	LogMiddleware logmiddleware.Settings
 	// Cache is the cache to use in the server.
 	// It defaults to a No-Op cache implementation with
@@ -52,9 +51,9 @@ type ResolverSettings struct {
 func (s *ServerSettings) setDefaults() {
 	s.Resolver.setDefaults()
 
-	if s.Port == 0 {
-		const defaultPort = 53
-		s.Port = defaultPort
+	if s.Address == "" {
+		const defaultAddress = ":53"
+		s.Address = defaultAddress
 	}
 
 	if s.Filter == nil {
@@ -113,8 +112,7 @@ func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
 		lines = append(lines, indent+line)
 	}
 
-	lines = append(lines,
-		subSection+"Listening port: "+fmt.Sprint(s.Port))
+	lines = append(lines, subSection+"Listening address: "+s.Address)
 
 	return lines
 }

@@ -133,7 +133,7 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `LOG_REQUESTS_RESPONSES` | `off` | `on` or `off` to log matching DNS requests and responses at the `info` level |
 | `DOT_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over TLS |
 | `DOH_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over HTTPS |
-| `LISTENING_PORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |
+| `LISTENING_ADDRESS` | `:53` | DNS server listening address |
 | `CACHE_TYPE` | `lru` | `lru` or `noop`. LRU caches DNS responses by least recently used |
 | `CACHE_LRU_MAX_ENTRIES` | `10000` | Number of elements to keep in the LRU cache. |
 | `METRICS_TYPE` | `noop` | `noop` or `prometheus` |
