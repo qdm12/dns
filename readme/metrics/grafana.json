@@ -1120,10 +1120,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(${period}*rate(${subsystem}_dns_plaintext_fallback_dials[2m])) by (provider, address, outcome)",
+              "expr": "sum(${period}*rate(${subsystem}_dns_plaintext_fallback_dials[2m])) by (address, outcome)",
               "hide": false,
               "interval": "",
-              "legendFormat": "{{provider}} {{address}} {{outcome}}",
+              "legendFormat": "{{address}} {{outcome}}",
               "refId": "A"
             }
           ],

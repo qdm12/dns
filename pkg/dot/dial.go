@@ -93,16 +93,15 @@ func dialPlaintext(ctx context.Context, dialer *net.Dialer,
 	dnsServer := picker.DNSServer(dnsServers)
 	ip := picker.DNSIP(dnsServer, ipv6)
 
-	ipStr := ip.String()
-	plainAddr := net.JoinHostPort(ipStr, "53")
+	plainAddr := net.JoinHostPort(ip.String(), "53")
 
 	conn, err = dialer.DialContext(ctx, "udp", plainAddr)
 	if err != nil {
 		warner.Warn(err.Error())
-		metrics.DNSDialInc(ipStr, plainAddr, "error")
+		metrics.DNSDialInc(plainAddr, "error")
 		return nil, err
 	}
 
-	metrics.DNSDialInc(ipStr, plainAddr, "success")
+	metrics.DNSDialInc(plainAddr, "success")
 	return conn, nil
 }

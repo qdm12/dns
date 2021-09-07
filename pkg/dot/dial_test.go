@@ -85,7 +85,6 @@ func Test_dialPlaintext(t *testing.T) {
 		ctx           context.Context
 		ipv6          bool
 		dnsServers    []provider.DNSServer
-		expectedIPs   []string
 		expectedAddrs []string
 		metricOutcome string
 		err           error
@@ -95,7 +94,6 @@ func Test_dialPlaintext(t *testing.T) {
 			dnsServers: []provider.DNSServer{
 				provider.Cloudflare().DNS(),
 			},
-			expectedIPs:   []string{"1.1.1.1", "1.0.0.1"},
 			expectedAddrs: []string{"1.1.1.1:53", "1.0.0.1:53"},
 			metricOutcome: "success",
 		},
@@ -104,7 +102,6 @@ func Test_dialPlaintext(t *testing.T) {
 			dnsServers: []provider.DNSServer{
 				{IPv4: []net.IP{net.IPv4(1, 1, 1, 1)}},
 			},
-			expectedIPs:   []string{"1.1.1.1"},
 			expectedAddrs: []string{"1.1.1.1:53"},
 			metricOutcome: "error",
 			err:           errors.New("dial udp 1.1.1.1:53: operation was canceled"),
@@ -124,7 +121,6 @@ func Test_dialPlaintext(t *testing.T) {
 
 			metrics := mock_metrics.NewMockInterface(ctrl)
 			metrics.EXPECT().DNSDialInc(
-				mockhelp.NewMatcherOneOf(testCase.expectedIPs...),
 				mockhelp.NewMatcherOneOf(testCase.expectedAddrs...),
 				testCase.metricOutcome)
 

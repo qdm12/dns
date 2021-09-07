@@ -26,5 +26,5 @@ type DialMetrics interface {
 }
 
 type DialDNSMetrics interface {
-	DNSDialInc(provider, address, outcome string)
+	DNSDialInc(address, outcome string)
 }
