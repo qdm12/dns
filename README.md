@@ -130,6 +130,7 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
 | `LOG_REQUESTS` | `off` | `on` or `off` to log DNS requests at the `info` level |
 | `LOG_RESPONSES` | `off` | `on` or `off` to log DNS responses at the `info` level |
+| `LOG_REQUESTS_RESPONSES` | `off` | `on` or `off` to log matching DNS requests and responses at the `info` level |
 | `DOT_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over TLS |
 | `DOH_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over HTTPS |
 | `LISTENING_PORT` | `53` | UDP port on which the Unbound DNS server should listen to (internally) |

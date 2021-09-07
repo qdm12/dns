@@ -17,9 +17,9 @@ import (
 )
 
 type ServerSettings struct {
-	Resolver ResolverSettings
-	Port     uint16
-	Log      logmiddleware.Settings
+	Resolver      ResolverSettings
+	Port          uint16
+	LogMiddleware logmiddleware.Settings
 	// Cache is the cache to use in the server.
 	// It defaults to a No-Op cache implementation with
 	// a No-Op cache metrics implementation.

@@ -29,6 +29,11 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		lines = append(lines, indent+line)
 	}
 
+	lines = append(lines, subSection+"Log settings:")
+	for _, line := range s.Log.Lines(indent, subSection) {
+		lines = append(lines, indent+line)
+	}
+
 	lines = append(lines, subSection+"Metrics settings:")
 	for _, line := range s.Metrics.Lines(indent, subSection) {
 		lines = append(lines, indent+line)
@@ -51,13 +56,6 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		update = "every " + s.UpdatePeriod.String()
 	}
 	lines = append(lines, subSection+"Update: "+update)
-
-	lines = append(lines, subSection+"Log level: "+s.LogLevel.String())
-
-	lines = append(lines, subSection+"Query log settings:")
-	for _, line := range s.DoT.Log.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
 
 	return lines
 }

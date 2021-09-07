@@ -27,7 +27,7 @@ func NewServer(ctx context.Context, settings ServerSettings) *Server {
 
 	handler := newDNSHandler(ctx, settings)
 
-	logMiddleware := logmiddleware.New(settings.Logger, settings.Log)
+	logMiddleware := logmiddleware.New(settings.LogMiddleware)
 	handler = logMiddleware(handler)
 
 	metricsMiddleware := metricsmiddleware.New(

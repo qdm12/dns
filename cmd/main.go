@@ -99,7 +99,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	if err != nil {
 		return err
 	}
-	logger.PatchLevel(settings.LogLevel)
+	logger.PatchLevel(settings.Log.Level)
 	logger.Info("Settings summary:\n" + settings.String())
 
 	const healthServerAddr = "127.0.0.1:9999"

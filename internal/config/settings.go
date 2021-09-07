@@ -9,7 +9,6 @@ import (
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/filter"
 	"github.com/qdm12/dns/pkg/filter/builder"
-	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/params"
 )
 
@@ -22,7 +21,7 @@ type Settings struct {
 	Metrics       Metrics
 	FilterBuilder builder.Settings
 	CheckDNS      bool
-	LogLevel      logging.Level
+	Log           Log
 	UpdatePeriod  time.Duration
 }
 
@@ -59,12 +58,10 @@ func (settings *Settings) get(reader *Reader) (err error) {
 	}
 
 	// Log settings
-	logSettings, err := getLogSettings(reader.env)
+	settings.Log, err = getLogSettings(reader.env)
 	if err != nil {
 		return err
 	}
-	settings.DoT.Log = logSettings
-	settings.DoH.Log = logSettings
 
 	// Cache settings
 	settings.Cache, err = getCacheSettings(reader)
@@ -89,11 +86,6 @@ func (settings *Settings) get(reader *Reader) (err error) {
 	settings.UpdatePeriod, err = reader.env.Duration("UPDATE_PERIOD", params.Default("24h"))
 	if err != nil {
 		return fmt.Errorf("environment variable UPDATE_PERIOD: %w", err)
-	}
-
-	settings.LogLevel, err = reader.env.LogLevel("LOG_LEVEL", params.Default("info"))
-	if err != nil {
-		return fmt.Errorf("environment variable LOG_LEVEL: %w", err)
 	}
 
 	return nil

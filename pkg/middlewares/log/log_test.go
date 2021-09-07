@@ -7,24 +7,36 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
-	"github.com/qdm12/golibs/logging/mock_logging"
+	"github.com/qdm12/dns/pkg/middlewares/log/format/mock_format"
+	"github.com/qdm12/dns/pkg/middlewares/log/logger/mock_logger"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_New(t *testing.T) {
 	t.Parallel()
 
-	var request = &dns.Msg{Question: []dns.Question{
+	request := &dns.Msg{Question: []dns.Question{
 		{Name: "question"},
 	}}
 
 	ctrl := gomock.NewController(t)
 
-	logger := mock_logging.NewMockLogger(ctrl)
-	logger.EXPECT().Info("question CLASS0 None")
-	settings := Settings{LogRequests: true}
+	formatter := mock_format.NewMockInterface(ctrl)
+	formatter.EXPECT().Request(request).Return("formatted request")
+	formatter.EXPECT().Response(nil).Return("formatted response")
+	formatter.EXPECT().RequestResponse(request, nil).Return("formatted request => response")
 
-	middleware := New(logger, settings)
+	logger := mock_logger.NewMockInterface(ctrl)
+	logger.EXPECT().LogRequest("formatted request")
+	logger.EXPECT().LogResponse("formatted response")
+	logger.EXPECT().LogRequestResponse("formatted request => response")
+
+	settings := Settings{
+		Formatter: formatter,
+		Logger:    logger,
+	}
+
+	middleware := New(settings)
 
 	next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {})
 	handler := middleware(next)
@@ -46,66 +58,54 @@ func (w *testWriter) WriteMsg(response *dns.Msg) error {
 func Test_handler_ServeDNS(t *testing.T) {
 	t.Parallel()
 
-	strPtr := func(s string) *string { return &s }
-
-	var errDummy = errors.New("dummy")
-	var request = &dns.Msg{Question: []dns.Question{
-		{Name: "question"},
-	}}
-	var response = &dns.Msg{Answer: []dns.RR{
-		&dns.A{A: net.IP{1, 2, 3, 4}},
-	}}
+	request := &dns.Msg{
+		MsgHdr: dns.MsgHdr{
+			Id: 1,
+		},
+		Question: []dns.Question{
+			{Name: "question"},
+		},
+	}
+	response := &dns.Msg{
+		MsgHdr: dns.MsgHdr{
+			Id: 1,
+		},
+		Answer: []dns.RR{
+			&dns.A{A: net.IP{1, 2, 3, 4}},
+		},
+	}
 
 	testCases := map[string]struct {
-		writer   *testWriter
-		settings Settings
-		logErr   *string // nil means no logging
-		logInfo  *string // nil means no logging
+		handlerErr error
 	}{
-		"disabled logger": {
-			writer: &testWriter{},
+		"handler error": {
+
+			handlerErr: errors.New("dummy"),
 		},
-		"disabled logger and error": {
-			writer: &testWriter{err: errDummy},
-			logErr: strPtr("question CLASS0 None: cannot write DNS response: dummy"),
-		},
-		"log requests only": {
-			writer: &testWriter{},
-			settings: Settings{
-				LogRequests: true,
-			},
-			logInfo: strPtr("question CLASS0 None"),
-		},
-		"log responses only": {
-			writer: &testWriter{},
-			settings: Settings{
-				LogResponses: true,
-			},
-			logInfo: strPtr("[0 CLASS0 None 1.2.3.4]"),
-		},
-		"log requests and responses": {
-			writer: &testWriter{},
-			settings: Settings{
-				LogRequests:  true,
-				LogResponses: true,
-			},
-			logInfo: strPtr("question CLASS0 None => [0 CLASS0 None 1.2.3.4]"),
-		},
+		"success": {},
 	}
 
 	for name, testCase := range testCases {
 		testCase := testCase
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-
 			ctrl := gomock.NewController(t)
 
-			logger := mock_logging.NewMockLogger(ctrl)
-			if testCase.logErr != nil {
-				logger.EXPECT().Error(*testCase.logErr)
-			}
-			if testCase.logInfo != nil {
-				logger.EXPECT().Info(*testCase.logInfo)
+			formatter := mock_format.NewMockInterface(ctrl)
+			formatter.EXPECT().Request(request).Return("formatted request")
+			formatter.EXPECT().Response(response).Return("formatted response")
+			formatter.EXPECT().RequestResponse(request, response).Return("formatted request => response")
+
+			logger := mock_logger.NewMockInterface(ctrl)
+			logger.EXPECT().LogRequest("formatted request")
+			logger.EXPECT().LogResponse("formatted response")
+			logger.EXPECT().LogRequestResponse("formatted request => response")
+
+			if testCase.handlerErr != nil {
+				formatter.EXPECT().Error(request.Id,
+					"cannot write DNS response: "+testCase.handlerErr.Error()).
+					Return("formatted error")
+				logger.EXPECT().Error("formatted error")
 			}
 
 			next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {
@@ -114,12 +114,13 @@ func Test_handler_ServeDNS(t *testing.T) {
 			})
 
 			handler := &handler{
-				logger:   logger,
-				next:     next,
-				settings: testCase.settings,
+				formatter: formatter,
+				logger:    logger,
+				next:      next,
 			}
 
-			handler.ServeDNS(testCase.writer, request)
+			writer := &testWriter{err: testCase.handlerErr}
+			handler.ServeDNS(writer, request)
 		})
 	}
 }

@@ -3,6 +3,8 @@ package log
 import (
 	"testing"
 
+	"github.com/qdm12/dns/pkg/middlewares/log/format/console"
+	"github.com/qdm12/dns/pkg/middlewares/log/logger/noop"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,28 +15,13 @@ func Test_Settings_String(t *testing.T) {
 		settings Settings
 		s        string
 	}{
-		"empty settings": {
-			s: " |--Status: disabled",
-		},
-		"log requests only": {
+		"consoler formatter and noop logger": {
 			settings: Settings{
-				LogRequests: true,
+				Formatter: console.New(),
+				Logger:    noop.New(),
 			},
-			s: " |--Log requests: on",
-		},
-		"log responses only": {
-			settings: Settings{
-				LogResponses: true,
-			},
-			s: " |--Log responses: on",
-		},
-		"log requests and responses": {
-			settings: Settings{
-				LogRequests:  true,
-				LogResponses: true,
-			},
-			s: ` |--Log requests: on
- |--Log responses: on`,
+			s: ` |--Logger type: No-op
+ |--Formatter type: Console`,
 		},
 	}
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/qdm12/dns/pkg/middlewares/log"
+	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/params"
 	"github.com/qdm12/golibs/params/mock_params"
 	"github.com/stretchr/testify/assert"
@@ -15,7 +15,12 @@ import (
 func Test_getLogSettings(t *testing.T) {
 	t.Parallel()
 
-	var errDummy = errors.New("dummy")
+	errDummy := errors.New("dummy")
+
+	type levelResult struct {
+		level logging.Level
+		err   error
+	}
 
 	type onOffResult struct {
 		on  bool
@@ -23,26 +28,40 @@ func Test_getLogSettings(t *testing.T) {
 	}
 
 	testCases := map[string]struct {
-		logRequests  onOffResult
-		logResponses onOffResult
-		settings     log.Settings
-		err          error
+		logLevel             levelResult
+		logRequests          onOffResult
+		logResponses         onOffResult
+		logRequestsResponses onOffResult
+		settings             Log
+		err                  error
 	}{
 		"defaults": {},
+		"log level error": {
+			logLevel: levelResult{err: errDummy},
+			err:      errors.New("environment variable LOG_LEVEL: dummy"),
+		},
 		"log requests error": {
 			logRequests: onOffResult{err: errDummy},
-			err:         errDummy,
+			err:         errors.New("environment variable LOG_REQUESTS: dummy"),
 		},
 		"log responses error": {
 			logResponses: onOffResult{err: errDummy},
-			err:          errDummy,
+			err:          errors.New("environment variable LOG_RESPONSES: dummy"),
 		},
-		"all enabled": {
-			logRequests:  onOffResult{on: true},
-			logResponses: onOffResult{on: true},
-			settings: log.Settings{
-				LogRequests:  true,
-				LogResponses: true,
+		"log requests responses error": {
+			logRequestsResponses: onOffResult{err: errDummy},
+			err:                  errors.New("environment variable LOG_REQUESTS_RESPONSES: dummy"),
+		},
+		"all set": {
+			logLevel:             levelResult{level: logging.LevelInfo},
+			logRequests:          onOffResult{on: true},
+			logResponses:         onOffResult{on: true},
+			logRequestsResponses: onOffResult{on: true},
+			settings: Log{
+				Level:                logging.LevelInfo,
+				LogRequests:          true,
+				LogResponses:         true,
+				LogRequestsResponses: true,
 			},
 		},
 	}
@@ -58,13 +77,28 @@ func Test_getLogSettings(t *testing.T) {
 
 			env := mock_params.NewMockInterface(ctrl)
 			env.EXPECT().
-				OnOff("LOG_REQUESTS", assignableDefault).
-				Return(testCase.logRequests.on, testCase.logRequests.err)
+				LogLevel("LOG_LEVEL", assignableDefault).
+				Return(testCase.logLevel.level, testCase.logLevel.err)
 
-			if testCase.logRequests.err == nil {
+			if testCase.logLevel.err == nil {
+				env.EXPECT().
+					OnOff("LOG_REQUESTS", assignableDefault).
+					Return(testCase.logRequests.on, testCase.logRequests.err)
+			}
+
+			if testCase.logLevel.err == nil &&
+				testCase.logRequests.err == nil {
 				env.EXPECT().
 					OnOff("LOG_RESPONSES", assignableDefault).
 					Return(testCase.logResponses.on, testCase.logResponses.err)
+			}
+
+			if testCase.logLevel.err == nil &&
+				testCase.logRequests.err == nil &&
+				testCase.logResponses.err == nil {
+				env.EXPECT().
+					OnOff("LOG_REQUESTS_RESPONSES", assignableDefault).
+					Return(testCase.logRequestsResponses.on, testCase.logRequestsResponses.err)
 			}
 
 			settings, err := getLogSettings(env)
