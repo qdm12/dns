@@ -40,7 +40,7 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 	}
 
 	lines = append(lines, subSection+"Filter settings:")
-	for _, line := range s.FilterBuilder.Lines(indent, subSection) {
+	for _, line := range s.BlockBuilder.Lines(indent, subSection) {
 		lines = append(lines, indent+line)
 	}
 

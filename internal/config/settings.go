@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/qdm12/dns/pkg/blockbuilder"
 	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/filter"
-	"github.com/qdm12/dns/pkg/filter/builder"
 	"github.com/qdm12/golibs/params"
 )
 
 type Settings struct {
-	UpstreamType  UpstreamType
-	DoT           dot.ServerSettings
-	DoH           doh.ServerSettings
-	Cache         cache.Settings
-	Filter        filter.Settings
-	Metrics       Metrics
-	FilterBuilder builder.Settings
-	CheckDNS      bool
-	Log           Log
-	UpdatePeriod  time.Duration
+	UpstreamType UpstreamType
+	DoT          dot.ServerSettings
+	DoH          doh.ServerSettings
+	Cache        cache.Settings
+	Filter       filter.Settings
+	Metrics      Metrics
+	BlockBuilder blockbuilder.Settings
+	CheckDNS     bool
+	Log          Log
+	UpdatePeriod time.Duration
 }
 
 func (settings *Settings) get(reader *Reader) (err error) {
@@ -73,7 +73,7 @@ func (settings *Settings) get(reader *Reader) (err error) {
 	// using settings.FilterBuilder
 
 	// Filter block lists building settings
-	settings.FilterBuilder, err = getFilterSettings(reader)
+	settings.BlockBuilder, err = getFilterSettings(reader)
 	if err != nil {
 		return err
 	}

@@ -18,11 +18,11 @@ import (
 	"github.com/qdm12/dns/internal/metrics"
 	"github.com/qdm12/dns/internal/models"
 	"github.com/qdm12/dns/internal/splash"
+	"github.com/qdm12/dns/pkg/blockbuilder"
 	"github.com/qdm12/dns/pkg/check"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/filter"
-	"github.com/qdm12/dns/pkg/filter/builder"
 	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/golibs/logging"
@@ -124,12 +124,12 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	// Use the same cache across DNS server restarts
 	cache.Setup(&settings)
 
-	filterBuilder := builder.New(client)
+	blockBuilder := blockbuilder.New(client)
 
 	dnsServerHandler, dnsServerCtx, dnsServerDone := goshutdown.NewGoRoutineHandler(
 		"dns server", goshutdown.GoRoutineSettings{})
 	crashed := make(chan error)
-	go runLoop(dnsServerCtx, dnsServerDone, crashed, settings, logger, filterBuilder)
+	go runLoop(dnsServerCtx, dnsServerDone, crashed, settings, logger, blockBuilder)
 
 	metricsServerHandler, metricsServerCtx, metricsServerDone := goshutdown.NewGoRoutineHandler(
 		"metrics server", goshutdown.GoRoutineSettings{})
@@ -149,7 +149,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 	crashed chan<- error, settings config.Settings,
-	logger log.Logger, filterBuilder builder.Interface) {
+	logger log.Logger, blockBuilder blockbuilder.Interface) {
 	defer close(dnsServerDone)
 	timer := time.NewTimer(time.Hour)
 
@@ -170,7 +170,7 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
 			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
-				filterBuilder.All(ctx, settings.FilterBuilder)
+				blockBuilder.All(ctx, settings.BlockBuilder)
 			for _, err := range errs {
 				logger.Warn(err.Error())
 			}
