@@ -22,7 +22,6 @@ data:
   UPSTREAM_TYPE: DoT
   DOT_RESOLVERS: cloudflare,quad9,libredns,google
   DOH_RESOLVERS: cloudflare,quad9,libredns,google
-  DNS_PLAINTEXT_RESOLVERS: cloudflare,quad9
 
   BLOCK_MALICIOUS: 'off'
   BLOCK_SURVEILLANCE: 'off'

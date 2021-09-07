@@ -66,7 +66,7 @@ ENV \
     UPSTREAM_TYPE=DoT \
     DOT_RESOLVERS=cloudflare,google \
     DOH_RESOLVERS=cloudflare,google \
-    DNS_PLAINTEXT_RESOLVERS=cloudflare \
+    DNS_PLAINTEXT_RESOLVERS= \
     DOT_TIMEOUT=3s \
     DOH_TIMEOUT=3s \
     LISTENING_PORT=53 \

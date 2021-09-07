@@ -19,7 +19,7 @@ func getDoHProviders(reader *reader) (providers []provider.Provider, err error) 
 
 // getDNSProviders obtains the plaintext fallback DNS resolver providers to use.
 func getDNSProviders(reader *reader) (providers []provider.Provider, err error) {
-	return getProviders(reader, "DNS_PLAINTEXT_RESOLVERS", "cloudflare")
+	return getProviders(reader, "DNS_PLAINTEXT_RESOLVERS", "")
 }
 
 // getProviders obtains the DNS resolver providers to use from the environment

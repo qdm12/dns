@@ -13,7 +13,6 @@ services:
       - ALLOWED_HOSTNAMES=
       - DOT_RESOLVERS=cloudflare,google
       - DOH_RESOLVERS=cloudflare,google
-      - DNS_PLAINTEXT_RESOLVERS=cloudflare
       - UPDATE_PERIOD=24h
     ports:
       - 53:53/udp
