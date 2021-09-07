@@ -9,9 +9,9 @@ import (
 func (reader *Reader) checkOutdatedVariables() {
 	outdatedToNew := map[string][]string{
 		"LISTENINGPORT":       {"LISTENING_ADDRESS"},
-		"PROVIDERS":           {"DOT_PROVIDERS", "DOH_PROVIDERS", "DNS_PLAINTEXT_PROVIDERS"},
-		"PROVIDER":            {"DOT_PROVIDERS", "DOH_PROVIDERS", "DNS_PLAINTEXT_PROVIDERS"},
-		"CACHING":             {"CACHE_TYPE", "CACHE_MAX_ENTRIES"},
+		"PROVIDERS":           {"DOT_PROVIDERS", "DOH_PROVIDERS", "DNS_FALLBACK_PLAINTEXT_RESOLVERS"},
+		"PROVIDER":            {"DOT_PROVIDERS", "DOH_PROVIDERS", "DNS_FALLBACK_PLAINTEXT_RESOLVERS"},
+		"CACHING":             {"CACHE_TYPE", "CACHE_LRU_MAX_ENTRIES"},
 		"IPV4":                {"DOT_CONNECT_IPV6"},
 		"IPV6":                {"DOT_CONNECT_IPV6"},
 		"UNBLOCK":             {"ALLOWED_HOSTNAMES"},
