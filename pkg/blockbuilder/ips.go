@@ -13,7 +13,7 @@ const (
 	surveillanceBlockListIPsURL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-ips.updated"
 )
 
-func (b *Builder) IPs(ctx context.Context,
+func (b *Builder) buildIPs(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
 	allowedIPs, additionalBlockedIPs []netaddr.IP,
 	allowedIPPrefixes, additionalBlockedIPPrefixes []netaddr.IPPrefix) (

@@ -12,7 +12,7 @@ const (
 	surveillanceBlockListHostnamesURL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-hostnames.updated"
 )
 
-func (b *Builder) Hostnames(ctx context.Context,
+func (b *Builder) buildHostnames(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
 	additionalBlockedHostnames, allowedHostnames []string) (
 	blockedHostnames []string, errs []error) {

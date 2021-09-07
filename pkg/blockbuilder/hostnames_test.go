@@ -157,7 +157,7 @@ func Test_builder_Hostnames(t *testing.T) {
 
 			builder := New(client)
 
-			blockedHostnames, errs := builder.Hostnames(ctx,
+			blockedHostnames, errs := builder.buildHostnames(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
 				tc.additionalBlockedHostnames, tc.additionalAllowedHostnames)
 			var errsString []string

@@ -155,7 +155,7 @@ func Test_builder_IPs(t *testing.T) {
 
 			builder := New(client)
 
-			blockedIPs, blockedIPPrefixes, errs := builder.IPs(ctx,
+			blockedIPs, blockedIPPrefixes, errs := builder.buildIPs(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
 				tc.allowedIPs, tc.additionalBlockedIPs,
 				tc.allowedIPPrefixes, tc.additionalBlockedIPPrefixes)

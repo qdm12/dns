@@ -15,7 +15,7 @@ func (b *Builder) All(ctx context.Context, settings Settings) (
 	chErrors := make(chan []error)
 
 	go func() {
-		blockedHostnames, errs := b.Hostnames(ctx,
+		blockedHostnames, errs := b.buildHostnames(ctx,
 			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
 			settings.AddBlockedHosts, settings.AllowedHosts)
 		chHostnames <- blockedHostnames
@@ -23,7 +23,7 @@ func (b *Builder) All(ctx context.Context, settings Settings) (
 	}()
 
 	go func() {
-		blockedIPs, blockedIPPrefixes, errs := b.IPs(ctx,
+		blockedIPs, blockedIPPrefixes, errs := b.buildIPs(ctx,
 			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
 			settings.AllowedIPs, settings.AddBlockedIPs,
 			settings.AllowedIPPrefixes, settings.AddBlockedIPPrefixes)
