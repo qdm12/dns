@@ -10,7 +10,7 @@ import (
 	"github.com/qdm12/dns/pkg/dot/metrics"
 	metricsnoop "github.com/qdm12/dns/pkg/dot/metrics/noop"
 	"github.com/qdm12/dns/pkg/filter"
-	"github.com/qdm12/dns/pkg/filter/mapfilter"
+	filternoop "github.com/qdm12/dns/pkg/filter/noop"
 	"github.com/qdm12/dns/pkg/log"
 	lognoop "github.com/qdm12/dns/pkg/log/noop"
 	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
@@ -58,7 +58,7 @@ func (s *ServerSettings) setDefaults() {
 	}
 
 	if s.Filter == nil {
-		s.Filter = mapfilter.New(mapfilter.Settings{})
+		s.Filter = filternoop.New()
 	}
 
 	if s.Logger == nil {
