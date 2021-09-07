@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/qdm12/dns/internal/picker"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/provider"
 )
@@ -39,7 +40,7 @@ func newDoHDial(settings ResolverSettings) dialFunc {
 		},
 	}
 
-	picker := newPicker() // fast thread safe random picker
+	picker := picker.New()
 
 	return func(ctx context.Context, _, _ string) (conn net.Conn, err error) {
 		// Pick DoH server pseudo-randomly from the chosen providers

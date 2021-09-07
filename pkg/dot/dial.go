@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/qdm12/dns/internal/picker"
 	"github.com/qdm12/dns/pkg/dot/metrics"
 	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/provider"
@@ -23,7 +24,7 @@ func newDoTDial(settings ResolverSettings) dialFunc {
 		Timeout: settings.Timeout,
 	}
 
-	picker := newPicker()
+	picker := picker.New()
 
 	return func(ctx context.Context, _, _ string) (net.Conn, error) {
 		serverName, serverAddress := pickNameAddress(picker,
@@ -62,7 +63,7 @@ func settingsToServers(settings ResolverSettings) (
 	return dotServers, dnsServers
 }
 
-func pickNameAddress(picker *picker, servers []provider.DoTServer,
+func pickNameAddress(picker picker.DoT, servers []provider.DoTServer,
 	ipv6 bool) (name, address string) {
 	server := picker.DoTServer(servers)
 	ip := picker.DoTIP(server, ipv6)
@@ -71,7 +72,7 @@ func pickNameAddress(picker *picker, servers []provider.DoTServer,
 }
 
 func onDialError(ctx context.Context, dotName, dotAddress string,
-	dialer *net.Dialer, picker *picker, ipv6 bool,
+	dialer *net.Dialer, picker picker.DNS, ipv6 bool,
 	dnsServers []provider.DNSServer, warner log.Warner,
 	metrics metrics.DialMetrics) (conn net.Conn, err error) {
 	warner.Warn(err.Error())
@@ -87,7 +88,7 @@ func onDialError(ctx context.Context, dotName, dotAddress string,
 }
 
 func dialPlaintext(ctx context.Context, dialer *net.Dialer,
-	picker *picker, ipv6 bool, dnsServers []provider.DNSServer,
+	picker picker.DNS, ipv6 bool, dnsServers []provider.DNSServer,
 	warner log.Warner, metrics metrics.DialDNSMetrics) (
 	conn net.Conn, err error) {
 	dnsServer := picker.DNSServer(dnsServers)

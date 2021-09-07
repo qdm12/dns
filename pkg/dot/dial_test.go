@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/qdm12/dns/internal/mockhelp"
+	"github.com/qdm12/dns/internal/picker/mock_picker"
 	"github.com/qdm12/dns/pkg/dot/metrics/mock_metrics"
 	"github.com/qdm12/dns/pkg/log/mock_log"
 	"github.com/qdm12/dns/pkg/provider"
@@ -41,42 +41,26 @@ func Test_settingsToServers(t *testing.T) {
 
 func Test_pickNameAddress(t *testing.T) {
 	t.Parallel()
+	ctrl := gomock.NewController(t)
 
-	picker := newPicker()
+	picker := mock_picker.NewMockInterface(ctrl)
 	servers := []provider.DoTServer{
 		provider.Cloudflare().DoT(),
 		provider.Google().DoT(),
 	}
 	const ipv6 = true
 
-	const tries = 10
+	picker.EXPECT().DoTServer(servers).Return(servers[0])
+	picker.EXPECT().DoTIP(servers[0], ipv6).Return(servers[0].IPv6[0])
 
-	for i := 0; i < tries; i++ {
-		name, address := pickNameAddress(picker, servers, ipv6)
+	name, address := pickNameAddress(picker, servers, ipv6)
 
-		switch name {
-		case "dns.google":
-			switch address {
-			case "[2001:4860:4860::8844]:853", "[2001:4860:4860::8888]:853":
-			default:
-				t.Errorf("unexpected address for dns.google: %s", address)
-			}
-		case "cloudflare-dns.com":
-			switch address {
-			case "[2606:4700:4700::1111]:853", "[2606:4700:4700::1001]:853":
-			default:
-				t.Errorf("unexpected address for cloudflare-dns.com: %s", address)
-			}
-		default:
-			t.Errorf("unexpected name: %s", name)
-		}
-	}
+	assert.Equal(t, "cloudflare-dns.com", name)
+	assert.Equal(t, "[2606:4700:4700::1111]:853", address)
 }
 
 func Test_dialPlaintext(t *testing.T) {
 	t.Parallel()
-
-	picker := newPicker()
 
 	canceledCtx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -85,7 +69,7 @@ func Test_dialPlaintext(t *testing.T) {
 		ctx           context.Context
 		ipv6          bool
 		dnsServers    []provider.DNSServer
-		expectedAddrs []string
+		expectedAddr  string
 		metricOutcome string
 		err           error
 	}{
@@ -94,15 +78,15 @@ func Test_dialPlaintext(t *testing.T) {
 			dnsServers: []provider.DNSServer{
 				provider.Cloudflare().DNS(),
 			},
-			expectedAddrs: []string{"1.1.1.1:53", "1.0.0.1:53"},
+			expectedAddr:  "1.1.1.1:53",
 			metricOutcome: "success",
 		},
 		"canceled context": {
 			ctx: canceledCtx,
 			dnsServers: []provider.DNSServer{
-				{IPv4: []net.IP{net.IPv4(1, 1, 1, 1)}},
+				provider.Cloudflare().DNS(),
 			},
-			expectedAddrs: []string{"1.1.1.1:53"},
+			expectedAddr:  "1.1.1.1:53",
 			metricOutcome: "error",
 			err:           errors.New("dial udp 1.1.1.1:53: operation was canceled"),
 		},
@@ -120,9 +104,13 @@ func Test_dialPlaintext(t *testing.T) {
 			}
 
 			metrics := mock_metrics.NewMockInterface(ctrl)
-			metrics.EXPECT().DNSDialInc(
-				mockhelp.NewMatcherOneOf(testCase.expectedAddrs...),
-				testCase.metricOutcome)
+			metrics.EXPECT().DNSDialInc(testCase.expectedAddr, testCase.metricOutcome)
+
+			picker := mock_picker.NewMockInterface(ctrl)
+			picker.EXPECT().DNSServer(testCase.dnsServers).
+				Return(testCase.dnsServers[0])
+			picker.EXPECT().DNSIP(testCase.dnsServers[0], false).
+				Return(testCase.dnsServers[0].IPv4[0])
 
 			dialer := &net.Dialer{} // cannot mock
 
