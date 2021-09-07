@@ -110,9 +110,11 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 		"health server", goshutdown.GoRoutineSettings{})
 	go healthServer.Run(healthServerCtx, healthServerDone)
 
-	localIP := net.IP{127, 0, 0, 1}
-	logger.Info("using DNS address " + localIP.String() + " internally")
-	nameserver.UseDNSInternally(localIP) // use the DoT/DoH server
+	internalDNSSettings := nameserver.SettingsInternalDNS{
+		IP: net.IP{127, 0, 0, 1},
+	}
+	logger.Info("using DNS address " + internalDNSSettings.IP.String() + " internally")
+	nameserver.UseDNSInternally(internalDNSSettings) // use the DoT/DoH server
 
 	settings.PatchLogger(logger)
 

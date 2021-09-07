@@ -24,14 +24,15 @@ func Test_UseDNSSystemWide(t *testing.T) {
 			require.NoError(t, err)
 		}()
 
-		resolvConfPath := filepath.Join(dirPath, "resolv.conf")
-		ip := net.IP{1, 1, 1, 1}
-		const keepNameserver = false
+		settings := SettingsSystemDNS{
+			ResolvPath: filepath.Join(dirPath, "resolv.conf"),
+			IP:         net.IP{1, 1, 1, 1},
+		}
 
-		err = UseDNSSystemWide(resolvConfPath, ip, keepNameserver)
+		err = UseDNSSystemWide(settings)
 
 		require.Error(t, err)
-		assert.Equal(t, "open "+resolvConfPath+": no such file or directory", err.Error())
+		assert.Equal(t, "open "+settings.ResolvPath+": no such file or directory", err.Error())
 	})
 
 	t.Run("empty file", func(t *testing.T) {
@@ -49,10 +50,12 @@ func Test_UseDNSSystemWide(t *testing.T) {
 			require.NoError(t, err)
 		}()
 
-		ip := net.IP{1, 1, 1, 1}
-		const keepNameserver = false
+		settings := SettingsSystemDNS{
+			ResolvPath: resolvConfPath,
+			IP:         net.IP{1, 1, 1, 1},
+		}
 
-		err = UseDNSSystemWide(resolvConfPath, ip, keepNameserver)
+		err = UseDNSSystemWide(settings)
 
 		require.NoError(t, err)
 
@@ -80,10 +83,13 @@ func Test_UseDNSSystemWide(t *testing.T) {
 			require.NoError(t, err)
 		}()
 
-		ip := net.IP{1, 1, 1, 1}
-		const keepNameserver = true
+		settings := SettingsSystemDNS{
+			ResolvPath:     resolvConfPath,
+			IP:             net.IP{1, 1, 1, 1},
+			KeepNameserver: true,
+		}
 
-		err = UseDNSSystemWide(resolvConfPath, ip, keepNameserver)
+		err = UseDNSSystemWide(settings)
 
 		require.NoError(t, err)
 
