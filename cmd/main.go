@@ -22,7 +22,7 @@ import (
 	"github.com/qdm12/dns/pkg/check"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
-	"github.com/qdm12/dns/pkg/filter"
+	"github.com/qdm12/dns/pkg/filter/mapfilter"
 	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/golibs/logging"
@@ -186,7 +186,7 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			close(waitError)
 		}
 
-		filter := filter.NewMap(settings.Filter)
+		filter := mapfilter.New(settings.Filter)
 		settings.PatchFilter(filter)
 
 		serverCtx, serverCancel = context.WithCancel(ctx)

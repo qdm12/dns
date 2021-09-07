@@ -8,7 +8,7 @@ import (
 	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
-	"github.com/qdm12/dns/pkg/filter"
+	"github.com/qdm12/dns/pkg/filter/mapfilter"
 	"github.com/qdm12/golibs/params"
 )
 
@@ -17,7 +17,7 @@ type Settings struct {
 	DoT          dot.ServerSettings
 	DoH          doh.ServerSettings
 	Cache        cache.Settings
-	Filter       filter.Settings
+	Filter       mapfilter.Settings
 	Metrics      Metrics
 	BlockBuilder blockbuilder.BuildSettings
 	CheckDNS     bool

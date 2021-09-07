@@ -1,4 +1,4 @@
-package filter
+package mapfilter
 
 import (
 	"net"
@@ -10,7 +10,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func Test_mapBased(t *testing.T) {
+func Test_Filter(t *testing.T) {
 	t.Parallel()
 
 	settings := Settings{
@@ -22,7 +22,7 @@ func Test_mapBased(t *testing.T) {
 
 	settings.BlockHostnames([]string{"github.com", "google.com"})
 
-	filter := NewMap(settings)
+	filter := New(settings)
 
 	assert.True(t, filter.FilterRequest(&dns.Msg{
 		Question: []dns.Question{
@@ -57,7 +57,7 @@ func Test_mapBased(t *testing.T) {
 	}))
 }
 
-func Test_mapBased_threadSafety(t *testing.T) {
+func Test_Filter_threadSafety(t *testing.T) {
 	t.Parallel()
 
 	settings := Settings{
@@ -78,7 +78,7 @@ func Test_mapBased_threadSafety(t *testing.T) {
 		},
 		}}
 
-	filter := NewMap(settings)
+	filter := New(settings)
 
 	startWg := new(sync.WaitGroup)
 	endWg := new(sync.WaitGroup)

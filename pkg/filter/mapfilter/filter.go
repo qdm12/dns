@@ -1,4 +1,4 @@
-package filter
+package mapfilter
 
 import (
 	"net"
@@ -8,14 +8,14 @@ import (
 	"inet.af/netaddr"
 )
 
-type mapBased struct {
+type Filter struct {
 	fqdnHostnames map[string]struct{}
 	ips           map[netaddr.IP]struct{}
 	ipPrefixes    []netaddr.IPPrefix
 	metrics       metrics.Interface
 }
 
-func NewMap(settings Settings) Filter {
+func New(settings Settings) *Filter {
 	settings.setDefaults()
 	metrics := settings.Metrics
 
@@ -33,7 +33,7 @@ func NewMap(settings Settings) Filter {
 
 	metrics.SetBlockedIPPrefixes(len(settings.IPPrefixes))
 
-	return &mapBased{
+	return &Filter{
 		fqdnHostnames: fqdnHostnamesSet,
 		ips:           ipsSet,
 		ipPrefixes:    settings.IPPrefixes,
@@ -41,7 +41,7 @@ func NewMap(settings Settings) Filter {
 	}
 }
 
-func (m *mapBased) FilterRequest(request *dns.Msg) (blocked bool) {
+func (m *Filter) FilterRequest(request *dns.Msg) (blocked bool) {
 	for _, question := range request.Question {
 		fqdnHostname := question.Name
 		_, blocked = m.fqdnHostnames[fqdnHostname]
@@ -55,7 +55,7 @@ func (m *mapBased) FilterRequest(request *dns.Msg) (blocked bool) {
 	return false
 }
 
-func (m *mapBased) FilterResponse(response *dns.Msg) (blocked bool) {
+func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 	for _, rr := range response.Answer {
 		// only filter A and AAAA responses for now
 		rrType := rr.Header().Rrtype
@@ -77,7 +77,7 @@ func (m *mapBased) FilterResponse(response *dns.Msg) (blocked bool) {
 	return false
 }
 
-func (m *mapBased) isIPBlocked(ip net.IP) (blocked bool) {
+func (m *Filter) isIPBlocked(ip net.IP) (blocked bool) {
 	netaddrIP, ok := netaddr.FromStdIP(ip)
 	if !ok {
 		return true
