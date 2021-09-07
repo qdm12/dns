@@ -22,5 +22,9 @@ type Interface interface {
 
 type DialMetrics interface {
 	DoTDialInc(provider, address, outcome string)
+	DialDNSMetrics
+}
+
+type DialDNSMetrics interface {
 	DNSDialInc(provider, address, outcome string)
 }
