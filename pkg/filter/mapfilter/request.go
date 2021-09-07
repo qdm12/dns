@@ -3,6 +3,9 @@ package mapfilter
 import "github.com/miekg/dns"
 
 func (m *Filter) FilterRequest(request *dns.Msg) (blocked bool) {
+	m.updateLock.RLock()
+	defer m.updateLock.RUnlock()
+
 	for _, question := range request.Question {
 		fqdnHostname := question.Name
 		_, blocked = m.fqdnHostnames[fqdnHostname]

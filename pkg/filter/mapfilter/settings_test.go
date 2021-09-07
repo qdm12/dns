@@ -3,6 +3,7 @@ package mapfilter
 import (
 	"testing"
 
+	"github.com/qdm12/dns/pkg/filter/update"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,22 +17,30 @@ func Test_Settings_BlockHostnames(t *testing.T) {
 	}{
 		"nothing": {
 			finalSettings: Settings{
-				FqdnHostnames: []string{},
+				Update: update.Settings{
+					FqdnHostnames: []string{},
+				},
 			},
 		},
 		"insert new first ones": {
 			hostnames: []string{"abc.com", "def.co.uk"},
 			finalSettings: Settings{
-				FqdnHostnames: []string{"abc.com.", "def.co.uk."},
+				Update: update.Settings{
+					FqdnHostnames: []string{"abc.com.", "def.co.uk."},
+				},
 			},
 		},
 		"override": {
 			initialSettings: Settings{
-				FqdnHostnames: []string{"01.com.", "abc.com."},
+				Update: update.Settings{
+					FqdnHostnames: []string{"01.com.", "abc.com."},
+				},
 			},
 			hostnames: []string{"abc.com", "def.co.uk"},
 			finalSettings: Settings{
-				FqdnHostnames: []string{"abc.com.", "def.co.uk."},
+				Update: update.Settings{
+					FqdnHostnames: []string{"abc.com.", "def.co.uk."},
+				},
 			},
 		},
 	}
@@ -43,7 +52,7 @@ func Test_Settings_BlockHostnames(t *testing.T) {
 
 			settings := testCase.initialSettings
 
-			settings.BlockHostnames(testCase.hostnames)
+			settings.Update.BlockHostnames(testCase.hostnames)
 
 			assert.Equal(t, testCase.finalSettings, settings)
 		})
@@ -60,22 +69,30 @@ func Test_Settings_AddBlockHostnames(t *testing.T) {
 	}{
 		"nothing": {
 			finalSettings: Settings{
-				FqdnHostnames: []string{},
+				Update: update.Settings{
+					FqdnHostnames: []string{},
+				},
 			},
 		},
 		"insert new first ones": {
 			hostnames: []string{"abc.com", "def.co.uk"},
 			finalSettings: Settings{
-				FqdnHostnames: []string{"abc.com.", "def.co.uk."},
+				Update: update.Settings{
+					FqdnHostnames: []string{"abc.com.", "def.co.uk."},
+				},
 			},
 		},
 		"insert two with one duplicate": {
 			initialSettings: Settings{
-				FqdnHostnames: []string{"01.com.", "abc.com."},
+				Update: update.Settings{
+					FqdnHostnames: []string{"01.com.", "abc.com."},
+				},
 			},
 			hostnames: []string{"abc.com", "def.co.uk"},
 			finalSettings: Settings{
-				FqdnHostnames: []string{"01.com.", "abc.com.", "def.co.uk."},
+				Update: update.Settings{
+					FqdnHostnames: []string{"01.com.", "abc.com.", "def.co.uk."},
+				},
 			},
 		},
 	}
@@ -87,7 +104,7 @@ func Test_Settings_AddBlockHostnames(t *testing.T) {
 
 			settings := testCase.initialSettings
 
-			settings.AddBlockHostnames(testCase.hostnames)
+			settings.Update.AddBlockHostnames(testCase.hostnames)
 
 			assert.Equal(t, testCase.finalSettings, settings)
 		})

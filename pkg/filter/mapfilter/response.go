@@ -8,6 +8,9 @@ import (
 )
 
 func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
+	m.updateLock.RLock()
+	defer m.updateLock.RUnlock()
+
 	for _, rr := range response.Answer {
 		// only filter A and AAAA responses for now
 		rrType := rr.Header().Rrtype

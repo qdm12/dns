@@ -177,9 +177,9 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			logger.Info(fmt.Sprint(len(result.BlockedHostnames)) + " hostnames blocked overall")
 			logger.Info(fmt.Sprint(len(result.BlockedIPs)) + " IP addresses blocked overall")
 			logger.Info(fmt.Sprint(len(result.BlockedIPPrefixes)) + " IP networks blocked overall")
-			settings.Filter.IPs = result.BlockedIPs
-			settings.Filter.IPPrefixes = result.BlockedIPPrefixes
-			settings.Filter.BlockHostnames(result.BlockedHostnames)
+			settings.Filter.Update.IPs = result.BlockedIPs
+			settings.Filter.Update.IPPrefixes = result.BlockedIPPrefixes
+			settings.Filter.Update.BlockHostnames(result.BlockedHostnames)
 
 			serverCancel()
 			<-waitError

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/pkg/filter/update"
 	"github.com/stretchr/testify/assert"
 	"inet.af/netaddr"
 )
@@ -14,13 +15,15 @@ func Test_Filter(t *testing.T) {
 	t.Parallel()
 
 	settings := Settings{
-		IPs: []netaddr.IP{
-			netaddr.IPv4(2, 2, 2, 2),
-			netaddr.IPv4(3, 3, 3, 3),
+		Update: update.Settings{
+			IPs: []netaddr.IP{
+				netaddr.IPv4(2, 2, 2, 2),
+				netaddr.IPv4(3, 3, 3, 3),
+			},
 		},
 	}
 
-	settings.BlockHostnames([]string{"github.com", "google.com"})
+	settings.Update.BlockHostnames([]string{"github.com", "google.com"})
 
 	filter := New(settings)
 
@@ -61,11 +64,13 @@ func Test_Filter_threadSafety(t *testing.T) {
 	t.Parallel()
 
 	settings := Settings{
-		IPs: []netaddr.IP{
-			netaddr.IPv4(2, 2, 2, 2),
-			netaddr.IPv4(3, 3, 3, 3),
+		Update: update.Settings{
+			IPs: []netaddr.IP{
+				netaddr.IPv4(2, 2, 2, 2),
+				netaddr.IPv4(3, 3, 3, 3),
+			},
+			FqdnHostnames: []string{"github.com."},
 		},
-		FqdnHostnames: []string{"github.com."},
 	}
 
 	request := &dns.Msg{Question: []dns.Question{
