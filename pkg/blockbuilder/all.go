@@ -7,19 +7,19 @@ import (
 )
 
 func (b *Builder) All(ctx context.Context, settings Settings) (
-	blockedHostnames []string, blockedIPs []netaddr.IP,
-	blockedIPPrefixes []netaddr.IPPrefix, errs []error) {
+	result Result) {
 	chHostnames := make(chan []string)
 	chIPs := make(chan []netaddr.IP)
 	chIPPrefixes := make(chan []netaddr.IPPrefix)
-	chErrors := make(chan []error)
+	chHostnamesErrors := make(chan []error)
+	chIPsErrors := make(chan []error)
 
 	go func() {
 		blockedHostnames, errs := b.buildHostnames(ctx,
 			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
 			settings.AddBlockedHosts, settings.AllowedHosts)
 		chHostnames <- blockedHostnames
-		chErrors <- errs
+		chHostnamesErrors <- errs
 	}()
 
 	go func() {
@@ -29,17 +29,17 @@ func (b *Builder) All(ctx context.Context, settings Settings) (
 			settings.AllowedIPPrefixes, settings.AddBlockedIPPrefixes)
 		chIPs <- blockedIPs
 		chIPPrefixes <- blockedIPPrefixes
-		chErrors <- errs
+		chIPsErrors <- errs
 	}()
 
-	blockedHostnames = <-chHostnames
-	blockedIPs = <-chIPs
-	blockedIPPrefixes = <-chIPPrefixes
+	result.BlockedHostnames = <-chHostnames
+	result.BlockedIPs = <-chIPs
+	result.BlockedIPPrefixes = <-chIPPrefixes
 
-	routineErrs := <-chErrors
-	errs = append(errs, routineErrs...)
-	routineErrs = <-chErrors
-	errs = append(errs, routineErrs...)
+	hostnamesErrors := <-chHostnamesErrors
+	result.Errors = append(result.Errors, hostnamesErrors...)
+	ipsErrors := <-chIPsErrors
+	result.Errors = append(result.Errors, ipsErrors...)
 
-	return blockedHostnames, blockedIPs, blockedIPPrefixes, errs
+	return result
 }

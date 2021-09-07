@@ -245,13 +245,12 @@ func Test_builder_All(t *testing.T) {
 
 			builder := New(client)
 
-			blockedHostnames, blockedIPs, blockedIPPrefixes, errs :=
-				builder.All(ctx, tc.settings)
+			result := builder.All(ctx, tc.settings)
 
-			assert.ElementsMatch(t, tc.blockedHostnames, blockedHostnames)
-			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(blockedIPs))
-			assert.ElementsMatch(t, tc.blockedIPPrefixes, convertIPPrefixesToString(blockedIPPrefixes))
-			assert.ElementsMatch(t, tc.errsString, convertErrorsToString(errs))
+			assert.ElementsMatch(t, tc.blockedHostnames, result.BlockedHostnames)
+			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(result.BlockedIPs))
+			assert.ElementsMatch(t, tc.blockedIPPrefixes, convertIPPrefixesToString(result.BlockedIPPrefixes))
+			assert.ElementsMatch(t, tc.errsString, convertErrorsToString(result.Errors))
 
 			for url, count := range clientCalls.m {
 				assert.Equalf(t, 1, count, "for url %q", url)

@@ -3,16 +3,12 @@ package blockbuilder
 import (
 	"context"
 	"net/http"
-
-	"inet.af/netaddr"
 )
 
 var _ Interface = (*Builder)(nil)
 
 type Interface interface {
-	All(ctx context.Context, settings Settings) (
-		blockedHostnames []string, blockedIPs []netaddr.IP,
-		blockedIPPrefixes []netaddr.IPPrefix, errs []error)
+	All(ctx context.Context, settings Settings) Result
 }
 
 func New(client *http.Client) *Builder {
