@@ -26,7 +26,7 @@ type Settings struct {
 	UpdatePeriod  time.Duration
 }
 
-func (settings *Settings) get(reader *reader) (err error) {
+func (settings *Settings) get(reader *Reader) (err error) {
 	reader.checkOutdatedVariables()
 
 	settings.UpstreamType, err = getUpstreamType(reader.env)

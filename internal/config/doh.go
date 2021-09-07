@@ -7,7 +7,7 @@ import (
 	"github.com/qdm12/golibs/params"
 )
 
-func getDoHSettings(reader *reader) (settings doh.ResolverSettings, err error) {
+func getDoHSettings(reader *Reader) (settings doh.ResolverSettings, err error) {
 	settings.DoHProviders, err = getDoHProviders(reader)
 	if err != nil {
 		return settings, err

@@ -17,7 +17,7 @@ func (settings *Settings) PatchCache(cache cache.Interface) {
 
 var errCacheMaxEntries = errors.New("invalid value for max entries in the cache")
 
-func getCacheSettings(reader *reader) (settings cache.Settings, err error) {
+func getCacheSettings(reader *Reader) (settings cache.Settings, err error) {
 	settings.Type, err = reader.env.Inside("CACHE_TYPE",
 		[]string{lru.CacheType, noop.CacheType},
 		params.Default(lru.CacheType))

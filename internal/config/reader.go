@@ -6,27 +6,27 @@ import (
 	"github.com/qdm12/golibs/verification"
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Reader
+var _ SettingsReader = (*Reader)(nil)
 
-type Reader interface {
+type SettingsReader interface {
 	ReadSettings() (s Settings, err error)
 }
 
-type reader struct {
+type Reader struct {
 	env      params.Interface
 	logger   logging.Logger
 	verifier verification.Verifier
 }
 
-func NewReader(logger logging.Logger) Reader {
-	return &reader{
+func NewReader(logger logging.Logger) *Reader {
+	return &Reader{
 		env:      params.New(),
 		logger:   logger,
 		verifier: verification.NewVerifier(),
 	}
 }
 
-func (r *reader) ReadSettings() (s Settings, err error) {
+func (r *Reader) ReadSettings() (s Settings, err error) {
 	err = s.get(r)
 	return s, err
 }

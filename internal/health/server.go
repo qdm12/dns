@@ -8,26 +8,28 @@ import (
 	"github.com/qdm12/golibs/logging"
 )
 
-type Server interface {
+var _ Runner = (*Server)(nil)
+
+type Runner interface {
 	Run(ctx context.Context, done chan<- struct{})
 }
 
-type server struct {
+type Server struct {
 	address string
 	logger  logging.Logger
 	handler http.Handler
 }
 
-func NewServer(address string, logger logging.Logger, healthcheck func() error) Server {
+func NewServer(address string, logger logging.Logger, healthcheck func() error) *Server {
 	handler := newHandler(logger, healthcheck)
-	return &server{
+	return &Server{
 		address: address,
 		logger:  logger,
 		handler: handler,
 	}
 }
 
-func (s *server) Run(ctx context.Context, done chan<- struct{}) {
+func (s *Server) Run(ctx context.Context, done chan<- struct{}) {
 	defer close(done)
 	server := http.Server{Addr: s.address, Handler: s.handler}
 	go func() {

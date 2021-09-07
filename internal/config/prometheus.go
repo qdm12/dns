@@ -12,7 +12,7 @@ type Prometheus struct {
 	Subsystem string
 }
 
-func getPrometheusSettings(reader *reader) (settings Prometheus,
+func getPrometheusSettings(reader *Reader) (settings Prometheus,
 	err error) {
 	var warning string
 	settings.Address, warning, err = reader.env.ListeningAddress(

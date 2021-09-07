@@ -8,23 +8,23 @@ import (
 )
 
 // getDoTProviders obtains the DoT resolver providers to use.
-func getDoTProviders(reader *reader) (providers []provider.Provider, err error) {
+func getDoTProviders(reader *Reader) (providers []provider.Provider, err error) {
 	return getProviders(reader, "DOT_RESOLVERS", "cloudflare,google")
 }
 
 // getDoHProviders obtains the DoH resolver providers to use.
-func getDoHProviders(reader *reader) (providers []provider.Provider, err error) {
+func getDoHProviders(reader *Reader) (providers []provider.Provider, err error) {
 	return getProviders(reader, "DOH_RESOLVERS", "cloudflare,google")
 }
 
 // getDNSProviders obtains the plaintext fallback DNS resolver providers to use.
-func getDNSProviders(reader *reader) (providers []provider.Provider, err error) {
+func getDNSProviders(reader *Reader) (providers []provider.Provider, err error) {
 	return getProviders(reader, "DNS_FALLBACK_PLAINTEXT_RESOLVERS", "")
 }
 
 // getProviders obtains the DNS resolver providers to use from the environment
 // variable specified by key.
-func getProviders(reader *reader, key, defaultValue string) (providers []provider.Provider, err error) {
+func getProviders(reader *Reader, key, defaultValue string) (providers []provider.Provider, err error) {
 	words, err := reader.env.CSV(key, params.Default(defaultValue))
 	if err != nil {
 		return nil, fmt.Errorf("environment variable %s: %w", key, err)

@@ -82,7 +82,7 @@ func main() {
 }
 
 func _main(ctx context.Context, buildInfo models.BuildInformation,
-	args []string, logger logging.ParentLogger, configReader config.Reader) error {
+	args []string, logger logging.ParentLogger, configReader config.SettingsReader) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the

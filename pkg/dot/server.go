@@ -11,18 +11,18 @@ import (
 	metricsmiddleware "github.com/qdm12/dns/pkg/middlewares/metrics"
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Server
+var _ Runner = (*Server)(nil)
 
-type Server interface {
+type Runner interface {
 	Run(ctx context.Context, stopped chan<- error)
 }
 
-type server struct {
+type Server struct {
 	dnsServer dns.Server
 	logger    log.Logger
 }
 
-func NewServer(ctx context.Context, settings ServerSettings) Server {
+func NewServer(ctx context.Context, settings ServerSettings) *Server {
 	settings.setDefaults()
 
 	handler := newDNSHandler(ctx, settings)
@@ -34,7 +34,7 @@ func NewServer(ctx context.Context, settings ServerSettings) Server {
 		metricsmiddleware.Settings{Metrics: settings.Metrics})
 	handler = metricsMiddleware(handler)
 
-	return &server{
+	return &Server{
 		dnsServer: dns.Server{
 			Addr:    ":" + fmt.Sprint(settings.Port),
 			Net:     "udp",
@@ -44,7 +44,7 @@ func NewServer(ctx context.Context, settings ServerSettings) Server {
 	}
 }
 
-func (s *server) Run(ctx context.Context, stopped chan<- error) {
+func (s *Server) Run(ctx context.Context, stopped chan<- error) {
 	go func() { // shutdown goroutine
 		<-ctx.Done()
 

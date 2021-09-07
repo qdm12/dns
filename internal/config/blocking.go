@@ -14,7 +14,7 @@ func (settings *Settings) PatchFilter(filter filter.Filter) {
 	settings.DoH.Filter = filter
 }
 
-func getFilterSettings(reader *reader) (settings builder.Settings, err error) {
+func getFilterSettings(reader *Reader) (settings builder.Settings, err error) {
 	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable BLOCK_MALICIOUS: %w", err)
@@ -68,7 +68,7 @@ func getFilterSettings(reader *reader) (settings builder.Settings, err error) {
 
 // getAllowedHostnames obtains a list of hostnames to unblock from block lists
 // from the comma separated list for the environment variable ALLOWED_HOSTNAMES.
-func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
+func getAllowedHostnames(reader *Reader) (hostnames []string, err error) {
 	hostnames, err = reader.env.CSV("ALLOWED_HOSTNAMES")
 	if err != nil {
 		return nil, fmt.Errorf("environment variable ALLOWED_HOSTNAMES: %w", err)
@@ -84,7 +84,7 @@ func getAllowedHostnames(reader *reader) (hostnames []string, err error) {
 
 // getBlockedHostnames obtains a list of hostnames to block from the comma
 // separated list for the environment variable BLOCK_HOSTNAMES.
-func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
+func getBlockedHostnames(reader *Reader) (hostnames []string, err error) {
 	hostnames, err = reader.env.CSV("BLOCK_HOSTNAMES")
 	if err != nil {
 		return nil, fmt.Errorf("environment variable BLOCK_HOSTNAMES: %w", err)
@@ -100,7 +100,7 @@ func getBlockedHostnames(reader *reader) (hostnames []string, err error) {
 
 // getAllowedIPs obtains a list of IPs to unblock from block lists
 // from the comma separated list for the environment variable ALLOWED_IPS.
-func getAllowedIPs(reader *reader) (ips []netaddr.IP, err error) {
+func getAllowedIPs(reader *Reader) (ips []netaddr.IP, err error) {
 	ipStrings, err := reader.env.CSV("ALLOWED_IPS")
 	if err != nil {
 		return nil, fmt.Errorf("environment variable ALLOWED_IPS: %w", err)
@@ -116,7 +116,7 @@ func getAllowedIPs(reader *reader) (ips []netaddr.IP, err error) {
 
 // getBlockedIPs obtains a list of IP addresses to block from
 // the comma separated list for the environment variable BLOCK_IPS.
-func getBlockedIPs(reader *reader) (ips []netaddr.IP, err error) {
+func getBlockedIPs(reader *Reader) (ips []netaddr.IP, err error) {
 	values, err := reader.env.CSV("BLOCK_IPS")
 	if err != nil {
 		return nil, fmt.Errorf("environment variable BLOCK_IPS: %w", err)
@@ -132,7 +132,7 @@ func getBlockedIPs(reader *reader) (ips []netaddr.IP, err error) {
 
 // getAllowedIPPrefixes obtains a list of IP Prefixes to unblock from block lists
 // from the comma separated list for the environment variable ALLOWED_CIDRS.
-func getAllowedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err error) {
+func getAllowedIPPrefixes(reader *Reader) (ipPrefixes []netaddr.IPPrefix, err error) {
 	ipPrefixStrings, err := reader.env.CSV("ALLOWED_CIDRS")
 	if err != nil {
 		return nil, fmt.Errorf("environment variable ALLOWED_CIDRS: %w", err)
@@ -148,7 +148,7 @@ func getAllowedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err er
 
 // getBlockedIPPrefixes obtains a list of IP networks (CIDR notation) to block from
 // the comma separated list for the environment variable BLOCK_CIDRS.
-func getBlockedIPPrefixes(reader *reader) (ipPrefixes []netaddr.IPPrefix, err error) {
+func getBlockedIPPrefixes(reader *Reader) (ipPrefixes []netaddr.IPPrefix, err error) {
 	values, err := reader.env.CSV("BLOCK_CIDRS")
 	if err != nil {
 		return nil, fmt.Errorf("environment variable BLOCK_CIDRS: %w", err)

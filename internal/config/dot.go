@@ -7,7 +7,7 @@ import (
 	"github.com/qdm12/golibs/params"
 )
 
-func getDoTSettings(reader *reader) (settings dot.ResolverSettings, err error) {
+func getDoTSettings(reader *Reader) (settings dot.ResolverSettings, err error) {
 	settings.DoTProviders, err = getDoTProviders(reader)
 	if err != nil {
 		return settings, err

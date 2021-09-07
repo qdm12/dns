@@ -34,7 +34,7 @@ type Metrics struct {
 	Prometheus Prometheus
 }
 
-func getMetricsSettings(reader *reader) (settings Metrics,
+func getMetricsSettings(reader *Reader) (settings Metrics,
 	err error) {
 	settings.Type, err = reader.env.Inside("METRICS_TYPE",
 		[]string{MetricNoop, MetricProm}, params.Default("noop"))

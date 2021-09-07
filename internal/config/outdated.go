@@ -6,7 +6,7 @@ import (
 	"github.com/qdm12/golibs/params"
 )
 
-func (reader *reader) checkOutdatedVariables() {
+func (reader *Reader) checkOutdatedVariables() {
 	outdatedToNew := map[string][]string{
 		"LISTENINGPORT":       {"LISTENING_PORT"},
 		"PROVIDERS":           {"DOT_PROVIDERS", "DOH_PROVIDERS", "DNS_PLAINTEXT_PROVIDERS"},

@@ -6,7 +6,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func (b *builder) All(ctx context.Context, settings Settings) (
+func (b *Builder) All(ctx context.Context, settings Settings) (
 	blockedHostnames []string, blockedIPs []netaddr.IP,
 	blockedIPPrefixes []netaddr.IPPrefix, errs []error) {
 	chHostnames := make(chan []string)

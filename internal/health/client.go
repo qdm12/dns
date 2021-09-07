@@ -13,17 +13,19 @@ func IsClientMode(args []string) bool {
 	return len(args) > 1 && args[1] == "healthcheck"
 }
 
-type Client interface {
+var _ Querier = (*Client)(nil)
+
+type Querier interface {
 	Query(ctx context.Context) error
 }
 
-type client struct {
+type Client struct {
 	*http.Client
 }
 
-func NewClient() Client {
+func NewClient() *Client {
 	const timeout = 5 * time.Second
-	return &client{
+	return &Client{
 		Client: &http.Client{Timeout: timeout},
 	}
 }
@@ -32,7 +34,7 @@ var ErrUnhealthy = errors.New("program is unhealthy")
 
 // Query sends an HTTP request to the other instance of
 // the program, and to its internal healthcheck server.
-func (c *client) Query(ctx context.Context) error {
+func (c *Client) Query(ctx context.Context) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://127.0.0.1:9999", nil)
 	if err != nil {
 		return err
