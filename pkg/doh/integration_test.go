@@ -196,7 +196,7 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics := mock_metrics.NewMockInterface(ctrl)
 	metrics.EXPECT().
 		DoTDialInc("cloudflare-dns.com",
-			mockhelp.NewMatcherStringSuffix(".1:853"), "success").
+			mockhelp.NewMatcherOneOf("1.1.1.1:853", "1.0.0.1:853"), "success").
 		Times(2)
 	metrics.EXPECT().
 		DoHDialInc("https://cloudflare-dns.com/dns-query").
