@@ -26,7 +26,7 @@ type ServerSettings struct {
 	Cache cache.Interface
 	// Filter is the filter for DNS requests and responses.
 	// It defaults to a No-Op filter implementation.
-	Filter filter.Filter
+	Filter filter.Interface
 	// Logger is the logger to log information.
 	// It defaults to a No-Op logger implementation.
 	Logger log.Logger

@@ -7,14 +7,14 @@ import (
 	"github.com/qdm12/dns/pkg/filter/update"
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Filter
+//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Interface
 
 var (
-	_ Filter = (*mapfilter.Filter)(nil)
-	_ Filter = (*noop.Filter)(nil)
+	_ Interface = (*mapfilter.Filter)(nil)
+	_ Interface = (*noop.Filter)(nil)
 )
 
-type Filter interface {
+type Interface interface {
 	FilterRequest(request *dns.Msg) (blocked bool)
 	FilterResponse(response *dns.Msg) (blocked bool)
 	Update(settings update.Settings)

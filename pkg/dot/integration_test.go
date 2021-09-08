@@ -158,7 +158,7 @@ func Test_Server_Mocks(t *testing.T) {
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
 		mockhelp.NewMatcherResponse(expectedResponseAAAA))
 
-	filter := mock_filter.NewMockFilter(ctrl)
+	filter := mock_filter.NewMockInterface(ctrl)
 	filter.EXPECT().
 		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestA)).
 		Return(false)

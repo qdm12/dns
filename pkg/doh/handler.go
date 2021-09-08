@@ -18,7 +18,7 @@ type handler struct {
 	dial   dialFunc
 	client *dns.Client
 	cache  cache.Interface
-	filter filter.Filter
+	filter filter.Interface
 }
 
 func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {

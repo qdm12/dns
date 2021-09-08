@@ -9,7 +9,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func (settings *Settings) PatchFilter(filter filter.Filter) {
+func (settings *Settings) PatchFilter(filter filter.Interface) {
 	settings.DoT.Filter = filter
 	settings.DoH.Filter = filter
 }
