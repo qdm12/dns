@@ -2,7 +2,6 @@ package doh
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"time"
 
@@ -43,7 +42,7 @@ func NewServer(ctx context.Context, settings ServerSettings) *Server {
 
 	return &Server{
 		dnsServer: dns.Server{
-			Addr:    ":" + fmt.Sprint(settings.Address),
+			Addr:    settings.Address,
 			Net:     "udp",
 			Handler: handler,
 		},

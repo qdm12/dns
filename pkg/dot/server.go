@@ -2,7 +2,6 @@ package dot
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/miekg/dns"
@@ -36,7 +35,7 @@ func NewServer(ctx context.Context, settings ServerSettings) *Server {
 
 	return &Server{
 		dnsServer: dns.Server{
-			Addr:    ":" + fmt.Sprint(settings.Address),
+			Addr:    settings.Address,
 			Net:     "udp",
 			Handler: handler,
 		},
