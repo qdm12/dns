@@ -26,8 +26,5 @@ func (f *Formatter) Request(request *dns.Msg) (s string) {
 		s += "; questions: " + strings.Join(questionStrings, ", ")
 	}
 
-	// Cache string for calls to RequestResponse
-	f.idToRequestString[request.Id] = s
-
 	return s
 }

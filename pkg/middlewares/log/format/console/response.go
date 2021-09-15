@@ -25,9 +25,6 @@ func (f *Formatter) Response(response *dns.Msg) (s string) {
 			strings.Join(answerStrings, ",\n  ") + "\n]"
 	}
 
-	// Cache string for calls to RequestResponse
-	f.idToResponseString[response.Id] = s
-
 	return s
 }
 
