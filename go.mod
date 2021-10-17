@@ -5,11 +5,11 @@ go 1.17
 require (
 	github.com/breml/rootcerts v0.1.0
 	github.com/golang/mock v1.6.0
-	github.com/kyokomi/emoji v2.2.4+incompatible
 	github.com/miekg/dns v1.1.43
 	github.com/prometheus/client_golang v1.10.0
 	github.com/qdm12/golibs v0.0.0-20210915134941-19815c6f95fe
 	github.com/qdm12/goshutdown v0.1.0
+	github.com/qdm12/gosplash v0.1.0
 	github.com/stretchr/testify v1.7.0
 	inet.af/netaddr v0.0.0-20210511181906-37180328850c
 )

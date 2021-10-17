@@ -17,7 +17,6 @@ import (
 	"github.com/qdm12/dns/internal/health"
 	"github.com/qdm12/dns/internal/metrics"
 	"github.com/qdm12/dns/internal/models"
-	"github.com/qdm12/dns/internal/splash"
 	"github.com/qdm12/dns/pkg/blockbuilder"
 	"github.com/qdm12/dns/pkg/check"
 	"github.com/qdm12/dns/pkg/doh"
@@ -27,6 +26,7 @@ import (
 	"github.com/qdm12/dns/pkg/nameserver"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/goshutdown"
+	"github.com/qdm12/gosplash"
 )
 
 var (
@@ -90,7 +90,27 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 		client := health.NewClient()
 		return client.Query(ctx)
 	}
-	fmt.Println(splash.Splash(buildInfo))
+
+	announcementExp, err := time.Parse(time.RFC3339, "2021-11-20T00:00:00Z")
+	if err != nil {
+		return err
+	}
+	splashSettings := gosplash.Settings{
+		User:         "qdm12",
+		Repository:   "dns",
+		Emails:       []string{"quentin.mcgaw@gmail.com"},
+		Version:      buildInfo.Version,
+		Commit:       buildInfo.Commit,
+		BuildDate:    buildInfo.BuildDate,
+		Announcement: "Check out qmcgaw/dns:v2.0.0-beta",
+		AnnounceExp:  announcementExp,
+		// Sponsor information
+		PaypalUser:    "qmcgaw",
+		GithubSponsor: "qdm12",
+	}
+	for _, line := range gosplash.MakeLines(splashSettings) {
+		fmt.Println(line)
+	}
 
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
