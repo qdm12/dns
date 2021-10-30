@@ -59,7 +59,7 @@ func generateUnboundConf(settings Settings, blacklistLines []string,
 		"msg-cache-slabs: 4",
 		"rrset-cache-size: 8m",
 		"rrset-cache-slabs: 4",
-		"cache-min-ttl: 3600",
+		"cache-min-ttl: 0",
 		"cache-max-ttl: 9000",
 		// Privacy
 		"rrset-roundrobin: yes",

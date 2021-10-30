@@ -40,7 +40,7 @@ func Test_generateUnboundConf(t *testing.T) {
 server:
   access-control: 0.0.0.0/0 allow
   cache-max-ttl: 9000
-  cache-min-ttl: 3600
+  cache-min-ttl: 0
   do-ip4: yes
   do-ip6: yes
   harden-algo-downgrade: yes
