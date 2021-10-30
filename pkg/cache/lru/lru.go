@@ -41,8 +41,9 @@ func New(settings Settings) *LRU {
 }
 
 func (l *LRU) Add(request, response *dns.Msg) {
-	if len(request.Question) == 0 {
+	if isEmpty(request, response) {
 		// cannot make key if there is no question
+		// and do not store empty response.
 		l.metrics.CacheInsertEmptyInc()
 		return
 	}

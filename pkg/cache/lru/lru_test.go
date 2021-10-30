@@ -14,7 +14,10 @@ func newTestMsgs(name string, expUnix uint32) (request, response *dns.Msg) {
 	request = &dns.Msg{Question: []dns.Question{{Name: name}}}
 	response = &dns.Msg{Answer: []dns.RR{&dns.TXT{
 		Txt: []string{name},
-		Hdr: dns.RR_Header{Ttl: expUnix},
+		Hdr: dns.RR_Header{
+			Rrtype: dns.TypeTXT,
+			Ttl:    expUnix,
+		},
 	}}}
 	response = response.Copy() // transform nil slices -> empty slices
 	return request, response
