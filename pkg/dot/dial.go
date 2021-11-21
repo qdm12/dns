@@ -32,7 +32,7 @@ func newDoTDial(settings ResolverSettings) dialFunc {
 
 		conn, err := dialer.DialContext(ctx, "tcp", serverAddress)
 		if err != nil {
-			return onDialError(ctx, serverName, serverAddress, dialer,
+			return onDialError(ctx, err, serverName, serverAddress, dialer,
 				picker, settings.IPv6, dnsServers, warner, metrics)
 		}
 
@@ -71,15 +71,16 @@ func pickNameAddress(picker picker.DoT, servers []provider.DoTServer,
 	return server.Name, address
 }
 
-func onDialError(ctx context.Context, dotName, dotAddress string,
-	dialer *net.Dialer, picker picker.DNS, ipv6 bool,
-	dnsServers []provider.DNSServer, warner log.Warner,
-	metrics metrics.DialMetrics) (conn net.Conn, err error) {
-	warner.Warn(err.Error())
+func onDialError(ctx context.Context, dialErr error,
+	dotName, dotAddress string, dialer *net.Dialer,
+	picker picker.DNS, ipv6 bool, dnsServers []provider.DNSServer,
+	warner log.Warner, metrics metrics.DialMetrics) (
+	conn net.Conn, err error) {
+	warner.Warn(dialErr.Error())
 	metrics.DoTDialInc(dotName, dotAddress, "error")
 
 	if len(dnsServers) == 0 {
-		return nil, err
+		return nil, dialErr
 	}
 
 	// fallback on plain DNS if DoT does not work and
