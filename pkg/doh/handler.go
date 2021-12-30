@@ -15,7 +15,7 @@ type handler struct {
 	logger log.Logger
 
 	// Internal objects
-	dial   dialFunc
+	dial   dialDNSFunc
 	client *dns.Client
 	cache  cache.Interface
 	filter filter.Interface
@@ -25,7 +25,7 @@ func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
 	return &handler{
 		ctx:    ctx,
 		logger: settings.Logger,
-		dial:   newDoHDial(settings.Resolver),
+		dial:   wrapDial(newDoHDial(settings.Resolver)),
 		client: &dns.Client{},
 		cache:  settings.Cache,
 		filter: settings.Filter,
@@ -47,13 +47,12 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
-	DoHConn, err := h.dial(h.ctx, "", "")
+	conn, err := h.dial(h.ctx)
 	if err != nil {
 		h.logger.Warn("cannot dial: " + err.Error())
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
 	}
-	conn := &dns.Conn{Conn: DoHConn}
 
 	response, _, err := h.client.ExchangeWithConn(r, conn)
 
