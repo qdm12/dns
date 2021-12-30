@@ -52,7 +52,7 @@ RUN GOARCH="$(xcputranslate translate -field arch -targetplatform ${TARGETPLATFO
     -X 'main.version=$VERSION' \
     -X 'main.buildDate=$BUILD_DATE' \
     -X 'main.commit=$COMMIT' \
-    " -o entrypoint cmd/main.go
+    " -o entrypoint cmd/dns/main.go
 RUN apk --update --no-cache add libcap && \
     setcap 'cap_net_bind_service=+ep' entrypoint && \
     apk del libcap

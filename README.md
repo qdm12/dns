@@ -299,7 +299,7 @@ For now, it is used by the [gluetun](https://github.com/qdm12/gluetun) project f
 
 ```sh
 # Build the binary
-go build cmd/main.go
+go build ./cmd/dns/main.go
 # Test the code
 go test ./...
 # Lint the code
