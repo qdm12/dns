@@ -24,7 +24,7 @@ type Settings struct {
 	Logger logger.Interface
 }
 
-func (s *Settings) setDefaults() {
+func (s *Settings) SetDefaults() {
 	if s.Formatter == nil {
 		if s.Logger != nil {
 			s.Formatter = console.New()

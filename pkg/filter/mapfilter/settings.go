@@ -16,7 +16,8 @@ type Settings struct {
 	Metrics metrics.Interface
 }
 
-func (s *Settings) setDefaults() {
+func (s *Settings) SetDefaults() {
+	s.Update.SetDefaults()
 	if s.Metrics == nil {
 		s.Metrics = noop.New()
 	}

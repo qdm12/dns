@@ -48,8 +48,8 @@ type ResolverSettings struct {
 	Metrics metrics.DialMetrics
 }
 
-func (s *ServerSettings) setDefaults() {
-	s.Resolver.setDefaults()
+func (s *ServerSettings) SetDefaults() {
+	s.Resolver.SetDefaults()
 
 	if s.Address == "" {
 		const defaultAddress = ":53"
@@ -74,7 +74,7 @@ func (s *ServerSettings) setDefaults() {
 	}
 }
 
-func (s *ResolverSettings) setDefaults() {
+func (s *ResolverSettings) SetDefaults() {
 	if len(s.DoTProviders) == 0 {
 		s.DoTProviders = []provider.Provider{provider.Cloudflare()}
 	}

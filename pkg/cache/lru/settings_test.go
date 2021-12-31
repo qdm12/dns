@@ -6,9 +6,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Settings_setDefaults(t *testing.T) {
+func Test_Settings_SetDefaults(t *testing.T) {
 	settings := Settings{}
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	assert.Greater(t, settings.MaxEntries, 1)
 	assert.NotNil(t, settings.Metrics)

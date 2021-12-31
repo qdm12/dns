@@ -12,22 +12,39 @@ type Settings struct {
 	Client *http.Client
 }
 
-func (s *Settings) setDefault() {
+func (s *Settings) SetDefaults() {
 	if s.Client == nil {
 		s.Client = http.DefaultClient
 	}
 }
 
 type BuildSettings struct {
-	BlockMalicious       bool
-	BlockAds             bool
-	BlockSurveillance    bool
+	BlockMalicious       *bool
+	BlockAds             *bool
+	BlockSurveillance    *bool
 	AllowedHosts         []string
 	AllowedIPs           []netaddr.IP
 	AllowedIPPrefixes    []netaddr.IPPrefix
 	AddBlockedHosts      []string
 	AddBlockedIPs        []netaddr.IP
 	AddBlockedIPPrefixes []netaddr.IPPrefix
+}
+
+func (s *BuildSettings) SetDefaults() {
+	if s.BlockMalicious == nil {
+		t := true
+		s.BlockMalicious = &t
+	}
+
+	if s.BlockAds == nil {
+		f := false
+		s.BlockAds = &f
+	}
+
+	if s.BlockSurveillance == nil {
+		f := false
+		s.BlockSurveillance = &f
+	}
 }
 
 func (s *BuildSettings) String() string {
@@ -38,13 +55,13 @@ func (s *BuildSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Filter build settings:")
 
 	var blockedCategories []string
-	if s.BlockMalicious {
+	if *s.BlockMalicious {
 		blockedCategories = append(blockedCategories, "malicious")
 	}
-	if s.BlockSurveillance {
+	if *s.BlockSurveillance {
 		blockedCategories = append(blockedCategories, "surveillance")
 	}
-	if s.BlockAds {
+	if *s.BlockAds {
 		blockedCategories = append(blockedCategories, "ads")
 	}
 

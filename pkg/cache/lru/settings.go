@@ -15,7 +15,7 @@ type Settings struct {
 	Metrics metrics.Interface
 }
 
-func (s *Settings) setDefaults() {
+func (s *Settings) SetDefaults() {
 	if s.MaxEntries == 0 {
 		s.MaxEntries = 10e4
 	}

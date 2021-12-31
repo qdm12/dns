@@ -8,6 +8,8 @@ import (
 
 func (b *Builder) BuildAll(ctx context.Context, settings BuildSettings) (
 	result Result) {
+	settings.SetDefaults()
+
 	chHostnames := make(chan []string)
 	chIPs := make(chan []netaddr.IP)
 	chIPPrefixes := make(chan []netaddr.IPPrefix)
@@ -16,7 +18,7 @@ func (b *Builder) BuildAll(ctx context.Context, settings BuildSettings) (
 
 	go func() {
 		blockedHostnames, errs := b.buildHostnames(ctx,
-			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
+			*settings.BlockMalicious, *settings.BlockAds, *settings.BlockSurveillance,
 			settings.AddBlockedHosts, settings.AllowedHosts)
 		chHostnames <- blockedHostnames
 		chHostnamesErrors <- errs
@@ -24,7 +26,7 @@ func (b *Builder) BuildAll(ctx context.Context, settings BuildSettings) (
 
 	go func() {
 		blockedIPs, blockedIPPrefixes, errs := b.buildIPs(ctx,
-			settings.BlockMalicious, settings.BlockAds, settings.BlockSurveillance,
+			*settings.BlockMalicious, *settings.BlockAds, *settings.BlockSurveillance,
 			settings.AllowedIPs, settings.AddBlockedIPs,
 			settings.AllowedIPPrefixes, settings.AddBlockedIPPrefixes)
 		chIPs <- blockedIPs

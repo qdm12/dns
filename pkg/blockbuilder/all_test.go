@@ -15,6 +15,9 @@ import (
 
 func Test_Builder_BuildAll(t *testing.T) {
 	t.Parallel()
+
+	boolPtr := func(b bool) *bool { return &b }
+
 	type httpCase struct {
 		content []byte
 		err     error
@@ -32,19 +35,25 @@ func Test_Builder_BuildAll(t *testing.T) {
 		blockedIPPrefixes []string // string format for easier comparison
 		errsString        []string // string format for easier comparison
 	}{
-		"none blocked": {},
+		"none blocked": {
+			buildSettings: BuildSettings{
+				BlockMalicious:    boolPtr(false),
+				BlockAds:          boolPtr(false),
+				BlockSurveillance: boolPtr(false),
+			},
+		},
 		"all blocked without lists": {
 			buildSettings: BuildSettings{
-				BlockMalicious:    true,
-				BlockAds:          true,
-				BlockSurveillance: true,
+				BlockMalicious:    boolPtr(true),
+				BlockAds:          boolPtr(true),
+				BlockSurveillance: boolPtr(true),
 			},
 		},
 		"all blocked with lists": {
 			buildSettings: BuildSettings{
-				BlockMalicious:    true,
-				BlockAds:          true,
-				BlockSurveillance: true,
+				BlockMalicious:    boolPtr(true),
+				BlockAds:          boolPtr(true),
+				BlockSurveillance: boolPtr(true),
 			},
 			maliciousHosts: httpCase{
 				content: []byte("malicious.com"),
@@ -69,9 +78,9 @@ func Test_Builder_BuildAll(t *testing.T) {
 		},
 		"all blocked with allowed hostnames": {
 			buildSettings: BuildSettings{
-				BlockMalicious:    true,
-				BlockAds:          true,
-				BlockSurveillance: true,
+				BlockMalicious:    boolPtr(true),
+				BlockAds:          boolPtr(true),
+				BlockSurveillance: boolPtr(true),
 				AllowedHosts:      []string{"ads.com"},
 			},
 			maliciousHosts: httpCase{
@@ -97,8 +106,10 @@ func Test_Builder_BuildAll(t *testing.T) {
 		},
 		"blocked with additional blocked IP addresses": {
 			buildSettings: BuildSettings{
-				BlockMalicious: true,
-				AddBlockedIPs:  []netaddr.IP{netaddr.IPv4(1, 2, 3, 7)},
+				BlockMalicious:    boolPtr(true),
+				BlockAds:          boolPtr(false),
+				BlockSurveillance: boolPtr(false),
+				AddBlockedIPs:     []netaddr.IP{netaddr.IPv4(1, 2, 3, 7)},
 			},
 			maliciousHosts: httpCase{
 				content: []byte("malicious.com"),
@@ -111,9 +122,9 @@ func Test_Builder_BuildAll(t *testing.T) {
 		},
 		"all blocked with lists and one error": {
 			buildSettings: BuildSettings{
-				BlockMalicious:    true,
-				BlockAds:          true,
-				BlockSurveillance: true,
+				BlockMalicious:    boolPtr(true),
+				BlockAds:          boolPtr(true),
+				BlockSurveillance: boolPtr(true),
 			},
 			maliciousHosts: httpCase{
 				content: []byte("malicious.com"),
@@ -141,9 +152,9 @@ func Test_Builder_BuildAll(t *testing.T) {
 		},
 		"all blocked with errors": {
 			buildSettings: BuildSettings{
-				BlockMalicious:    true,
-				BlockAds:          true,
-				BlockSurveillance: true,
+				BlockMalicious:    boolPtr(true),
+				BlockAds:          boolPtr(true),
+				BlockSurveillance: boolPtr(true),
 			},
 			maliciousHosts: httpCase{
 				err: errors.New("malicious hostnames"),
@@ -185,15 +196,15 @@ func Test_Builder_BuildAll(t *testing.T) {
 			}{
 				m: make(map[string]int),
 			}
-			if tc.buildSettings.BlockMalicious {
+			if *tc.buildSettings.BlockMalicious {
 				clientCalls.m[maliciousBlockListIPsURL] = 0
 				clientCalls.m[maliciousBlockListHostnamesURL] = 0
 			}
-			if tc.buildSettings.BlockAds {
+			if *tc.buildSettings.BlockAds {
 				clientCalls.m[adsBlockListIPsURL] = 0
 				clientCalls.m[adsBlockListHostnamesURL] = 0
 			}
-			if tc.buildSettings.BlockSurveillance {
+			if *tc.buildSettings.BlockSurveillance {
 				clientCalls.m[surveillanceBlockListIPsURL] = 0
 				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
 			}

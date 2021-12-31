@@ -12,6 +12,8 @@ type Settings struct {
 	IPPrefixes    []netaddr.IPPrefix
 }
 
+func (s *Settings) SetDefaults() {}
+
 // BlockHostnames transforms the slice of hostnames given to
 // FQDN hostnames and sets these to the settings.
 func (s *Settings) BlockHostnames(hostnames []string) {

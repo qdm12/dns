@@ -6,7 +6,7 @@ import (
 
 // NewResolver creates a DNS over HTTPs resolver.
 func NewResolver(settings ResolverSettings) *net.Resolver {
-	settings.setDefaults()
+	settings.SetDefaults()
 	return &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,

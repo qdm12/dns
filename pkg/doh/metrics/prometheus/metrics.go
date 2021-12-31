@@ -25,7 +25,7 @@ var (
 )
 
 func New(settings Settings) (metrics *Metrics, err error) {
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	metrics = new(Metrics)
 

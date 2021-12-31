@@ -55,8 +55,8 @@ type SelfDNS struct {
 	IPv6         bool
 }
 
-func (s *ServerSettings) setDefaults() {
-	s.Resolver.setDefaults()
+func (s *ServerSettings) SetDefaults() {
+	s.Resolver.SetDefaults()
 
 	if s.Address == "" {
 		const defaultAddress = ":53"
@@ -81,8 +81,8 @@ func (s *ServerSettings) setDefaults() {
 	}
 }
 
-func (s *ResolverSettings) setDefaults() {
-	s.SelfDNS.setDefaults()
+func (s *ResolverSettings) SetDefaults() {
+	s.SelfDNS.SetDefaults()
 
 	if len(s.DoHProviders) == 0 {
 		s.DoHProviders = []provider.Provider{provider.Cloudflare()}
@@ -102,7 +102,7 @@ func (s *ResolverSettings) setDefaults() {
 	}
 }
 
-func (s *SelfDNS) setDefaults() {
+func (s *SelfDNS) SetDefaults() {
 	if s.Timeout == 0 {
 		const defaultTimeout = 5 * time.Second
 		s.Timeout = defaultTimeout

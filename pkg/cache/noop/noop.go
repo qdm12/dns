@@ -10,7 +10,7 @@ type NoOp struct {
 }
 
 func New(settings Settings) *NoOp {
-	settings.setDefaults()
+	settings.SetDefaults()
 	settings.Metrics.SetCacheType(CacheType)
 	return &NoOp{
 		metrics: settings.Metrics,

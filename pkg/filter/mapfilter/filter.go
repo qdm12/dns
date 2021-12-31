@@ -16,7 +16,7 @@ type Filter struct {
 }
 
 func New(settings Settings) *Filter {
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	filter := &Filter{
 		metrics: settings.Metrics,

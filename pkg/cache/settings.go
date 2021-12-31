@@ -6,7 +6,7 @@ import (
 	"github.com/qdm12/gotree"
 )
 
-type Settings struct {
+type Settings struct { // TODO move to internal
 	Type string
 	LRU  lru.Settings
 	Noop noop.Settings
@@ -17,7 +17,12 @@ func (s *Settings) SetDefaults() {
 		s.Type = noop.CacheType
 	}
 
-	// cache implementations defaults set by their constructor
+	switch s.Type {
+	case noop.CacheType:
+		s.Noop.SetDefaults()
+	case lru.CacheType:
+		s.LRU.SetDefaults()
+	}
 }
 
 func (s *Settings) String() string {
@@ -31,7 +36,6 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	case noop.CacheType:
 		return nil
 	default:
-		// TODO use ToLinesNode if it exists
 		return nil
 	}
 }

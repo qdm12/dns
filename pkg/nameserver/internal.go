@@ -19,7 +19,7 @@ type SettingsInternalDNS struct {
 	Timeout time.Duration
 }
 
-func (s *SettingsInternalDNS) setDefaults() {
+func (s *SettingsInternalDNS) SetDefaults() {
 	if s.IP == nil {
 		s.IP = net.IPv4(127, 0, 0, 1) //nolint:gomnd
 	}
@@ -30,7 +30,7 @@ func (s *SettingsInternalDNS) setDefaults() {
 
 // UseDNSInternally changes the Go program DNS only.
 func UseDNSInternally(settings SettingsInternalDNS) {
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	dialer := net.Dialer{
 		Timeout: settings.Timeout,

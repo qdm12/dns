@@ -19,7 +19,7 @@ type SettingsSystemDNS struct {
 	KeepNameserver bool
 }
 
-func (s *SettingsSystemDNS) setDefaults() {
+func (s *SettingsSystemDNS) SetDefaults() {
 	if s.IP == nil {
 		s.IP = net.IPv4(127, 0, 0, 1) //nolint:gomnd
 	}
@@ -32,7 +32,7 @@ func (s *SettingsSystemDNS) setDefaults() {
 // UseDNSSystemWide changes the nameserver to use for DNS system wide.
 // If resolvConfPath is empty, it defaults to /etc/resolv.conf.
 func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	file, err := os.Open(settings.ResolvPath)
 	if err != nil {

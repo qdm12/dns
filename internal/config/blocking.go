@@ -15,18 +15,24 @@ func (settings *Settings) PatchFilter(filter filter.Interface) {
 }
 
 func getFilterSettings(reader *Reader) (settings blockbuilder.BuildSettings, err error) {
-	settings.BlockMalicious, err = reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
+	blockMalicious, err := reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable BLOCK_MALICIOUS: %w", err)
 	}
-	settings.BlockSurveillance, err = reader.env.OnOff("BLOCK_SURVEILLANCE", params.Default("off"))
+	settings.BlockMalicious = &blockMalicious
+
+	blockSurveillance, err := reader.env.OnOff("BLOCK_SURVEILLANCE", params.Default("off"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable BLOCK_SURVEILLANCE: %w", err)
 	}
-	settings.BlockAds, err = reader.env.OnOff("BLOCK_ADS", params.Default("off"))
+	settings.BlockSurveillance = &blockSurveillance
+
+	blockAds, err := reader.env.OnOff("BLOCK_ADS", params.Default("off"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable BLOCK_ADS: %w", err)
 	}
+	settings.BlockAds = &blockAds
+
 	settings.AllowedHosts, err = getAllowedHostnames(reader)
 	if err != nil {
 		return settings, err

@@ -26,7 +26,7 @@ type LRU struct {
 }
 
 func New(settings Settings) *LRU {
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	settings.Metrics.SetCacheType(CacheType)
 	settings.Metrics.CacheMaxEntriesSet(settings.MaxEntries)

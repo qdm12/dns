@@ -12,7 +12,7 @@ type Interface interface {
 }
 
 func New(settings Settings) *Builder {
-	settings.setDefault()
+	settings.SetDefaults()
 
 	return &Builder{
 		client: settings.Client,

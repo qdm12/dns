@@ -23,7 +23,7 @@ type Server struct {
 }
 
 func NewServer(ctx context.Context, settings ServerSettings) *Server {
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	logger := settings.Logger
 

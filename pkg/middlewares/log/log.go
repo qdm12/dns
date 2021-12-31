@@ -10,7 +10,7 @@ import (
 )
 
 func New(settings Settings) func(dns.Handler) dns.Handler {
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	return func(next dns.Handler) dns.Handler {
 		return &handler{

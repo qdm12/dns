@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_ServerSettings_setDefaults(t *testing.T) {
+func Test_ServerSettings_SetDefaults(t *testing.T) {
 	t.Parallel()
 
 	cache := cache.New(cache.Settings{})
@@ -30,7 +30,7 @@ func Test_ServerSettings_setDefaults(t *testing.T) {
 			Metrics: metrics,
 		},
 	}
-	s.setDefaults()
+	s.SetDefaults()
 
 	// Check this otherwise things will blow up if no option is passed.
 	assert.GreaterOrEqual(t, len(s.Resolver.DoHProviders), 1)
@@ -63,7 +63,7 @@ func Test_ServerSettings_String(t *testing.T) {
 	t.Parallel()
 
 	settings := ServerSettings{}
-	settings.setDefaults()
+	settings.SetDefaults()
 
 	s := settings.String()
 

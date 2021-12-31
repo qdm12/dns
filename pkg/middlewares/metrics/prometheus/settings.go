@@ -9,6 +9,6 @@ type Settings struct {
 	Prometheus prom.Settings
 }
 
-func (s *Settings) setDefaults() {
+func (s *Settings) SetDefaults() {
 	s.Prometheus.SetDefaults()
 }

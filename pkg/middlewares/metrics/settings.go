@@ -8,7 +8,7 @@ type Settings struct {
 	Metrics Interface
 }
 
-func (s *Settings) setDefaults() {
+func (s *Settings) SetDefaults() {
 	if s.Metrics == nil {
 		s.Metrics = noop.New()
 	}

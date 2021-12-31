@@ -19,7 +19,7 @@ type Settings struct {
 	MiddlewareMetrics middleware.Interface
 }
 
-func (s *Settings) setDefaults() {
+func (s *Settings) SetDefaults() {
 	s.Prometheus.SetDefaults()
 
 	if s.DoTDialMetrics == nil {
