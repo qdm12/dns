@@ -1,10 +1,9 @@
 package cache
 
 import (
-	"strings"
-
 	"github.com/qdm12/dns/pkg/cache/lru"
 	"github.com/qdm12/dns/pkg/cache/noop"
+	"github.com/qdm12/gotree"
 )
 
 type Settings struct {
@@ -22,22 +21,17 @@ func (s *Settings) SetDefaults() {
 }
 
 func (s *Settings) String() string {
-	const (
-		subSection = " |--"
-		indent     = "    " // used if lines already contain the subSection
-	)
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	switch s.Type {
 	case lru.CacheType:
-		lruLines := s.LRU.Lines(indent, subSection)
-		lines = append(lines, lruLines...)
+		return s.LRU.ToLinesNode()
 	case noop.CacheType:
+		return nil
 	default:
-		lines = append(lines, subSection+"MISSING CODE PATH, PLEASE ADD ME!!")
+		// TODO use ToLinesNode if it exists
+		return nil
 	}
-
-	return lines
 }

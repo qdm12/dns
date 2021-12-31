@@ -6,6 +6,7 @@ import (
 	pkglog "github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/params"
+	"github.com/qdm12/gotree"
 )
 
 func (settings *Settings) PatchLogger(logger pkglog.Logger) {
@@ -80,20 +81,21 @@ func (m *middlewareLogger) LogRequestResponse(s string) {
 	}
 }
 
-func (l *Log) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"Level: "+l.Level.String())
+func (l *Log) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Log settings:")
+	node.Appendf("Level: %s", l.Level)
 
 	if l.LogRequests {
-		lines = append(lines, subSection+"Log requests: enabled")
+		node.Appendf("Log requests: enabled")
 	}
 
 	if l.LogResponses {
-		lines = append(lines, subSection+"Log responses: enabled")
+		node.Appendf("Log responses: enabled")
 	}
 
 	if l.LogRequestsResponses {
-		lines = append(lines, subSection+"Log resquests => responses: enabled")
+		node.Appendf("Log requests => responses: enabled")
 	}
 
-	return lines
+	return node
 }

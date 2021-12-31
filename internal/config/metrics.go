@@ -8,6 +8,7 @@ import (
 	dotmetrics "github.com/qdm12/dns/pkg/dot/metrics"
 	filtermetrics "github.com/qdm12/dns/pkg/filter/metrics"
 	"github.com/qdm12/golibs/params"
+	"github.com/qdm12/gotree"
 )
 
 func (settings *Settings) PatchMetrics(
@@ -50,10 +51,10 @@ func getMetricsSettings(reader *Reader) (settings Metrics,
 	return settings, nil
 }
 
-func (m *Metrics) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"Type: "+m.Type)
+func (m *Metrics) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Metrics settings:")
 	if m.Type == MetricProm {
-		lines = append(lines, subSection+"Listening address: "+m.Prometheus.Address)
+		node.AppendNode(m.Prometheus.ToLinesNode())
 	}
-	return lines
+	return node
 }

@@ -1,7 +1,6 @@
 package doh
 
 import (
-	"strings"
 	"time"
 
 	"github.com/qdm12/dns/pkg/cache"
@@ -14,6 +13,7 @@ import (
 	lognoop "github.com/qdm12/dns/pkg/log/noop"
 	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
 	"github.com/qdm12/dns/pkg/provider"
+	"github.com/qdm12/gotree"
 )
 
 type ServerSettings struct {
@@ -115,74 +115,63 @@ func (s *SelfDNS) setDefaults() {
 	// to avoid leaking we are using a DoH server.
 }
 
-const (
-	subSection = " |--"
-	indent     = "    " // used if lines already contain the subSection
-)
-
 func (s *ServerSettings) String() string {
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
 func (s *ResolverSettings) String() string {
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
 func (s *SelfDNS) String() string {
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"Listening address: "+s.Address)
-
-	lines = append(lines, subSection+"Resolver:")
-	for _, line := range s.Resolver.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
-
-	return lines
+func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("DoH server settings:")
+	node.Appendf("Listening address: %s", s.Address)
+	node.AppendNode(s.Resolver.ToLinesNode())
+	return node
 }
 
-func (s *ResolverSettings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines,
-		subSection+"Query timeout: "+s.Timeout.String())
+func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("DoH resolver settings:")
 
-	lines = append(lines, subSection+"DNS over HTTPS providers:")
+	DoTProvidersNode := node.Appendf("DNS over HTTPs providers:")
 	for _, provider := range s.DoHProviders {
-		lines = append(lines, indent+subSection+provider.String())
+		DoTProvidersNode.Appendf(provider.String())
 	}
 
-	lines = append(lines, subSection+"Internal DNS:")
-	for _, line := range s.SelfDNS.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
+	node.AppendNode(s.SelfDNS.ToLinesNode())
 
-	return lines
+	node.Appendf("Query timeout: %s", s.Timeout)
+
+	return node
 }
 
-func (s *SelfDNS) Lines(indent, subSection string) (lines []string) {
+func (s *SelfDNS) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Internal DNS settings:")
+	node.Appendf("Query timeout: %s", s.Timeout)
+
 	connectOver := "IPv4"
 	if s.IPv6 {
 		connectOver = "IPv6"
 	}
-	lines = append(lines, subSection+"Connecting using "+
-		connectOver+" DNS addresses")
-
-	lines = append(lines, subSection+"Query timeout: "+s.Timeout.String())
+	node.Appendf("Connecting over: %s", connectOver)
 
 	if len(s.DoTProviders) > 0 {
-		lines = append(lines, subSection+"DNS over TLS providers:")
+		DoTProvidersNode := node.Appendf("DNS over TLS providers:")
 		for _, provider := range s.DoTProviders {
-			lines = append(lines, indent+subSection+provider.String())
+			DoTProvidersNode.Appendf(provider.String())
 		}
 	}
 
 	if len(s.DNSProviders) > 0 {
-		lines = append(lines, subSection+"Fallback plaintext DNS servers:")
+		fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
 		for _, provider := range s.DNSProviders {
-			lines = append(lines, indent+subSection+provider.String())
+			fallbackPlaintextProvidersNode.Appendf(provider.String())
 		}
 	}
 
-	return lines
+	return node
 }

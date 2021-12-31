@@ -1,10 +1,8 @@
 package update
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/miekg/dns"
+	"github.com/qdm12/gotree"
 	"inet.af/netaddr"
 )
 
@@ -24,33 +22,28 @@ func (s *Settings) BlockHostnames(hostnames []string) {
 }
 
 func (s *Settings) String() string {
-	const (
-		subSection = " |--"
-		indent     = "    " // used if lines already contain the subSection
-	)
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	if len(s.IPs) == 0 && len(s.FqdnHostnames) == 0 &&
 		len(s.IPPrefixes) == 0 {
-		return []string{subSection + "Filtering is disabled"}
+		return gotree.New("Filter update: disabled")
 	}
 
+	node = gotree.New("Filter update settings:")
+
 	if len(s.IPs) > 0 {
-		lines = append(lines, subSection+"IP addresses blocked: "+
-			strconv.Itoa(len(s.IPs)))
+		node.Appendf("IP addresses blocked: %d", len(s.IPs))
 	}
 
 	if len(s.IPPrefixes) > 0 {
-		lines = append(lines, subSection+"IP networks blocked: "+
-			strconv.Itoa(len(s.IPPrefixes)))
+		node.Appendf("IP networks blocked: %d", len(s.IPPrefixes))
 	}
 
 	if len(s.FqdnHostnames) > 0 {
-		lines = append(lines, subSection+"Hostnames blocked: "+
-			strconv.Itoa(len(s.FqdnHostnames)))
+		node.Appendf("Hostnames blocked: %d", len(s.FqdnHostnames))
 	}
 
-	return lines
+	return node
 }

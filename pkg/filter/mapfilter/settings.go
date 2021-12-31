@@ -8,6 +8,7 @@ import (
 	"github.com/qdm12/dns/pkg/filter/metrics/noop"
 	"github.com/qdm12/dns/pkg/filter/metrics/prometheus"
 	"github.com/qdm12/dns/pkg/filter/update"
+	"github.com/qdm12/gotree"
 )
 
 type Settings struct {
@@ -22,15 +23,12 @@ func (s *Settings) setDefaults() {
 }
 
 func (s *Settings) String() string {
-	const (
-		subSection = " |--"
-		indent     = "    " // used if lines already contain the subSection
-	)
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, s.Update.Lines(indent, subSection)...)
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Filter settings:")
+	node.AppendNode(s.Update.ToLinesNode())
 
 	var metricsType string
 	switch s.Metrics.(type) {
@@ -42,7 +40,7 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		metricsType = reflect.TypeOf(s.Metrics).String()
 		metricsType = strings.TrimPrefix(metricsType, "*")
 	}
-	lines = append(lines, subSection+"Metric type: "+metricsType)
+	node.Appendf("Metrics type: %s", metricsType)
 
-	return lines
+	return node
 }

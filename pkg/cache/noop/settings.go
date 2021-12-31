@@ -1,10 +1,9 @@
 package noop
 
 import (
-	"strings"
-
 	"github.com/qdm12/dns/pkg/cache/metrics"
 	"github.com/qdm12/dns/pkg/cache/metrics/noop"
+	"github.com/qdm12/gotree"
 )
 
 type Settings struct {
@@ -20,14 +19,9 @@ func (s *Settings) setDefaults() {
 }
 
 func (s *Settings) String() string {
-	const (
-		subSection = " |--"
-		indent     = "    " // used if lines already contain the subSection
-	)
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"Cache type: "+CacheType)
-	return lines
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
+	return gotree.New("Noop cache settings:")
 }

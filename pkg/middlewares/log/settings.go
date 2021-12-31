@@ -9,6 +9,7 @@ import (
 	formatnoop "github.com/qdm12/dns/pkg/middlewares/log/format/noop"
 	"github.com/qdm12/dns/pkg/middlewares/log/logger"
 	loggernoop "github.com/qdm12/dns/pkg/middlewares/log/logger/noop"
+	"github.com/qdm12/gotree"
 )
 
 type Settings struct {
@@ -38,14 +39,12 @@ func (s *Settings) setDefaults() {
 }
 
 func (s *Settings) String() string {
-	const (
-		subSection = " |--"
-		indent     = "    " // used if lines already contain the subSection
-	)
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Log middleware settings:")
+
 	var loggerType string
 	switch s.Logger.(type) { // well known types
 	case *loggernoop.Logger:
@@ -54,7 +53,7 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		loggerType = reflect.TypeOf(s.Logger).String()
 		loggerType = strings.TrimPrefix(loggerType, "*")
 	}
-	lines = append(lines, subSection+"Logger type: "+loggerType)
+	node.Appendf("Logger type: %s", loggerType)
 
 	var formatterType string
 	switch s.Formatter.(type) { // well known types
@@ -66,7 +65,7 @@ func (s *Settings) Lines(indent, subSection string) (lines []string) {
 		formatterType = reflect.TypeOf(s.Formatter).String()
 		formatterType = strings.TrimPrefix(formatterType, "*")
 	}
-	lines = append(lines, subSection+"Formatter type: "+formatterType)
+	node.Appendf("Formatter type: %s", formatterType)
 
-	return lines
+	return node
 }

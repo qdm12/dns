@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/qdm12/golibs/params"
+	"github.com/qdm12/gotree"
 )
 
 type Prometheus struct {
@@ -30,4 +31,11 @@ func getPrometheusSettings(reader *Reader) (settings Prometheus,
 	}
 
 	return settings, nil
+}
+
+func (p *Prometheus) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Prometheus settings:")
+	node.Appendf("Listening address: %s", p.Address)
+	node.Appendf("Subsystem: %s", p.Subsystem)
+	return node
 }

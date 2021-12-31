@@ -2,9 +2,9 @@ package blockbuilder
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 
+	"github.com/qdm12/gotree"
 	"inet.af/netaddr"
 )
 
@@ -31,14 +31,12 @@ type BuildSettings struct {
 }
 
 func (s *BuildSettings) String() string {
-	const (
-		subSection = " |--"
-		indent     = "    " // used if lines already contain the subSection
-	)
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *BuildSettings) Lines(indent, subSection string) (lines []string) {
+func (s *BuildSettings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Filter build settings:")
+
 	var blockedCategories []string
 	if s.BlockMalicious {
 		blockedCategories = append(blockedCategories, "malicious")
@@ -49,37 +47,32 @@ func (s *BuildSettings) Lines(indent, subSection string) (lines []string) {
 	if s.BlockAds {
 		blockedCategories = append(blockedCategories, "ads")
 	}
-	lines = append(lines, subSection+"Blocked categories: "+strings.Join(blockedCategories, ", "))
+
+	node.Appendf("Blocked categories: %s", strings.Join(blockedCategories, ", "))
 
 	if len(s.AllowedHosts) > 0 {
-		lines = append(lines, subSection+"Hostnames unblocked: "+
-			strconv.Itoa(len(s.AllowedHosts)))
+		node.Appendf("Hostnames unblocked: %d", len(s.AllowedHosts))
 	}
 
 	if len(s.AllowedIPs) > 0 {
-		lines = append(lines, subSection+"IP addresses unblocked: "+
-			strconv.Itoa(len(s.AllowedIPs)))
+		node.Appendf("IP addresses unblocked: %d", len(s.AllowedIPs))
 	}
 
-	if len(s.AddBlockedIPPrefixes) > 0 {
-		lines = append(lines, subSection+"IP networks unblocked: "+
-			strconv.Itoa(len(s.AllowedIPPrefixes)))
+	if len(s.AllowedIPPrefixes) > 0 {
+		node.Appendf("IP networks unblocked: %d", len(s.AllowedIPPrefixes))
 	}
 
 	if len(s.AddBlockedHosts) > 0 {
-		lines = append(lines, subSection+"Additional hostnames blocked: "+
-			strconv.Itoa(len(s.AddBlockedHosts)))
+		node.Appendf("Additional hostnames blocked: %d", len(s.AddBlockedHosts))
 	}
 
 	if len(s.AddBlockedIPs) > 0 {
-		lines = append(lines, subSection+"Additional IP addresses blocked: "+
-			strconv.Itoa(len(s.AddBlockedIPs)))
+		node.Appendf("Additional IP addresses blocked: %d", len(s.AddBlockedIPs))
 	}
 
 	if len(s.AddBlockedIPPrefixes) > 0 {
-		lines = append(lines, subSection+"Additional IP networks blocked: "+
-			strconv.Itoa(len(s.AddBlockedIPPrefixes)))
+		node.Appendf("Additional IP networks blocked: %d", len(s.AddBlockedIPPrefixes))
 	}
 
-	return lines
+	return node
 }

@@ -1,61 +1,42 @@
 package config
 
 import (
-	"strings"
+	"github.com/qdm12/gotree"
 )
 
 func (s *Settings) String() string {
-	return strings.Join(s.Lines("   ", " |--"), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *Settings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"Upstream type: "+string(s.UpstreamType))
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("Settings summary:")
+
+	node.Appendf("Upstream type: %s", s.UpstreamType)
 
 	switch s.UpstreamType {
 	case DoT:
-		lines = append(lines, subSection+"DoT settings:")
-		for _, line := range s.DoT.Lines(indent, subSection) {
-			lines = append(lines, indent+line)
-		}
+		node.AppendNode(s.DoT.ToLinesNode())
 	case DoH:
-		lines = append(lines, subSection+"DoH settings:")
-		for _, line := range s.DoH.Lines(indent, subSection) {
-			lines = append(lines, indent+line)
-		}
+		node.AppendNode(s.DoH.ToLinesNode())
 	}
 
-	lines = append(lines, subSection+"Cache settings:")
-	for _, line := range s.Cache.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
-
-	lines = append(lines, subSection+"Log settings:")
-	for _, line := range s.Log.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
-
-	lines = append(lines, subSection+"Metrics settings:")
-	for _, line := range s.Metrics.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
-
-	lines = append(lines, subSection+"Filter settings:")
-	for _, line := range s.BlockBuilder.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
+	node.AppendNode(s.Cache.ToLinesNode())
+	node.AppendNode(s.Log.ToLinesNode())
+	node.AppendNode(s.Metrics.ToLinesNode())
+	node.AppendNode(s.BlockBuilder.ToLinesNode())
 
 	const disabled, enabled = "disabled", "enabled"
 	checkDNS := disabled
 	if s.CheckDNS {
 		checkDNS = enabled
 	}
-	lines = append(lines, subSection+"Check DNS: "+checkDNS)
+	node.Appendf("Check DNS: %s", checkDNS)
 
 	update := disabled
 	if s.UpdatePeriod > 0 {
 		update = "every " + s.UpdatePeriod.String()
 	}
-	lines = append(lines, subSection+"Update: "+update)
+	node.Appendf("Update: %s", update)
 
-	return lines
+	return node
 }

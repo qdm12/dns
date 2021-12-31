@@ -1,7 +1,6 @@
 package dot
 
 import (
-	"strings"
 	"time"
 
 	"github.com/qdm12/dns/pkg/cache"
@@ -14,6 +13,7 @@ import (
 	lognoop "github.com/qdm12/dns/pkg/log/noop"
 	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
 	"github.com/qdm12/dns/pkg/provider"
+	"github.com/qdm12/gotree"
 )
 
 type ServerSettings struct {
@@ -93,49 +93,41 @@ func (s *ResolverSettings) setDefaults() {
 	}
 }
 
-const (
-	subSection = " |--"
-	indent     = "    " // used if lines already contain the subSection
-)
-
 func (s *ServerSettings) String() string {
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
 func (s *ResolverSettings) String() string {
-	return strings.Join(s.Lines(indent, subSection), "\n")
+	return s.ToLinesNode().String()
 }
 
-func (s *ServerSettings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"Resolver:")
-	for _, line := range s.Resolver.Lines(indent, subSection) {
-		lines = append(lines, indent+line)
-	}
-
-	lines = append(lines, subSection+"Listening address: "+s.Address)
-
-	return lines
+func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("DoT server settings:")
+	node.Appendf("Listening address: %s", s.Address)
+	node.AppendNode(s.Resolver.ToLinesNode())
+	return node
 }
 
-func (s *ResolverSettings) Lines(indent, subSection string) (lines []string) {
-	lines = append(lines, subSection+"DNS over TLS providers:")
+func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
+	node = gotree.New("DoT resolver settings:")
+
+	DoTProvidersNode := node.Appendf("DNS over TLS providers:")
 	for _, provider := range s.DoTProviders {
-		lines = append(lines, indent+subSection+provider.String())
+		DoTProvidersNode.Appendf(provider.String())
 	}
 
-	lines = append(lines, subSection+"Fallback plaintext DNS providers:")
+	fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
 	for _, provider := range s.DNSProviders {
-		lines = append(lines, indent+subSection+provider.String())
+		fallbackPlaintextProvidersNode.Appendf(provider.String())
 	}
 
-	lines = append(lines,
-		subSection+"Query timeout: "+s.Timeout.String())
+	node.Appendf("Quey timeout: %s", s.Timeout)
 
 	connectOver := "IPv4"
 	if s.IPv6 {
 		connectOver = "IPv6"
 	}
-	lines = append(lines, subSection+"Connecting over: "+connectOver)
+	node.Appendf("Connecting over: %s", connectOver)
 
-	return lines
+	return node
 }

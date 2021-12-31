@@ -59,25 +59,24 @@ func Test_ServerSettings_setDefaults(t *testing.T) {
 	assert.Equal(t, expectedSettings, s)
 }
 
-func Test_ServerSettings_Lines(t *testing.T) {
+func Test_ServerSettings_String(t *testing.T) {
 	t.Parallel()
 
-	s := ServerSettings{}
-	s.setDefaults()
+	settings := ServerSettings{}
+	settings.setDefaults()
 
-	lines := s.Lines(indent, subSection)
+	s := settings.String()
 
-	expectedLines := []string{
-		" |--Listening address: :53",
-		" |--Resolver:",
-		"     |--Query timeout: 5s",
-		"     |--DNS over HTTPS providers:",
-		"         |--Cloudflare",
-		"     |--Internal DNS:",
-		"         |--Connecting using IPv4 DNS addresses",
-		"         |--Query timeout: 5s",
-		"         |--DNS over TLS providers:",
-		"             |--Cloudflare",
-	}
-	assert.Equal(t, expectedLines, lines)
+	const expected = `DoH server settings:
+├── Listening address: :53
+└── DoH resolver settings:
+    ├── DNS over HTTPs providers:
+    |   └── Cloudflare
+    ├── Internal DNS settings:
+    |   ├── Query timeout: 5s
+    |   ├── Connecting over: IPv4
+    |   └── DNS over TLS providers:
+    |       └── Cloudflare
+    └── Query timeout: 5s`
+	assert.Equal(t, expected, s)
 }
