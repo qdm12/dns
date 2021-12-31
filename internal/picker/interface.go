@@ -6,8 +6,6 @@ import (
 	"github.com/qdm12/dns/pkg/provider"
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Interface
-
 type Interface interface {
 	IP(ips []net.IP) net.IP
 	DNSServer(servers []provider.DNSServer) provider.DNSServer

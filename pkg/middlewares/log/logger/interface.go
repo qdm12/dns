@@ -2,8 +2,6 @@ package logger
 
 import "github.com/qdm12/dns/pkg/middlewares/log/logger/noop"
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Interface
-
 var _ Interface = (*noop.Logger)(nil)
 
 type Interface interface {

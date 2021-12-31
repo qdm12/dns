@@ -7,10 +7,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/params"
-	"github.com/qdm12/golibs/params/mock_params"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+//go:generate mockgen -destination=mock_env_test.go -package $GOPACKAGE -mock_names Interface=MockEnv github.com/qdm12/golibs/params Interface
 
 func Test_getLogSettings(t *testing.T) {
 	t.Parallel()
@@ -75,7 +76,7 @@ func Test_getLogSettings(t *testing.T) {
 
 			assignableDefault := gomock.AssignableToTypeOf(params.Default(""))
 
-			env := mock_params.NewMockInterface(ctrl)
+			env := NewMockEnv(ctrl)
 			env.EXPECT().
 				LogLevel("LOG_LEVEL", assignableDefault).
 				Return(testCase.logLevel.level, testCase.logLevel.err)

@@ -21,6 +21,9 @@ issues:
     - text: "mnd: Magic number: 0644*"
       linters:
         - gomnd
+    - linters:
+        - lll
+      source: "^//go:generate "
 
 linters:
   disable-all: true

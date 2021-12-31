@@ -7,8 +7,6 @@ import (
 	"github.com/qdm12/dns/pkg/filter/update"
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Interface
-
 var (
 	_ Interface = (*mapfilter.Filter)(nil)
 	_ Interface = (*noop.Filter)(nil)

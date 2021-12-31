@@ -7,9 +7,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/qdm12/dns/internal/picker/mock_picker"
-	"github.com/qdm12/dns/pkg/dot/metrics/mock_metrics"
-	"github.com/qdm12/dns/pkg/log/mock_log"
 	"github.com/qdm12/dns/pkg/provider"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,11 +36,15 @@ func Test_settingsToServers(t *testing.T) {
 	}, dnsServers)
 }
 
+//go:generate mockgen -destination=mock_picker_test.go -package $GOPACKAGE -mock_names Interface=MockPicker github.com/qdm12/dns/internal/picker Interface
+//go:generate mockgen -destination=mock_dot_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockDoTMetrics github.com/qdm12/dns/pkg/dot/metrics Interface
+//go:generate mockgen -destination=mock_warner_test.go -package $GOPACKAGE github.com/qdm12/dns/pkg/log Warner
+
 func Test_pickNameAddress(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 
-	picker := mock_picker.NewMockInterface(ctrl)
+	picker := NewMockPicker(ctrl)
 	servers := []provider.DoTServer{
 		provider.Cloudflare().DoT(),
 		provider.Google().DoT(),
@@ -98,15 +99,15 @@ func Test_dialPlaintext(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			warner := mock_log.NewMockWarner(ctrl)
+			warner := NewMockWarner(ctrl)
 			if testCase.err != nil {
 				warner.EXPECT().Warn(testCase.err.Error())
 			}
 
-			metrics := mock_metrics.NewMockInterface(ctrl)
+			metrics := NewMockDoTMetrics(ctrl)
 			metrics.EXPECT().DNSDialInc(testCase.expectedAddr, testCase.metricOutcome)
 
-			picker := mock_picker.NewMockInterface(ctrl)
+			picker := NewMockPicker(ctrl)
 			picker.EXPECT().DNSServer(testCase.dnsServers).
 				Return(testCase.dnsServers[0])
 			picker.EXPECT().DNSIP(testCase.dnsServers[0], false).

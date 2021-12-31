@@ -6,8 +6,6 @@ import (
 	"github.com/qdm12/dns/pkg/middlewares/log/format/noop"
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Interface
-
 var (
 	_ Interface = (*console.Formatter)(nil)
 	_ Interface = (*noop.Formatter)(nil)

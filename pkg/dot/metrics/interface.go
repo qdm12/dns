@@ -13,8 +13,6 @@ var (
 	_ Interface = (*noop.Metrics)(nil)
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Interface
-
 type Interface interface {
 	DialMetrics
 	middleware.Interface

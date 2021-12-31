@@ -7,10 +7,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/middlewares/log/format/mock_format"
-	"github.com/qdm12/dns/pkg/middlewares/log/logger/mock_logger"
 	"github.com/stretchr/testify/assert"
 )
+
+//go:generate mockgen -destination=mock_format_test.go -package $GOPACKAGE -mock_names Interface=MockFormat github.com/qdm12/dns/pkg/middlewares/log/format Interface
+//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE -mock_names Interface=MockLogger github.com/qdm12/dns/pkg/middlewares/log/logger Interface
 
 func Test_New(t *testing.T) {
 	t.Parallel()
@@ -21,12 +22,12 @@ func Test_New(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 
-	formatter := mock_format.NewMockInterface(ctrl)
+	formatter := NewMockFormat(ctrl)
 	formatter.EXPECT().Request(request).Return("formatted request")
 	formatter.EXPECT().Response(nil).Return("formatted response")
 	formatter.EXPECT().RequestResponse(request, nil).Return("formatted request => response")
 
-	logger := mock_logger.NewMockInterface(ctrl)
+	logger := NewMockLogger(ctrl)
 	logger.EXPECT().LogRequest("formatted request")
 	logger.EXPECT().LogResponse("formatted response")
 	logger.EXPECT().LogRequestResponse("formatted request => response")
@@ -91,12 +92,12 @@ func Test_handler_ServeDNS(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			formatter := mock_format.NewMockInterface(ctrl)
+			formatter := NewMockFormat(ctrl)
 			formatter.EXPECT().Request(request).Return("formatted request")
 			formatter.EXPECT().Response(response).Return("formatted response")
 			formatter.EXPECT().RequestResponse(request, response).Return("formatted request => response")
 
-			logger := mock_logger.NewMockInterface(ctrl)
+			logger := NewMockLogger(ctrl)
 			logger.EXPECT().LogRequest("formatted request")
 			logger.EXPECT().LogResponse("formatted response")
 			logger.EXPECT().LogRequestResponse("formatted request => response")

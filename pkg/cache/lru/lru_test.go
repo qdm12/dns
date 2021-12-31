@@ -6,7 +6,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/cache/metrics/mock_metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,6 +22,8 @@ func newTestMsgs(name string, expUnix uint32) (request, response *dns.Msg) {
 	return request, response
 }
 
+//go:generate mockgen -destination=mock_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockMetrics github.com/qdm12/dns/pkg/cache/metrics Interface
+
 func Test_lru_e2e(t *testing.T) {
 	t.Parallel()
 
@@ -32,7 +33,7 @@ func Test_lru_e2e(t *testing.T) {
 	expUnix := nowUnix + 1000
 
 	const maxEntries = 2
-	metrics := mock_metrics.NewMockInterface(ctrl)
+	metrics := NewMockMetrics(ctrl)
 	settings := Settings{
 		MaxEntries: maxEntries,
 		Metrics:    metrics,

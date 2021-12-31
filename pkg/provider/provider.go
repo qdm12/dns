@@ -5,8 +5,6 @@ import (
 	"net/url"
 )
 
-//go:generate mockgen -destination=mock_$GOPACKAGE/$GOFILE . Provider
-
 const defaultDoTPort uint16 = 853
 
 type Provider interface {

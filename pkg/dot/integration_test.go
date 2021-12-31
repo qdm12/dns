@@ -12,10 +12,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/internal/mockhelp"
-	"github.com/qdm12/dns/pkg/cache/mock_cache"
-	"github.com/qdm12/dns/pkg/dot/metrics/mock_metrics"
-	"github.com/qdm12/dns/pkg/filter/mock_filter"
-	"github.com/qdm12/golibs/logging/mock_logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -62,6 +58,11 @@ func Test_Server(t *testing.T) {
 	err = <-stopped
 	assert.Nil(t, err)
 }
+
+//go:generate mockgen -destination=mock_cache_test.go -package $GOPACKAGE -mock_names Interface=MockCache github.com/qdm12/dns/pkg/cache Interface
+//go:generate mockgen -destination=mock_dot_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockDoTMetrics github.com/qdm12/dns/pkg/dot/metrics Interface
+//go:generate mockgen -destination=mock_filter_test.go -package $GOPACKAGE -mock_names Interface=MockFilter github.com/qdm12/dns/pkg/filter Interface
+//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE github.com/qdm12/dns/pkg/log Logger
 
 func Test_Server_Mocks(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -143,7 +144,7 @@ func Test_Server_Mocks(t *testing.T) {
 		},
 	}
 
-	cache := mock_cache.NewMockInterface(ctrl)
+	cache := NewMockCache(ctrl)
 	cache.EXPECT().
 		Get(mockhelp.NewMatcherRequest(expectedRequestA)).
 		Return(nil)
@@ -158,7 +159,7 @@ func Test_Server_Mocks(t *testing.T) {
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
 		mockhelp.NewMatcherResponse(expectedResponseAAAA))
 
-	filter := mock_filter.NewMockInterface(ctrl)
+	filter := NewMockFilter(ctrl)
 	filter.EXPECT().
 		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestA)).
 		Return(false)
@@ -172,10 +173,10 @@ func Test_Server_Mocks(t *testing.T) {
 		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
 		Return(false)
 
-	logger := mock_logging.NewMockLogger(ctrl)
+	logger := NewMockLogger(ctrl)
 	logger.EXPECT().Info("DNS server listening on :53")
 
-	metrics := mock_metrics.NewMockInterface(ctrl)
+	metrics := NewMockDoTMetrics(ctrl)
 	metrics.EXPECT().
 		DoTDialInc("cloudflare-dns.com",
 			mockhelp.NewMatcherOneOf("1.1.1.1:853", "1.0.0.1:853"), "success").
