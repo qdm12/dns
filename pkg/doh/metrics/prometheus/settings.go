@@ -30,3 +30,7 @@ func (s *Settings) SetDefaults() {
 		s.MiddlewareMetrics = middlewarenoop.New()
 	}
 }
+
+func (s Settings) Validate() (err error) {
+	return s.Prometheus.Validate()
+}

@@ -1,6 +1,9 @@
 package doh
 
 import (
+	"errors"
+	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -13,7 +16,10 @@ import (
 	"github.com/qdm12/dns/pkg/log"
 	lognoop "github.com/qdm12/dns/pkg/log/noop"
 	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
+	"github.com/qdm12/dns/pkg/provider"
 	"github.com/qdm12/gotree"
+	"github.com/qdm12/govalid/address"
+	"github.com/qdm12/govalid/port"
 )
 
 type ServerSettings struct {
@@ -118,6 +124,65 @@ func (s *SelfDNS) SetDefaults() {
 		ipv6 := false
 		s.IPv6 = &ipv6
 	}
+}
+
+var (
+	ErrListeningAddressNotValid = errors.New("listening address is not valid")
+)
+
+func (s ServerSettings) Validate() (err error) {
+	err = s.Resolver.Validate()
+	if err != nil {
+		return fmt.Errorf("failed validating resolver settings: %w", err)
+	}
+
+	_, err = address.Validate(s.Address,
+		address.OptionListening(
+			os.Getuid(), port.OptionListeningPortPrivilegedAllowed(53)))
+	if err != nil {
+		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, s.Address)
+	}
+
+	err = s.LogMiddleware.Validate()
+	if err != nil {
+		return fmt.Errorf("failed validating log middleware settings: %w", err)
+	}
+
+	return nil
+}
+
+func (s ResolverSettings) Validate() (err error) {
+	for _, s := range s.DoHProviders {
+		_, err = provider.Parse(s)
+		if err != nil {
+			return fmt.Errorf("invalid DoH provider: %w", err)
+		}
+	}
+
+	err = s.SelfDNS.Validate()
+	if err != nil {
+		return fmt.Errorf("failed validating DoH self DNS settings: %w", err)
+	}
+
+	return nil
+}
+
+func (s SelfDNS) Validate() (err error) {
+	for _, s := range s.DoTProviders {
+		_, err = provider.Parse(s)
+		if err != nil {
+			return fmt.Errorf("invalid DoT provider: %w", err)
+		}
+	}
+
+	for _, s := range s.DNSProviders {
+		_, err = provider.Parse(s)
+		if err != nil {
+			return fmt.Errorf("invalid fallback plaintext DNS provider: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (s *ServerSettings) String() string {

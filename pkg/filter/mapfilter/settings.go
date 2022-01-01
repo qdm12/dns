@@ -1,6 +1,7 @@
 package mapfilter
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -21,6 +22,15 @@ func (s *Settings) SetDefaults() {
 	if s.Metrics == nil {
 		s.Metrics = noop.New()
 	}
+}
+
+func (s Settings) Validate() (err error) {
+	err = s.Update.Validate()
+	if err != nil {
+		return fmt.Errorf("failed validating update settings: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Settings) String() string {

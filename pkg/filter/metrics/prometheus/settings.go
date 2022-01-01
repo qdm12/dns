@@ -12,3 +12,7 @@ type Settings struct {
 func (s *Settings) SetDefaults() {
 	s.Prometheus.SetDefaults()
 }
+
+func (s Settings) Validate() (err error) {
+	return s.Prometheus.Validate()
+}

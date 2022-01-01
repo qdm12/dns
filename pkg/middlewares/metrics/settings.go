@@ -13,3 +13,7 @@ func (s *Settings) SetDefaults() {
 		s.Metrics = noop.New()
 	}
 }
+
+func (s Settings) Validate() (err error) {
+	return nil
+}

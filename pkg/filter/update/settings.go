@@ -1,6 +1,10 @@
 package update
 
 import (
+	"errors"
+	"fmt"
+	"regexp"
+
 	"github.com/miekg/dns"
 	"github.com/qdm12/gotree"
 	"inet.af/netaddr"
@@ -13,6 +17,22 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {}
+
+var fqdnHostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*\.$`) //nolint:lll
+
+var (
+	ErrFqdnHostnameNotValid = errors.New("fqdn hostname is not valid")
+)
+
+func (s Settings) Validate() (err error) {
+	for _, fqdnHost := range s.FqdnHostnames {
+		if !fqdnHostRegex.MatchString(fqdnHost) {
+			return fmt.Errorf("%w: %s", ErrFqdnHostnameNotValid, fqdnHost)
+		}
+	}
+
+	return nil
+}
 
 // BlockHostnames transforms the slice of hostnames given to
 // FQDN hostnames and sets these to the settings.

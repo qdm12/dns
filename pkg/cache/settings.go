@@ -1,6 +1,9 @@
 package cache
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/qdm12/dns/pkg/cache/lru"
 	"github.com/qdm12/dns/pkg/cache/noop"
 	"github.com/qdm12/gotree"
@@ -23,6 +26,30 @@ func (s *Settings) SetDefaults() {
 	case lru.CacheType:
 		s.LRU.SetDefaults()
 	}
+}
+
+var (
+	ErrCacheTypeNotValid = errors.New("cache type is not valid")
+)
+
+func (s Settings) Validate() (err error) {
+	switch s.Type {
+	case noop.CacheType, lru.CacheType:
+	default:
+		return fmt.Errorf("%w: %s", ErrCacheTypeNotValid, s.Type)
+	}
+
+	err = s.LRU.Validate()
+	if err != nil {
+		return fmt.Errorf("failed validating LRU cache settings: %w", err)
+	}
+
+	err = s.Noop.Validate()
+	if err != nil {
+		return fmt.Errorf("failed validating Noop cache settings: %w", err)
+	}
+
+	return nil
 }
 
 func (s *Settings) String() string {

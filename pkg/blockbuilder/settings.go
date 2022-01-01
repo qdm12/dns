@@ -1,7 +1,10 @@
 package blockbuilder
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/qdm12/gotree"
@@ -40,6 +43,29 @@ func (s *Settings) SetDefaults() {
 		f := false
 		s.BlockSurveillance = &f
 	}
+}
+
+var hostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
+
+var (
+	ErrAllowedHostNotValid = errors.New("allowed host is not valid")
+	ErrBlockedHostNotValid = errors.New("blocked host is not valid")
+)
+
+func (s Settings) Validate() (err error) {
+	for _, host := range s.AllowedHosts {
+		if !hostRegex.MatchString(host) {
+			return fmt.Errorf("%w: %s", ErrAllowedHostNotValid, host)
+		}
+	}
+
+	for _, host := range s.AddBlockedHosts {
+		if !hostRegex.MatchString(host) {
+			return fmt.Errorf("%w: %s", ErrBlockedHostNotValid, host)
+		}
+	}
+
+	return nil
 }
 
 func (s *Settings) String() string {

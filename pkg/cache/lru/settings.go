@@ -25,6 +25,10 @@ func (s *Settings) SetDefaults() {
 	}
 }
 
+func (s Settings) Validate() (err error) {
+	return nil
+}
+
 func (s *Settings) String() string {
 	return s.ToLinesNode().String()
 }

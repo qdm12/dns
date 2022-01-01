@@ -28,6 +28,10 @@ func (s *SettingsInternalDNS) SetDefaults() {
 	}
 }
 
+func (s SettingsInternalDNS) Validate() (err error) {
+	return nil
+}
+
 // UseDNSInternally changes the Go program DNS only.
 func UseDNSInternally(settings SettingsInternalDNS) {
 	settings.SetDefaults()

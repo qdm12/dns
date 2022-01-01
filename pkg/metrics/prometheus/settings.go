@@ -1,7 +1,13 @@
 // Package prometheus defines shared elements for Prometheus.
 package prometheus
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 type Settings struct {
 	// Prefix, aka Subsystem, is the prefix string in front
@@ -16,4 +22,16 @@ func (s *Settings) SetDefaults() {
 	if s.Registry == nil {
 		s.Registry = prometheus.DefaultRegisterer
 	}
+}
+
+var (
+	ErrPrefixContainsSpace = errors.New("prefix contains one or more spaces")
+)
+
+func (s Settings) Validate() (err error) {
+	if strings.Contains(s.Prefix, " ") {
+		return fmt.Errorf("%w: %s", ErrPrefixContainsSpace, s.Prefix)
+	}
+
+	return nil
 }

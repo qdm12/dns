@@ -29,6 +29,11 @@ func (s *SettingsSystemDNS) SetDefaults() {
 	}
 }
 
+func (s *SettingsSystemDNS) Validate() (err error) {
+	// TODO check s.ResolvPath file exists
+	return nil
+}
+
 // UseDNSSystemWide changes the nameserver to use for DNS system wide.
 // If resolvConfPath is empty, it defaults to /etc/resolv.conf.
 func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
