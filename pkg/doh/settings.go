@@ -1,6 +1,7 @@
 package doh
 
 import (
+	"strings"
 	"time"
 
 	"github.com/qdm12/dns/pkg/cache"
@@ -12,7 +13,6 @@ import (
 	"github.com/qdm12/dns/pkg/log"
 	lognoop "github.com/qdm12/dns/pkg/log/noop"
 	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
-	"github.com/qdm12/dns/pkg/provider"
 	"github.com/qdm12/gotree"
 )
 
@@ -36,7 +36,7 @@ type ServerSettings struct {
 }
 
 type ResolverSettings struct {
-	DoHProviders []provider.Provider
+	DoHProviders []string
 	SelfDNS      SelfDNS
 	Timeout      time.Duration
 	// Warner is the warning logger to log dial errors.
@@ -49,8 +49,8 @@ type ResolverSettings struct {
 
 type SelfDNS struct {
 	// for the internal HTTP client to resolve the DoH url hostname.
-	DoTProviders []provider.Provider
-	DNSProviders []provider.Provider
+	DoTProviders []string
+	DNSProviders []string
 	Timeout      time.Duration
 	IPv6         bool
 }
@@ -85,7 +85,7 @@ func (s *ResolverSettings) SetDefaults() {
 	s.SelfDNS.SetDefaults()
 
 	if len(s.DoHProviders) == 0 {
-		s.DoHProviders = []provider.Provider{provider.Cloudflare()}
+		s.DoHProviders = []string{"cloudflare"}
 	}
 
 	if s.Timeout == 0 {
@@ -109,7 +109,7 @@ func (s *SelfDNS) SetDefaults() {
 	}
 
 	if len(s.DoTProviders) == 0 {
-		s.DoTProviders = []provider.Provider{provider.Cloudflare()}
+		s.DoTProviders = []string{"cloudflare"}
 	}
 	// No default DNS fallback server for the internal HTTP client
 	// to avoid leaking we are using a DoH server.
@@ -139,7 +139,7 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 
 	DoTProvidersNode := node.Appendf("DNS over HTTPs providers:")
 	for _, provider := range s.DoHProviders {
-		DoTProvidersNode.Appendf(provider.String())
+		DoTProvidersNode.Appendf(strings.Title(provider))
 	}
 
 	node.AppendNode(s.SelfDNS.ToLinesNode())
@@ -162,14 +162,14 @@ func (s *SelfDNS) ToLinesNode() (node *gotree.Node) {
 	if len(s.DoTProviders) > 0 {
 		DoTProvidersNode := node.Appendf("DNS over TLS providers:")
 		for _, provider := range s.DoTProviders {
-			DoTProvidersNode.Appendf(provider.String())
+			DoTProvidersNode.Appendf(strings.Title(provider))
 		}
 	}
 
 	if len(s.DNSProviders) > 0 {
 		fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
 		for _, provider := range s.DNSProviders {
-			fallbackPlaintextProvidersNode.Appendf(provider.String())
+			fallbackPlaintextProvidersNode.Appendf(strings.Title(provider))
 		}
 	}
 

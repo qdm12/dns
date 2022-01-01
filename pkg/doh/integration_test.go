@@ -22,7 +22,8 @@ func Test_Resolver(t *testing.T) {
 
 	const hostname = "google.com"
 
-	resolver := NewResolver(ResolverSettings{})
+	resolver, err := NewResolver(ResolverSettings{})
+	require.NoError(t, err)
 
 	ips, err := resolver.LookupIPAddr(context.Background(), hostname)
 
@@ -35,7 +36,8 @@ func Test_Server(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	stopped := make(chan error)
 
-	server := NewServer(ctx, ServerSettings{})
+	server, err := NewServer(ctx, ServerSettings{})
+	require.NoError(t, err)
 
 	go server.Run(ctx, stopped)
 
@@ -73,7 +75,7 @@ func Test_Server(t *testing.T) {
 
 	endWg.Wait()
 	cancel()
-	err := <-stopped
+	err = <-stopped
 	assert.NoError(t, err)
 }
 
@@ -211,7 +213,7 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().QuestionsInc("IN", "AAAA")
 	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
 
-	server := NewServer(ctx, ServerSettings{
+	server, err := NewServer(ctx, ServerSettings{
 		Cache:   cache,
 		Filter:  filter,
 		Logger:  logger,
@@ -220,6 +222,7 @@ func Test_Server_Mocks(t *testing.T) {
 			Metrics: metrics,
 		},
 	})
+	require.NoError(t, err)
 
 	go server.Run(ctx, stopped)
 

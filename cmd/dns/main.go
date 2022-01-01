@@ -214,11 +214,17 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 		serverCtx, serverCancel = context.WithCancel(ctx)
 
 		var server models.Server
+		var err error
 		switch settings.UpstreamType {
 		case config.DoT:
-			server = dot.NewServer(serverCtx, settings.DoT)
+			server, err = dot.NewServer(serverCtx, settings.DoT)
 		case config.DoH:
-			server = doh.NewServer(serverCtx, settings.DoH)
+			server, err = doh.NewServer(serverCtx, settings.DoH)
+		}
+		if err != nil {
+			crashed <- err
+			serverCancel()
+			return
 		}
 
 		logger.Info("starting DNS server")

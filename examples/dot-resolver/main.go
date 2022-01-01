@@ -9,7 +9,11 @@ import (
 
 func main() {
 	ctx := context.Background()
-	resolver := dot.NewResolver(dot.ResolverSettings{})
+	resolver, err := dot.NewResolver(dot.ResolverSettings{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ips, err := resolver.LookupIPAddr(ctx, "github.com")
 	if err != nil {
 		log.Fatal(err)

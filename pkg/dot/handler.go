@@ -20,9 +20,15 @@ type handler struct {
 	filter   filter.Interface
 }
 
-func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
+func newDNSHandler(ctx context.Context, settings ServerSettings) (
+	dnsHandler dns.Handler, err error) {
 	client := &dns.Client{}
-	dial := newDoTDial(settings.Resolver)
+
+	dial, err := newDoTDial(settings.Resolver)
+	if err != nil {
+		return nil, err
+	}
+
 	exchange := makeDNSExchange(client, dial, settings.Logger)
 
 	return &handler{
@@ -31,7 +37,7 @@ func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
 		exchange: exchange,
 		cache:    settings.Cache,
 		filter:   settings.Filter,
-	}
+	}, nil
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {

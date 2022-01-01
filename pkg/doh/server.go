@@ -2,6 +2,7 @@ package doh
 
 import (
 	"context"
+	"fmt"
 	"runtime"
 	"time"
 
@@ -22,7 +23,8 @@ type Server struct {
 	logger    log.Logger
 }
 
-func NewServer(ctx context.Context, settings ServerSettings) *Server {
+func NewServer(ctx context.Context, settings ServerSettings) (
+	server *Server, err error) {
 	settings.SetDefaults()
 
 	logger := settings.Logger
@@ -31,7 +33,10 @@ func NewServer(ctx context.Context, settings ServerSettings) *Server {
 		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
 
-	handler := newDNSHandler(ctx, settings)
+	handler, err := newDNSHandler(ctx, settings)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create DNS handler: %w", err)
+	}
 
 	logMiddleware := logmiddleware.New(settings.LogMiddleware)
 	handler = logMiddleware(handler)
@@ -47,7 +52,7 @@ func NewServer(ctx context.Context, settings ServerSettings) *Server {
 			Handler: handler,
 		},
 		logger: logger,
-	}
+	}, nil
 }
 
 func (s *Server) Run(ctx context.Context, stopped chan<- error) {

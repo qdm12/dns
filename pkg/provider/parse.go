@@ -2,6 +2,7 @@ package provider
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -13,5 +14,5 @@ func Parse(s string) (provider Provider, err error) {
 			return provider, nil
 		}
 	}
-	return nil, ErrParse
+	return nil, fmt.Errorf("%w: %s", ErrParse, s)
 }

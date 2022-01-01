@@ -3,6 +3,7 @@ package doh
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net"
 	"sync"
 
@@ -13,13 +14,18 @@ import (
 
 type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
 
-func newDoHDial(settings ResolverSettings) dialFunc {
+func newDoHDial(settings ResolverSettings) (
+	dial dialFunc, err error) {
 	// note: settings are already defaulted
 	metrics := settings.Metrics
 
 	dohServers := make([]provider.DoHServer, len(settings.DoHProviders))
-	for i := range settings.DoHProviders {
-		dohServers[i] = settings.DoHProviders[i].DoH()
+	for i, s := range settings.DoHProviders {
+		provider, err := provider.Parse(s)
+		if err != nil {
+			return nil, err
+		}
+		dohServers[i] = provider.DoH()
 	}
 
 	// DoT HTTP client to resolve the DoH URL hostname
@@ -31,7 +37,10 @@ func newDoHDial(settings ResolverSettings) dialFunc {
 		Warner:       settings.Warner,
 		Metrics:      metrics,
 	}
-	dotClient := newDoTClient(DoTSettings)
+	dotClient, err := newDoTClient(DoTSettings)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create DoT client: %w", err)
+	}
 
 	// HTTP bodies buffer pool
 	bufferPool := &sync.Pool{
@@ -51,5 +60,5 @@ func newDoHDial(settings ResolverSettings) dialFunc {
 		// Create connection object (no actual IO yet)
 		conn = newDoHConn(ctx, dotClient, bufferPool, DoHServer.URL)
 		return conn, nil
-	}
+	}, nil
 }

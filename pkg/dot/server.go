@@ -21,10 +21,14 @@ type Server struct {
 	logger    log.Logger
 }
 
-func NewServer(ctx context.Context, settings ServerSettings) *Server {
+func NewServer(ctx context.Context, settings ServerSettings) (
+	server *Server, err error) {
 	settings.SetDefaults()
 
-	handler := newDNSHandler(ctx, settings)
+	handler, err := newDNSHandler(ctx, settings)
+	if err != nil {
+		return nil, err
+	}
 
 	logMiddleware := logmiddleware.New(settings.LogMiddleware)
 	handler = logMiddleware(handler)
@@ -40,7 +44,7 @@ func NewServer(ctx context.Context, settings ServerSettings) *Server {
 			Handler: handler,
 		},
 		logger: settings.Logger,
-	}
+	}, nil
 }
 
 func (s *Server) Run(ctx context.Context, stopped chan<- error) {

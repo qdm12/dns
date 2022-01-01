@@ -2,6 +2,7 @@ package doh
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/pkg/cache"
@@ -20,9 +21,14 @@ type handler struct {
 	filter   filter.Interface
 }
 
-func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
+func newDNSHandler(ctx context.Context, settings ServerSettings) (
+	h dns.Handler, err error) {
 	client := &dns.Client{}
-	dial := newDoHDial(settings.Resolver)
+	dial, err := newDoHDial(settings.Resolver)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create DoH dial: %w", err)
+	}
+
 	exchange := makeDNSExchange(client, dial, settings.Logger)
 
 	return &handler{
@@ -31,7 +37,7 @@ func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
 		exchange: exchange,
 		cache:    settings.Cache,
 		filter:   settings.Filter,
-	}
+	}, nil
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {

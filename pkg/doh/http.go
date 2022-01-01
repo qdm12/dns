@@ -19,17 +19,23 @@ var (
 	ErrHTTPStatus = errors.New("bad HTTP status")
 )
 
-func newDoTClient(settings dot.ResolverSettings) *http.Client {
+func newDoTClient(settings dot.ResolverSettings) (
+	client *http.Client, err error) {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
+	resolver, err := dot.NewResolver(settings)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create DoT resolver: %w", err)
+	}
+
 	dialer := &net.Dialer{
-		Resolver: dot.NewResolver(settings),
+		Resolver: resolver,
 	}
 	httpTransport.DialContext = dialer.DialContext
 	const timeout = 5 * time.Second
 	return &http.Client{
 		Timeout:   timeout,
 		Transport: httpTransport,
-	}
+	}, nil
 }
 
 func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.Pool,

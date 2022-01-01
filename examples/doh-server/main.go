@@ -15,10 +15,14 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	logger := new(Logger)
-	server := doh.NewServer(ctx, doh.ServerSettings{
+	server, err := doh.NewServer(ctx, doh.ServerSettings{
 		Cache:  lru.New(lru.Settings{}),
 		Logger: logger,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	stopped := make(chan error)
 	go server.Run(ctx, stopped)
 	select {

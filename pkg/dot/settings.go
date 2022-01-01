@@ -1,6 +1,7 @@
 package dot
 
 import (
+	"strings"
 	"time"
 
 	"github.com/qdm12/dns/pkg/cache"
@@ -12,7 +13,6 @@ import (
 	"github.com/qdm12/dns/pkg/log"
 	lognoop "github.com/qdm12/dns/pkg/log/noop"
 	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
-	"github.com/qdm12/dns/pkg/provider"
 	"github.com/qdm12/gotree"
 )
 
@@ -36,8 +36,8 @@ type ServerSettings struct {
 }
 
 type ResolverSettings struct {
-	DoTProviders []provider.Provider
-	DNSProviders []provider.Provider
+	DoTProviders []string
+	DNSProviders []string
 	Timeout      time.Duration
 	IPv6         bool
 	// Warner is the warning logger to log dial errors.
@@ -76,7 +76,7 @@ func (s *ServerSettings) SetDefaults() {
 
 func (s *ResolverSettings) SetDefaults() {
 	if len(s.DoTProviders) == 0 {
-		s.DoTProviders = []provider.Provider{provider.Cloudflare()}
+		s.DoTProviders = []string{"cloudflare"}
 	}
 
 	if s.Timeout == 0 {
@@ -113,12 +113,12 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 
 	DoTProvidersNode := node.Appendf("DNS over TLS providers:")
 	for _, provider := range s.DoTProviders {
-		DoTProvidersNode.Appendf(provider.String())
+		DoTProvidersNode.Appendf(strings.Title(provider))
 	}
 
 	fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
 	for _, provider := range s.DNSProviders {
-		fallbackPlaintextProvidersNode.Appendf(provider.String())
+		fallbackPlaintextProvidersNode.Appendf(strings.Title(provider))
 	}
 
 	node.Appendf("Quey timeout: %s", s.Timeout)

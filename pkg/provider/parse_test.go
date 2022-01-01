@@ -4,23 +4,25 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_Parse(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		s        string
-		provider Provider
-		err      error
+		s          string
+		provider   Provider
+		errWrapped error
+		errMessage string
 	}{
 		"empty string": {
-			err: ErrParse,
+			errWrapped: ErrParse,
+			errMessage: "provider does not match any known providers: ",
 		},
 		"bad provider string": {
-			s:   "invalid",
-			err: ErrParse,
+			s:          "invalid",
+			errWrapped: ErrParse,
+			errMessage: "provider does not match any known providers: invalid",
 		},
 		"cirafamily": {
 			s:        "cira family",
@@ -91,11 +93,9 @@ func Test_Parse(t *testing.T) {
 
 			provider, err := Parse(testCase.s)
 
-			if testCase.err != nil {
-				require.Error(t, err)
-				assert.Equal(t, testCase.err.Error(), err.Error())
-			} else {
-				assert.NoError(t, err)
+			assert.ErrorIs(t, err, testCase.errWrapped)
+			if testCase.errWrapped != nil {
+				assert.EqualError(t, err, testCase.errMessage)
 			}
 			assert.Equal(t, testCase.provider, provider)
 		})

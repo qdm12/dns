@@ -16,16 +16,16 @@ func Test_settingsToServers(t *testing.T) {
 	t.Parallel()
 
 	settings := ResolverSettings{
-		DoTProviders: []provider.Provider{
-			provider.Cloudflare(),
-			provider.Google(),
+		DoTProviders: []string{
+			"cloudflare", "google",
 		},
-		DNSProviders: []provider.Provider{
-			provider.CiraFamily(),
+		DNSProviders: []string{
+			"cira family",
 		},
 	}
 
-	dotServers, dnsServers := settingsToServers(settings)
+	dotServers, dnsServers, err := settingsToServers(settings)
+	require.NoError(t, err)
 
 	assert.Equal(t, []provider.DoTServer{
 		provider.Cloudflare().DoT(),
