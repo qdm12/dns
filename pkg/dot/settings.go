@@ -117,9 +117,10 @@ func (s ServerSettings) Validate() (err error) {
 		return fmt.Errorf("failed validating resolver settings: %w", err)
 	}
 
+	const defaultUDPPort = 53
 	_, err = address.Validate(s.Address,
 		address.OptionListening(
-			os.Getuid(), port.OptionListeningPortPrivilegedAllowed(53)))
+			os.Getuid(), port.OptionListeningPortPrivilegedAllowed(defaultUDPPort)))
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, s.Address)
 	}
