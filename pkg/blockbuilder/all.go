@@ -6,10 +6,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func (b *Builder) BuildAll(ctx context.Context, settings BuildSettings) (
-	result Result) {
-	settings.SetDefaults()
-
+func (b *Builder) BuildAll(ctx context.Context) (result Result) {
 	chHostnames := make(chan []string)
 	chIPs := make(chan []netaddr.IP)
 	chIPPrefixes := make(chan []netaddr.IPPrefix)
@@ -18,17 +15,17 @@ func (b *Builder) BuildAll(ctx context.Context, settings BuildSettings) (
 
 	go func() {
 		blockedHostnames, errs := b.buildHostnames(ctx,
-			*settings.BlockMalicious, *settings.BlockAds, *settings.BlockSurveillance,
-			settings.AddBlockedHosts, settings.AllowedHosts)
+			b.blockMalicious, b.blockAds, b.blockSurveillance,
+			b.addBlockedHosts, b.allowedHosts)
 		chHostnames <- blockedHostnames
 		chHostnamesErrors <- errs
 	}()
 
 	go func() {
 		blockedIPs, blockedIPPrefixes, errs := b.buildIPs(ctx,
-			*settings.BlockMalicious, *settings.BlockAds, *settings.BlockSurveillance,
-			settings.AllowedIPs, settings.AddBlockedIPs,
-			settings.AllowedIPPrefixes, settings.AddBlockedIPPrefixes)
+			b.blockMalicious, b.blockAds, b.blockSurveillance,
+			b.allowedIPs, b.addBlockedIPs,
+			b.allowedIPPrefixes, b.addBlockedIPPrefixes)
 		chIPs <- blockedIPs
 		chIPPrefixes <- blockedIPPrefixes
 		chIPsErrors <- errs

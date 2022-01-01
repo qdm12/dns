@@ -146,8 +146,8 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	// Use the same cache across DNS server restarts
 	cache.Setup(&settings)
 
-	blockBuilderSettings := blockbuilder.Settings{Client: client}
-	blockBuilder := blockbuilder.New(blockBuilderSettings)
+	settings.BlockBuilder.Client = client
+	blockBuilder := blockbuilder.New(settings.BlockBuilder)
 
 	dnsServerHandler, dnsServerCtx, dnsServerDone := goshutdown.NewGoRoutineHandler(
 		"dns server", goshutdown.GoRoutineSettings{})
@@ -192,7 +192,7 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
-			result := blockBuilder.BuildAll(ctx, settings.BlockBuilder)
+			result := blockBuilder.BuildAll(ctx)
 			for _, err := range result.Errors {
 				logger.Warn(err.Error())
 			}

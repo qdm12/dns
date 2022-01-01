@@ -23,7 +23,7 @@ func Test_Builder_BuildAll(t *testing.T) {
 		err     error
 	}
 	tests := map[string]struct {
-		buildSettings     BuildSettings
+		settings          Settings
 		maliciousHosts    httpCase
 		maliciousIPs      httpCase
 		adsHosts          httpCase
@@ -36,21 +36,21 @@ func Test_Builder_BuildAll(t *testing.T) {
 		errsString        []string // string format for easier comparison
 	}{
 		"none blocked": {
-			buildSettings: BuildSettings{
+			settings: Settings{
 				BlockMalicious:    boolPtr(false),
 				BlockAds:          boolPtr(false),
 				BlockSurveillance: boolPtr(false),
 			},
 		},
 		"all blocked without lists": {
-			buildSettings: BuildSettings{
+			settings: Settings{
 				BlockMalicious:    boolPtr(true),
 				BlockAds:          boolPtr(true),
 				BlockSurveillance: boolPtr(true),
 			},
 		},
 		"all blocked with lists": {
-			buildSettings: BuildSettings{
+			settings: Settings{
 				BlockMalicious:    boolPtr(true),
 				BlockAds:          boolPtr(true),
 				BlockSurveillance: boolPtr(true),
@@ -77,7 +77,7 @@ func Test_Builder_BuildAll(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
 		"all blocked with allowed hostnames": {
-			buildSettings: BuildSettings{
+			settings: Settings{
 				BlockMalicious:    boolPtr(true),
 				BlockAds:          boolPtr(true),
 				BlockSurveillance: boolPtr(true),
@@ -105,7 +105,7 @@ func Test_Builder_BuildAll(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.5", "1.2.3.6"},
 		},
 		"blocked with additional blocked IP addresses": {
-			buildSettings: BuildSettings{
+			settings: Settings{
 				BlockMalicious:    boolPtr(true),
 				BlockAds:          boolPtr(false),
 				BlockSurveillance: boolPtr(false),
@@ -121,7 +121,7 @@ func Test_Builder_BuildAll(t *testing.T) {
 			blockedIPs:       []string{"1.2.3.4", "1.2.3.7"},
 		},
 		"all blocked with lists and one error": {
-			buildSettings: BuildSettings{
+			settings: Settings{
 				BlockMalicious:    boolPtr(true),
 				BlockAds:          boolPtr(true),
 				BlockSurveillance: boolPtr(true),
@@ -151,7 +151,7 @@ func Test_Builder_BuildAll(t *testing.T) {
 			},
 		},
 		"all blocked with errors": {
-			buildSettings: BuildSettings{
+			settings: Settings{
 				BlockMalicious:    boolPtr(true),
 				BlockAds:          boolPtr(true),
 				BlockSurveillance: boolPtr(true),
@@ -196,20 +196,20 @@ func Test_Builder_BuildAll(t *testing.T) {
 			}{
 				m: make(map[string]int),
 			}
-			if *tc.buildSettings.BlockMalicious {
+			if *tc.settings.BlockMalicious {
 				clientCalls.m[maliciousBlockListIPsURL] = 0
 				clientCalls.m[maliciousBlockListHostnamesURL] = 0
 			}
-			if *tc.buildSettings.BlockAds {
+			if *tc.settings.BlockAds {
 				clientCalls.m[adsBlockListIPsURL] = 0
 				clientCalls.m[adsBlockListHostnamesURL] = 0
 			}
-			if *tc.buildSettings.BlockSurveillance {
+			if *tc.settings.BlockSurveillance {
 				clientCalls.m[surveillanceBlockListIPsURL] = 0
 				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
 			}
 
-			client := &http.Client{
+			tc.settings.Client = &http.Client{
 				Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
 					url := r.URL.String()
 					clientCalls.Lock()
@@ -254,10 +254,9 @@ func Test_Builder_BuildAll(t *testing.T) {
 				}),
 			}
 
-			settings := Settings{Client: client}
-			builder := New(settings)
+			builder := New(tc.settings)
 
-			result := builder.BuildAll(ctx, tc.buildSettings)
+			result := builder.BuildAll(ctx)
 
 			assert.ElementsMatch(t, tc.blockedHostnames, result.BlockedHostnames)
 			assert.ElementsMatch(t, tc.blockedIPs, convertIPsToString(result.BlockedIPs))

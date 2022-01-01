@@ -19,7 +19,7 @@ type Settings struct {
 	Cache        cache.Settings
 	Filter       mapfilter.Settings
 	Metrics      Metrics
-	BlockBuilder blockbuilder.BuildSettings
+	BlockBuilder blockbuilder.Settings
 	CheckDNS     bool
 	Log          Log
 	UpdatePeriod time.Duration

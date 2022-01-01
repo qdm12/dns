@@ -9,16 +9,7 @@ import (
 )
 
 type Settings struct {
-	Client *http.Client
-}
-
-func (s *Settings) SetDefaults() {
-	if s.Client == nil {
-		s.Client = http.DefaultClient
-	}
-}
-
-type BuildSettings struct {
+	Client               *http.Client
 	BlockMalicious       *bool
 	BlockAds             *bool
 	BlockSurveillance    *bool
@@ -30,7 +21,11 @@ type BuildSettings struct {
 	AddBlockedIPPrefixes []netaddr.IPPrefix
 }
 
-func (s *BuildSettings) SetDefaults() {
+func (s *Settings) SetDefaults() {
+	if s.Client == nil {
+		s.Client = http.DefaultClient
+	}
+
 	if s.BlockMalicious == nil {
 		t := true
 		s.BlockMalicious = &t
@@ -47,11 +42,11 @@ func (s *BuildSettings) SetDefaults() {
 	}
 }
 
-func (s *BuildSettings) String() string {
+func (s *Settings) String() string {
 	return s.ToLinesNode().String()
 }
 
-func (s *BuildSettings) ToLinesNode() (node *gotree.Node) {
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Filter build settings:")
 
 	var blockedCategories []string
