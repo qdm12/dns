@@ -40,7 +40,7 @@ func Setup(settings config.Prometheus, logger Logger) (
 	promRegistry := prometheus.NewRegistry()
 
 	metricsSettings := promshared.Settings{
-		Prefix:   settings.Subsystem,
+		Prefix:   &settings.Subsystem,
 		Registry: promRegistry,
 	}
 

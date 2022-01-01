@@ -18,7 +18,7 @@ type counters struct {
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
-	prefix := settings.Prefix
+	prefix := *settings.Prefix
 	c = &counters{
 		insert:      helpers.NewCounter(prefix, "cache_insert", "DNS cache insertions"),
 		move:        helpers.NewCounter(prefix, "cache_move", "DNS cache move"),

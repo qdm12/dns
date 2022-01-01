@@ -11,8 +11,9 @@ type counters struct {
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
+	prefix := *settings.Prefix
 	c = &counters{
-		dohDialURL: helpers.NewCounterVec(settings.Prefix, "dns_over_https_dials",
+		dohDialURL: helpers.NewCounterVec(prefix, "dns_over_https_dials",
 			"DNS over HTTPS dials by URL", []string{"url"}),
 	}
 

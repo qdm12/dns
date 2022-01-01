@@ -11,8 +11,9 @@ type gauges struct {
 }
 
 func newGauges(settings prom.Settings) (g *gauges, err error) {
+	prefix := *settings.Prefix
 	g = &gauges{
-		requestsInFlight: helpers.NewGauge(settings.Prefix, "requests_inflight",
+		requestsInFlight: helpers.NewGauge(prefix, "requests_inflight",
 			"Requests in flight in the server"),
 	}
 

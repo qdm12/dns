@@ -15,16 +15,17 @@ type counters struct {
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
+	prefix := *settings.Prefix
 	c = &counters{
-		requests: helpers.NewCounter(settings.Prefix, "requests_received",
+		requests: helpers.NewCounter(prefix, "requests_received",
 			"Requests received by the server"),
-		questions: helpers.NewCounterVec(settings.Prefix, "questions_received",
+		questions: helpers.NewCounterVec(prefix, "questions_received",
 			"Questions contained in requests received by the server", []string{"class", "type"}),
-		rcode: helpers.NewCounterVec(settings.Prefix, "response_rcodes",
+		rcode: helpers.NewCounterVec(prefix, "response_rcodes",
 			"Response codes", []string{"rcode"}),
-		answers: helpers.NewCounterVec(settings.Prefix, "answers_sent",
+		answers: helpers.NewCounterVec(prefix, "answers_sent",
 			"Answers contained in responses sent by the server", []string{"class", "type"}),
-		responses: helpers.NewCounter(settings.Prefix, "responses_sent",
+		responses: helpers.NewCounter(prefix, "responses_sent",
 			"Responses sent out by the server"),
 	}
 
