@@ -15,20 +15,22 @@ type handler struct {
 	logger log.Logger
 
 	// Internal objects
-	dial   dialDNSFunc
-	client *dns.Client
-	cache  cache.Interface
-	filter filter.Interface
+	exchange exchangeFunc
+	cache    cache.Interface
+	filter   filter.Interface
 }
 
 func newDNSHandler(ctx context.Context, settings ServerSettings) dns.Handler {
+	client := &dns.Client{}
+	dial := newDoTDial(settings.Resolver)
+	exchange := makeDNSExchange(client, dial, settings.Logger)
+
 	return &handler{
-		ctx:    ctx,
-		logger: settings.Logger,
-		dial:   wrapDial(newDoTDial(settings.Resolver)),
-		client: &dns.Client{},
-		cache:  settings.Cache,
-		filter: settings.Filter,
+		ctx:      ctx,
+		logger:   settings.Logger,
+		exchange: exchange,
+		cache:    settings.Cache,
+		filter:   settings.Filter,
 	}
 }
 
@@ -45,21 +47,9 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
-	conn, err := h.dial(h.ctx)
+	response, err := h.exchange(h.ctx, r)
 	if err != nil {
-		h.logger.Warn("cannot dial: " + err.Error())
-		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
-		return
-	}
-
-	response, _, err := h.client.ExchangeWithConn(r, conn)
-
-	if closeErr := conn.Close(); closeErr != nil {
-		h.logger.Warn("cannot close the DoT connection: " + closeErr.Error())
-	}
-
-	if err != nil {
-		h.logger.Warn("cannot exchange over DoT connection: " + err.Error())
+		h.logger.Warn(err.Error())
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))
 		return
 	}

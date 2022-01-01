@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/miekg/dns"
 	"github.com/qdm12/dns/internal/picker"
 	"github.com/qdm12/dns/pkg/dot/metrics"
 	"github.com/qdm12/dns/pkg/log"
@@ -14,18 +13,6 @@ import (
 )
 
 type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
-
-type dialDNSFunc func(ctx context.Context) (*dns.Conn, error)
-
-func wrapDial(dial dialFunc) dialDNSFunc {
-	return func(ctx context.Context) (*dns.Conn, error) {
-		netConn, err := dial(ctx, "", "")
-		if err != nil {
-			return nil, err
-		}
-		return &dns.Conn{Conn: netConn}, nil
-	}
-}
 
 func newDoTDial(settings ResolverSettings) dialFunc {
 	warner := settings.Warner
