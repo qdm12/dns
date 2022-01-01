@@ -3,8 +3,6 @@ package log
 import (
 	"testing"
 
-	"github.com/qdm12/dns/pkg/middlewares/log/format/console"
-	"github.com/qdm12/dns/pkg/middlewares/log/logger/noop"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,13 +13,13 @@ func Test_Settings_String(t *testing.T) {
 		settings Settings
 		s        string
 	}{
-		"consoler formatter and noop logger": {
+		"console formatter and noop logger": {
 			settings: Settings{
-				Formatter: console.New(),
-				Logger:    noop.New(),
+				Format:     "console",
+				LoggerType: "noop",
 			},
 			s: `Log middleware settings:
-├── Logger type: No-op
+├── Logger type: Noop
 └── Formatter type: Console`,
 		},
 	}

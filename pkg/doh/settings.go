@@ -113,6 +113,11 @@ func (s *SelfDNS) SetDefaults() {
 	}
 	// No default DNS fallback server for the internal HTTP client
 	// to avoid leaking we are using a DoH server.
+
+	if s.IPv6 == nil {
+		ipv6 := false
+		s.IPv6 = &ipv6
+	}
 }
 
 func (s *ServerSettings) String() string {

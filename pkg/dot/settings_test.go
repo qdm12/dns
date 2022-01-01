@@ -17,6 +17,11 @@ func Test_ServerSettings_String(t *testing.T) {
 		s        string
 	}{
 		"empty settings": {
+			settings: ServerSettings{
+				Resolver: ResolverSettings{
+					IPv6: boolPtr(false),
+				},
+			},
 			s: `DoT server settings:
 ├── Listening address: 
 └── DoT resolver settings:

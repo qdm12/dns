@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	_ Interface = (*console.Formatter)(nil)
-	_ Interface = (*noop.Formatter)(nil)
+	_ Formatter = (*console.Formatter)(nil)
+	_ Formatter = (*noop.Formatter)(nil)
 )
 
-type Interface interface {
+type Formatter interface {
 	Request(request *dns.Msg) string
 	Response(response *dns.Msg) string
 	RequestResponse(request, response *dns.Msg) string
