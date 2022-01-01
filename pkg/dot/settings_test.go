@@ -16,9 +16,9 @@ func Test_ServerSettings_String(t *testing.T) {
 		s        string
 	}{
 		"empty settings": {
-			s: `Server settings:
+			s: `DoT server settings:
 ├── Listening address: 
-└── Resolver settings:
+└── DoT resolver settings:
     ├── DNS over TLS providers:
     ├── Fallback plaintext DNS providers:
     ├── Quey timeout: 0s
@@ -40,9 +40,9 @@ func Test_ServerSettings_String(t *testing.T) {
 					IPv6:    true,
 				},
 			},
-			s: `Server settings:
+			s: `DoT server settings:
 ├── Listening address: :8000
-└── Resolver settings:
+└── DoT resolver settings:
     ├── DNS over TLS providers:
     |   └── Cloudflare
     ├── Fallback plaintext DNS providers:

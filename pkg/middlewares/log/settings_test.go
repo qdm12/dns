@@ -20,8 +20,9 @@ func Test_Settings_String(t *testing.T) {
 				Formatter: console.New(),
 				Logger:    noop.New(),
 			},
-			s: ` |--Logger type: No-op
- |--Formatter type: Console`,
+			s: `Log middleware settings:
+├── Logger type: No-op
+└── Formatter type: Console`,
 		},
 	}
 
