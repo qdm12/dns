@@ -39,7 +39,10 @@ type ResolverSettings struct {
 	DoTProviders []string
 	DNSProviders []string
 	Timeout      time.Duration
-	IPv6         bool
+	// IPv6 is false if the resolver should connect to
+	// nameservers over IPv4 and true to connect over IPv6.
+	// It cannot be nil in the internal state.
+	IPv6 *bool
 	// Warner is the warning logger to log dial errors.
 	// It defaults to a No-Op warner implementation.
 	Warner log.Warner
@@ -84,6 +87,11 @@ func (s *ResolverSettings) SetDefaults() {
 		s.Timeout = defaultTimeout
 	}
 
+	if s.IPv6 == nil {
+		ipv6 := false
+		s.IPv6 = &ipv6
+	}
+
 	if s.Warner == nil {
 		s.Warner = lognoop.New()
 	}
@@ -124,7 +132,7 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node.Appendf("Quey timeout: %s", s.Timeout)
 
 	connectOver := "IPv4"
-	if s.IPv6 {
+	if *s.IPv6 {
 		connectOver = "IPv6"
 	}
 	node.Appendf("Connecting over: %s", connectOver)

@@ -32,12 +32,12 @@ func newDoTDial(settings ResolverSettings) (
 
 	return func(ctx context.Context, _, _ string) (net.Conn, error) {
 		serverName, serverAddress := pickNameAddress(picker,
-			dotServers, settings.IPv6)
+			dotServers, *settings.IPv6)
 
 		conn, err := dialer.DialContext(ctx, "tcp", serverAddress)
 		if err != nil {
 			return onDialError(ctx, err, serverName, serverAddress, dialer,
-				picker, settings.IPv6, dnsServers, warner, metrics)
+				picker, *settings.IPv6, dnsServers, warner, metrics)
 		}
 
 		metrics.DoTDialInc(serverName, serverAddress, "success")

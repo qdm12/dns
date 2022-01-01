@@ -10,6 +10,8 @@ import (
 func Test_ServerSettings_String(t *testing.T) {
 	t.Parallel()
 
+	boolPtr := func(b bool) *bool { return &b }
+
 	testCases := map[string]struct {
 		settings ServerSettings
 		s        string
@@ -34,7 +36,7 @@ func Test_ServerSettings_String(t *testing.T) {
 						"cloudflare", "google",
 					},
 					Timeout: time.Second,
-					IPv6:    true,
+					IPv6:    boolPtr(true),
 				},
 			},
 			s: `DoT server settings:

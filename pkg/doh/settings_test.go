@@ -37,6 +37,8 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 	assert.Empty(t, s.Resolver.SelfDNS.DNSProviders)
 	assert.GreaterOrEqual(t, int64(s.Resolver.Timeout), int64(time.Millisecond))
 
+	boolPtr := func(b bool) *bool { return &b }
+
 	expectedSettings := ServerSettings{
 		Cache:   cache,
 		Filter:  filter,
@@ -47,7 +49,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 			SelfDNS: SelfDNS{
 				DoTProviders: []string{"cloudflare"},
 				Timeout:      5 * time.Second,
-				IPv6:         false,
+				IPv6:         boolPtr(false),
 			},
 			Timeout: 5 * time.Second,
 			Warner:  logger,

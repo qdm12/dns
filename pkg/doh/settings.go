@@ -52,7 +52,7 @@ type SelfDNS struct {
 	DoTProviders []string
 	DNSProviders []string
 	Timeout      time.Duration
-	IPv6         bool
+	IPv6         *bool
 }
 
 func (s *ServerSettings) SetDefaults() {
@@ -154,7 +154,7 @@ func (s *SelfDNS) ToLinesNode() (node *gotree.Node) {
 	node.Appendf("Query timeout: %s", s.Timeout)
 
 	connectOver := "IPv4"
-	if s.IPv6 {
+	if *s.IPv6 {
 		connectOver = "IPv6"
 	}
 	node.Appendf("Connecting over: %s", connectOver)
