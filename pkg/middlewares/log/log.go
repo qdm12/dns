@@ -20,7 +20,8 @@ func New(settings Settings) func(dns.Handler) dns.Handler {
 	case settings.CustomFormatter != nil:
 		formatter = settings.CustomFormatter
 	case settings.Format == console:
-		formatter = formatconsole.New()
+		formatSettings := formatconsole.Settings{}
+		formatter = formatconsole.New(formatSettings)
 	case settings.Format == noop:
 		formatter = formatnoop.New()
 	}

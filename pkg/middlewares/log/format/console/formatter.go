@@ -2,6 +2,6 @@ package console
 
 type Formatter struct{}
 
-func New() *Formatter {
+func New(settings Settings) *Formatter {
 	return &Formatter{}
 }
