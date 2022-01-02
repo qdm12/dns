@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/qdm12/dns/internal/settings/defaults"
 	"github.com/qdm12/dns/pkg/cache"
 	cachenoop "github.com/qdm12/dns/pkg/cache/noop"
 	"github.com/qdm12/dns/pkg/doh/metrics"
@@ -64,11 +65,7 @@ type SelfDNS struct {
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
 	s.LogMiddleware.SetDefaults()
-
-	if s.Address == "" {
-		const defaultAddress = ":53"
-		s.Address = defaultAddress
-	}
+	s.Address = defaults.String(s.Address, ":53")
 
 	if s.Filter == nil {
 		s.Filter = filternoop.New()
@@ -95,10 +92,8 @@ func (s *ResolverSettings) SetDefaults() {
 		s.DoHProviders = []string{"cloudflare"}
 	}
 
-	if s.Timeout == 0 {
-		const defaultTimeout = 5 * time.Second
-		s.Timeout = defaultTimeout
-	}
+	const defaultTimeout = 5 * time.Second
+	s.Timeout = defaults.Duration(s.Timeout, defaultTimeout)
 
 	if s.Warner == nil {
 		s.Warner = lognoop.New()
@@ -110,10 +105,8 @@ func (s *ResolverSettings) SetDefaults() {
 }
 
 func (s *SelfDNS) SetDefaults() {
-	if s.Timeout == 0 {
-		const defaultTimeout = 5 * time.Second
-		s.Timeout = defaultTimeout
-	}
+	const defaultTimeout = 5 * time.Second
+	s.Timeout = defaults.Duration(s.Timeout, defaultTimeout)
 
 	if len(s.DoTProviders) == 0 {
 		s.DoTProviders = []string{"cloudflare"}
@@ -121,10 +114,7 @@ func (s *SelfDNS) SetDefaults() {
 	// No default DNS fallback server for the internal HTTP client
 	// to avoid leaking we are using a DoH server.
 
-	if s.IPv6 == nil {
-		ipv6 := false
-		s.IPv6 = &ipv6
-	}
+	s.IPv6 = defaults.BoolPtr(s.IPv6, false)
 }
 
 var (

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/qdm12/dns/internal/settings/defaults"
 )
 
 type Settings struct {
@@ -20,14 +21,8 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	if s.Prefix == nil {
-		prefix := ""
-		s.Prefix = &prefix
-	}
-
-	if s.Registry == nil {
-		s.Registry = prometheus.DefaultRegisterer
-	}
+	s.Prefix = defaults.StringPtr(s.Prefix, "")
+	s.Registry = defaults.PrometheusRegisterer(s.Registry, prometheus.DefaultRegisterer)
 }
 
 var (

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/qdm12/dns/internal/settings/defaults"
 	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/cache/lru"
 	"github.com/qdm12/dns/pkg/cache/noop"
@@ -25,10 +26,7 @@ type Cache struct {
 }
 
 func (c *Cache) SetDefaults() {
-	if c.Type == "" {
-		c.Type = noop.CacheType
-	}
-
+	c.Type = defaults.String(c.Type, noop.CacheType)
 	switch c.Type {
 	case noop.CacheType:
 		c.Noop.SetDefaults()

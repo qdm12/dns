@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"time"
+
+	"github.com/qdm12/dns/internal/settings/defaults"
 )
 
 type SettingsInternalDNS struct {
@@ -20,12 +22,9 @@ type SettingsInternalDNS struct {
 }
 
 func (s *SettingsInternalDNS) SetDefaults() {
-	if s.IP == nil {
-		s.IP = net.IPv4(127, 0, 0, 1) //nolint:gomnd
-	}
-	if s.Port == 0 {
-		s.Port = 53
-	}
+	s.IP = defaults.IP(s.IP, net.IPv4(127, 0, 0, 1)) //nolint:gomnd
+	const defaultPort = 53
+	s.Port = defaults.Uint16(s.Port, defaultPort)
 }
 
 func (s SettingsInternalDNS) Validate() (err error) {

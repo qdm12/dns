@@ -5,6 +5,8 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	"github.com/qdm12/dns/internal/settings/defaults"
 )
 
 type SettingsSystemDNS struct {
@@ -20,13 +22,8 @@ type SettingsSystemDNS struct {
 }
 
 func (s *SettingsSystemDNS) SetDefaults() {
-	if s.IP == nil {
-		s.IP = net.IPv4(127, 0, 0, 1) //nolint:gomnd
-	}
-
-	if s.ResolvPath == "" {
-		s.ResolvPath = "/etc/resolv.conf"
-	}
+	s.IP = defaults.IP(s.IP, net.IPv4(127, 0, 0, 1)) //nolint:gomnd
+	s.ResolvPath = defaults.String(s.ResolvPath, "/etc/resolv.conf")
 }
 
 func (s *SettingsSystemDNS) Validate() (err error) {

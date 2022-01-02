@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/qdm12/dns/internal/settings/defaults"
 	"github.com/qdm12/gotree"
 	"inet.af/netaddr"
 )
@@ -25,24 +26,10 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	if s.Client == nil {
-		s.Client = http.DefaultClient
-	}
-
-	if s.BlockMalicious == nil {
-		t := true
-		s.BlockMalicious = &t
-	}
-
-	if s.BlockAds == nil {
-		f := false
-		s.BlockAds = &f
-	}
-
-	if s.BlockSurveillance == nil {
-		f := false
-		s.BlockSurveillance = &f
-	}
+	s.Client = defaults.HTTPClient(s.Client, http.DefaultClient)
+	s.BlockMalicious = defaults.BoolPtr(s.BlockMalicious, true)
+	s.BlockAds = defaults.BoolPtr(s.BlockAds, false)
+	s.BlockSurveillance = defaults.BoolPtr(s.BlockSurveillance, false)
 }
 
 var hostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll

@@ -3,6 +3,8 @@ package check
 import (
 	"net"
 	"time"
+
+	"github.com/qdm12/dns/internal/settings/defaults"
 )
 
 type Settings struct {
@@ -28,30 +30,17 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	if s.Resolver == nil {
-		s.Resolver = net.DefaultResolver
-	}
+	s.Resolver = defaults.Resolver(s.Resolver, net.DefaultResolver)
+	s.HostToResolve = defaults.String(s.HostToResolve, "github.com")
 
-	if s.HostToResolve == "" {
-		s.HostToResolve = "github.com"
-	}
+	const defaultMaxTries = 10
+	s.MaxTries = defaults.Int(s.MaxTries, defaultMaxTries)
 
-	if s.MaxTries == 0 {
-		const defaultMaxTries = 10
-		s.MaxTries = defaultMaxTries
-	}
+	const defaultWaitTime = 300 * time.Millisecond
+	s.WaitTime = defaults.DurationPtr(s.WaitTime, defaultWaitTime)
 
-	if s.WaitTime == nil {
-		const defaultWaitTime = 300 * time.Millisecond
-		waitTime := defaultWaitTime
-		s.WaitTime = &waitTime
-	}
-
-	if s.AddWaitTime == nil {
-		const defaultAddWaitTime = 100 * time.Millisecond
-		addWaitTime := defaultAddWaitTime
-		s.AddWaitTime = &addWaitTime
-	}
+	const defaultAddWaitTime = 100 * time.Millisecond
+	s.AddWaitTime = defaults.DurationPtr(s.AddWaitTime, defaultAddWaitTime)
 }
 
 func (s Settings) Validate() (err error) {
