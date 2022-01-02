@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/qdm12/dns/pkg/blockbuilder"
-	"github.com/qdm12/dns/pkg/cache"
 	"github.com/qdm12/dns/pkg/doh"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/filter/mapfilter"
@@ -16,7 +15,7 @@ type Settings struct {
 	UpstreamType UpstreamType
 	DoT          dot.ServerSettings
 	DoH          doh.ServerSettings
-	Cache        cache.Settings
+	Cache        Cache
 	Filter       mapfilter.Settings
 	Metrics      Metrics
 	BlockBuilder blockbuilder.Settings
