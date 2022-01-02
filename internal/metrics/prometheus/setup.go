@@ -8,13 +8,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/qdm12/dns/internal/config"
-	cache "github.com/qdm12/dns/pkg/cache/metrics/prometheus"
-	doh "github.com/qdm12/dns/pkg/doh/metrics/prometheus"
-	dot "github.com/qdm12/dns/pkg/dot/metrics/prometheus"
-	filter "github.com/qdm12/dns/pkg/filter/metrics/prometheus"
-	promshared "github.com/qdm12/dns/pkg/metrics/prometheus"
-	middleware "github.com/qdm12/dns/pkg/middlewares/metrics/prometheus"
+	"github.com/qdm12/dns/v2/internal/config"
+	cache "github.com/qdm12/dns/v2/pkg/cache/metrics/prometheus"
+	doh "github.com/qdm12/dns/v2/pkg/doh/metrics/prometheus"
+	dot "github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
+	filter "github.com/qdm12/dns/v2/pkg/filter/metrics/prometheus"
+	promshared "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics/prometheus"
 )
 
 var (

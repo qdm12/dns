@@ -3,7 +3,7 @@ package mapfilter
 import (
 	"sync"
 
-	"github.com/qdm12/dns/pkg/filter/metrics"
+	"github.com/qdm12/dns/v2/pkg/filter/metrics"
 	"inet.af/netaddr"
 )
 

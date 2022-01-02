@@ -1,7 +1,7 @@
 package prometheus
 
 import (
-	prom "github.com/qdm12/dns/pkg/metrics/prometheus"
+	prom "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 )
 
 type Settings struct {

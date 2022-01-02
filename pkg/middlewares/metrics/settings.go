@@ -1,6 +1,6 @@
 package metrics
 
-import "github.com/qdm12/dns/pkg/middlewares/metrics/noop"
+import "github.com/qdm12/dns/v2/pkg/middlewares/metrics/noop"
 
 type Settings struct {
 	// Metrics is the interface to interact with metrics in the

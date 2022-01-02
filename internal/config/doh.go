@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/qdm12/dns/pkg/doh"
+	"github.com/qdm12/dns/v2/pkg/doh"
 	"github.com/qdm12/golibs/params"
 )
 

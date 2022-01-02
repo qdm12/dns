@@ -1,4 +1,4 @@
-module github.com/qdm12/dns
+module github.com/qdm12/dns/v2
 
 go 1.17
 

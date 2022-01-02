@@ -2,9 +2,9 @@ package filter
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/filter/mapfilter"
-	"github.com/qdm12/dns/pkg/filter/noop"
-	"github.com/qdm12/dns/pkg/filter/update"
+	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
+	"github.com/qdm12/dns/v2/pkg/filter/noop"
+	"github.com/qdm12/dns/v2/pkg/filter/update"
 )
 
 var (

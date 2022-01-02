@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/middlewares/stateful"
+	"github.com/qdm12/dns/v2/pkg/middlewares/stateful"
 )
 
 func New(settings Settings) func(dns.Handler) dns.Handler {

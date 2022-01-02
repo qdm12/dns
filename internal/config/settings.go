@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/qdm12/dns/pkg/blockbuilder"
-	"github.com/qdm12/dns/pkg/doh"
-	"github.com/qdm12/dns/pkg/dot"
-	"github.com/qdm12/dns/pkg/filter/mapfilter"
+	"github.com/qdm12/dns/v2/pkg/blockbuilder"
+	"github.com/qdm12/dns/v2/pkg/doh"
+	"github.com/qdm12/dns/v2/pkg/dot"
+	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
 	"github.com/qdm12/golibs/params"
 )
 

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/log"
-	logmiddleware "github.com/qdm12/dns/pkg/middlewares/log"
-	metricsmiddleware "github.com/qdm12/dns/pkg/middlewares/metrics"
+	"github.com/qdm12/dns/v2/pkg/log"
+	logmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/log"
+	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 )
 
 var _ Runner = (*Server)(nil)

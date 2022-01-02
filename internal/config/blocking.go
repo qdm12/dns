@@ -3,8 +3,8 @@ package config
 import (
 	"fmt"
 
-	"github.com/qdm12/dns/pkg/blockbuilder"
-	"github.com/qdm12/dns/pkg/filter"
+	"github.com/qdm12/dns/v2/pkg/blockbuilder"
+	"github.com/qdm12/dns/v2/pkg/filter"
 	"github.com/qdm12/golibs/params"
 	"inet.af/netaddr"
 )

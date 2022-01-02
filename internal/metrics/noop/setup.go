@@ -4,10 +4,10 @@ package noop
 import (
 	"context"
 
-	cache "github.com/qdm12/dns/pkg/cache/metrics/noop"
-	doh "github.com/qdm12/dns/pkg/doh/metrics/noop"
-	dot "github.com/qdm12/dns/pkg/dot/metrics/noop"
-	filter "github.com/qdm12/dns/pkg/filter/metrics/noop"
+	cache "github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
+	doh "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
+	dot "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
+	filter "github.com/qdm12/dns/v2/pkg/filter/metrics/noop"
 )
 
 type DummyRunner struct{}

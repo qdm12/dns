@@ -1,6 +1,6 @@
 package log
 
-import "github.com/qdm12/dns/pkg/log/noop"
+import "github.com/qdm12/dns/v2/pkg/log/noop"
 
 var (
 	_ Logger = (*noop.Logger)(nil)

@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:generate mockgen -destination=mock_format_test.go -package $GOPACKAGE -mock_names Interface=MockFormat github.com/qdm12/dns/pkg/middlewares/log/format Interface
-//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE -mock_names Interface=MockLogger github.com/qdm12/dns/pkg/middlewares/log/logger Interface
+//go:generate mockgen -destination=mock_format_test.go -package $GOPACKAGE -mock_names Interface=MockFormat github.com/qdm12/dns/v2/pkg/middlewares/log/format Interface
+//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE -mock_names Interface=MockLogger github.com/qdm12/dns/v2/pkg/middlewares/log/logger Interface
 
 func Test_New(t *testing.T) {
 	t.Parallel()

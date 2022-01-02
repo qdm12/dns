@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	middleware "github.com/qdm12/dns/pkg/middlewares/metrics"
+	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 )
 
 type middlewareInterface = middleware.Interface

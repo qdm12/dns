@@ -2,8 +2,8 @@ package prometheus
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/qdm12/dns/internal/metrics/prometheus/helpers"
-	prom "github.com/qdm12/dns/pkg/metrics/prometheus"
+	"github.com/qdm12/dns/v2/internal/metrics/prometheus/helpers"
+	prom "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 )
 
 type counters struct {

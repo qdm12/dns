@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/qdm12/dns/pkg/doh"
+	"github.com/qdm12/dns/v2/pkg/doh"
 )
 
 func main() {

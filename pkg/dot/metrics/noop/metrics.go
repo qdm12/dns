@@ -2,8 +2,8 @@
 package noop
 
 import (
-	middleware "github.com/qdm12/dns/pkg/middlewares/metrics"
-	middlewarenoop "github.com/qdm12/dns/pkg/middlewares/metrics/noop"
+	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
+	middlewarenoop "github.com/qdm12/dns/v2/pkg/middlewares/metrics/noop"
 )
 
 type middlewareInterface = middleware.Interface

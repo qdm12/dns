@@ -2,7 +2,7 @@ package noop
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/cache/metrics"
+	"github.com/qdm12/dns/v2/pkg/cache/metrics"
 )
 
 type NoOp struct {

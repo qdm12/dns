@@ -4,9 +4,9 @@ package metrics
 import (
 	"context"
 
-	"github.com/qdm12/dns/internal/config"
-	"github.com/qdm12/dns/internal/metrics/noop"
-	"github.com/qdm12/dns/internal/metrics/prometheus"
+	"github.com/qdm12/dns/v2/internal/config"
+	"github.com/qdm12/dns/v2/internal/metrics/noop"
+	"github.com/qdm12/dns/v2/internal/metrics/prometheus"
 	"github.com/qdm12/golibs/logging"
 )
 

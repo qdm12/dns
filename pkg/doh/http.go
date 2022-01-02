@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/qdm12/dns/pkg/dot"
+	"github.com/qdm12/dns/v2/pkg/dot"
 )
 
 var (

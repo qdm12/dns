@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	cache "github.com/qdm12/dns/pkg/cache/noop"
-	metrics "github.com/qdm12/dns/pkg/doh/metrics/noop"
-	"github.com/qdm12/dns/pkg/filter/mapfilter"
-	log "github.com/qdm12/dns/pkg/log/noop"
-	middlewarelog "github.com/qdm12/dns/pkg/middlewares/log"
+	cache "github.com/qdm12/dns/v2/pkg/cache/noop"
+	metrics "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
+	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
+	log "github.com/qdm12/dns/v2/pkg/log/noop"
+	middlewarelog "github.com/qdm12/dns/v2/pkg/middlewares/log"
 	"github.com/stretchr/testify/assert"
 )
 

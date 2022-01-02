@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/qdm12/dns/pkg/middlewares/log/format"
-	"github.com/qdm12/dns/pkg/middlewares/log/logger"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log/format"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger"
 	"github.com/qdm12/gotree"
 )
 

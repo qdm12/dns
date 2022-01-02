@@ -2,7 +2,7 @@ package noop
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/filter/update"
+	"github.com/qdm12/dns/v2/pkg/filter/update"
 )
 
 type Filter struct{}

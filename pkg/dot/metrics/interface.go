@@ -3,9 +3,9 @@
 package metrics
 
 import (
-	"github.com/qdm12/dns/pkg/dot/metrics/noop"
-	"github.com/qdm12/dns/pkg/dot/metrics/prometheus"
-	middleware "github.com/qdm12/dns/pkg/middlewares/metrics"
+	"github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
+	"github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
+	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 )
 
 var (

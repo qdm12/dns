@@ -2,8 +2,8 @@
 package metrics
 
 import (
-	"github.com/qdm12/dns/pkg/cache/metrics/noop"
-	"github.com/qdm12/dns/pkg/cache/metrics/prometheus"
+	"github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
+	"github.com/qdm12/dns/v2/pkg/cache/metrics/prometheus"
 )
 
 var (

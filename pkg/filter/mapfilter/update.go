@@ -1,7 +1,7 @@
 package mapfilter
 
 import (
-	"github.com/qdm12/dns/pkg/filter/update"
+	"github.com/qdm12/dns/v2/pkg/filter/update"
 	"inet.af/netaddr"
 )
 

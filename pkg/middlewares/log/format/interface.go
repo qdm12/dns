@@ -2,8 +2,8 @@ package format
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/middlewares/log/format/console"
-	"github.com/qdm12/dns/pkg/middlewares/log/format/noop"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log/format/console"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log/format/noop"
 )
 
 var (

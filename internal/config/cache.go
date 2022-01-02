@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/qdm12/dns/internal/settings/defaults"
-	"github.com/qdm12/dns/pkg/cache"
-	"github.com/qdm12/dns/pkg/cache/lru"
-	"github.com/qdm12/dns/pkg/cache/noop"
+	"github.com/qdm12/dns/v2/internal/settings/defaults"
+	"github.com/qdm12/dns/v2/pkg/cache"
+	"github.com/qdm12/dns/v2/pkg/cache/lru"
+	"github.com/qdm12/dns/v2/pkg/cache/noop"
 	"github.com/qdm12/golibs/params"
 	"github.com/qdm12/gotree"
 )

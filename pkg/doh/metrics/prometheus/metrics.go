@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	dotmetrics "github.com/qdm12/dns/pkg/dot/metrics"
-	middleware "github.com/qdm12/dns/pkg/middlewares/metrics"
+	dotmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics"
+	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 )
 
 type (

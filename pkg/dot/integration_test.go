@@ -11,7 +11,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/internal/mockhelp"
+	"github.com/qdm12/dns/v2/internal/mockhelp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -61,10 +61,10 @@ func Test_Server(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-//go:generate mockgen -destination=mock_cache_test.go -package $GOPACKAGE -mock_names Interface=MockCache github.com/qdm12/dns/pkg/cache Interface
-//go:generate mockgen -destination=mock_dot_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockDoTMetrics github.com/qdm12/dns/pkg/dot/metrics Interface
-//go:generate mockgen -destination=mock_filter_test.go -package $GOPACKAGE -mock_names Interface=MockFilter github.com/qdm12/dns/pkg/filter Interface
-//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE github.com/qdm12/dns/pkg/log Logger
+//go:generate mockgen -destination=mock_cache_test.go -package $GOPACKAGE -mock_names Interface=MockCache github.com/qdm12/dns/v2/pkg/cache Interface
+//go:generate mockgen -destination=mock_dot_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockDoTMetrics github.com/qdm12/dns/v2/pkg/dot/metrics Interface
+//go:generate mockgen -destination=mock_filter_test.go -package $GOPACKAGE -mock_names Interface=MockFilter github.com/qdm12/dns/v2/pkg/filter Interface
+//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE github.com/qdm12/dns/v2/pkg/log Logger
 
 func Test_Server_Mocks(t *testing.T) {
 	ctrl := gomock.NewController(t)

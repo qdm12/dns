@@ -3,7 +3,7 @@ package picker
 import (
 	"net"
 
-	"github.com/qdm12/dns/pkg/provider"
+	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
 type Interface interface {

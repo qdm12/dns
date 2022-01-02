@@ -3,10 +3,10 @@ package config
 import (
 	"fmt"
 
-	cachemetrics "github.com/qdm12/dns/pkg/cache/metrics"
-	dohmetrics "github.com/qdm12/dns/pkg/doh/metrics"
-	dotmetrics "github.com/qdm12/dns/pkg/dot/metrics"
-	filtermetrics "github.com/qdm12/dns/pkg/filter/metrics"
+	cachemetrics "github.com/qdm12/dns/v2/pkg/cache/metrics"
+	dohmetrics "github.com/qdm12/dns/v2/pkg/doh/metrics"
+	dotmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics"
+	filtermetrics "github.com/qdm12/dns/v2/pkg/filter/metrics"
 	"github.com/qdm12/golibs/params"
 	"github.com/qdm12/gotree"
 )

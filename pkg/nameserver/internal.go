@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/qdm12/dns/internal/settings/defaults"
+	"github.com/qdm12/dns/v2/internal/settings/defaults"
 )
 
 type SettingsInternalDNS struct {

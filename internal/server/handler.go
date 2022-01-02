@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/cache"
-	"github.com/qdm12/dns/pkg/filter"
-	"github.com/qdm12/dns/pkg/log"
+	"github.com/qdm12/dns/v2/pkg/cache"
+	"github.com/qdm12/dns/v2/pkg/filter"
+	"github.com/qdm12/dns/v2/pkg/log"
 )
 
 var _ dns.Handler = (*Handler)(nil)

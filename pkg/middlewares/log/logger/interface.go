@@ -1,6 +1,6 @@
 package logger
 
-import "github.com/qdm12/dns/pkg/middlewares/log/logger/noop"
+import "github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
 
 var _ Interface = (*noop.Logger)(nil)
 

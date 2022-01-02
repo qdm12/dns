@@ -1,8 +1,8 @@
 package noop
 
 import (
-	"github.com/qdm12/dns/pkg/cache/metrics"
-	"github.com/qdm12/dns/pkg/cache/metrics/noop"
+	"github.com/qdm12/dns/v2/pkg/cache/metrics"
+	"github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
 	"github.com/qdm12/gotree"
 )
 

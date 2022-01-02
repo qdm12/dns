@@ -7,10 +7,10 @@ import (
 	"net"
 	"sync"
 
-	"github.com/qdm12/dns/internal/picker"
-	"github.com/qdm12/dns/internal/server"
-	"github.com/qdm12/dns/pkg/dot"
-	"github.com/qdm12/dns/pkg/provider"
+	"github.com/qdm12/dns/v2/internal/picker"
+	"github.com/qdm12/dns/v2/internal/server"
+	"github.com/qdm12/dns/v2/pkg/dot"
+	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
 func newDoHDial(settings ResolverSettings) (

@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	pkglog "github.com/qdm12/dns/pkg/log"
+	pkglog "github.com/qdm12/dns/v2/pkg/log"
 	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/golibs/params"
 	"github.com/qdm12/gotree"

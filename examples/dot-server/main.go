@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/qdm12/dns/pkg/cache/lru"
-	"github.com/qdm12/dns/pkg/dot"
+	"github.com/qdm12/dns/v2/pkg/cache/lru"
+	"github.com/qdm12/dns/v2/pkg/dot"
 )
 
 func main() {

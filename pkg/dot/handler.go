@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/internal/server"
+	"github.com/qdm12/dns/v2/internal/server"
 )
 
 func newDNSHandler(ctx context.Context, settings ServerSettings) (

@@ -1,9 +1,9 @@
 package cache
 
 import (
-	"github.com/qdm12/dns/internal/config"
-	"github.com/qdm12/dns/pkg/cache/lru"
-	"github.com/qdm12/dns/pkg/cache/noop"
+	"github.com/qdm12/dns/v2/internal/config"
+	"github.com/qdm12/dns/v2/pkg/cache/lru"
+	"github.com/qdm12/dns/v2/pkg/cache/noop"
 )
 
 func Setup(settings *config.Settings) {

@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/pkg/log"
+	"github.com/qdm12/dns/v2/pkg/log"
 )
 
 type Exchange = func(ctx context.Context, request *dns.Msg) (
