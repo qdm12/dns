@@ -7,15 +7,14 @@ import (
 	"net"
 
 	"github.com/qdm12/dns/internal/picker"
+	"github.com/qdm12/dns/internal/server"
 	"github.com/qdm12/dns/pkg/dot/metrics"
 	"github.com/qdm12/dns/pkg/log"
 	"github.com/qdm12/dns/pkg/provider"
 )
 
-type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
-
 func newDoTDial(settings ResolverSettings) (
-	dial dialFunc, err error) {
+	dial server.Dial, err error) {
 	warner := settings.Warner
 	metrics := settings.Metrics
 

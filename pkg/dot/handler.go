@@ -10,13 +10,12 @@ import (
 
 func newDNSHandler(ctx context.Context, settings ServerSettings) (
 	h dns.Handler, err error) {
-	client := &dns.Client{}
 	dial, err := newDoTDial(settings.Resolver)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create DoT dial: %w", err)
 	}
 
-	exchange := makeDNSExchange(client, dial, settings.Logger)
+	exchange := server.NewExchange("DoT", dial, settings.Logger)
 
 	return server.New(ctx, exchange, settings.Filter,
 		settings.Cache, settings.Logger), nil

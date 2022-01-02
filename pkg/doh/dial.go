@@ -8,14 +8,13 @@ import (
 	"sync"
 
 	"github.com/qdm12/dns/internal/picker"
+	"github.com/qdm12/dns/internal/server"
 	"github.com/qdm12/dns/pkg/dot"
 	"github.com/qdm12/dns/pkg/provider"
 )
 
-type dialFunc func(ctx context.Context, _, _ string) (net.Conn, error)
-
 func newDoHDial(settings ResolverSettings) (
-	dial dialFunc, err error) {
+	dial server.Dial, err error) {
 	// note: settings are already defaulted
 	metrics := settings.Metrics
 
