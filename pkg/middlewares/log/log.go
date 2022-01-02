@@ -30,7 +30,7 @@ func New(settings Settings) func(dns.Handler) dns.Handler {
 	switch {
 	case settings.CustomLogger != nil:
 		logger = settings.CustomLogger
-	case settings.Format == noop:
+	case settings.LoggerType == noop:
 		logger = lognoop.New()
 	}
 
@@ -50,7 +50,8 @@ type handler struct {
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-	h.logger.LogRequest(h.formatter.Request(r))
+	formatted := h.formatter.Request(r)
+	h.logger.LogRequest(formatted)
 
 	sw := stateful.NewWriter(w)
 	h.next.ServeDNS(sw, r)

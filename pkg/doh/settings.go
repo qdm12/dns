@@ -63,6 +63,7 @@ type SelfDNS struct {
 
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
+	s.LogMiddleware.SetDefaults()
 
 	if s.Address == "" {
 		const defaultAddress = ":53"
