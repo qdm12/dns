@@ -4,16 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"time"
 )
 
 var ErrDNSMalfunction = errors.New("DNS is not working")
 
-func WaitForDNS(ctx context.Context, resolver *net.Resolver) (err error) {
-	const maxTries = 10
-	const hostToResolve = "github.com"
-	const waitTime = 300 * time.Millisecond
+func WaitForDNS(ctx context.Context, settings Settings) (err error) {
+	settings.SetDefaults()
+
+	waitTime := *settings.WaitTime
+
 	timer := time.NewTimer(waitTime)
 	select {
 	case <-timer.C:
@@ -23,16 +23,16 @@ func WaitForDNS(ctx context.Context, resolver *net.Resolver) (err error) {
 		}
 		return ctx.Err()
 	}
-	for try := 1; try <= maxTries; try++ {
+	for try := 1; try <= settings.MaxTries; try++ {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		_, err = resolver.LookupIP(ctx, "ip", hostToResolve)
+		_, err = settings.Resolver.LookupIP(ctx, "ip", settings.HostToResolve)
 		if err == nil {
 			return nil
 		}
-		const msStep = 50
-		waitTime := maxTries * msStep * time.Millisecond
+
+		waitTime += *settings.AddWaitTime
 		timer := time.NewTimer(waitTime)
 		select {
 		case <-timer.C:
@@ -43,5 +43,5 @@ func WaitForDNS(ctx context.Context, resolver *net.Resolver) (err error) {
 			return ctx.Err()
 		}
 	}
-	return fmt.Errorf("%w: after %d tries: %s", ErrDNSMalfunction, maxTries, err)
+	return fmt.Errorf("%w: after %d tries: %s", ErrDNSMalfunction, settings.MaxTries, err)
 }

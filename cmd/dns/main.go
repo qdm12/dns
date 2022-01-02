@@ -232,7 +232,7 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 		go server.Run(serverCtx, waitError)
 
 		if settings.CheckDNS {
-			if err := check.WaitForDNS(ctx, net.DefaultResolver); err != nil {
+			if err := check.WaitForDNS(ctx, check.Settings{}); err != nil {
 				crashed <- err
 				serverCancel()
 				return
