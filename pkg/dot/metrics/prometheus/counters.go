@@ -12,7 +12,7 @@ type counters struct {
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
-	prefix := *settings.Prefix
+	prefix := settings.Prefix
 	c = &counters{
 		dotDial: helpers.NewCounterVec(prefix, "dns_over_tls_dials",
 			"DNS over TLS dials by provider, address and outcome", []string{"provider", "address", "outcome"}),

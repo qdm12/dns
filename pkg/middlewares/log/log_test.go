@@ -33,8 +33,8 @@ func Test_New(t *testing.T) {
 	logger.EXPECT().LogRequestResponse("formatted request => response")
 
 	settings := Settings{
-		CustomFormatter: formatter,
-		CustomLogger:    logger,
+		Formatter: formatter,
+		Logger:    logger,
 	}
 
 	middleware := New(settings)

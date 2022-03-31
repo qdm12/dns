@@ -12,7 +12,7 @@ type counters struct {
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
-	prefix := *settings.Prefix
+	prefix := settings.Prefix
 	c = &counters{
 		hostnamesFiltered: helpers.NewCounterVec(prefix,
 			"hostnames_filtered",

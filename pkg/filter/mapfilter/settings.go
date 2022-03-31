@@ -13,12 +13,16 @@ import (
 )
 
 type Settings struct {
-	Update  update.Settings
+	// Update contains the filter update settings.
+	Update update.Settings
+	// Metrics is the metric interface and defaults
+	// to a no-op implementation if left unset.
 	Metrics metrics.Interface
 }
 
 func (s *Settings) SetDefaults() {
 	s.Update.SetDefaults()
+
 	if s.Metrics == nil {
 		s.Metrics = noop.New()
 	}

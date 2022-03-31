@@ -12,7 +12,7 @@ var ErrDNSMalfunction = errors.New("DNS is not working")
 func WaitForDNS(ctx context.Context, settings Settings) (err error) {
 	settings.SetDefaults()
 
-	waitTime := *settings.WaitTime
+	waitTime := settings.WaitTime
 
 	timer := time.NewTimer(waitTime)
 	select {
@@ -32,7 +32,7 @@ func WaitForDNS(ctx context.Context, settings Settings) (err error) {
 			return nil
 		}
 
-		waitTime += *settings.AddWaitTime
+		waitTime += settings.AddWaitTime
 		timer := time.NewTimer(waitTime)
 		select {
 		case <-timer.C:

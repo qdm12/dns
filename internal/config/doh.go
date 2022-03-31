@@ -23,11 +23,10 @@ func getDoHSettings(reader *Reader) (settings doh.ResolverSettings, err error) {
 		return settings, err
 	}
 
-	ipv6, err := reader.env.OnOff("DOT_CONNECT_IPV6", params.Default("off"))
+	settings.SelfDNS.IPv6, err = reader.env.OnOff("DOT_CONNECT_IPV6", params.Default("off"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable DOT_CONNECT_IPV6: %w", err)
 	}
-	settings.SelfDNS.IPv6 = &ipv6
 
 	settings.SelfDNS.Timeout, err = reader.env.Duration("DOT_TIMEOUT", params.Default("3s"))
 	if err != nil {

@@ -10,20 +10,17 @@ import (
 func Test_ServerSettings_String(t *testing.T) {
 	t.Parallel()
 
-	boolPtr := func(b bool) *bool { return &b }
-
 	testCases := map[string]struct {
 		settings ServerSettings
 		s        string
 	}{
 		"empty settings": {
 			settings: ServerSettings{
-				Resolver: ResolverSettings{
-					IPv6: boolPtr(false),
-				},
+				Address:  "localhost:53",
+				Resolver: ResolverSettings{},
 			},
 			s: `DoT server settings:
-├── Listening address: 
+├── Listening address: localhost:53
 └── DoT resolver settings:
     ├── DNS over TLS providers:
     ├── Fallback plaintext DNS providers:
@@ -41,7 +38,7 @@ func Test_ServerSettings_String(t *testing.T) {
 						"cloudflare", "google",
 					},
 					Timeout: time.Second,
-					IPv6:    boolPtr(true),
+					IPv6:    true,
 				},
 			},
 			s: `DoT server settings:

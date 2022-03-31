@@ -11,9 +11,13 @@ import (
 )
 
 type Settings struct {
+	// FqdnHostnames is a list of fully qualified domain names
+	// to filter out.
 	FqdnHostnames []string
-	IPs           []netaddr.IP
-	IPPrefixes    []netaddr.IPPrefix
+	// IPs is a list of IP addresses to filter out.
+	IPs []netaddr.IP
+	// IPPrefixes is a list of IP prefixes to filter out.
+	IPPrefixes []netaddr.IPPrefix
 }
 
 func (s *Settings) SetDefaults() {}

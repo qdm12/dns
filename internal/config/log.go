@@ -13,8 +13,8 @@ func (settings *Settings) PatchLogger(logger pkglog.Logger) {
 	settings.DoT.Logger = logger
 	settings.DoH.Logger = logger
 	middlewareLogger := settings.Log.makeMiddlewareLogger(logger)
-	settings.DoT.LogMiddleware.CustomLogger = middlewareLogger
-	settings.DoH.LogMiddleware.CustomLogger = middlewareLogger
+	settings.DoT.LogMiddleware.Logger = middlewareLogger
+	settings.DoH.LogMiddleware.Logger = middlewareLogger
 }
 
 type Log struct {

@@ -11,7 +11,7 @@ type labels struct {
 }
 
 func newLabels(settings prom.Settings) (l *labels, err error) {
-	prefix := *settings.Prefix
+	prefix := settings.Prefix
 	l = &labels{
 		cacheLabels: helpers.NewGaugeVec(
 			prefix, "cache_labels", "DNS cache labels", []string{"type"}),

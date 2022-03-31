@@ -23,11 +23,10 @@ func getDoTSettings(reader *Reader) (settings dot.ResolverSettings, err error) {
 		return settings, fmt.Errorf("environment variable DOT_TIMEOUT: %w", err)
 	}
 
-	ipv6, err := reader.env.OnOff("DOT_CONNECT_IPV6", params.Default("off"))
+	settings.IPv6, err = reader.env.OnOff("DOT_CONNECT_IPV6", params.Default("off"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable DOT_CONNECT_IPV6: %w", err)
 	}
-	settings.IPv6 = &ipv6
 
 	return settings, nil
 }

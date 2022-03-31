@@ -5,39 +5,17 @@ package log
 import (
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/middlewares/log/format"
-	formatconsole "github.com/qdm12/dns/v2/pkg/middlewares/log/format/console"
-	formatnoop "github.com/qdm12/dns/v2/pkg/middlewares/log/format/noop"
 	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger"
-	lognoop "github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
 	"github.com/qdm12/dns/v2/pkg/middlewares/stateful"
 )
 
 func New(settings Settings) func(dns.Handler) dns.Handler {
 	settings.SetDefaults()
 
-	var formatter format.Formatter
-	switch {
-	case settings.CustomFormatter != nil:
-		formatter = settings.CustomFormatter
-	case settings.Format == console:
-		formatSettings := formatconsole.Settings{}
-		formatter = formatconsole.New(formatSettings)
-	case settings.Format == noop:
-		formatter = formatnoop.New()
-	}
-
-	var logger logger.Interface
-	switch {
-	case settings.CustomLogger != nil:
-		logger = settings.CustomLogger
-	case settings.LoggerType == noop:
-		logger = lognoop.New()
-	}
-
 	return func(next dns.Handler) dns.Handler {
 		return &handler{
-			formatter: formatter,
-			logger:    logger,
+			formatter: settings.Formatter,
+			logger:    settings.Logger,
 			next:      next,
 		}
 	}

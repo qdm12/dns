@@ -9,24 +9,23 @@ import (
 
 type Settings struct {
 	// Resolver to use for the check.
-	// It defaults to the default Go resolver.
+	// It defaults to the default Go resolver if left unset.
 	Resolver *net.Resolver
 	// HostToResolve is the host to resolve for the check.
-	// It defaults to github.com and cannot be the empty string.
+	// It defaults to github.com if left unset.
 	HostToResolve string
 	// MaxTries is the maximum number of tries
 	// before returning an error.
-	// It defaults to 10 and cannot be 0.
+	// It defaults to 10 if left unset.
 	MaxTries int
 	// WaitTime is the duration to wait between
 	// each failed try. It defaults to 300ms
-	// and cannot be nil in the internal state.
-	WaitTime *time.Duration
+	// if left unset.
+	WaitTime time.Duration
 	// AddWaitTime is the duration to add to the wait
 	// time after each failed try.
-	// It defaults to 100ms and cannot be nil
-	// in the internal state.
-	AddWaitTime *time.Duration
+	// It defaults to 100ms if left unset.
+	AddWaitTime time.Duration
 }
 
 func (s *Settings) SetDefaults() {
@@ -37,10 +36,10 @@ func (s *Settings) SetDefaults() {
 	s.MaxTries = defaults.Int(s.MaxTries, defaultMaxTries)
 
 	const defaultWaitTime = 300 * time.Millisecond
-	s.WaitTime = defaults.DurationPtr(s.WaitTime, defaultWaitTime)
+	s.WaitTime = defaults.Duration(s.WaitTime, defaultWaitTime)
 
 	const defaultAddWaitTime = 100 * time.Millisecond
-	s.AddWaitTime = defaults.DurationPtr(s.AddWaitTime, defaultAddWaitTime)
+	s.AddWaitTime = defaults.Duration(s.AddWaitTime, defaultAddWaitTime)
 }
 
 func (s Settings) Validate() (err error) {

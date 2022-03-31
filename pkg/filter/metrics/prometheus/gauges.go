@@ -13,7 +13,7 @@ type gauges struct {
 }
 
 func newGauges(settings prom.Settings) (g *gauges, err error) {
-	prefix := *settings.Prefix
+	prefix := settings.Prefix
 	g = &gauges{
 		blockedHostnames: helpers.NewGauge(prefix,
 			"blocked_hostnames", "Total number of hostnames to be blocked by the DNS server filter"),

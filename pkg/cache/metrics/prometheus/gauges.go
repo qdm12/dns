@@ -11,7 +11,7 @@ type gauges struct {
 }
 
 func newGauges(settings prom.Settings) (g *gauges, err error) {
-	prefix := *settings.Prefix
+	prefix := settings.Prefix
 	g = &gauges{
 		maxEntries: helpers.NewGauge(prefix, "cache_max_entries", "DNS cache maximum number of entries"),
 	}
