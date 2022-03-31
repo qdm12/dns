@@ -16,10 +16,10 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 		rrType := rr.Header().Rrtype
 		switch rrType {
 		case dns.TypeA:
-			record := rr.(*dns.A)
+			record := rr.(*dns.A) //nolint:forcetypeassert
 			blocked = m.isIPBlocked(record.A)
 		case dns.TypeAAAA:
-			record := rr.(*dns.AAAA)
+			record := rr.(*dns.AAAA) //nolint:forcetypeassert
 			blocked = m.isIPBlocked(record.AAAA)
 		}
 

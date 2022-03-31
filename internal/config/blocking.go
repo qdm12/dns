@@ -14,7 +14,7 @@ func (settings *Settings) PatchFilter(filter filter.Interface) {
 	settings.DoH.Filter = filter
 }
 
-func getFilterSettings(reader *Reader) (settings blockbuilder.Settings, err error) {
+func getFilterSettings(reader *Reader) (settings blockbuilder.Settings, err error) { //nolint:cyclop
 	blockMalicious, err := reader.env.OnOff("BLOCK_MALICIOUS", params.Default("on"))
 	if err != nil {
 		return settings, fmt.Errorf("environment variable BLOCK_MALICIOUS: %w", err)

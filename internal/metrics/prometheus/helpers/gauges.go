@@ -4,7 +4,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func NewGauge(prefix, name, help string) prometheus.Gauge {
+func NewGauge(prefix, name, help string) prometheus.Gauge { //nolint:ireturn
 	opts := prometheus.GaugeOpts(newOpts(prefix, name, help))
 	return prometheus.NewGauge(opts)
 }

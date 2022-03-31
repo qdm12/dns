@@ -60,7 +60,7 @@ func settingsToServers(settings ResolverSettings) (
 		if err != nil {
 			return nil, nil, err
 		}
-		dotServers[i] = provider.DoT()
+		dotServers[i] = provider.DoT
 	}
 
 	dnsServers = make([]provider.DNSServer, len(settings.DNSProviders))
@@ -69,7 +69,7 @@ func settingsToServers(settings ResolverSettings) (
 		if err != nil {
 			return nil, nil, err
 		}
-		dnsServers[i] = provider.DNS()
+		dnsServers[i] = provider.DNS
 	}
 
 	return dotServers, dnsServers, nil

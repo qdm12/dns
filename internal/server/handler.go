@@ -12,7 +12,7 @@ import (
 var _ dns.Handler = (*Handler)(nil)
 
 type Handler struct {
-	ctx      context.Context
+	ctx      context.Context //nolint:containedctx
 	exchange Exchange
 	filter   filter.Interface
 	cache    cache.Interface

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -13,7 +14,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func Test_Builder_BuildAll(t *testing.T) {
+func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 	t.Parallel()
 
 	boolPtr := func(b bool) *bool { return &b }
@@ -209,14 +210,15 @@ func Test_Builder_BuildAll(t *testing.T) {
 				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
 			}
 
+			errUnknownURL := errors.New("unknown URL")
+
 			tc.settings.Client = &http.Client{
 				Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
 					url := r.URL.String()
 					clientCalls.Lock()
 					defer clientCalls.Unlock()
 					if _, ok := clientCalls.m[url]; !ok {
-						t.Errorf("unknown URL %q", url)
-						return nil, nil
+						return nil, fmt.Errorf("%w: %q", errUnknownURL, url)
 					}
 					clientCalls.m[url]++
 					var body []byte
@@ -241,8 +243,7 @@ func Test_Builder_BuildAll(t *testing.T) {
 						body = tc.surveillanceHosts.content
 						err = tc.surveillanceHosts.err
 					default: // just in case if the test is badly written
-						t.Errorf("unknown URL %q", url)
-						return nil, nil
+						return nil, fmt.Errorf("%w: %q", errUnknownURL, url)
 					}
 					if err != nil {
 						return nil, err

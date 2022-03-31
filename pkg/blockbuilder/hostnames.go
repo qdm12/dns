@@ -16,47 +16,10 @@ func (b *Builder) buildHostnames(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
 	additionalBlockedHostnames, allowedHostnames []string) (
 	blockedHostnames []string, errs []error) {
-	chResults := make(chan []string)
-	chError := make(chan error)
-	listsLeftToFetch := 0
-	if blockMalicious {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, b.client, string(maliciousBlockListHostnamesURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockAds {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, b.client, string(adsBlockListHostnamesURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockSurveillance {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, b.client, string(surveillanceBlockListHostnamesURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	uniqueResults := make(map[string]struct{})
-	for listsLeftToFetch > 0 {
-		select {
-		case results := <-chResults:
-			for _, result := range results {
-				uniqueResults[result] = struct{}{}
-			}
-		case err := <-chError:
-			listsLeftToFetch--
-			if err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
+	urls := getHostnamesURLs(blockMalicious, blockAds, blockSurveillance)
+
+	uniqueResults, errs := getLists(ctx, b.client, urls)
+
 	for _, blockedHostname := range additionalBlockedHostnames {
 		allowed := false
 		for _, allowedHostname := range allowedHostnames {
@@ -77,5 +40,21 @@ func (b *Builder) buildHostnames(ctx context.Context,
 	for result := range uniqueResults {
 		blockedHostnames = append(blockedHostnames, result)
 	}
+
 	return blockedHostnames, errs
+}
+
+func getHostnamesURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []string) {
+	const maxURLs = 3
+	urls = make([]string, 0, maxURLs)
+	if blockMalicious {
+		urls = append(urls, string(maliciousBlockListHostnamesURL))
+	}
+	if blockAds {
+		urls = append(urls, string(adsBlockListHostnamesURL))
+	}
+	if blockSurveillance {
+		urls = append(urls, string(surveillanceBlockListHostnamesURL))
+	}
+	return urls
 }

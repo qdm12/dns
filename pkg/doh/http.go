@@ -21,7 +21,8 @@ var (
 
 func newDoTClient(settings dot.ResolverSettings) (
 	client *http.Client, err error) {
-	httpTransport := http.DefaultTransport.(*http.Transport).Clone()
+	httpTransport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
+
 	resolver, err := dot.NewResolver(settings)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create DoT resolver: %w", err)
@@ -40,7 +41,7 @@ func newDoTClient(settings dot.ResolverSettings) (
 
 func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.Pool,
 	url *url.URL, wire []byte) (respWire []byte, err error) { //nolint:interfacer
-	buffer := bufferPool.Get().(*bytes.Buffer)
+	buffer := bufferPool.Get().(*bytes.Buffer) //nolint:forcetypeassert
 	buffer.Reset()
 	defer bufferPool.Put(buffer)
 

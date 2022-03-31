@@ -24,7 +24,7 @@ func newDoHDial(settings ResolverSettings) (
 		if err != nil {
 			return nil, err
 		}
-		dohServers[i] = provider.DoH()
+		dohServers[i] = provider.DoH
 	}
 
 	// DoT HTTP client to resolve the DoH URL hostname
@@ -57,7 +57,7 @@ func newDoHDial(settings ResolverSettings) (
 		metrics.DoHDialInc(DoHServer.URL.String())
 
 		// Create connection object (no actual IO yet)
-		conn = newDoHConn(ctx, dotClient, bufferPool, DoHServer.URL)
+		conn = newDoHConn(ctx, dotClient, bufferPool, &DoHServer.URL)
 		return conn, nil
 	}, nil
 }

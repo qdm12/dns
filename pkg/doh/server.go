@@ -33,7 +33,8 @@ func NewServer(ctx context.Context, settings ServerSettings) (
 		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
 
-	handler, err := newDNSHandler(ctx, settings)
+	var handler dns.Handler
+	handler, err = newDNSHandler(ctx, settings)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create DNS handler: %w", err)
 	}
@@ -62,7 +63,8 @@ func (s *Server) Run(ctx context.Context, stopped chan<- error) {
 		const graceTime = 100 * time.Millisecond
 		ctx, cancel := context.WithTimeout(context.Background(), graceTime)
 		defer cancel()
-		if err := s.dnsServer.ShutdownContext(ctx); err != nil {
+		err := s.dnsServer.ShutdownContext(ctx) //nolint:contextcheck
+		if err != nil {
 			s.logger.Error("DNS server shutdown error: " + err.Error())
 		}
 	}()

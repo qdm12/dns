@@ -11,10 +11,16 @@ issues:
         - dupl
         - maligned
         - goerr113
+        - containedctx
     - path: main\.go
       text: File is not `goimports`-ed
       linters:
         - goimports
+    - path: main\.go
+      source: "go *"
+      text: Non-inherited new context, use function like `context.WithXXX` instead
+      linters:
+        - contextcheck
     - path: pkg/provider/.*\.go
       linters:
         - dupl
@@ -26,16 +32,23 @@ issues:
       source: "^//go:generate "
 
 linters:
-  disable-all: true
   enable:
     - asciicheck
+    - bidichk
     - bodyclose
-    - deadcode
+    - containedctx
+    - contextcheck
+    - cyclop
+    - decorder
     - dogsled
     - dupl
-    - errcheck
+    - durationcheck
+    - errchkjson
+    - errname
+    - errorlint
     - exhaustive
     - exportloopref
+    - forcetypeassert
     - gci
     - gochecknoglobals
     - gochecknoinits
@@ -48,34 +61,39 @@ linters:
     - goheader
     - goimports
     - gomnd
+    - gomoddirectives
     - goprintffuncname
     - gosec
-    - gosimple
-    - govet
+    - grouper
+    - ifshort
     - importas
-    - ineffassign
+    - ireturn
     - lll
+    - maintidx
+    - makezero
     - misspell
     - nakedret
     - nestif
     - nilerr
+    - nilnil
     - noctx
     - nolintlint
     - prealloc
     - predeclared
+    - predeclared
+    - promlinter
     - revive
     - rowserrcheck
     - sqlclosecheck
-    - staticcheck
-    - structcheck
+    - tenv
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
-    - unused
-    - varcheck
+    # - varnamelen
+    - wastedassign
     - whitespace
+    # - wrapcheck
 
 run:
   skip-dirs:

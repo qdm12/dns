@@ -7,35 +7,45 @@ func isEmpty(request, response *dns.Msg) (empty bool) {
 		return true
 	}
 
-	allEmptyRecords := true
 	for _, rr := range response.Answer {
-		rrType := rr.Header().Rrtype
-		switch rrType {
-		// TODO add more DNS record types
-		case dns.TypeA:
-			record := rr.(*dns.A)
-			if record.A != nil {
-				allEmptyRecords = false
-			}
-		case dns.TypeAAAA:
-			record := rr.(*dns.AAAA)
-			if record.AAAA != nil {
-				allEmptyRecords = false
-			}
-		case dns.TypeTXT:
-			record := rr.(*dns.TXT)
-			for _, txt := range record.Txt {
-				if txt != "" {
-					allEmptyRecords = false
-					break
-				}
-			}
-		}
-
-		if !allEmptyRecords {
-			break
+		if !isRREmpty(rr) {
+			return false
 		}
 	}
+	return true
+}
 
-	return allEmptyRecords
+func isRREmpty(rr dns.RR) (empty bool) {
+	rrType := rr.Header().Rrtype
+	switch rrType {
+	// TODO add more DNS record types
+	case dns.TypeA:
+		return isAEmpty(rr)
+	case dns.TypeAAAA:
+		return isAAAAEmpty(rr)
+	case dns.TypeTXT:
+		return isTXTEmpty(rr)
+	default:
+		return false
+	}
+}
+
+func isAEmpty(rr dns.RR) (empty bool) {
+	record := rr.(*dns.A) //nolint:forcetypeassert
+	return record.A == nil
+}
+
+func isAAAAEmpty(rr dns.RR) (empty bool) {
+	record := rr.(*dns.AAAA) //nolint:forcetypeassert
+	return record.AAAA == nil
+}
+
+func isTXTEmpty(rr dns.RR) (empty bool) {
+	record := rr.(*dns.TXT) //nolint:forcetypeassert
+	for _, txt := range record.Txt {
+		if txt != "" {
+			return false
+		}
+	}
+	return true
 }

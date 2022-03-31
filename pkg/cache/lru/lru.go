@@ -57,7 +57,7 @@ func (l *LRU) Add(request, response *dns.Msg) {
 
 	if listElement, ok := l.kv[key]; ok {
 		l.linkedList.MoveToFront(listElement)
-		entryPtr := listElement.Value.(*entry)
+		entryPtr := listElement.Value.(*entry) //nolint:forcetypeassert
 		entryPtr.expUnix = expUnix
 		entryPtr.response = responseCopy
 		l.metrics.CacheMoveInc()
@@ -87,7 +87,6 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	}
 
 	key := makeKey(request)
-	nowUnix := l.timeNow().Unix()
 
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
@@ -101,9 +100,9 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	l.metrics.CacheHitInc()
 
 	l.linkedList.MoveToFront(listElement)
-	entryPtr := listElement.Value.(*entry)
+	entryPtr := listElement.Value.(*entry) //nolint:forcetypeassert
 
-	if nowUnix >= entryPtr.expUnix {
+	if l.timeNow().Unix() >= entryPtr.expUnix {
 		// expired record
 		l.remove(listElement)
 		l.metrics.CacheExpiredInc()
@@ -118,7 +117,7 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 // a locking mechanism to stay thread safe.
 func (l *LRU) remove(listElement *list.Element) {
 	l.linkedList.Remove(listElement)
-	entryPtr := listElement.Value.(*entry)
+	entryPtr := listElement.Value.(*entry) //nolint:forcetypeassert
 	delete(l.kv, entryPtr.key)
 	l.metrics.CacheRemoveInc()
 }

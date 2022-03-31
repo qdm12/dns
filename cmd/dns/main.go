@@ -167,9 +167,10 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 		logger.Error(err.Error())
 	}
 
-	return group.Shutdown(context.Background())
+	return group.Shutdown(context.Background()) //nolint:contextcheck
 }
 
+//nolint:cyclop
 func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 	crashed chan<- error, settings config.Settings,
 	logger log.Logger, blockBuilder blockbuilder.Interface) {

@@ -2,7 +2,6 @@ package mockhelp
 
 import (
 	"bytes"
-	"net"
 
 	"github.com/miekg/dns"
 )
@@ -26,6 +25,7 @@ type MatcherResponse struct {
 func (m *MatcherResponse) String() string {
 	return m.response.String() + " [ignoring .MsgHdr.Id, .Answer[].Header.Ttl, .Answer[].Header.Rdlength]"
 }
+
 func (m *MatcherResponse) Matches(x interface{}) bool {
 	msg, ok := x.(*dns.Msg)
 	if !ok {
@@ -43,37 +43,7 @@ func (m *MatcherResponse) Matches(x interface{}) bool {
 	received.MsgHdr.Id = 0
 	expected.MsgHdr.Id = 0
 	for i, answer := range received.Answer {
-		receivedHeader := answer.Header()
-		expectedHeader := expected.Answer[i].Header()
-
-		if receivedHeader.Rrtype != expectedHeader.Rrtype {
-			return false
-		}
-
-		receivedHeader.Ttl, expectedHeader.Ttl = 0, 0
-		receivedHeader.Rdlength, expectedHeader.Rdlength = 0, 0
-
-		var expectedIP, receivedIP net.IP
-		switch receivedHeader.Rrtype {
-		case dns.TypeA:
-			receivedAnswer := received.Answer[i].(*dns.A)
-			expectedAnswer := expected.Answer[i].(*dns.A)
-			receivedIP = receivedAnswer.A
-			expectedIP = expectedAnswer.A
-			expectedAnswer.A = nil
-			receivedAnswer.A = nil
-		case dns.TypeAAAA:
-			receivedAnswer := received.Answer[i].(*dns.AAAA)
-			expectedAnswer := expected.Answer[i].(*dns.AAAA)
-			receivedIP = receivedAnswer.AAAA
-			expectedIP = expectedAnswer.AAAA
-			expectedAnswer.AAAA = nil
-			receivedAnswer.AAAA = nil
-		}
-
-		if len(expectedIP) == 0 && len(receivedIP) > 0 {
-			return false
-		} else if len(expectedIP) > 0 && len(receivedIP) == 0 {
+		if !answersAreEqual(expected.Answer[i], answer) {
 			return false
 		}
 	}
@@ -82,4 +52,64 @@ func (m *MatcherResponse) Matches(x interface{}) bool {
 	receivedPacked, _ := received.Pack()
 
 	return bytes.Equal(expectedPacked, receivedPacked)
+}
+
+func answersAreEqual(expected, actual dns.RR) (equal bool) {
+	receivedHeader := actual.Header()
+	expectedHeader := expected.Header()
+
+	if receivedHeader.Rrtype != expectedHeader.Rrtype {
+		return false
+	}
+
+	receivedHeader.Ttl, expectedHeader.Ttl = 0, 0
+	receivedHeader.Rdlength, expectedHeader.Rdlength = 0, 0
+
+	switch receivedHeader.Rrtype {
+	case dns.TypeA:
+		return answersAEqual(expected, actual)
+	case dns.TypeAAAA:
+		return answersAAAAEqual(expected, actual)
+	}
+	return false
+}
+
+func answersAEqual(expected, actual dns.RR) (equal bool) {
+	receivedAnswer, ok := actual.(*dns.A)
+	if !ok {
+		return false
+	}
+	expectedAnswer, ok := expected.(*dns.A)
+	if !ok {
+		return false
+	}
+	// Only check the length
+	receivedIP := receivedAnswer.A
+	expectedIP := expectedAnswer.A
+	if len(expectedIP) == 0 && len(receivedIP) > 0 {
+		return false
+	} else if len(expectedIP) > 0 && len(receivedIP) == 0 {
+		return false
+	}
+	return true
+}
+
+func answersAAAAEqual(expected, actual dns.RR) (equal bool) {
+	receivedAnswer, ok := actual.(*dns.AAAA)
+	if !ok {
+		return false
+	}
+	expectedAnswer, ok := expected.(*dns.AAAA)
+	if !ok {
+		return false
+	}
+	// Only check the length
+	receivedIP := receivedAnswer.AAAA
+	expectedIP := expectedAnswer.AAAA
+	if len(expectedIP) == 0 && len(receivedIP) > 0 {
+		return false
+	} else if len(expectedIP) > 0 && len(receivedIP) == 0 {
+		return false
+	}
+	return true
 }

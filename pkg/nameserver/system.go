@@ -1,7 +1,7 @@
 package nameserver
 
 import (
-	"io/ioutil"
+	"io/fs"
 	"net"
 	"os"
 	"strings"
@@ -36,16 +36,8 @@ func (s *SettingsSystemDNS) Validate() (err error) {
 func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
 	settings.SetDefaults()
 
-	file, err := os.Open(settings.ResolvPath)
+	data, err := os.ReadFile(settings.ResolvPath)
 	if err != nil {
-		return err
-	}
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		_ = file.Close()
-		return err
-	}
-	if err := file.Close(); err != nil {
 		return err
 	}
 
@@ -64,14 +56,6 @@ func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
 
 	s = strings.Join(lines, "\n") + "\n"
 
-	file, err = os.OpenFile(settings.ResolvPath, os.O_WRONLY|os.O_TRUNC, 0644)
-	if err != nil {
-		return err
-	}
-	_, err = file.WriteString(s)
-	if err != nil {
-		_ = file.Close()
-		return err
-	}
-	return file.Close()
+	const permissions fs.FileMode = 0600
+	return os.WriteFile(settings.ResolvPath, []byte(s), permissions)
 }

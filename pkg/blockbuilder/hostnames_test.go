@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Builder_Hostnames(t *testing.T) {
+func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 	t.Parallel()
 	type blockParams struct {
 		blocked   bool
@@ -126,7 +126,7 @@ func Test_Builder_Hostnames(t *testing.T) {
 					defer clientCalls.Unlock()
 					if _, ok := clientCalls.m[url]; !ok {
 						t.Errorf("unknown URL %q", url)
-						return nil, nil
+						return nil, nil //nolint:nilnil
 					}
 					clientCalls.m[url]++
 					var body []byte
@@ -143,7 +143,7 @@ func Test_Builder_Hostnames(t *testing.T) {
 						err = tc.surveillance.clientErr
 					default: // just in case if the test is badly written
 						t.Errorf("unknown URL %q", url)
-						return nil, nil
+						return nil, nil //nolint:nilnil
 					}
 					if err != nil {
 						return nil, err

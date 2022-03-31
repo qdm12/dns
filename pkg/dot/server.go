@@ -25,7 +25,8 @@ func NewServer(ctx context.Context, settings ServerSettings) (
 	server *Server, err error) {
 	settings.SetDefaults()
 
-	handler, err := newDNSHandler(ctx, settings)
+	var handler dns.Handler
+	handler, err = newDNSHandler(ctx, settings)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func (s *Server) Run(ctx context.Context, stopped chan<- error) {
 		const graceTime = 100 * time.Millisecond
 		ctx, cancel := context.WithTimeout(context.Background(), graceTime)
 		defer cancel()
-		if err := s.dnsServer.ShutdownContext(ctx); err != nil {
+		if err := s.dnsServer.ShutdownContext(ctx); err != nil { //nolint:contextcheck
 			s.logger.Error("DNS server shutdown error: " + err.Error())
 		}
 	}()

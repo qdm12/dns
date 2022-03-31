@@ -14,7 +14,8 @@ type Runner interface {
 	Run(ctx context.Context, done chan<- struct{})
 }
 
-func Setup(settings *config.Settings, parentLogger logging.ParentLogger) (
+func Setup(settings *config.Settings, //nolint:ireturn
+	parentLogger logging.ParentLogger) (
 	runner Runner, err error,
 ) {
 	if settings.Metrics.Type == config.MetricProm {

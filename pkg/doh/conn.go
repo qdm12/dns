@@ -27,7 +27,7 @@ func newDoHConn(ctx context.Context, client *http.Client,
 
 type dohConn struct {
 	// External objects injected at creation
-	ctx        context.Context
+	ctx        context.Context //nolint:containedctx
 	client     *http.Client
 	bufferPool *sync.Pool
 	dohURL     *url.URL

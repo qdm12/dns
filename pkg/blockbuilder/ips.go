@@ -18,47 +18,9 @@ func (b *Builder) buildIPs(ctx context.Context,
 	allowedIPs, additionalBlockedIPs []netaddr.IP,
 	allowedIPPrefixes, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
 	blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix, errs []error) {
-	chResults := make(chan []string)
-	chError := make(chan error)
-	listsLeftToFetch := 0
-	if blockMalicious {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, b.client, string(maliciousBlockListIPsURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockAds {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, b.client, string(adsBlockListIPsURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	if blockSurveillance {
-		listsLeftToFetch++
-		go func() {
-			results, err := getList(ctx, b.client, string(surveillanceBlockListIPsURL))
-			chResults <- results
-			chError <- err
-		}()
-	}
-	uniqueResults := make(map[string]struct{})
-	for listsLeftToFetch > 0 {
-		select {
-		case results := <-chResults:
-			for _, result := range results {
-				uniqueResults[result] = struct{}{}
-			}
-		case err := <-chError:
-			listsLeftToFetch--
-			if err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
+	urls := getIPsURLs(blockMalicious, blockAds, blockSurveillance)
+
+	uniqueResults, errs := getLists(ctx, b.client, urls)
 
 	for _, blockedIP := range additionalBlockedIPs {
 		uniqueResults[blockedIP.String()] = struct{}{}
@@ -74,6 +36,28 @@ func (b *Builder) buildIPs(ctx context.Context,
 		delete(uniqueResults, allowedIPPrefix.String())
 	}
 
+	blockedIPs, blockedIPPrefixes = parseIPStrings(uniqueResults)
+
+	return blockedIPs, blockedIPPrefixes, errs
+}
+
+func getIPsURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []string) {
+	const maxURLs = 3
+	urls = make([]string, 0, maxURLs)
+	if blockMalicious {
+		urls = append(urls, string(maliciousBlockListIPsURL))
+	}
+	if blockAds {
+		urls = append(urls, string(adsBlockListIPsURL))
+	}
+	if blockSurveillance {
+		urls = append(urls, string(surveillanceBlockListIPsURL))
+	}
+	return urls
+}
+
+func parseIPStrings(uniqueResults map[string]struct{}) (
+	blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix) {
 	blockedIPs = make([]netaddr.IP, 0, len(uniqueResults))
 	blockedIPPrefixes = make([]netaddr.IPPrefix, 0, len(uniqueResults))
 
@@ -99,5 +83,5 @@ func (b *Builder) buildIPs(ctx context.Context,
 		return blockedIPPrefixes[i].String() < blockedIPPrefixes[j].String()
 	})
 
-	return blockedIPs, blockedIPPrefixes, errs
+	return blockedIPs, blockedIPPrefixes
 }

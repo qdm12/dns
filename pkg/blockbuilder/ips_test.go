@@ -3,6 +3,7 @@ package blockbuilder
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 	"inet.af/netaddr"
 )
 
-func Test_Builder_IPs(t *testing.T) {
+func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 	t.Parallel()
 	type blockParams struct {
 		blocked   bool
@@ -117,14 +118,15 @@ func Test_Builder_IPs(t *testing.T) {
 				clientCalls.m[surveillanceBlockListIPsURL] = 0
 			}
 
+			errUnknownURL := errors.New("unknown URL")
+
 			client := &http.Client{
 				Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
 					url := r.URL.String()
 					clientCalls.Lock()
 					defer clientCalls.Unlock()
 					if _, ok := clientCalls.m[url]; !ok {
-						t.Errorf("unknown URL %q", url)
-						return nil, nil
+						return nil, fmt.Errorf("%w: %q", errUnknownURL, url)
 					}
 					clientCalls.m[url]++
 					var body []byte
@@ -140,8 +142,7 @@ func Test_Builder_IPs(t *testing.T) {
 						body = tc.surveillance.content
 						err = tc.surveillance.clientErr
 					default: // just in case if the test is badly written
-						t.Errorf("unknown URL %q", url)
-						return nil, nil
+						return nil, fmt.Errorf("%w: %q", errUnknownURL, url)
 					}
 					if err != nil {
 						return nil, err

@@ -2,7 +2,7 @@ package noop
 
 import "github.com/miekg/dns"
 
-type Formatter struct{}
+type Formatter struct{} //nolint:errname
 
 func New() *Formatter {
 	return &Formatter{}

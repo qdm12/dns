@@ -28,11 +28,11 @@ func Test_settingsToServers(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, []provider.DoTServer{
-		provider.Cloudflare().DoT(),
-		provider.Google().DoT(),
+		provider.Cloudflare().DoT,
+		provider.Google().DoT,
 	}, dotServers)
 	assert.Equal(t, []provider.DNSServer{
-		provider.CiraFamily().DNS(),
+		provider.CiraFamily().DNS,
 	}, dnsServers)
 }
 
@@ -46,8 +46,8 @@ func Test_pickNameAddress(t *testing.T) {
 
 	picker := NewMockPicker(ctrl)
 	servers := []provider.DoTServer{
-		provider.Cloudflare().DoT(),
-		provider.Google().DoT(),
+		provider.Cloudflare().DoT,
+		provider.Google().DoT,
 	}
 	const ipv6 = true
 
@@ -77,7 +77,7 @@ func Test_dialPlaintext(t *testing.T) {
 		"success": {
 			ctx: context.Background(),
 			dnsServers: []provider.DNSServer{
-				provider.Cloudflare().DNS(),
+				provider.Cloudflare().DNS,
 			},
 			expectedAddr:  "1.1.1.1:53",
 			metricOutcome: "success",
@@ -85,7 +85,7 @@ func Test_dialPlaintext(t *testing.T) {
 		"canceled context": {
 			ctx: canceledCtx,
 			dnsServers: []provider.DNSServer{
-				provider.Cloudflare().DNS(),
+				provider.Cloudflare().DNS,
 			},
 			expectedAddr:  "1.1.1.1:53",
 			metricOutcome: "error",

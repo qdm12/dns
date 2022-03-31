@@ -7,11 +7,11 @@ import (
 
 const defaultDoTPort uint16 = 853
 
-type Provider interface {
-	DNS() DNSServer
-	DoT() DoTServer
-	DoH() DoHServer
-	String() string
+type Provider struct {
+	Name string
+	DNS  DNSServer
+	DoT  DoTServer
+	DoH  DoHServer
 }
 
 type DNSServer struct {
@@ -27,5 +27,5 @@ type DoTServer struct {
 }
 
 type DoHServer struct {
-	URL *url.URL
+	URL url.URL
 }
