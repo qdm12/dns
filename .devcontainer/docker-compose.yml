@@ -3,24 +3,21 @@ version: "3.7"
 services:
   vscode:
     build: .
-    image: godevcontainer
     volumes:
       - ../:/workspace
       # Docker
-      - ~/.docker:/root/.docker:z
+      - ~/.docker:/root/.docker
       # Docker socket to access Docker server
       - /var/run/docker.sock:/var/run/docker.sock
       # SSH directory for Linux, OSX and WSL
-      - ~/.ssh:/root/.ssh:z
+      - ~/.ssh:/root/.ssh
       # For Windows without WSL, a copy will be made
       # from /tmp/.ssh to ~/.ssh to fix permissions
       # - ~/.ssh:/tmp/.ssh:ro
       # Shell history persistence
-      - ~/.zsh_history:/root/.zsh_history:z
+      - ~/.zsh_history:/root/.zsh_history
       # Git config
-      - ~/.gitconfig:/root/.gitconfig:z
-      # Kubernetes
-      - ~/.kube:/root/.kube:z
+      - ~/.gitconfig:/root/.gitconfig
     environment:
       - TZ=
     cap_add:
