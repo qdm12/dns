@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/qdm12/golibs/logging"
+	"github.com/qdm12/log"
 )
 
 func String(existing, defaultValue string) string {
@@ -65,7 +65,7 @@ func DurationPtr(existing *time.Duration, defaultValue time.Duration) *time.Dura
 	return &defaultValue
 }
 
-func LogLevelPtr(existing *logging.Level, defaultValue logging.Level) *logging.Level {
+func LogLevelPtr(existing *log.Level, defaultValue log.Level) *log.Level {
 	if existing != nil {
 		return existing
 	}

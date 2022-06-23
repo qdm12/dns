@@ -23,11 +23,11 @@ import (
 	"github.com/qdm12/dns/v2/pkg/cache"
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
-	"github.com/qdm12/dns/v2/pkg/log"
+	pkglog "github.com/qdm12/dns/v2/pkg/log"
 	"github.com/qdm12/dns/v2/pkg/nameserver"
-	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/goshutdown"
 	"github.com/qdm12/gosplash"
+	"github.com/qdm12/log"
 )
 
 var (
@@ -47,7 +47,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	args := os.Args
-	logger := logging.New(logging.Settings{})
+	logger := log.New()
 	settingsSource := env.New(logger)
 
 	errorCh := make(chan error)
@@ -82,12 +82,21 @@ func main() {
 	os.Exit(1)
 }
 
+type Logger interface {
+	Patch(options ...log.Option)
+	New(options ...log.Option) *log.Logger
+	Debug(s string)
+	Info(s string)
+	Warn(s string)
+	Error(s string)
+}
+
 type SettingsSource interface {
 	Read() (settings settings.Settings, err error)
 }
 
 func _main(ctx context.Context, buildInfo models.BuildInformation,
-	args []string, logger logging.ParentLogger, settingsSource SettingsSource) error {
+	args []string, logger Logger, settingsSource SettingsSource) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
@@ -131,12 +140,12 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 		return fmt.Errorf("invalid settings: %w", err)
 	}
 
-	logger.PatchLevel(*settings.Log.Level)
+	logger.Patch(log.SetLevel(*settings.Log.Level))
 	logger.Info(settings.String())
 
 	const healthServerAddr = "127.0.0.1:9999"
 	healthServer := health.NewServer(healthServerAddr,
-		logger.NewChild(logging.Settings{Prefix: "healthcheck server: "}),
+		logger.New(log.SetComponent("healthcheck server: ")),
 		health.IsHealthy)
 	healthServerHandler, healthServerCtx, healthServerDone := goshutdown.NewGoRoutineHandler(
 		"health server", goshutdown.GoRoutineSettings{})
@@ -186,7 +195,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 //nolint:cyclop
 func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 	crashed chan<- error, settings settings.Settings,
-	logger log.Logger, blockBuilder blockbuilder.Interface,
+	logger pkglog.Logger, blockBuilder blockbuilder.Interface,
 	cache cache.Interface, prometheusRegistry prometheus.Registerer) {
 	defer close(dnsServerDone)
 

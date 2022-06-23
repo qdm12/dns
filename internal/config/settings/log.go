@@ -2,19 +2,19 @@ package settings
 
 import (
 	"github.com/qdm12/dns/v2/internal/config/defaults"
-	"github.com/qdm12/golibs/logging"
 	"github.com/qdm12/gotree"
+	"github.com/qdm12/log"
 )
 
 type Log struct {
-	Level                *logging.Level
+	Level                *log.Level
 	LogRequests          *bool
 	LogResponses         *bool
 	LogRequestsResponses *bool
 }
 
 func (l *Log) setDefaults() {
-	l.Level = defaults.LogLevelPtr(l.Level, logging.LevelInfo)
+	l.Level = defaults.LogLevelPtr(l.Level, log.LevelInfo)
 	l.LogRequests = defaults.BoolPtr(l.LogRequests, false)
 	l.LogResponses = defaults.BoolPtr(l.LogRequests, false)
 	l.LogRequestsResponses = defaults.BoolPtr(l.LogRequests, false)
