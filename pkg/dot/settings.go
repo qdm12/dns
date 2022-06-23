@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/settings/defaults"
@@ -21,6 +20,8 @@ import (
 	"github.com/qdm12/gotree"
 	"github.com/qdm12/govalid/address"
 	"github.com/qdm12/govalid/port"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type ServerSettings struct {
@@ -161,13 +162,14 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoT resolver settings:")
 
 	DoTProvidersNode := node.Appendf("DNS over TLS providers:")
+	caser := cases.Title(language.English)
 	for _, provider := range s.DoTProviders {
-		DoTProvidersNode.Appendf(strings.Title(provider))
+		DoTProvidersNode.Appendf(caser.String(provider))
 	}
 
 	fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
 	for _, provider := range s.DNSProviders {
-		fallbackPlaintextProvidersNode.Appendf(strings.Title(provider))
+		fallbackPlaintextProvidersNode.Appendf(caser.String(provider))
 	}
 
 	node.Appendf("Quey timeout: %s", s.Timeout)

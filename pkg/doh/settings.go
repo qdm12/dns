@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/settings/defaults"
@@ -21,6 +20,8 @@ import (
 	"github.com/qdm12/gotree"
 	"github.com/qdm12/govalid/address"
 	"github.com/qdm12/govalid/port"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type ServerSettings struct {
@@ -198,8 +199,9 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoH resolver settings:")
 
 	DoTProvidersNode := node.Appendf("DNS over HTTPs providers:")
+	caser := cases.Title(language.English)
 	for _, provider := range s.DoHProviders {
-		DoTProvidersNode.Appendf(strings.Title(provider))
+		DoTProvidersNode.Appendf(caser.String(provider))
 	}
 
 	node.AppendNode(s.SelfDNS.ToLinesNode())
@@ -219,17 +221,19 @@ func (s *SelfDNS) ToLinesNode() (node *gotree.Node) {
 	}
 	node.Appendf("Connecting over: %s", connectOver)
 
+	caser := cases.Title(language.English)
+
 	if len(s.DoTProviders) > 0 {
 		DoTProvidersNode := node.Appendf("DNS over TLS providers:")
 		for _, provider := range s.DoTProviders {
-			DoTProvidersNode.Appendf(strings.Title(provider))
+			DoTProvidersNode.Appendf(caser.String(provider))
 		}
 	}
 
 	if len(s.DNSProviders) > 0 {
 		fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
 		for _, provider := range s.DNSProviders {
-			fallbackPlaintextProvidersNode.Appendf(strings.Title(provider))
+			fallbackPlaintextProvidersNode.Appendf(caser.String(provider))
 		}
 	}
 
