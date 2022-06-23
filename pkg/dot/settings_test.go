@@ -16,8 +16,8 @@ func Test_ServerSettings_String(t *testing.T) {
 	}{
 		"empty settings": {
 			settings: ServerSettings{
-				Address:  "localhost:53",
-				Resolver: ResolverSettings{},
+				ListeningAddress: "localhost:53",
+				Resolver:         ResolverSettings{},
 			},
 			s: `DoT server settings:
 ├── Listening address: localhost:53
@@ -29,7 +29,7 @@ func Test_ServerSettings_String(t *testing.T) {
 		},
 		"non empty settings": {
 			settings: ServerSettings{
-				Address: ":8000",
+				ListeningAddress: ":8000",
 				Resolver: ResolverSettings{
 					DoTProviders: []string{
 						"cloudflare",

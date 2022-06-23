@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/qdm12/golibs/logging"
 )
 
 func String(existing, defaultValue string) string {
@@ -64,6 +65,13 @@ func DurationPtr(existing *time.Duration, defaultValue time.Duration) *time.Dura
 	return &defaultValue
 }
 
+func LogLevelPtr(existing *logging.Level, defaultValue logging.Level) *logging.Level {
+	if existing != nil {
+		return existing
+	}
+	return &defaultValue
+}
+
 func HTTPClient(existing, defaultValue *http.Client) *http.Client {
 	if existing != nil {
 		return existing
@@ -78,7 +86,8 @@ func Resolver(existing, defaultValue *net.Resolver) *net.Resolver {
 	return defaultValue
 }
 
-func PrometheusRegisterer(existing, defaultValue prometheus.Registerer) (
+func PrometheusRegisterer(existing,
+	defaultValue prometheus.Registerer) (
 	result prometheus.Registerer) {
 	if existing != nil {
 		return existing

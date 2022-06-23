@@ -12,15 +12,16 @@ import (
 	_ "time/tzdata"
 
 	_ "github.com/breml/rootcerts"
-	"github.com/qdm12/dns/v2/internal/cache"
-	"github.com/qdm12/dns/v2/internal/config"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config/sources/env"
 	"github.com/qdm12/dns/v2/internal/health"
 	"github.com/qdm12/dns/v2/internal/metrics"
 	"github.com/qdm12/dns/v2/internal/models"
+	"github.com/qdm12/dns/v2/internal/setup"
 	"github.com/qdm12/dns/v2/pkg/blockbuilder"
+	"github.com/qdm12/dns/v2/pkg/cache"
 	"github.com/qdm12/dns/v2/pkg/check"
-	"github.com/qdm12/dns/v2/pkg/doh"
-	"github.com/qdm12/dns/v2/pkg/dot"
 	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
 	"github.com/qdm12/dns/v2/pkg/log"
 	"github.com/qdm12/dns/v2/pkg/nameserver"
@@ -47,11 +48,11 @@ func main() {
 
 	args := os.Args
 	logger := logging.New(logging.Settings{})
-	configReader := config.NewReader(logger)
+	settingsSource := env.New(logger)
 
 	errorCh := make(chan error)
 	go func() {
-		errorCh <- _main(ctx, buildInfo, args, logger, configReader)
+		errorCh <- _main(ctx, buildInfo, args, logger, settingsSource)
 	}()
 
 	select {
@@ -81,8 +82,12 @@ func main() {
 	os.Exit(1)
 }
 
+type SettingsSource interface {
+	Read() (settings settings.Settings, err error)
+}
+
 func _main(ctx context.Context, buildInfo models.BuildInformation,
-	args []string, logger logging.ParentLogger, configReader config.SettingsReader) error {
+	args []string, logger logging.ParentLogger, settingsSource SettingsSource) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
@@ -115,11 +120,18 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
 
-	settings, err := configReader.ReadSettings()
+	settings, err := settingsSource.Read()
 	if err != nil {
-		return err
+		return fmt.Errorf("reading environment variables: %w", err)
 	}
-	logger.PatchLevel(settings.Log.Level)
+	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return fmt.Errorf("invalid settings: %w", err)
+	}
+
+	logger.PatchLevel(*settings.Log.Level)
 	logger.Info(settings.String())
 
 	const healthServerAddr = "127.0.0.1:9999"
@@ -136,24 +148,25 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	logger.Info("using DNS address " + internalDNSSettings.IP.String() + " internally")
 	nameserver.UseDNSInternally(internalDNSSettings) // use the DoT/DoH server
 
-	settings.PatchLogger(logger)
+	blockBuilder := setup.BuildBlockBuilder(settings.Block, client)
 
-	metricsServer, err := metrics.Setup(&settings, logger)
+	prometheusRegistry := prometheus.NewRegistry()
+
+	cacheMetrics, err := setup.CacheMetrics(settings.Metrics, prometheusRegistry)
 	if err != nil {
-		return err
+		return fmt.Errorf("cache metrics: %w", err)
 	}
 
 	// Use the same cache across DNS server restarts
-	cache.Setup(&settings)
-
-	settings.BlockBuilder.Client = client
-	blockBuilder := blockbuilder.New(settings.BlockBuilder)
+	cache := setup.BuildCache(settings.Cache, cacheMetrics)
 
 	dnsServerHandler, dnsServerCtx, dnsServerDone := goshutdown.NewGoRoutineHandler(
 		"dns server", goshutdown.GoRoutineSettings{})
 	crashed := make(chan error)
-	go runLoop(dnsServerCtx, dnsServerDone, crashed, settings, logger, blockBuilder)
+	go runLoop(dnsServerCtx, dnsServerDone, crashed, settings,
+		logger, blockBuilder, cache, prometheusRegistry)
 
+	metricsServer := metrics.Setup(settings.Metrics, logger, prometheusRegistry)
 	metricsServerHandler, metricsServerCtx, metricsServerDone := goshutdown.NewGoRoutineHandler(
 		"metrics server", goshutdown.GoRoutineSettings{})
 	go metricsServer.Run(metricsServerCtx, metricsServerDone)
@@ -172,9 +185,11 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 //nolint:cyclop
 func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
-	crashed chan<- error, settings config.Settings,
-	logger log.Logger, blockBuilder blockbuilder.Interface) {
+	crashed chan<- error, settings settings.Settings,
+	logger log.Logger, blockBuilder blockbuilder.Interface,
+	cache cache.Interface, prometheusRegistry prometheus.Registerer) {
 	defer close(dnsServerDone)
+
 	timer := time.NewTimer(time.Hour)
 
 	firstRun := true
@@ -187,10 +202,11 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 
 	for {
 		timer.Stop()
-		if settings.UpdatePeriod > 0 {
-			timer.Reset(settings.UpdatePeriod)
+		if *settings.UpdatePeriod > 0 {
+			timer.Reset(*settings.UpdatePeriod)
 		}
 
+		var filterSettings mapfilter.Settings
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
 			result := blockBuilder.BuildAll(ctx)
@@ -200,28 +216,21 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			logger.Info(fmt.Sprint(len(result.BlockedHostnames)) + " hostnames blocked overall")
 			logger.Info(fmt.Sprint(len(result.BlockedIPs)) + " IP addresses blocked overall")
 			logger.Info(fmt.Sprint(len(result.BlockedIPPrefixes)) + " IP networks blocked overall")
-			settings.Filter.Update.IPs = result.BlockedIPs
-			settings.Filter.Update.IPPrefixes = result.BlockedIPPrefixes
-			settings.Filter.Update.BlockHostnames(result.BlockedHostnames)
+			filterSettings.Update.IPs = result.BlockedIPs
+			filterSettings.Update.IPPrefixes = result.BlockedIPPrefixes
+			filterSettings.Update.BlockHostnames(result.BlockedHostnames)
 
 			serverCancel()
 			<-waitError
 			close(waitError)
 		}
 
-		filter := mapfilter.New(settings.Filter)
-		settings.PatchFilter(filter)
+		filter := mapfilter.New(filterSettings)
 
 		serverCtx, serverCancel = context.WithCancel(ctx)
 
-		var server models.Server
-		var err error
-		switch settings.UpstreamType {
-		case config.DoT:
-			server, err = dot.NewServer(serverCtx, settings.DoT)
-		case config.DoH:
-			server, err = doh.NewServer(serverCtx, settings.DoH)
-		}
+		server, err := setup.DNS(serverCtx, settings, cache,
+			filter, logger, prometheusRegistry)
 		if err != nil {
 			crashed <- err
 			serverCancel()
@@ -232,7 +241,7 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 		waitError = make(chan error)
 		go server.Run(serverCtx, waitError)
 
-		if settings.CheckDNS {
+		if *settings.CheckDNS {
 			if err := check.WaitForDNS(ctx, check.Settings{}); err != nil {
 				crashed <- err
 				serverCancel()

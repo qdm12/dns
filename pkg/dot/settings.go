@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/settings/defaults"
+	"github.com/qdm12/dns/v2/internal/config/defaults"
 	"github.com/qdm12/dns/v2/pkg/cache"
 	cachenoop "github.com/qdm12/dns/v2/pkg/cache/noop"
 	"github.com/qdm12/dns/v2/pkg/dot/metrics"
@@ -25,9 +25,9 @@ import (
 )
 
 type ServerSettings struct {
-	Resolver      ResolverSettings
-	Address       string
-	LogMiddleware logmiddleware.Settings
+	Resolver         ResolverSettings
+	ListeningAddress string
+	LogMiddleware    logmiddleware.Settings
 	// Cache is the cache to use in the server.
 	// It defaults to a No-Op cache implementation with
 	// a No-Op cache metrics implementation.
@@ -62,7 +62,7 @@ func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
 	s.LogMiddleware.SetDefaults()
 
-	s.Address = defaults.String(s.Address, ":53")
+	s.ListeningAddress = defaults.String(s.ListeningAddress, ":53")
 
 	if s.Filter == nil {
 		s.Filter = filternoop.New()
@@ -110,11 +110,11 @@ func (s ServerSettings) Validate() (err error) {
 	}
 
 	const defaultUDPPort = 53
-	_, err = address.Validate(s.Address,
+	_, err = address.Validate(s.ListeningAddress,
 		address.OptionListening(
 			os.Getuid(), port.OptionListeningPortPrivilegedAllowed(defaultUDPPort)))
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, s.Address)
+		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, s.ListeningAddress)
 	}
 
 	err = s.LogMiddleware.Validate()
@@ -153,7 +153,7 @@ func (s *ResolverSettings) String() string {
 
 func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoT server settings:")
-	node.Appendf("Listening address: %s", s.Address)
+	node.Appendf("Listening address: %s", s.ListeningAddress)
 	node.AppendNode(s.Resolver.ToLinesNode())
 	return node
 }
