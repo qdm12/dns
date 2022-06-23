@@ -4,7 +4,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func NewCounter(prefix, name, help string) prometheus.Counter { //nolint:ireturn
+func NewCounter(prefix, name, help string) prometheus.Counter {
 	opts := prometheus.CounterOpts(newOpts(prefix, name, help))
 	return prometheus.NewCounter(opts)
 }

@@ -30,6 +30,9 @@ issues:
     - linters:
         - lll
       source: "^//go:generate "
+    - linters:
+        - ireturn
+      text: ".+returns interface \\(github\\.com\\/prometheus\\/client_golang\\/prometheus\\.[a-zA-Z]+\\)$"
 
 linters:
   enable:

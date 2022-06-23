@@ -78,10 +78,8 @@ func Resolver(existing, defaultValue *net.Resolver) *net.Resolver {
 	return defaultValue
 }
 
-func PrometheusRegisterer(existing, //nolint:ireturn
-	defaultValue prometheus.Registerer) (
-	result prometheus.Registerer,
-) {
+func PrometheusRegisterer(existing, defaultValue prometheus.Registerer) (
+	result prometheus.Registerer) {
 	if existing != nil {
 		return existing
 	}
