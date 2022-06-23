@@ -59,7 +59,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 			Warner:  logger,
 			Metrics: metrics,
 		},
-		Address: ":53",
+		ListeningAddress: ":53",
 	}
 	assert.Equal(t, expectedSettings, s)
 }

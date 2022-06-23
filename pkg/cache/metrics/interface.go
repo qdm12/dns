@@ -2,6 +2,8 @@
 package metrics
 
 import (
+	"fmt"
+
 	"github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
 	"github.com/qdm12/dns/v2/pkg/cache/metrics/prometheus"
 )
@@ -22,4 +24,26 @@ type Interface interface {
 	CacheMissInc()
 	CacheExpiredInc()
 	CacheMaxEntriesSet(maxEntries int)
+}
+
+type Settings struct {
+	Type       string
+	Prometheus prometheus.Settings
+}
+
+func Metrics(settings Settings) ( //nolint:ireturn
+	metrics Interface, err error) {
+	switch settings.Type {
+	case "noop":
+		return noop.New(), nil
+	case "prometheus":
+		metrics, err = prometheus.New(settings.Prometheus)
+		if err != nil {
+			return nil, fmt.Errorf("setup Prometheus metrics: %w", err)
+		}
+	default:
+		panic(fmt.Sprintf("unknown metrics type: %s", settings.Type))
+	}
+
+	return metrics, nil
 }

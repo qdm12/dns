@@ -3,25 +3,9 @@
 package prometheus
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/qdm12/dns/v2/internal/config"
-	cache "github.com/qdm12/dns/v2/pkg/cache/metrics/prometheus"
-	doh "github.com/qdm12/dns/v2/pkg/doh/metrics/prometheus"
-	dot "github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
-	filter "github.com/qdm12/dns/v2/pkg/filter/metrics/prometheus"
-	promshared "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
-	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics/prometheus"
-)
-
-var (
-	ErrCache      = errors.New("cannot setup cache metrics")
-	ErrMiddleware = errors.New("cannot setup middleware metrics")
-	ErrDOT        = errors.New("cannot setup DoT metrics")
-	ErrDOH        = errors.New("cannot setup DoH metrics")
+	"github.com/qdm12/dns/v2/internal/config/settings"
 )
 
 type Logger interface {
@@ -30,61 +14,16 @@ type Logger interface {
 	Error(s string)
 }
 
-func Setup(settings config.Prometheus, logger Logger) (
-	server *Server,
-	cacheMetrics *cache.Metrics,
-	filterMetrics *filter.Metrics,
-	dotMetrics *dot.Metrics,
-	dohMetrics *doh.Metrics,
-	err error) {
-	promRegistry := prometheus.NewRegistry()
-
-	metricsSettings := promshared.Settings{
-		Prefix:   settings.Subsystem,
-		Registry: promRegistry,
-	}
-
-	cacheMetrics, err = cache.New(
-		cache.Settings{Prometheus: metricsSettings})
-	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrCache, err)
-	}
-
-	filterMetrics, err = filter.New(
-		filter.Settings{Prometheus: metricsSettings})
-	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrCache, err)
-	}
-
-	middlewareMetrics, err := middleware.New(
-		middleware.Settings{Prometheus: metricsSettings})
-	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrMiddleware, err)
-	}
-
-	dotMetrics, err = dot.New(dot.Settings{
-		Prometheus:        metricsSettings,
-		MiddlewareMetrics: middlewareMetrics,
+func Setup(settings settings.Prometheus, gatherer prometheus.Gatherer,
+	logger Logger) (server *Server) {
+	handler := promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{
+		// ErrorLog: logger, // TODO
 	})
-	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOT, err)
-	}
-
-	dohMetrics, err = doh.New(doh.Settings{
-		Prometheus:        metricsSettings,
-		DoTDialMetrics:    dotMetrics,
-		MiddlewareMetrics: middlewareMetrics,
-	})
-	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("%w: %s", ErrDOH, err)
-	}
-
-	handler := promhttp.HandlerFor(promRegistry, promhttp.HandlerOpts{})
 	server = &Server{
-		address: settings.Address,
+		address: settings.ListeningAddress,
 		handler: handler,
 		logger:  logger,
 	}
 
-	return server, cacheMetrics, filterMetrics, dotMetrics, dohMetrics, nil
+	return server
 }

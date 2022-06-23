@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/qdm12/dns/v2/internal/settings/defaults"
+	"github.com/qdm12/dns/v2/internal/config/defaults"
 )
 
 type SettingsSystemDNS struct {

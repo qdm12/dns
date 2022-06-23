@@ -1,12 +1,12 @@
-package config
+package env
 
 import (
+	"fmt"
+	"os"
 	"strings"
-
-	"github.com/qdm12/golibs/params"
 )
 
-func (reader *Reader) checkOutdatedVariables() {
+func checkOutdatedVariables() (warnings []string) {
 	outdatedToNew := map[string][]string{
 		"LISTENINGPORT":       {"LISTENING_ADDRESS"},
 		"PROVIDERS":           {"DOT_RESOLVERS", "DOH_RESOLVERS", "DNS_FALLBACK_PLAINTEXT_RESOLVERS"},
@@ -23,11 +23,16 @@ func (reader *Reader) checkOutdatedVariables() {
 	}
 
 	for outdated, new := range outdatedToNew {
-		_, err := reader.env.Get(outdated, params.Compulsory())
-		if err != nil { // value is not present
+		value := os.Getenv(outdated)
+		if value == "" {
 			continue
 		}
-		reader.logger.Warn("Environment variable " + outdated +
-			" is deprecated, use the following instead: " + strings.Join(new, ", "))
+
+		replacementVariables := strings.Join(new, ", ")
+		warning := fmt.Sprintf("Environment variable %s is deprecated, "+
+			"use the following instead: %s", outdated, replacementVariables)
+		warnings = append(warnings, warning)
 	}
+
+	return warnings
 }

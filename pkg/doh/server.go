@@ -48,7 +48,7 @@ func NewServer(ctx context.Context, settings ServerSettings) (
 
 	return &Server{
 		dnsServer: dns.Server{
-			Addr:    settings.Address,
+			Addr:    settings.ListeningAddress,
 			Net:     "udp",
 			Handler: handler,
 		},

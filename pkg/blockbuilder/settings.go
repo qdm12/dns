@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/qdm12/dns/v2/internal/settings/defaults"
+	"github.com/qdm12/dns/v2/internal/config/defaults"
 	"github.com/qdm12/gotree"
 	"inet.af/netaddr"
 )
