@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/dns/v2/internal/picker"
 	"github.com/qdm12/dns/v2/pkg/cache"
 	cachenoop "github.com/qdm12/dns/v2/pkg/cache/noop"
 	"github.com/qdm12/dns/v2/pkg/dot/metrics"
@@ -56,6 +57,11 @@ type ResolverSettings struct {
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics metrics.DialMetrics
+	// Picker is the picker to use for each upstream call to pick
+	// a server and/or IP address. It must be thread safe.
+	// It defaults to a fast thread safe pseudo random picker
+	// with uniform distribution.
+	Picker Picker
 }
 
 func (s *ServerSettings) SetDefaults() {
@@ -96,6 +102,10 @@ func (s *ResolverSettings) SetDefaults() {
 
 	if s.Metrics == nil {
 		s.Metrics = metricsnoop.New()
+	}
+
+	if s.Picker == nil {
+		s.Picker = picker.New()
 	}
 }
 

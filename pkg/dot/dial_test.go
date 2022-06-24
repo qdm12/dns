@@ -36,7 +36,7 @@ func Test_settingsToServers(t *testing.T) {
 	}, dnsServers)
 }
 
-//go:generate mockgen -destination=mock_picker_test.go -package $GOPACKAGE -mock_names Interface=MockPicker github.com/qdm12/dns/v2/internal/picker Interface
+//go:generate mockgen -destination=mocks_test.go -package $GOPACKAGE . Picker
 //go:generate mockgen -destination=mock_dot_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockDoTMetrics github.com/qdm12/dns/v2/pkg/dot/metrics Interface
 //go:generate mockgen -destination=mock_warner_test.go -package $GOPACKAGE github.com/qdm12/dns/v2/pkg/log Warner
 

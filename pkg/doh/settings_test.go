@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/qdm12/dns/v2/internal/picker"
 	cache "github.com/qdm12/dns/v2/pkg/cache/noop"
 	metrics "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
 	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
@@ -21,6 +22,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 	filter := mapfilter.New(mapfilter.Settings{})
 	metrics := metrics.New()
 	logger := log.New()
+	picker := picker.New()
 
 	s := ServerSettings{
 		Cache:   cache,
@@ -30,6 +32,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 		Resolver: ResolverSettings{
 			Warner:  logger,
 			Metrics: metrics,
+			Picker:  picker,
 		},
 	}
 	s.SetDefaults()
@@ -58,6 +61,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 			Timeout: 5 * time.Second,
 			Warner:  logger,
 			Metrics: metrics,
+			Picker:  picker,
 		},
 		ListeningAddress: ":53",
 	}
