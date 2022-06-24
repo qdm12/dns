@@ -72,7 +72,7 @@ func (s *Settings) Validate() (err error) {
 	}
 
 	const minUpdaterPeriod = 60 * time.Second
-	if *s.UpdatePeriod < minUpdaterPeriod {
+	if *s.UpdatePeriod != 0 && *s.UpdatePeriod < minUpdaterPeriod {
 		return fmt.Errorf("%w: %s", ErrUpdatePeriodTooShort, s.UpdatePeriod)
 	}
 
@@ -103,7 +103,12 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(s.Log.ToLinesNode())
 	node.AppendNode(s.Metrics.ToLinesNode())
 	node.Appendf("Check DNS: %s", boolToEnabled(*s.CheckDNS))
-	node.Appendf("Update period: %s", s.UpdatePeriod)
+
+	if *s.UpdatePeriod == 0 {
+		node.Appendf("Periodic update: disabled")
+	} else {
+		node.Appendf("Periodic update: every %s", *s.UpdatePeriod)
+	}
 
 	return node
 }
