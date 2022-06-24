@@ -29,6 +29,7 @@ func (r *Reader) Read() (settings settings.Settings, err error) {
 	}
 
 	settings.Upstream = strings.ToLower(os.Getenv("UPSTREAM_TYPE"))
+	settings.ListeningAddress = os.Getenv("LISTENING_ADDRESS")
 
 	settings.Block, err = readBlock()
 	if err != nil {
