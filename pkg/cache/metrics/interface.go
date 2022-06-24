@@ -31,8 +31,7 @@ type Settings struct {
 	Prometheus prometheus.Settings
 }
 
-func Metrics(settings Settings) ( //nolint:ireturn
-	metrics Interface, err error) {
+func Metrics(settings Settings) (metrics Interface, err error) { //nolint:ireturn
 	switch settings.Type {
 	case "noop":
 		return noop.New(), nil

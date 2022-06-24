@@ -13,10 +13,8 @@ type Server interface {
 	Run(ctx context.Context, stopped chan<- error)
 }
 
-func DNS(serverCtx context.Context, //nolint:ireturn
-	userSettings settings.Settings,
-	cache Cache, filter Filter,
-	logger Logger, promRegistry PrometheusRegisterer) (
+func DNS(serverCtx context.Context, userSettings settings.Settings, //nolint:ireturn
+	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegisterer) (
 	server Server, err error) {
 	middlewareLogger := makeMiddlewareLogger(logger, userSettings.Log)
 	logMiddlewareSettings := log.Settings{
