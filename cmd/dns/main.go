@@ -215,7 +215,15 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 			timer.Reset(*settings.UpdatePeriod)
 		}
 
-		var filterSettings mapfilter.Settings
+		filterMetrics, err := setup.FilterMetrics(settings.Metrics, prometheusRegistry)
+		if err != nil {
+			serverCancel()
+			crashed <- err
+			return
+		}
+		filterSettings := mapfilter.Settings{
+			Metrics: filterMetrics,
+		}
 		if !firstRun {
 			logger.Info("downloading and building DNS block lists")
 			result := blockBuilder.BuildAll(ctx)
