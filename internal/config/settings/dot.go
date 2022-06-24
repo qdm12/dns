@@ -43,24 +43,18 @@ func (d *DoT) setDefaults() {
 }
 
 var (
-	ErrTimeoutTooSmall     = errors.New("timeout is too small")
-	ErrDoTProviderNotValid = errors.New("DoT provider is not valid")
-	ErrDNSProviderNotValid = errors.New("plaintext DNS provider is not valid")
+	ErrTimeoutTooSmall = errors.New("timeout is too small")
 )
 
 func (d *DoT) validate() (err error) {
-	allProvidersSet := allProvidersStringSet()
-
-	for _, provider := range d.DoTProviders {
-		if _, ok := allProvidersSet[provider]; !ok {
-			return fmt.Errorf("%w: %s", ErrDoTProviderNotValid, provider)
-		}
+	err = checkProviderNames(d.DoTProviders)
+	if err != nil {
+		return fmt.Errorf("DoT provider: %w", err)
 	}
 
-	for _, provider := range d.DNSProviders {
-		if _, ok := allProvidersSet[provider]; !ok {
-			return fmt.Errorf("%w: %s", ErrDNSProviderNotValid, provider)
-		}
+	err = checkProviderNames(d.DNSProviders)
+	if err != nil {
+		return fmt.Errorf("fallback DNS plaintext provider: %w", err)
 	}
 
 	const minTimeout = time.Millisecond

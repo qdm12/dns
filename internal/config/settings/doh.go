@@ -1,7 +1,6 @@
 package settings
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -30,21 +29,10 @@ func (d *DoH) setDefaults() {
 	d.Self.setDefaults()
 }
 
-var (
-	ErrDoHProviderNotValid = errors.New("DoH provider is not valid")
-)
-
 func (d *DoH) validate() (err error) {
-	allProviders := provider.All()
-	allProvidersSet := make(map[string]struct{}, len(allProviders))
-	for _, provider := range allProviders {
-		allProvidersSet[provider.Name] = struct{}{}
-	}
-
-	for _, provider := range d.DoHProviders {
-		if _, ok := allProvidersSet[provider]; !ok {
-			return fmt.Errorf("%w: %s", ErrDoHProviderNotValid, provider)
-		}
+	err = checkProviderNames(d.DoHProviders)
+	if err != nil {
+		return fmt.Errorf("DoH provider: %w", err)
 	}
 
 	const minTimeout = time.Millisecond

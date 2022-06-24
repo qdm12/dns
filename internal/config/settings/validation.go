@@ -40,11 +40,26 @@ func checkListeningAddress(address string) (err error) {
 	return err
 }
 
-func allProvidersStringSet() (set map[string]struct{}) {
-	providers := provider.All()
-	set = make(map[string]struct{}, len(providers))
-	for _, provider := range providers {
-		set[provider.Name] = struct{}{}
+func checkProviderNames(providerNames []string) (err error) {
+	allProviders := provider.All()
+	allProviderNames := make([]string, len(allProviders))
+	for i, provider := range allProviders {
+		allProviderNames[i] = provider.Name
 	}
-	return set
+
+	for _, providerName := range providerNames {
+		valid := false
+		for _, acceptedProviderName := range allProviderNames {
+			if strings.EqualFold(providerName, acceptedProviderName) {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return fmt.Errorf("%w: %q must be one of: %s",
+				ErrValueNotOneOf, providerName, orStrings(allProviderNames))
+		}
+	}
+
+	return nil
 }
