@@ -44,7 +44,7 @@ func CacheMetrics(userSettings settings.Metrics, //nolint:ireturn
 		settings := prommetrics.Settings{
 			Prometheus: promcommon.Settings{
 				Registry: registry,
-				Prefix:   "",
+				Prefix:   *userSettings.Prometheus.Subsystem,
 			},
 		}
 		metrics, err = prommetrics.New(settings)
