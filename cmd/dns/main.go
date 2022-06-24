@@ -145,7 +145,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 
 	const healthServerAddr = "127.0.0.1:9999"
 	healthServer := health.NewServer(healthServerAddr,
-		logger.New(log.SetComponent("healthcheck server: ")),
+		logger.New(log.SetComponent("healthcheck server")),
 		health.IsHealthy)
 	healthServerHandler, healthServerCtx, healthServerDone := goshutdown.NewGoRoutineHandler(
 		"health server", goshutdown.GoRoutineSettings{})

@@ -35,7 +35,7 @@ func Setup(settings settings.Metrics, //nolint:ireturn
 	case "noop":
 		return noop.Setup()
 	case "prometheus":
-		logger := parentLogger.New(log.SetComponent("prometheus server: "))
+		logger := parentLogger.New(log.SetComponent("prometheus server"))
 		return prometheus.Setup(settings.Prometheus, prometheusGatherer, logger)
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", settings.Type))
