@@ -10,8 +10,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
 	log "github.com/qdm12/dns/v2/pkg/log/noop"
 	middlewarelog "github.com/qdm12/dns/v2/pkg/middlewares/log"
-	formatnoop "github.com/qdm12/dns/v2/pkg/middlewares/log/format/noop"
-	middlewareloggernoop "github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
+	middlewarelogger "github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,8 +48,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 		Metrics: metrics,
 		Logger:  logger,
 		LogMiddleware: middlewarelog.Settings{
-			Formatter: formatnoop.New(),
-			Logger:    middlewareloggernoop.New(),
+			Logger: middlewarelogger.New(),
 		},
 		Resolver: ResolverSettings{
 			DoHProviders: []string{"cloudflare"},

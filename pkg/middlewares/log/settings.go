@@ -5,29 +5,19 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/qdm12/dns/v2/pkg/middlewares/log/format"
-	formatnoop "github.com/qdm12/dns/v2/pkg/middlewares/log/format/noop"
-	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger"
-	lognoop "github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
 	"github.com/qdm12/gotree"
 )
 
 type Settings struct {
-	// Formatter is a custom formatter to use.
-	// It defaults to a No-op implementation.
-	Formatter format.Formatter
 	// Logger is the logger to use.
 	// It defaults to a No-op implementation.
-	Logger logger.Interface
+	Logger Logger
 }
 
 func (s *Settings) SetDefaults() {
-	if s.Formatter == nil {
-		s.Formatter = formatnoop.New()
-	}
-
 	if s.Logger == nil {
-		s.Logger = lognoop.New()
+		s.Logger = noop.New()
 	}
 }
 
@@ -52,10 +42,6 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	loggerType := reflect.TypeOf(s.Logger).String()
 	loggerType = strings.TrimPrefix(loggerType, "*")
 	node.Appendf("Logger type: %s", loggerType)
-
-	formatterType := reflect.TypeOf(s.Formatter).String()
-	formatterType = strings.TrimPrefix(formatterType, "*")
-	node.Appendf("Formatter type: %s", formatterType)
 
 	return node
 }

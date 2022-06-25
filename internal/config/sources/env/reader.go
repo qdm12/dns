@@ -22,7 +22,7 @@ func New(warner Warner) *Reader {
 	}
 }
 
-func (r *Reader) Read() (settings settings.Settings, err error) {
+func (r *Reader) Read() (settings settings.Settings, err error) { //nolint:cyclop
 	warnings := checkOutdatedVariables()
 	for _, warning := range warnings {
 		r.warner.Warn(warning)
@@ -54,6 +54,11 @@ func (r *Reader) Read() (settings settings.Settings, err error) {
 	settings.Log, err = readLog()
 	if err != nil {
 		return settings, fmt.Errorf("cannot read log settings: %w", err)
+	}
+
+	settings.MiddlewareLog, err = readMiddlewareLog()
+	if err != nil {
+		return settings, fmt.Errorf("cannot read middleware log settings: %w", err)
 	}
 
 	settings.Metrics, err = readMetrics()

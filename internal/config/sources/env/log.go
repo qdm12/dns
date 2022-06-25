@@ -14,21 +14,6 @@ func readLog() (settings settings.Log, err error) {
 		return settings, fmt.Errorf("environment variable LOG_LEVEL: %w", err)
 	}
 
-	settings.LogRequests, err = envToBoolPtr("LOG_REQUESTS")
-	if err != nil {
-		return settings, fmt.Errorf("environment variable LOG_REQUESTS: %w", err)
-	}
-
-	settings.LogResponses, err = envToBoolPtr("LOG_RESPONSES")
-	if err != nil {
-		return settings, fmt.Errorf("environment variable LOG_RESPONSES: %w", err)
-	}
-
-	settings.LogRequestsResponses, err = envToBoolPtr("LOG_REQUESTS_RESPONSES")
-	if err != nil {
-		return settings, fmt.Errorf("environment variable LOG_REQUESTS_RESPONSES: %w", err)
-	}
-
 	return settings, nil
 }
 

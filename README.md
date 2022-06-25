@@ -128,9 +128,10 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
 | `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
-| `LOG_REQUESTS` | `off` | `on` or `off` to log DNS requests at the `info` level |
-| `LOG_RESPONSES` | `off` | `on` or `off` to log DNS responses at the `info` level |
-| `LOG_REQUESTS_RESPONSES` | `off` | `on` or `off` to log matching DNS requests and responses at the `info` level |
+| `MIDDLEWARE_LOG_ENABLED` | `off` | `on` or `off` |
+| `MIDDLEWARE_LOG_DIRECTORY` | `/var/log/dns/` | Any valid file path |
+| `MIDDLEWARE_LOG_REQUESTS` | `off` | `on` or `off` to log DNS requests to the file path specified |
+| `MIDDLEWARE_LOG_RESPONSES` | `off` | `on` or `off` to log DNS responses to the file path specified |
 | `DOT_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over TLS |
 | `DOH_TIMEOUT` | `3s` | Duration string to specify the query timeout for DNS over HTTPS |
 | `LISTENING_ADDRESS` | `:53` | DNS server listening address |

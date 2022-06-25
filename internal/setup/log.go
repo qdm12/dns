@@ -1,41 +1,46 @@
 package setup
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/qdm12/dns/v2/internal/config/settings"
-	pkglog "github.com/qdm12/dns/v2/pkg/log"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger/console"
+	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
 )
 
-func makeMiddlewareLogger(logger Logger,
-	userSettings settings.Log) (mLogger *MiddlewareLogger) {
-	return &MiddlewareLogger{
-		logger:             logger,
-		logRequest:         *userSettings.LogRequests,
-		logResponse:        *userSettings.LogResponses,
-		logRequestResponse: *userSettings.LogRequestsResponses,
+func MiddlewareLogger(settings settings.MiddlewareLog) (logMiddlewareSettings log.Settings, err error) {
+	if !*settings.Enabled {
+		return log.Settings{
+			Logger: noop.New(),
+		}, nil
 	}
+
+	const dirPerm = os.FileMode(0744)
+	err = os.MkdirAll(settings.DirPath, dirPerm)
+	if err != nil {
+		return logMiddlewareSettings, fmt.Errorf("creating log directory: %w", err)
+	}
+
+	// TODO rotate log files
+	const perm = os.FileMode(0644)
+	filePath := filepath.Join(settings.DirPath, "dns.log")
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, perm)
+	if err != nil {
+		return logMiddlewareSettings, err
+	}
+
+	middlewareLoggerSettings := console.Settings{
+		Writer:       file,
+		LogRequests:  boolPtr(*settings.LogRequests),
+		LogResponses: boolPtr(*settings.LogResponses),
+	}
+	middlewareLogger := console.New(middlewareLoggerSettings)
+	return log.Settings{
+		Logger: middlewareLogger,
+	}, nil
 }
 
-// TODO config in middleware pkg.
-type MiddlewareLogger struct {
-	logger             pkglog.Logger
-	logRequest         bool
-	logResponse        bool
-	logRequestResponse bool
-}
-
-func (m *MiddlewareLogger) Error(s string) { m.logger.Error(s) }
-func (m *MiddlewareLogger) LogRequest(s string) {
-	if m.logRequest {
-		m.logger.Info(s)
-	}
-}
-func (m *MiddlewareLogger) LogResponse(s string) {
-	if m.logResponse {
-		m.logger.Info(s)
-	}
-}
-func (m *MiddlewareLogger) LogRequestResponse(s string) {
-	if m.logRequestResponse {
-		m.logger.Info(s)
-	}
-}
+func boolPtr(b bool) *bool { return &b }

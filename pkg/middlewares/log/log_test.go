@@ -10,9 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:generate mockgen -destination=mock_format_test.go -package $GOPACKAGE -mock_names Interface=MockFormat github.com/qdm12/dns/v2/pkg/middlewares/log/format Interface
-//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE -mock_names Interface=MockLogger github.com/qdm12/dns/v2/pkg/middlewares/log/logger Interface
-
 func Test_New(t *testing.T) {
 	t.Parallel()
 
@@ -21,20 +18,11 @@ func Test_New(t *testing.T) {
 	}}
 
 	ctrl := gomock.NewController(t)
-
-	formatter := NewMockFormat(ctrl)
-	formatter.EXPECT().Request(request).Return("formatted request")
-	formatter.EXPECT().Response(nil).Return("formatted response")
-	formatter.EXPECT().RequestResponse(request, nil).Return("formatted request => response")
-
 	logger := NewMockLogger(ctrl)
-	logger.EXPECT().LogRequest("formatted request")
-	logger.EXPECT().LogResponse("formatted response")
-	logger.EXPECT().LogRequestResponse("formatted request => response")
+	logger.EXPECT().Log(request, nil)
 
 	settings := Settings{
-		Formatter: formatter,
-		Logger:    logger,
+		Logger: logger,
 	}
 
 	middleware := New(settings)
@@ -80,7 +68,6 @@ func Test_handler_ServeDNS(t *testing.T) {
 		handlerErr error
 	}{
 		"handler error": {
-
 			handlerErr: errors.New("dummy"),
 		},
 		"success": {},
@@ -92,21 +79,12 @@ func Test_handler_ServeDNS(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			formatter := NewMockFormat(ctrl)
-			formatter.EXPECT().Request(request).Return("formatted request")
-			formatter.EXPECT().Response(response).Return("formatted response")
-			formatter.EXPECT().RequestResponse(request, response).Return("formatted request => response")
-
 			logger := NewMockLogger(ctrl)
-			logger.EXPECT().LogRequest("formatted request")
-			logger.EXPECT().LogResponse("formatted response")
-			logger.EXPECT().LogRequestResponse("formatted request => response")
+			logger.EXPECT().Log(request, response)
 
 			if testCase.handlerErr != nil {
-				formatter.EXPECT().Error(request.Id,
-					"cannot write DNS response: "+testCase.handlerErr.Error()).
-					Return("formatted error")
-				logger.EXPECT().Error("formatted error")
+				logger.EXPECT().Error(request.Id,
+					"cannot write DNS response: "+testCase.handlerErr.Error())
 			}
 
 			next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {
@@ -115,9 +93,8 @@ func Test_handler_ServeDNS(t *testing.T) {
 			})
 
 			handler := &handler{
-				formatter: formatter,
-				logger:    logger,
-				next:      next,
+				logger: logger,
+				next:   next,
 			}
 
 			writer := &testWriter{err: testCase.handlerErr}

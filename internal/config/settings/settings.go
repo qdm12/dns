@@ -22,6 +22,7 @@ type Settings struct {
 	DoH              DoH
 	DoT              DoT
 	Log              Log
+	MiddlewareLog    MiddlewareLog
 	Metrics          Metrics
 	CheckDNS         *bool
 	UpdatePeriod     *time.Duration
@@ -35,6 +36,7 @@ func (s *Settings) SetDefaults() {
 	s.DoH.setDefaults()
 	s.DoT.setDefaults()
 	s.Log.setDefaults()
+	s.MiddlewareLog.setDefaults()
 	s.Metrics.setDefaults()
 	s.CheckDNS = defaults.BoolPtr(s.CheckDNS, true)
 	const defaultUpdaterPeriod = 24 * time.Hour
@@ -57,12 +59,13 @@ func (s *Settings) Validate() (err error) {
 	}
 
 	nameToValidate := map[string]func() error{
-		"block":   s.Block.validate,
-		"cache":   s.Cache.validate,
-		"DoH":     s.DoH.validate,
-		"DoT":     s.DoT.validate,
-		"log":     s.Log.validate,
-		"metrics": s.Metrics.validate,
+		"block":          s.Block.validate,
+		"cache":          s.Cache.validate,
+		"DoH":            s.DoH.validate,
+		"DoT":            s.DoT.validate,
+		"log":            s.Log.validate,
+		"middleware log": s.MiddlewareLog.validate,
+		"metrics":        s.Metrics.validate,
 	}
 	for name, validate := range nameToValidate {
 		err = validate()
@@ -101,6 +104,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(s.Cache.ToLinesNode())
 	node.AppendNode(s.Block.ToLinesNode())
 	node.AppendNode(s.Log.ToLinesNode())
+	node.AppendNode(s.MiddlewareLog.ToLinesNode())
 	node.AppendNode(s.Metrics.ToLinesNode())
 	node.Appendf("Check DNS: %s", boolToEnabled(*s.CheckDNS))
 

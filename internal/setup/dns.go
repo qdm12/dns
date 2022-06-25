@@ -14,14 +14,9 @@ type Server interface {
 }
 
 func DNS(serverCtx context.Context, userSettings settings.Settings, //nolint:ireturn
-	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegisterer) (
+	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegisterer,
+	logMiddlewareSettings log.Settings) (
 	server Server, err error) {
-	middlewareLogger := makeMiddlewareLogger(logger, userSettings.Log)
-	logMiddlewareSettings := log.Settings{
-		// TODO formatter
-		Logger: middlewareLogger,
-	}
-
 	commonPrometheus := prometheus.Settings{
 		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,
 		Registry: promRegistry,

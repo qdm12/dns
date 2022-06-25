@@ -192,7 +192,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	return group.Shutdown(context.Background()) //nolint:contextcheck
 }
 
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 	crashed chan<- error, settings settings.Settings,
 	logger pkglog.Logger, blockBuilder blockbuilder.Interface,
@@ -246,8 +246,15 @@ func runLoop(ctx context.Context, dnsServerDone chan<- struct{},
 
 		serverCtx, serverCancel = context.WithCancel(ctx)
 
+		logMiddlewareSettings, err := setup.MiddlewareLogger(settings.MiddlewareLog)
+		if err != nil {
+			crashed <- err
+			serverCancel()
+			return
+		}
+
 		server, err := setup.DNS(serverCtx, settings, cache,
-			filter, logger, prometheusRegistry)
+			filter, logger, prometheusRegistry, logMiddlewareSettings)
 		if err != nil {
 			crashed <- err
 			serverCancel()

@@ -4,8 +4,6 @@ package log
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/middlewares/log/format"
-	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger"
 	"github.com/qdm12/dns/v2/pkg/middlewares/stateful"
 )
 
@@ -14,32 +12,30 @@ func New(settings Settings) func(dns.Handler) dns.Handler {
 
 	return func(next dns.Handler) dns.Handler {
 		return &handler{
-			formatter: settings.Formatter,
-			logger:    settings.Logger,
-			next:      next,
+			logger: settings.Logger,
+			next:   next,
 		}
 	}
 }
 
 type handler struct {
-	formatter format.Formatter
-	logger    logger.Interface
-	next      dns.Handler
+	logger Logger
+	next   dns.Handler
+}
+
+type Logger interface {
+	// Log logs the request and/or response.
+	Log(request, response *dns.Msg)
+	// Error logs errors returned by the DNS handler.
+	Error(id uint16, errorString string)
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-	formatted := h.formatter.Request(r)
-	h.logger.LogRequest(formatted)
-
 	sw := stateful.NewWriter(w)
 	h.next.ServeDNS(sw, r)
+	h.logger.Log(r, sw.Response)
 	if err := sw.WriteErr; err != nil {
 		errString := "cannot write DNS response: " + err.Error()
-		h.logger.Error(h.formatter.Error(r.Id, errString))
+		h.logger.Error(r.Id, errString)
 	}
-
-	h.logger.LogResponse(h.formatter.Response(sw.Response))
-
-	h.logger.LogRequestResponse(
-		h.formatter.RequestResponse(r, sw.Response))
 }
