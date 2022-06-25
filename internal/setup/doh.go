@@ -14,8 +14,9 @@ import (
 
 func dohServer(serverCtx context.Context,
 	userSettings settings.Settings,
-	logger Logger, metrics DoHMetrics,
-	cache Cache, filter Filter) (server *doh.Server, err error) {
+	logger Logger, logMiddlewareSettings log.Settings,
+	metrics DoHMetrics, cache Cache, filter Filter) (
+	server *doh.Server, err error) {
 	resolverSettings := doh.ResolverSettings{
 		DoHProviders: userSettings.DoH.DoHProviders,
 		SelfDNS: doh.SelfDNS{
@@ -27,8 +28,6 @@ func dohServer(serverCtx context.Context,
 		Warner:  logger,
 		Metrics: metrics,
 	}
-
-	logMiddlewareSettings := log.Settings{}
 
 	settings := doh.ServerSettings{
 		Resolver:         resolverSettings,

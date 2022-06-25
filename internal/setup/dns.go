@@ -52,8 +52,8 @@ func DNS(serverCtx context.Context, userSettings settings.Settings, //nolint:ire
 			return nil, fmt.Errorf("DoH metrics: %w", err)
 		}
 
-		return dohServer(serverCtx, userSettings, logger, dohMetrics,
-			cache, filter)
+		return dohServer(serverCtx, userSettings, logger,
+			logMiddlewareSettings, dohMetrics, cache, filter)
 	default:
 		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))
 	}
