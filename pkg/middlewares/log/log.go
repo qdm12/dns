@@ -3,6 +3,8 @@
 package log
 
 import (
+	"net"
+
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/middlewares/stateful"
 )
@@ -25,7 +27,7 @@ type handler struct {
 
 type Logger interface {
 	// Log logs the request and/or response.
-	Log(request, response *dns.Msg)
+	Log(remoteAddr net.Addr, request, response *dns.Msg)
 	// Error logs errors returned by the DNS handler.
 	Error(id uint16, errorString string)
 }
@@ -33,7 +35,7 @@ type Logger interface {
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	sw := stateful.NewWriter(w)
 	h.next.ServeDNS(sw, r)
-	h.logger.Log(r, sw.Response)
+	h.logger.Log(w.RemoteAddr(), r, sw.Response)
 	if err := sw.WriteErr; err != nil {
 		errString := "cannot write DNS response: " + err.Error()
 		h.logger.Error(r.Id, errString)

@@ -5,6 +5,7 @@
 package log
 
 import (
+	net "net"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -47,13 +48,13 @@ func (mr *MockLoggerMockRecorder) Error(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // Log mocks base method.
-func (m *MockLogger) Log(arg0, arg1 *dns.Msg) {
+func (m *MockLogger) Log(arg0 net.Addr, arg1, arg2 *dns.Msg) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Log", arg0, arg1)
+	m.ctrl.Call(m, "Log", arg0, arg1, arg2)
 }
 
 // Log indicates an expected call of Log.
-func (mr *MockLoggerMockRecorder) Log(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockLoggerMockRecorder) Log(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Log", reflect.TypeOf((*MockLogger)(nil).Log), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Log", reflect.TypeOf((*MockLogger)(nil).Log), arg0, arg1, arg2)
 }

@@ -16,10 +16,14 @@ func Test_New(t *testing.T) {
 	request := &dns.Msg{Question: []dns.Question{
 		{Name: "question"},
 	}}
+	remoteAddress := &net.UDPAddr{
+		IP:   net.IP{1, 2, 3, 4},
+		Port: 8000,
+	}
 
 	ctrl := gomock.NewController(t)
 	logger := NewMockLogger(ctrl)
-	logger.EXPECT().Log(request, nil)
+	logger.EXPECT().Log(remoteAddress, request, nil)
 
 	settings := Settings{
 		Logger: logger,
@@ -30,7 +34,9 @@ func Test_New(t *testing.T) {
 	next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {})
 	handler := middleware(next)
 
-	var writer dns.ResponseWriter // nil as next does not use it
+	writer := NewMockResponseWriter(ctrl)
+	writer.EXPECT().RemoteAddr().Return(remoteAddress)
+
 	handler.ServeDNS(writer, request)
 }
 
@@ -80,7 +86,11 @@ func Test_handler_ServeDNS(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			logger := NewMockLogger(ctrl)
-			logger.EXPECT().Log(request, response)
+			remoteAddress := &net.UDPAddr{
+				IP:   net.IP{1, 2, 3, 4},
+				Port: 8000,
+			}
+			logger.EXPECT().Log(remoteAddress, request, response)
 
 			if testCase.handlerErr != nil {
 				logger.EXPECT().Error(request.Id,
@@ -97,7 +107,12 @@ func Test_handler_ServeDNS(t *testing.T) {
 				next:   next,
 			}
 
-			writer := &testWriter{err: testCase.handlerErr}
+			responseWriter := NewMockResponseWriter(ctrl)
+			responseWriter.EXPECT().RemoteAddr().Return(remoteAddress)
+			writer := &testWriter{
+				err:            testCase.handlerErr,
+				ResponseWriter: responseWriter,
+			}
 			handler.ServeDNS(writer, request)
 		})
 	}

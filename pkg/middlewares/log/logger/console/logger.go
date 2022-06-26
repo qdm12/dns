@@ -3,6 +3,7 @@ package console
 import (
 	"fmt"
 	"io"
+	"net"
 	"time"
 
 	"github.com/miekg/dns"
@@ -31,7 +32,8 @@ func (l *Logger) Error(id uint16, errMessage string) {
 	l.write(formatError(id, errMessage))
 }
 
-func (l *Logger) Log(request, response *dns.Msg) {
+func (l *Logger) Log(remoteAddr net.Addr,
+	request, response *dns.Msg) {
 	var message string
 	switch {
 	case !l.logRequest && !l.logResponse:
@@ -43,8 +45,9 @@ func (l *Logger) Log(request, response *dns.Msg) {
 	case l.logResponse:
 		message = formatResponse(response)
 	}
-	message = fmt.Sprintf("%s %s\n",
-		l.timeNow().Format(time.RFC3339), message)
+	message = fmt.Sprintf("%s %s %s\n",
+		l.timeNow().Format(time.RFC3339),
+		remoteAddr, message)
 
 	l.write(message)
 }
