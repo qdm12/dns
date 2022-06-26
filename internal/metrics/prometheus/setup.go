@@ -3,6 +3,8 @@
 package prometheus
 
 import (
+	"fmt"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/qdm12/dns/v2/internal/config/settings"
@@ -17,7 +19,7 @@ type Logger interface {
 func Setup(settings settings.Prometheus, gatherer prometheus.Gatherer,
 	logger Logger) (server *Server) {
 	handler := promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{
-		// ErrorLog: logger, // TODO
+		ErrorLog: &promLogger{logger: logger},
 	})
 	server = &Server{
 		address: settings.ListeningAddress,
@@ -26,4 +28,13 @@ func Setup(settings settings.Prometheus, gatherer prometheus.Gatherer,
 	}
 
 	return server
+}
+
+type promLogger struct {
+	logger Logger
+}
+
+func (p *promLogger) Println(v ...interface{}) {
+	message := fmt.Sprint(v...)
+	p.logger.Error(message)
 }
