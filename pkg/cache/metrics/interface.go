@@ -38,7 +38,7 @@ func Metrics(settings Settings) (metrics Interface, err error) { //nolint:iretur
 	case "prometheus":
 		metrics, err = prometheus.New(settings.Prometheus)
 		if err != nil {
-			return nil, fmt.Errorf("setup Prometheus metrics: %w", err)
+			return nil, fmt.Errorf("setting up Prometheus metrics: %w", err)
 		}
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", settings.Type))

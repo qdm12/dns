@@ -18,7 +18,7 @@ func IsHealthy() (err error) {
 	}
 	_, err = net.LookupIP("github.com")
 	if err != nil {
-		return fmt.Errorf("cannot resolve github.com: %w", err)
+		return fmt.Errorf("resolving github.com: %w", err)
 	}
 	return nil
 }

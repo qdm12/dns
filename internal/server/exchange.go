@@ -20,7 +20,7 @@ func NewExchange(name string, dial Dial, warner log.Warner) Exchange {
 	return func(ctx context.Context, request *dns.Msg) (response *dns.Msg, err error) {
 		netConn, err := dial(ctx, "", "")
 		if err != nil {
-			return nil, fmt.Errorf("cannot dial %s server: %w", name, err)
+			return nil, fmt.Errorf("dialing %s server: %w", name, err)
 		}
 		dnsConn := &dns.Conn{Conn: netConn}
 
@@ -31,7 +31,7 @@ func NewExchange(name string, dial Dial, warner log.Warner) Exchange {
 		}
 
 		if err != nil {
-			return nil, fmt.Errorf("cannot exchange over %s connection: %w", name, err)
+			return nil, fmt.Errorf("exchanging over %s connection: %w", name, err)
 		}
 
 		return response, nil

@@ -33,37 +33,37 @@ func (r *Reader) Read() (settings settings.Settings, err error) { //nolint:cyclo
 
 	settings.Block, err = readBlock()
 	if err != nil {
-		return settings, fmt.Errorf("cannot read block settings: %w", err)
+		return settings, fmt.Errorf("block settings: %w", err)
 	}
 
 	settings.Cache, err = readCache()
 	if err != nil {
-		return settings, fmt.Errorf("cannot read cache settings: %w", err)
+		return settings, fmt.Errorf("cache settings: %w", err)
 	}
 
 	settings.DoH, err = readDoH()
 	if err != nil {
-		return settings, fmt.Errorf("cannot read DoH settings: %w", err)
+		return settings, fmt.Errorf("DoH settings: %w", err)
 	}
 
 	settings.DoT, err = readDoT()
 	if err != nil {
-		return settings, fmt.Errorf("cannot read DoT settings: %w", err)
+		return settings, fmt.Errorf("DoT settings: %w", err)
 	}
 
 	settings.Log, err = readLog()
 	if err != nil {
-		return settings, fmt.Errorf("cannot read log settings: %w", err)
+		return settings, fmt.Errorf("log settings: %w", err)
 	}
 
 	settings.MiddlewareLog, err = readMiddlewareLog()
 	if err != nil {
-		return settings, fmt.Errorf("cannot read middleware log settings: %w", err)
+		return settings, fmt.Errorf("middleware log settings: %w", err)
 	}
 
 	settings.Metrics, err = readMetrics()
 	if err != nil {
-		return settings, fmt.Errorf("cannot read metrics settings: %w", err)
+		return settings, fmt.Errorf("metrics settings: %w", err)
 	}
 
 	settings.CheckDNS, err = envToBoolPtr("CHECK_DNS")

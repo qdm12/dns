@@ -44,18 +44,18 @@ func (s *Settings) SetDefaults() {
 }
 
 var (
-	ErrUpdatePeriodTooShort = errors.New("update period must be at least one minute")
+	ErrUpdatePeriodTooShort = errors.New("update period is too short")
 )
 
 func (s *Settings) Validate() (err error) {
 	err = checkIsOneOf(s.Upstream, "dot", "doh")
 	if err != nil {
-		return fmt.Errorf("upstream type is unknown: %w", err)
+		return fmt.Errorf("upstream type: %w", err)
 	}
 
 	err = checkListeningAddress(s.ListeningAddress)
 	if err != nil {
-		return fmt.Errorf("listening address is not valid: %w", err)
+		return fmt.Errorf("listening address: %w", err)
 	}
 
 	nameToValidate := map[string]func() error{
@@ -76,7 +76,8 @@ func (s *Settings) Validate() (err error) {
 
 	const minUpdaterPeriod = 60 * time.Second
 	if *s.UpdatePeriod != 0 && *s.UpdatePeriod < minUpdaterPeriod {
-		return fmt.Errorf("%w: %s", ErrUpdatePeriodTooShort, s.UpdatePeriod)
+		return fmt.Errorf("%w: %s must be at least %s", ErrUpdatePeriodTooShort,
+			s.UpdatePeriod, minUpdaterPeriod)
 	}
 
 	return nil

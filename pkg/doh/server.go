@@ -37,7 +37,7 @@ func NewServer(ctx context.Context, settings ServerSettings) (
 	var handler dns.Handler
 	handler, err = newDNSHandler(ctx, settings)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create DNS handler: %w", err)
+		return nil, fmt.Errorf("creating DNS handler: %w", err)
 	}
 
 	logMiddleware := logmiddleware.New(settings.LogMiddleware)

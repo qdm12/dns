@@ -37,7 +37,7 @@ func newDoHDial(settings ResolverSettings) (
 	}
 	dotClient, err := newDoTClient(DoTSettings)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create DoT client: %w", err)
+		return nil, fmt.Errorf("creating DoT client: %w", err)
 	}
 
 	// HTTP bodies buffer pool

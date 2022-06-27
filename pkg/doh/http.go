@@ -25,7 +25,7 @@ func newDoTClient(settings dot.ResolverSettings) (
 
 	resolver, err := dot.NewResolver(settings)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create DoT resolver: %w", err)
+		return nil, fmt.Errorf("creating DoT resolver: %w", err)
 	}
 
 	dialer := &net.Dialer{

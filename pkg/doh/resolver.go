@@ -12,7 +12,7 @@ func NewResolver(settings ResolverSettings) (
 
 	dial, err := newDoHDial(settings)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create DoH dial: %w", err)
+		return nil, fmt.Errorf("creating DoH dial: %w", err)
 	}
 
 	return &net.Resolver{

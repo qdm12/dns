@@ -43,5 +43,6 @@ func WaitForDNS(ctx context.Context, settings Settings) (err error) {
 			return ctx.Err()
 		}
 	}
-	return fmt.Errorf("%w: after %d tries: %s", ErrDNSMalfunction, settings.MaxTries, err)
+	return fmt.Errorf("%w: after %d tries: %s",
+		ErrDNSMalfunction, settings.MaxTries, err)
 }

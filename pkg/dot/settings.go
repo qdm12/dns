@@ -116,7 +116,7 @@ var (
 func (s ServerSettings) Validate() (err error) {
 	err = s.Resolver.Validate()
 	if err != nil {
-		return fmt.Errorf("failed validating resolver settings: %w", err)
+		return fmt.Errorf("resolver settings: %w", err)
 	}
 
 	const defaultUDPPort = 53
@@ -129,7 +129,7 @@ func (s ServerSettings) Validate() (err error) {
 
 	err = s.LogMiddleware.Validate()
 	if err != nil {
-		return fmt.Errorf("failed validating log middleware settings: %w", err)
+		return fmt.Errorf("log middleware settings: %w", err)
 	}
 
 	return nil
@@ -139,14 +139,14 @@ func (s ResolverSettings) Validate() (err error) {
 	for _, s := range s.DoTProviders {
 		_, err = provider.Parse(s)
 		if err != nil {
-			return fmt.Errorf("invalid DoT provider: %w", err)
+			return fmt.Errorf("DoT provider: %w", err)
 		}
 	}
 
 	for _, s := range s.DNSProviders {
 		_, err = provider.Parse(s)
 		if err != nil {
-			return fmt.Errorf("invalid plaintext DNS provider: %w", err)
+			return fmt.Errorf("plaintext DNS provider: %w", err)
 		}
 	}
 

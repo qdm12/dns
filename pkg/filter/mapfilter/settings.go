@@ -31,7 +31,7 @@ func (s *Settings) SetDefaults() {
 func (s Settings) Validate() (err error) {
 	err = s.Update.Validate()
 	if err != nil {
-		return fmt.Errorf("failed validating update settings: %w", err)
+		return fmt.Errorf("update settings: %w", err)
 	}
 
 	return nil

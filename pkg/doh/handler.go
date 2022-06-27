@@ -11,7 +11,7 @@ func newDNSHandler(ctx context.Context, settings ServerSettings) (
 	handler *server.Handler, err error) {
 	dial, err := newDoHDial(settings.Resolver)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create DoH dial: %w", err)
+		return nil, fmt.Errorf("creating DoH dial: %w", err)
 	}
 
 	exchange := server.NewExchange("DoH", dial, settings.Logger)

@@ -2,7 +2,6 @@
 package prometheus
 
 import (
-	"errors"
 	"fmt"
 
 	dotmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics"
@@ -20,10 +19,6 @@ type Metrics struct {
 	middlewareInterface
 }
 
-var (
-	ErrNewCounters = errors.New("failed creating counters metrics")
-)
-
 func New(settings Settings) (metrics *Metrics, err error) {
 	settings.SetDefaults()
 
@@ -31,7 +26,7 @@ func New(settings Settings) (metrics *Metrics, err error) {
 
 	metrics.counters, err = newCounters(settings.Prometheus)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", ErrNewCounters, err)
+		return nil, fmt.Errorf("creating counters: %w", err)
 	}
 
 	metrics.dotDialMetrics = settings.DoTDialMetrics

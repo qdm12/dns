@@ -50,7 +50,7 @@ func CacheMetrics(userSettings settings.Metrics, //nolint:ireturn
 		}
 		metrics, err = prommetrics.New(settings)
 		if err != nil {
-			return nil, fmt.Errorf("setup Prometheus metrics: %w", err)
+			return nil, fmt.Errorf("setting up Prometheus metrics: %w", err)
 		}
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", userSettings.Type))

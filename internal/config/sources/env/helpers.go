@@ -1,7 +1,6 @@
 package env
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -71,22 +70,18 @@ func lowerAndSplit(csv string) (values []string) {
 	return strings.Split(csv, ",")
 }
 
-var ErrIPStringNotValid = errors.New("IP address string is not valid")
-
 func parseIPStrings(ipStrings []string) (ips []netaddr.IP, err error) {
 	ips = make([]netaddr.IP, len(ipStrings))
 
 	for i, ipString := range ipStrings {
 		ips[i], err = netaddr.ParseIP(ipString)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", ErrIPStringNotValid, err)
+			return nil, fmt.Errorf("IP address string is not valid: %w", err)
 		}
 	}
 
 	return ips, nil
 }
-
-var ErrIPPrefixStringNotValid = errors.New("IP prefix CIDR string is not valid")
 
 func parseIPPrefixStrings(ipPrefixStrings []string) (ipPrefixes []netaddr.IPPrefix, err error) {
 	ipPrefixes = make([]netaddr.IPPrefix, len(ipPrefixStrings))
@@ -94,7 +89,7 @@ func parseIPPrefixStrings(ipPrefixStrings []string) (ipPrefixes []netaddr.IPPref
 	for i, ipPrefixString := range ipPrefixStrings {
 		ipPrefixes[i], err = netaddr.ParseIPPrefix(ipPrefixString)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", ErrIPPrefixStringNotValid, err)
+			return nil, fmt.Errorf("IP prefix CIDR string is not valid: %w", err)
 		}
 	}
 
