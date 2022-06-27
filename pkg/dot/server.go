@@ -2,7 +2,6 @@ package dot
 
 import (
 	"context"
-	"time"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/log"
@@ -52,10 +51,7 @@ func (s *Server) Run(ctx context.Context, stopped chan<- error) {
 	go func() { // shutdown goroutine
 		<-ctx.Done()
 
-		const graceTime = 100 * time.Millisecond
-		ctx, cancel := context.WithTimeout(context.Background(), graceTime)
-		defer cancel()
-		if err := s.dnsServer.ShutdownContext(ctx); err != nil { //nolint:contextcheck
+		if err := s.dnsServer.Shutdown(); err != nil {
 			s.logger.Error("DNS server shutdown error: " + err.Error())
 		}
 	}()
