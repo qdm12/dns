@@ -29,6 +29,8 @@ func NewServer(ctx context.Context, settings ServerSettings) (
 	logger := settings.Logger
 
 	if runtime.GOOS == "windows" {
+		// TODO remove when upgrading Go to Go 1.19
+		// Support was added in https://github.com/golang/go/commit/af88fb6502ceee973aaa118471c9d953a10a68e5
 		logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
 
