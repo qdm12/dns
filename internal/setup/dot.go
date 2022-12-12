@@ -1,7 +1,6 @@
 package setup
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
@@ -12,8 +11,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/middlewares/log"
 )
 
-func dotServer(serverCtx context.Context,
-	userSettings settings.Settings,
+func dotServer(userSettings settings.Settings,
 	logger Logger, logMiddlewareSettings log.Settings,
 	metrics DoTMetrics,
 	cache Cache, filter Filter) (server *dot.Server, err error) {
@@ -35,7 +33,7 @@ func dotServer(serverCtx context.Context,
 		Metrics:          metrics,
 	}
 
-	return dot.NewServer(serverCtx, settings)
+	return dot.NewServer(settings)
 }
 
 func dotMetrics(metricsType string, //nolint:ireturn

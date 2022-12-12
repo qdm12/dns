@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"sync"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/log"
@@ -11,62 +12,135 @@ import (
 	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 )
 
-var _ Runner = (*Server)(nil)
-
-type Runner interface {
-	Run(ctx context.Context, stopped chan<- error)
-}
-
 type Server struct {
+	// Dependencies injected
+	settings ServerSettings
+	logger   log.Logger
+
+	// Internal state
+	running      bool
+	runningMutex sync.Mutex
+	mutex        sync.Mutex // prevents concurrent calls to Start and Stop.
+
+	// Fields set in the Start method call,
+	// and shared so the Stop method can access them.
+	stop      chan struct{}
+	done      *sync.WaitGroup
 	dnsServer dns.Server
-	logger    log.Logger
 }
 
-func NewServer(ctx context.Context, settings ServerSettings) (
-	server *Server, err error) {
+func NewServer(settings ServerSettings) (server *Server, err error) {
 	settings.SetDefaults()
-
-	logger := settings.Logger
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("validating settings: %w", err)
+	}
 
 	if runtime.GOOS == "windows" {
 		// TODO remove when upgrading Go to Go 1.19
 		// Support was added in https://github.com/golang/go/commit/af88fb6502ceee973aaa118471c9d953a10a68e5
-		logger.Warn("The Windows host cannot use the DoH server as its DNS")
+		settings.Logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
-
-	var handler dns.Handler
-	handler, err = newDNSHandler(ctx, settings)
-	if err != nil {
-		return nil, fmt.Errorf("creating DNS handler: %w", err)
-	}
-
-	logMiddleware := logmiddleware.New(settings.LogMiddleware)
-	handler = logMiddleware(handler)
-
-	metricsMiddleware := metricsmiddleware.New(
-		metricsmiddleware.Settings{Metrics: settings.Metrics})
-	handler = metricsMiddleware(handler)
 
 	return &Server{
-		dnsServer: dns.Server{
-			Addr:    settings.ListeningAddress,
-			Net:     "udp",
-			Handler: handler,
-		},
-		logger: logger,
+		settings: settings,
+		logger:   settings.Logger, // shorthand
 	}, nil
 }
 
-func (s *Server) Run(ctx context.Context, stopped chan<- error) {
-	go func() { // shutdown goroutine
-		<-ctx.Done()
+func (s *Server) String() string {
+	return "dns over https server"
+}
 
-		err := s.dnsServer.Shutdown()
-		if err != nil {
-			s.logger.Error("DNS server shutdown error: " + err.Error())
+func (s *Server) Start() (runError <-chan error, startErr error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.runningMutex.Lock()
+	if s.running {
+		panic("DoH server already running")
+	}
+	s.runningMutex.Unlock()
+
+	handlerCtx, handlerCancel := context.WithCancel(context.Background())
+
+	var handler dns.Handler
+	var err error
+	handler, err = newDNSHandler(handlerCtx, s.settings)
+	if err != nil {
+		handlerCancel()
+		return nil, fmt.Errorf("creating DNS handler: %w", err)
+	}
+
+	logMiddleware := logmiddleware.New(s.settings.LogMiddleware)
+	handler = logMiddleware(handler)
+
+	metricsMiddlewareSettings := metricsmiddleware.Settings{Metrics: s.settings.Metrics}
+	metricsMiddleware := metricsmiddleware.New(metricsMiddlewareSettings)
+	handler = metricsMiddleware(handler)
+
+	s.stop = make(chan struct{})
+	s.done = new(sync.WaitGroup)
+	s.dnsServer = dns.Server{
+		Addr:    s.settings.ListeningAddress,
+		Net:     "udp",
+		Handler: handler,
+	}
+
+	var ready sync.WaitGroup
+	ready.Add(1)
+	s.done.Add(1)
+	go func() { // cancel the handler context on a stop signal
+		defer s.done.Done()
+		ready.Done()
+		<-s.stop
+		handlerCancel()
+	}()
+
+	runErrorCh := make(chan error)
+	ready.Add(1)
+	s.done.Add(1)
+	go func() {
+		defer s.done.Done()
+		s.settings.Logger.Info("DNS server listening on " + s.dnsServer.Addr)
+		ready.Done()
+		err := s.dnsServer.ListenAndServe()
+		s.runningMutex.Lock()
+		s.running = false
+		s.runningMutex.Unlock()
+
+		select {
+		case <-s.stop: // discard error
+		case runErrorCh <- err:
+			close(runErrorCh)
 		}
 	}()
 
-	s.logger.Info("DNS server listening on " + s.dnsServer.Addr)
-	stopped <- s.dnsServer.ListenAndServe()
+	ready.Wait()
+
+	s.runningMutex.Lock()
+	s.running = true
+	s.runningMutex.Unlock()
+
+	return runErrorCh, nil
+}
+
+func (s *Server) Stop() (err error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.runningMutex.Lock()
+	running := s.running //nolint:ifshort
+	s.runningMutex.Unlock()
+	if !running { // server crashed whilst we were stopping it
+		return nil
+	}
+
+	close(s.stop)
+
+	err = s.dnsServer.Shutdown()
+
+	s.done.Wait()
+
+	return err
 }

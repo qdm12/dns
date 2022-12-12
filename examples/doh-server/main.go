@@ -12,10 +12,11 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	defer stop()
+
 	logger := new(Logger)
-	server, err := doh.NewServer(ctx, doh.ServerSettings{
+	server, err := doh.NewServer(doh.ServerSettings{
 		Cache:  lru.New(lru.Settings{}),
 		Logger: logger,
 	})
@@ -23,16 +24,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	stopped := make(chan error)
-	go server.Run(ctx, stopped)
+	runError, err := server.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	select {
 	case <-ctx.Done():
 		logger.Warn("Caught an OS signal, terminating...")
-		<-stopped
-	case err := <-stopped:
+		err = server.Stop()
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	case err := <-runError:
 		logger.Warn("DoH server crashed: " + err.Error())
-		stop() // stop custom handling of OS signals
-		cancel()
 	}
 }
 

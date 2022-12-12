@@ -9,7 +9,6 @@ require (
 	github.com/prometheus/client_golang v1.10.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/qdm12/golibs v0.0.0-20210915134941-19815c6f95fe
-	github.com/qdm12/goshutdown v0.1.0
 	github.com/qdm12/gosplash v0.1.0
 	github.com/qdm12/gotree v0.0.0-20211231173558-a8b7dce9989e
 	github.com/qdm12/govalid v0.1.0

@@ -1,59 +1,22 @@
 package health
 
 import (
-	"context"
-	"net/http"
-	"time"
+	"github.com/qdm12/dns/v2/internal/httpserver"
 )
-
-var _ Runner = (*Server)(nil)
-
-type Runner interface {
-	Run(ctx context.Context, done chan<- struct{})
-}
 
 type Logger interface {
 	Info(s string)
-	Warn(s string)
-	Error(s string)
 }
 
-type Server struct {
-	address string
-	logger  Logger
-	handler http.Handler
-}
-
-func NewServer(address string, logger Logger, healthcheck func() error) *Server {
+func NewServer(address string, healthcheck func() error) (
+	server *httpserver.Server, err error) {
 	handler := newHandler(healthcheck)
-	return &Server{
-		address: address,
-		logger:  logger,
-		handler: handler,
+	settings := httpserver.Settings{
+		Name:    stringPtr("health"),
+		Address: &address,
+		Handler: handler,
 	}
+	return httpserver.New(settings)
 }
 
-func (s *Server) Run(ctx context.Context, done chan<- struct{}) {
-	defer close(done)
-	server := http.Server{Addr: s.address, Handler: s.handler}
-	go func() {
-		<-ctx.Done()
-		s.logger.Warn("shutting down (context canceled)")
-		defer s.logger.Warn("shut down")
-		const shutdownGraceDuration = 2 * time.Second
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGraceDuration)
-		defer cancel()
-		err := server.Shutdown(shutdownCtx)
-		if err != nil {
-			s.logger.Error("failed shutting down: " + err.Error())
-		}
-	}()
-	for ctx.Err() == nil {
-		s.logger.Info("listening on " + s.address)
-		err := server.ListenAndServe()
-		if err != nil && ctx.Err() == nil { // server crashed
-			s.logger.Error(err.Error())
-			s.logger.Info("restarting")
-		}
-	}
-}
+func stringPtr(s string) *string { return &s }
