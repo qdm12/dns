@@ -6,12 +6,13 @@ import (
 	"fmt"
 )
 
-type Erroer interface {
+type Logger interface {
+	Info(s string)
 	Error(s string)
 }
 
 type promLogger struct {
-	logger Erroer
+	logger Logger
 }
 
 func (p *promLogger) Println(v ...interface{}) {

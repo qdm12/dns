@@ -124,7 +124,8 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 
 	// Setup health server
 	const healthServerAddr = "127.0.0.1:9999"
-	healthServer, err := health.NewServer(healthServerAddr, health.IsHealthy)
+	healthServerLogger := logger.New(log.SetComponent("health server"))
+	healthServer, err := health.NewServer(healthServerAddr, healthServerLogger, health.IsHealthy)
 	if err != nil {
 		return fmt.Errorf("creating health server: %w", err)
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func New(settings settings.Prometheus, gatherer prometheus.Gatherer,
-	logger Erroer) (server *httpserver.Server, err error) {
+	logger Logger) (server *httpserver.Server, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {
@@ -24,6 +24,7 @@ func New(settings settings.Prometheus, gatherer prometheus.Gatherer,
 		Name:    stringPtr("prometheus"),
 		Handler: promhttp.HandlerFor(gatherer, handlerOptions),
 		Address: stringPtr(settings.ListeningAddress),
+		Logger:  logger,
 	}
 	return httpserver.New(httpSettings)
 }
