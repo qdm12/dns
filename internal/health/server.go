@@ -43,7 +43,7 @@ func (s *Server) Run(ctx context.Context, done chan<- struct{}) {
 		const shutdownGraceDuration = 2 * time.Second
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGraceDuration)
 		defer cancel()
-		err := server.Shutdown(shutdownCtx) //nolint:contextcheck
+		err := server.Shutdown(shutdownCtx)
 		if err != nil {
 			s.logger.Error("failed shutting down: " + err.Error())
 		}

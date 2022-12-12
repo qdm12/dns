@@ -189,7 +189,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 		logger.Error(err.Error())
 	}
 
-	return group.Shutdown(context.Background()) //nolint:contextcheck
+	return group.Shutdown(context.Background())
 }
 
 //nolint:cyclop,gocognit
