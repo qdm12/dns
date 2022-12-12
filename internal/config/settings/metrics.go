@@ -16,7 +16,7 @@ func (m *Metrics) setDefaults() {
 		m.Type = "prometheus"
 	}
 
-	m.Prometheus.setDefaults()
+	m.Prometheus.SetDefaults()
 }
 
 func (m *Metrics) validate() (err error) {
@@ -25,7 +25,7 @@ func (m *Metrics) validate() (err error) {
 		return fmt.Errorf("metrics type: %w", err)
 	}
 
-	err = m.Prometheus.validate()
+	err = m.Prometheus.Validate()
 	if err != nil {
 		return fmt.Errorf("prometheus metrics: %w", err)
 	}

@@ -33,13 +33,11 @@ func Test_Resolver(t *testing.T) {
 }
 
 func Test_Server(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	stopped := make(chan error)
-
-	server, err := NewServer(ctx, ServerSettings{})
+	server, err := NewServer(ServerSettings{})
 	require.NoError(t, err)
 
-	go server.Run(ctx, stopped)
+	runError, startErr := server.Start()
+	require.NoError(t, startErr)
 
 	resolver := &net.Resolver{
 		PreferGo:     true,
@@ -59,6 +57,7 @@ func Test_Server(t *testing.T) {
 		"google.com", "google.com", "github.com", "amazon.com", "cloudflare.com",
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
 	for i := 0; i < parallelResolutions; i++ {
 		hostnameIndex := i % len(hostnames)
 		hostname := hostnames[hostnameIndex]
@@ -75,7 +74,14 @@ func Test_Server(t *testing.T) {
 
 	endWg.Wait()
 	cancel()
-	err = <-stopped
+
+	select {
+	case err := <-runError:
+		assert.NoError(t, err)
+	default:
+	}
+
+	err = server.Stop()
 	assert.NoError(t, err)
 }
 
@@ -86,9 +92,6 @@ func Test_Server(t *testing.T) {
 
 func Test_Server_Mocks(t *testing.T) {
 	ctrl := gomock.NewController(t)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	stopped := make(chan error)
 
 	expectedRequestA := &dns.Msg{
 		MsgHdr: dns.MsgHdr{
@@ -213,7 +216,7 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().QuestionsInc("IN", "AAAA")
 	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
 
-	server, err := NewServer(ctx, ServerSettings{
+	server, err := NewServer(ServerSettings{
 		Cache:   cache,
 		Filter:  filter,
 		Logger:  logger,
@@ -224,7 +227,8 @@ func Test_Server_Mocks(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	go server.Run(ctx, stopped)
+	runError, startErr := server.Start()
+	require.NoError(t, startErr)
 
 	resolver := &net.Resolver{
 		PreferGo:     true,
@@ -236,12 +240,16 @@ func Test_Server_Mocks(t *testing.T) {
 	}
 
 	const hostname = "google.com"
-	ips, err := resolver.LookupIPAddr(ctx, hostname)
+	ips, err := resolver.LookupIPAddr(context.Background(), hostname)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, ips)
 	t.Log(ips)
 
-	cancel()
-	err = <-stopped
+	select {
+	case err := <-runError:
+		assert.NoError(t, err)
+	default:
+	}
+	err = server.Stop()
 	assert.NoError(t, err)
 }

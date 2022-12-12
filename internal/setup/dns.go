@@ -1,7 +1,6 @@
 package setup
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
@@ -9,14 +8,16 @@ import (
 	"github.com/qdm12/dns/v2/pkg/middlewares/log"
 )
 
-type Server interface {
-	Run(ctx context.Context, stopped chan<- error)
+type Service interface {
+	String() string
+	Start() (runError <-chan error, startErr error)
+	Stop() (err error)
 }
 
-func DNS(serverCtx context.Context, userSettings settings.Settings, //nolint:ireturn
+func DNS(userSettings settings.Settings, //nolint:ireturn
 	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegisterer,
 	logMiddlewareSettings log.Settings) (
-	server Server, err error) {
+	server Service, err error) {
 	commonPrometheus := prometheus.Settings{
 		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,
 		Registry: promRegistry,
@@ -38,7 +39,7 @@ func DNS(serverCtx context.Context, userSettings settings.Settings, //nolint:ire
 			return nil, fmt.Errorf("DoT metrics: %w", err)
 		}
 
-		return dotServer(serverCtx, userSettings, logger,
+		return dotServer(userSettings, logger,
 			logMiddlewareSettings, dotMetrics, cache, filter)
 	case "doh":
 		dohMetrics, err := dohMetrics(metricsType,
@@ -47,7 +48,7 @@ func DNS(serverCtx context.Context, userSettings settings.Settings, //nolint:ire
 			return nil, fmt.Errorf("DoH metrics: %w", err)
 		}
 
-		return dohServer(serverCtx, userSettings, logger,
+		return dohServer(userSettings, logger,
 			logMiddlewareSettings, dohMetrics, cache, filter)
 	default:
 		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))

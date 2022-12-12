@@ -1,8 +1,7 @@
-// Package metrics sets up metrics and patch the given settings
+// Package metrics sets up metrics and creates a metrics service.
 package metrics
 
 import (
-	"context"
 	"fmt"
 
 	dto "github.com/prometheus/client_model/go"
@@ -11,10 +10,6 @@ import (
 	"github.com/qdm12/dns/v2/internal/metrics/prometheus"
 	"github.com/qdm12/log"
 )
-
-type Runner interface {
-	Run(ctx context.Context, done chan<- struct{})
-}
 
 type Logger interface {
 	New(options ...log.Option) *log.Logger
@@ -28,15 +23,21 @@ type PrometheusGatherer interface {
 	Gather() ([]*dto.MetricFamily, error)
 }
 
-func Setup(settings settings.Metrics, //nolint:ireturn
-	parentLogger Logger,
-	prometheusGatherer PrometheusGatherer) (runner Runner) {
+type Service interface {
+	String() string
+	Start() (runError <-chan error, startErr error)
+	Stop() (err error)
+}
+
+func New(settings settings.Metrics, //nolint:ireturn
+	parentLogger Logger, prometheusGatherer PrometheusGatherer) (
+	service Service, err error) {
 	switch settings.Type {
 	case "noop":
-		return noop.Setup()
+		return noop.New()
 	case "prometheus":
 		logger := parentLogger.New(log.SetComponent("prometheus server"))
-		return prometheus.Setup(settings.Prometheus, prometheusGatherer, logger)
+		return prometheus.New(settings.Prometheus, prometheusGatherer, logger)
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", settings.Type))
 	}

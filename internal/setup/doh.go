@@ -1,7 +1,6 @@
 package setup
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
@@ -12,8 +11,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/middlewares/log"
 )
 
-func dohServer(serverCtx context.Context,
-	userSettings settings.Settings,
+func dohServer(userSettings settings.Settings,
 	logger Logger, logMiddlewareSettings log.Settings,
 	metrics DoHMetrics, cache Cache, filter Filter) (
 	server *doh.Server, err error) {
@@ -39,7 +37,7 @@ func dohServer(serverCtx context.Context,
 		Metrics:          metrics,
 	}
 
-	return doh.NewServer(serverCtx, settings)
+	return doh.NewServer(settings)
 }
 
 func dohMetrics(metricsType string, //nolint:ireturn

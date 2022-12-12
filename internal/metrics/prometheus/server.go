@@ -1,47 +1,31 @@
 package prometheus
 
 import (
-	"context"
-	"net/http"
-	"time"
+	"fmt"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/httpserver"
 )
 
-type Server struct {
-	address string
-	logger  Logger
-	handler http.Handler
-}
-
-func (s *Server) Run(ctx context.Context, done chan<- struct{}) {
-	defer close(done)
-
-	waitCtx, waitCancel := context.WithCancel(context.Background())
-	defer waitCancel()
-
-	server := http.Server{
-		Addr:    s.address,
-		Handler: s.handler,
+func New(settings settings.Prometheus, gatherer prometheus.Gatherer,
+	logger Erroer) (server *httpserver.Server, err error) {
+	settings.SetDefaults()
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("validating settings: %w", err)
 	}
 
-	go func() {
-		select {
-		case <-ctx.Done():
-		case <-waitCtx.Done():
-			return
-		}
-
-		const shutdownGraceDuration = 2 * time.Second
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownGraceDuration)
-		defer cancel()
-		err := server.Shutdown(shutdownCtx)
-		if err != nil {
-			s.logger.Error("failed shutting down: " + err.Error())
-		}
-	}()
-
-	s.logger.Info("listening on " + s.address)
-	err := server.ListenAndServe()
-	if err != nil && ctx.Err() == nil {
-		s.logger.Error(err.Error())
+	handlerOptions := promhttp.HandlerOpts{
+		ErrorLog: &promLogger{logger: logger},
 	}
+	httpSettings := httpserver.Settings{
+		Name:    stringPtr("prometheus"),
+		Handler: promhttp.HandlerFor(gatherer, handlerOptions),
+		Address: stringPtr(settings.ListeningAddress),
+	}
+	return httpserver.New(httpSettings)
 }
+
+func stringPtr(s string) *string { return &s }

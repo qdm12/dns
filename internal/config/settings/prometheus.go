@@ -12,7 +12,7 @@ type Prometheus struct {
 	Subsystem        *string
 }
 
-func (p *Prometheus) setDefaults() {
+func (p *Prometheus) SetDefaults() {
 	if p.ListeningAddress == "" {
 		p.ListeningAddress = ":9090"
 	}
@@ -22,7 +22,7 @@ func (p *Prometheus) setDefaults() {
 	}
 }
 
-func (p *Prometheus) validate() (err error) {
+func (p *Prometheus) Validate() (err error) {
 	err = checkListeningAddress(p.ListeningAddress)
 	if err != nil {
 		return fmt.Errorf("listening address: %w", err)
