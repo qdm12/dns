@@ -73,7 +73,7 @@ func Test_Server_GetAddress(t *testing.T) {
 		"server running": {
 			server: &Server{
 				running: true,
-				server: http.Server{
+				server: http.Server{ //nolint:gosec
 					Addr: "x",
 				},
 			},

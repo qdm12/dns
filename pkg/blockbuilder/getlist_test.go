@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -56,7 +56,7 @@ func Test_getList(t *testing.T) {
 					return &http.Response{
 						StatusCode: tc.status,
 						Status:     http.StatusText(tc.status),
-						Body:       ioutil.NopCloser(bytes.NewReader(tc.content)),
+						Body:       io.NopCloser(bytes.NewReader(tc.content)),
 					}, nil
 				}),
 			}

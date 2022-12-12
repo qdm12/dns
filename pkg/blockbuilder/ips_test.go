@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sync"
 	"testing"
@@ -149,7 +149,7 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 					}
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewReader(body)),
+						Body:       io.NopCloser(bytes.NewReader(body)),
 					}, nil
 				}),
 			}

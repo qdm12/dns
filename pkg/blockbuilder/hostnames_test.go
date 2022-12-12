@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sync"
 	"testing"
@@ -150,7 +150,7 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 					}
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewReader(body)),
+						Body:       io.NopCloser(bytes.NewReader(body)),
 					}, nil
 				}),
 			}

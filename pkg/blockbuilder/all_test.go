@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sync"
 	"testing"
@@ -248,7 +248,7 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 					}
 					return &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       ioutil.NopCloser(bytes.NewReader(body)),
+						Body:       io.NopCloser(bytes.NewReader(body)),
 					}, nil
 				}),
 			}

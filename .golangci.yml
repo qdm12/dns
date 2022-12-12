@@ -68,7 +68,6 @@ linters:
     - goprintffuncname
     - gosec
     - grouper
-    - ifshort
     - importas
     - ireturn
     - lll
