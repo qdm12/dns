@@ -131,6 +131,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	}
 
 	// Setup DNS loop
+	dnsLogger := logger.New(log.SetComponent("DNS server loop"))
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
 	blockBuilder := setup.BuildBlockBuilder(settings.Block, client)
@@ -140,7 +141,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 		return fmt.Errorf("cache metrics: %w", err)
 	}
 	cache := setup.BuildCache(settings.Cache, cacheMetrics) // share the same cache across DNS server restarts
-	dnsLoop, err := dns.New(settings, logger, blockBuilder, cache, prometheusRegistry)
+	dnsLoop, err := dns.New(settings, dnsLogger, blockBuilder, cache, prometheusRegistry)
 	if err != nil {
 		return fmt.Errorf("creating DNS loop: %w", err)
 	}
@@ -151,10 +152,12 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 		return fmt.Errorf("creating metrics server: %w", err)
 	}
 
+	hooksLogger := logger.New(log.SetComponent("services"))
+	hooks := hooks.NewWithLog(hooksLogger)
 	sequenceSettings := services.SequenceSettings{
 		ServicesStart: []services.Service{dnsLoop, metricsServer, healthServer},
 		ServicesStop:  []services.Service{metricsServer, healthServer, dnsLoop},
-		Hooks:         hooks.NewWithLog(logger),
+		Hooks:         hooks,
 	}
 	sequence, err := services.NewSequence(sequenceSettings)
 	if err != nil {
