@@ -36,6 +36,7 @@ issues:
 
 linters:
   enable:
+    - asasalint
     - asciicheck
     - bidichk
     - bodyclose
@@ -49,6 +50,7 @@ linters:
     - errchkjson
     - errname
     - errorlint
+    - execinquery
     - exhaustive
     - exportloopref
     - forcetypeassert
@@ -69,6 +71,7 @@ linters:
     - gosec
     - grouper
     - importas
+    - interfacebloat
     - ireturn
     - lll
     - maintidx
@@ -80,10 +83,11 @@ linters:
     - nilnil
     - noctx
     - nolintlint
+    - nosprintfhostport
     - prealloc
     - predeclared
-    - predeclared
     - promlinter
+    - reassign
     - revive
     - rowserrcheck
     - sqlclosecheck
@@ -92,10 +96,9 @@ linters:
     - tparallel
     - unconvert
     - unparam
-    # - varnamelen
+    - usestdlibvars
     - wastedassign
     - whitespace
-    # - wrapcheck
 
 run:
   skip-dirs:
