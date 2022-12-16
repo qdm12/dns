@@ -117,12 +117,10 @@ func (s *Sequence) Start() (runError <-chan error, startErr error) {
 // channel, registers the crashed service of the sequence,
 // stops other running services and forwards the error
 // to the output channel and finally closes this channel.
-// If the stop channel triggers, the function returns
-// and closes the output channel.
+// If the stop channel triggers, the function returns.
 func (s *Sequence) interceptRunError(ready chan<- struct{},
 	input <-chan serviceError, output chan<- error) {
 	defer close(s.interceptDone)
-	defer close(output)
 	close(ready)
 
 	select {
@@ -135,6 +133,7 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 		s.hooks.OnCrash(serviceErr.serviceName, serviceErr.err)
 		_ = s.stop()
 		output <- &serviceErr
+		close(output)
 	}
 }
 
@@ -145,7 +144,6 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 // Only the first non nil service stop error encountered
 // is returned, but the hooks can be used to process each
 // error returned.
-// It closes the `runError` channel returned by `Start`.
 // If the group has already been stopped, the function panics.
 func (s *Sequence) Stop() (err error) {
 	s.startStopMutex.Lock()

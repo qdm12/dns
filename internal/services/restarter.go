@@ -91,7 +91,6 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 func (r *Restarter) interceptRunError(ready chan<- struct{},
 	serviceName string, input <-chan error, output chan<- error) {
 	defer close(r.interceptDone)
-	defer close(output)
 	close(ready)
 
 	for {
@@ -112,6 +111,7 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 			if startErr != nil {
 				r.running = false
 				output <- fmt.Errorf("restarting after crash: %w", startErr)
+				close(output)
 				r.startedMutex.Unlock()
 				return
 			}
@@ -122,7 +122,6 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 
 // Stop stops the underlying service and the internal
 // run error restart-watcher goroutine.
-// It closes the `runError` channel returned by `Start`.
 // If the group has already been stopped, the function panics.
 func (r *Restarter) Stop() (err error) {
 	// Prevent concurrent Stop and Start calls.

@@ -154,7 +154,6 @@ func startGroupedServiceAsync(service Starter, serviceString string,
 func (g *Group) interceptRunError(ready chan<- struct{},
 	input <-chan serviceError, output chan<- error) {
 	defer close(g.interceptDone)
-	defer close(output)
 	close(ready)
 
 	select {
@@ -166,6 +165,7 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 		delete(g.runningServices, serviceErr.serviceName)
 		_ = g.stop()
 		output <- serviceErr
+		close(output)
 	}
 }
 
@@ -175,7 +175,6 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 // Only the first non nil service stop error encountered
 // is returned, but the hooks can be used to process each
 // error returned.
-// It closes the `runError` channel returned by `Start`.
 // If the group has already been stopped, the function panics.
 func (g *Group) Stop() (err error) {
 	g.startStopMutex.Lock()
