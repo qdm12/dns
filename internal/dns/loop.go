@@ -230,11 +230,6 @@ func (l *Loop) runOnce(ctx context.Context, downloadBlockFiles bool,
 
 func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint:ireturn
 	dnsServer Service, err error) {
-	logMiddlewareSettings, err := setup.MiddlewareLogger(l.settings.MiddlewareLog)
-	if err != nil {
-		return nil, fmt.Errorf("setting up middleware logger: %w", err)
-	}
-
 	filterMetrics, err := setup.FilterMetrics(l.settings.Metrics, l.prometheusRegistry)
 	if err != nil {
 		return nil, fmt.Errorf("setting up filter metrics: %w", err)
@@ -261,7 +256,7 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 	filter := mapfilter.New(filterSettings)
 
 	server, err := setup.DNS(l.settings, l.cache,
-		filter, l.logger, l.prometheusRegistry, logMiddlewareSettings)
+		filter, l.logger, l.prometheusRegistry)
 	if err != nil {
 		return nil, fmt.Errorf("setting up DNS server: %w", err)
 	}

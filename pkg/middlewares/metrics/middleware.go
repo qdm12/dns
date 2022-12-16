@@ -9,14 +9,22 @@ import (
 	"github.com/qdm12/dns/v2/pkg/middlewares/stateful"
 )
 
-func New(settings Settings) func(dns.Handler) dns.Handler {
-	settings.SetDefaults()
+type Middleware struct {
+	metrics Interface
+}
 
-	return func(next dns.Handler) dns.Handler {
-		return &handler{
-			next:    next,
-			metrics: settings.Metrics,
-		}
+func New(settings Settings) *Middleware {
+	settings.SetDefaults()
+	return &Middleware{
+		metrics: settings.Metrics,
+	}
+}
+
+// Wrap wraps the DNS handler with the middleware.
+func (m *Middleware) Wrap(next dns.Handler) dns.Handler { //nolint:ireturn
+	return &handler{
+		next:    next,
+		metrics: m.metrics,
 	}
 }
 

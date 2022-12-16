@@ -7,8 +7,6 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/log"
-	logmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/log"
-	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 )
 
 type Server struct {
@@ -65,12 +63,9 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 		return nil, fmt.Errorf("creating DNS handler: %w", err)
 	}
 
-	logMiddleware := logmiddleware.New(s.settings.LogMiddleware)
-	handler = logMiddleware(handler)
-
-	metricsMiddlewareSettings := metricsmiddleware.Settings{Metrics: s.settings.Metrics}
-	metricsMiddleware := metricsmiddleware.New(metricsMiddlewareSettings)
-	handler = metricsMiddleware(handler)
+	for _, middleware := range s.settings.Middlewares {
+		handler = middleware.Wrap(handler)
+	}
 
 	s.stop = make(chan struct{})
 	s.done = new(sync.WaitGroup)

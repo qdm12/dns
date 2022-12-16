@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/mockhelp"
+	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -216,11 +217,17 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().QuestionsInc("IN", "AAAA")
 	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
 
+	metricsMiddleware := metricsmiddleware.New(
+		metricsmiddleware.Settings{
+			Metrics: metrics,
+		},
+	)
+
 	server, err := NewServer(ServerSettings{
-		Cache:   cache,
-		Filter:  filter,
-		Logger:  logger,
-		Metrics: metrics,
+		Cache:       cache,
+		Filter:      filter,
+		Logger:      logger,
+		Middlewares: []Middleware{metricsMiddleware},
 		Resolver: ResolverSettings{
 			Metrics: metrics,
 		},

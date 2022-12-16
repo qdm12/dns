@@ -4,22 +4,32 @@ import (
 	"fmt"
 
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 	noopmetrics "github.com/qdm12/dns/v2/pkg/middlewares/metrics/noop"
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/middlewares/metrics/prometheus"
 )
 
-func middlewareMetrics(metricsType string, //nolint:ireturn
+func middlewareMetrics(metricsType string,
 	commonPrometheus prometheus.Settings) (
-	metrics MiddlewareMetrics, err error) {
+	middleware *metricsmiddleware.Middleware, err error) {
+	var metrics metricsmiddleware.Interface
 	switch metricsType {
 	case noopString:
-		return noopmetrics.New(), nil
+		metrics = noopmetrics.New()
 	case prometheusString:
-		settings := prometheusmetrics.Settings{
+		promSettings := prometheusmetrics.Settings{
 			Prometheus: commonPrometheus,
 		}
-		return prometheusmetrics.New(settings)
+		metrics, err = prometheusmetrics.New(promSettings)
+		if err != nil {
+			return nil, fmt.Errorf("prometheus metrics: %w", err)
+		}
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", metricsType))
 	}
+
+	settings := metricsmiddleware.Settings{
+		Metrics: metrics,
+	}
+	return metricsmiddleware.New(settings), nil
 }

@@ -8,12 +8,11 @@ import (
 	noopmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
-	"github.com/qdm12/dns/v2/pkg/middlewares/log"
 )
 
 func dotServer(userSettings settings.Settings,
-	logger Logger, logMiddlewareSettings log.Settings,
-	metrics DoTMetrics,
+	middlewares []Middleware,
+	logger Logger, metrics DoTMetrics,
 	cache Cache, filter Filter) (server *dot.Server, err error) {
 	resolverSettings := dot.ResolverSettings{
 		DoTProviders: userSettings.DoT.DoTProviders,
@@ -26,30 +25,35 @@ func dotServer(userSettings settings.Settings,
 	settings := dot.ServerSettings{
 		Resolver:         resolverSettings,
 		ListeningAddress: userSettings.ListeningAddress,
-		LogMiddleware:    logMiddlewareSettings,
+		Middlewares:      toDoTMiddlewares(middlewares),
 		Cache:            cache,
 		Filter:           filter,
 		Logger:           logger,
-		Metrics:          metrics,
 	}
 
 	return dot.NewServer(settings)
 }
 
 func dotMetrics(metricsType string, //nolint:ireturn
-	commonPrometheus prometheus.Settings,
-	middleware MiddlewareMetrics) (
+	commonPrometheus prometheus.Settings) (
 	metrics DoTMetrics, err error) {
 	switch metricsType {
 	case noopString:
 		return noopmetrics.New(), nil
 	case prometheusString:
 		prometheusSettings := prometheusmetrics.Settings{
-			Prometheus:        commonPrometheus,
-			MiddlewareMetrics: middleware,
+			Prometheus: commonPrometheus,
 		}
 		return prometheusmetrics.New(prometheusSettings)
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", metricsType))
 	}
+}
+
+func toDoTMiddlewares(middlewares []Middleware) (dohMiddlewres []dot.Middleware) {
+	dohMiddlewres = make([]dot.Middleware, len(middlewares))
+	for i, middleware := range middlewares {
+		dohMiddlewres[i] = dot.Middleware(middleware)
+	}
+	return dohMiddlewres
 }

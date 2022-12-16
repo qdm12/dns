@@ -9,8 +9,6 @@ import (
 	metrics "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
 	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
 	log "github.com/qdm12/dns/v2/pkg/log/noop"
-	middlewarelog "github.com/qdm12/dns/v2/pkg/middlewares/log"
-	middlewarelogger "github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,10 +22,10 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 	picker := picker.New()
 
 	s := ServerSettings{
-		Cache:   cache,
-		Filter:  filter,
-		Metrics: metrics,
-		Logger:  logger,
+		Cache:       cache,
+		Filter:      filter,
+		Middlewares: []Middleware{},
+		Logger:      logger,
 		Resolver: ResolverSettings{
 			Warner:  logger,
 			Metrics: metrics,
@@ -43,13 +41,10 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 	assert.GreaterOrEqual(t, int64(s.Resolver.Timeout), int64(time.Millisecond))
 
 	expectedSettings := ServerSettings{
-		Cache:   cache,
-		Filter:  filter,
-		Metrics: metrics,
-		Logger:  logger,
-		LogMiddleware: middlewarelog.Settings{
-			Logger: middlewarelogger.New(),
-		},
+		Cache:       cache,
+		Filter:      filter,
+		Middlewares: []Middleware{},
+		Logger:      logger,
 		Resolver: ResolverSettings{
 			DoHProviders: []string{"cloudflare"},
 			SelfDNS: SelfDNS{

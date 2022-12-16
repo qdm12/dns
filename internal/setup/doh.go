@@ -8,12 +8,12 @@ import (
 	noopmetrics "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/doh/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
-	"github.com/qdm12/dns/v2/pkg/middlewares/log"
 )
 
 func dohServer(userSettings settings.Settings,
-	logger Logger, logMiddlewareSettings log.Settings,
-	metrics DoHMetrics, cache Cache, filter Filter) (
+	middlewares []Middleware,
+	logger Logger, metrics DoHMetrics,
+	cache Cache, filter Filter) (
 	server *doh.Server, err error) {
 	resolverSettings := doh.ResolverSettings{
 		DoHProviders: userSettings.DoH.DoHProviders,
@@ -30,37 +30,41 @@ func dohServer(userSettings settings.Settings,
 	settings := doh.ServerSettings{
 		Resolver:         resolverSettings,
 		ListeningAddress: userSettings.ListeningAddress,
-		LogMiddleware:    logMiddlewareSettings,
+		Middlewares:      toDoHMiddlewares(middlewares),
 		Cache:            cache,
 		Filter:           filter,
 		Logger:           logger,
-		Metrics:          metrics,
 	}
 
 	return doh.NewServer(settings)
 }
 
 func dohMetrics(metricsType string, //nolint:ireturn
-	commonPrometheus prometheus.Settings,
-	middleware MiddlewareMetrics) (
+	commonPrometheus prometheus.Settings) (
 	metrics DoHMetrics, err error) {
 	switch metricsType {
 	case noopString:
 		return noopmetrics.New(), nil
 	case prometheusString:
-		dotDialMetrics, err := dotMetrics(metricsType,
-			commonPrometheus, middleware)
+		dotDialMetrics, err := dotMetrics(metricsType, commonPrometheus)
 		if err != nil {
 			return nil, fmt.Errorf("DoT metrics: %w", err)
 		}
 
 		prometheusSettings := prometheusmetrics.Settings{
-			Prometheus:        commonPrometheus,
-			DoTDialMetrics:    dotDialMetrics,
-			MiddlewareMetrics: middleware,
+			Prometheus:     commonPrometheus,
+			DoTDialMetrics: dotDialMetrics,
 		}
 		return prometheusmetrics.New(prometheusSettings)
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", metricsType))
 	}
+}
+
+func toDoHMiddlewares(middlewares []Middleware) (dohMiddlewres []doh.Middleware) {
+	dohMiddlewres = make([]doh.Middleware, len(middlewares))
+	for i, middleware := range middlewares {
+		dohMiddlewres[i] = doh.Middleware(middleware)
+	}
+	return dohMiddlewres
 }

@@ -11,36 +11,39 @@ import (
 	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
 )
 
-func MiddlewareLogger(settings settings.MiddlewareLog) (logMiddlewareSettings log.Settings, err error) {
-	if !*settings.Enabled {
-		return log.Settings{
+func logMiddleware(userSettings settings.MiddlewareLog) (middleware *log.Middleware, err error) {
+	if !*userSettings.Enabled {
+		settings := log.Settings{
 			Logger: noop.New(),
-		}, nil
+		}
+		return log.New(settings), nil
 	}
 
 	const dirPerm = os.FileMode(0744)
-	err = os.MkdirAll(settings.DirPath, dirPerm)
+	err = os.MkdirAll(userSettings.DirPath, dirPerm)
 	if err != nil {
-		return logMiddlewareSettings, fmt.Errorf("creating log directory: %w", err)
+		return nil, fmt.Errorf("creating log directory: %w", err)
 	}
 
 	// TODO rotate log files
 	const perm = os.FileMode(0644)
-	filePath := filepath.Join(settings.DirPath, "dns.log")
+	filePath := filepath.Join(userSettings.DirPath, "dns.log")
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, perm)
 	if err != nil {
-		return logMiddlewareSettings, err
+		return nil, err
 	}
 
 	middlewareLoggerSettings := console.Settings{
 		Writer:       file,
-		LogRequests:  boolPtr(*settings.LogRequests),
-		LogResponses: boolPtr(*settings.LogResponses),
+		LogRequests:  boolPtr(*userSettings.LogRequests),
+		LogResponses: boolPtr(*userSettings.LogResponses),
 	}
 	middlewareLogger := console.New(middlewareLoggerSettings)
-	return log.Settings{
+	settings := log.Settings{
 		Logger: middlewareLogger,
-	}, nil
+	}
+
+	return log.New(settings), nil
 }
 
 func boolPtr(b bool) *bool { return &b }

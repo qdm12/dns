@@ -4,8 +4,6 @@ import (
 	dot "github.com/qdm12/dns/v2/pkg/dot/metrics"
 	dotnoop "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
 	prom "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
-	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
-	middlewarenoop "github.com/qdm12/dns/v2/pkg/middlewares/metrics/noop"
 )
 
 type Settings struct {
@@ -14,9 +12,6 @@ type Settings struct {
 	// DoTDialMetrics is the metrics interface for the
 	// DoT dialer. It defaults to a No-op implementation.
 	DoTDialMetrics dot.DialMetrics
-	// MiddlewareMetrics is the metrics interface for the
-	// DNS middleware. It defaults to a No-op implementation.
-	MiddlewareMetrics middleware.Interface
 }
 
 func (s *Settings) SetDefaults() {
@@ -24,10 +19,6 @@ func (s *Settings) SetDefaults() {
 
 	if s.DoTDialMetrics == nil {
 		s.DoTDialMetrics = dotnoop.New()
-	}
-
-	if s.MiddlewareMetrics == nil {
-		s.MiddlewareMetrics = middlewarenoop.New()
 	}
 }
 

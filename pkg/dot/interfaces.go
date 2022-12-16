@@ -3,8 +3,13 @@ package dot
 import (
 	"net"
 
+	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/provider"
 )
+
+type Middleware interface {
+	Wrap(next dns.Handler) dns.Handler
+}
 
 type Picker interface {
 	IP(ips []net.IP) net.IP

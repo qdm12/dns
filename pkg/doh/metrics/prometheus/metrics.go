@@ -5,18 +5,15 @@ import (
 	"fmt"
 
 	dotmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics"
-	middleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 )
 
 type (
-	dotDialMetrics      = dotmetrics.DialMetrics
-	middlewareInterface = middleware.Interface
+	dotDialMetrics = dotmetrics.DialMetrics
 )
 
 type Metrics struct {
 	*counters
 	dotDialMetrics
-	middlewareInterface
 }
 
 func New(settings Settings) (metrics *Metrics, err error) {
@@ -30,7 +27,6 @@ func New(settings Settings) (metrics *Metrics, err error) {
 	}
 
 	metrics.dotDialMetrics = settings.DoTDialMetrics
-	metrics.middlewareInterface = settings.MiddlewareMetrics
 
 	return metrics, nil
 }

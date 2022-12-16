@@ -32,7 +32,7 @@ func Test_New(t *testing.T) {
 	middleware := New(settings)
 
 	next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {})
-	handler := middleware(next)
+	handler := middleware.Wrap(next)
 
 	writer := NewMockResponseWriter(ctrl)
 	writer.EXPECT().RemoteAddr().Return(remoteAddress)

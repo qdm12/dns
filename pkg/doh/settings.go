@@ -16,7 +16,6 @@ import (
 	filternoop "github.com/qdm12/dns/v2/pkg/filter/noop"
 	"github.com/qdm12/dns/v2/pkg/log"
 	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
-	logmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/log"
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gotree"
 	"github.com/qdm12/govalid/address"
@@ -28,7 +27,10 @@ import (
 type ServerSettings struct {
 	Resolver         ResolverSettings
 	ListeningAddress string
-	LogMiddleware    logmiddleware.Settings
+	// Middlewares is a list of middlewares to use.
+	// The first one is the first wrapper, and the last one
+	// is the last wrapper of the handlers in the chain.
+	Middlewares []Middleware
 	// Cache is the cache to use in the server.
 	// It defaults to a No-Op cache implementation with
 	// a No-Op cache metrics implementation.
@@ -39,9 +41,6 @@ type ServerSettings struct {
 	// Logger is the logger to log information.
 	// It defaults to a No-Op logger implementation.
 	Logger log.Logger
-	// Metrics is the metrics interface to record metric data.
-	// It defaults to a No-Op metrics implementation.
-	Metrics metrics.Interface
 }
 
 type ResolverSettings struct {
@@ -71,7 +70,6 @@ type SelfDNS struct {
 
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
-	s.LogMiddleware.SetDefaults()
 	s.ListeningAddress = defaults.String(s.ListeningAddress, ":53")
 
 	if s.Filter == nil {
@@ -80,10 +78,6 @@ func (s *ServerSettings) SetDefaults() {
 
 	if s.Logger == nil {
 		s.Logger = lognoop.New()
-	}
-
-	if s.Metrics == nil {
-		s.Metrics = metricsnoop.New()
 	}
 
 	if s.Cache == nil {
@@ -142,11 +136,6 @@ func (s ServerSettings) Validate() (err error) {
 			os.Getuid(), port.OptionListeningPortPrivilegedAllowed(defaultUDPPort)))
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, s.ListeningAddress)
-	}
-
-	err = s.LogMiddleware.Validate()
-	if err != nil {
-		return fmt.Errorf("log middleware settings: %w", err)
 	}
 
 	return nil
