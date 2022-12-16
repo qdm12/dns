@@ -38,7 +38,7 @@ func Test_NewGroup(t *testing.T) {
 				name:            "name",
 				services:        []Service{dummyService},
 				hooks:           hooks.NewWithLog(nil),
-				mutex:           &sync.Mutex{},
+				startStopMutex:  &sync.Mutex{},
 				internalMutex:   &sync.Mutex{},
 				runningServices: map[string]struct{}{},
 			},
@@ -101,10 +101,10 @@ func Test_Group_Start(t *testing.T) {
 		t.Parallel()
 
 		group := &Group{
-			name:          "name",
-			running:       true,
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
+			name:           "name",
+			running:        true,
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
 		}
 
 		assert.PanicsWithValue(t,
@@ -336,13 +336,13 @@ func Test_Group_interceptRunError(t *testing.T) {
 				"A": {},
 				"B": {},
 			},
-			services:      []Service{serviceA, serviceB},
-			fanIn:         fanIn,
-			hooks:         hooks,
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
-			interceptStop: make(chan struct{}),
-			interceptDone: make(chan struct{}),
+			services:       []Service{serviceA, serviceB},
+			fanIn:          fanIn,
+			hooks:          hooks,
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
+			interceptStop:  make(chan struct{}),
+			interceptDone:  make(chan struct{}),
 		}
 
 		ready := make(chan struct{})
@@ -375,7 +375,7 @@ func Test_Group_interceptRunError(t *testing.T) {
 			services:        []Service{serviceA, serviceB},
 			fanIn:           fanIn,
 			hooks:           hooks,
-			mutex:           &sync.Mutex{},
+			startStopMutex:  &sync.Mutex{},
 			internalMutex:   &sync.Mutex{},
 		}
 		group.interceptStop = nil
@@ -391,9 +391,9 @@ func Test_Group_Stop(t *testing.T) {
 		t.Parallel()
 
 		group := Group{
-			name:          "name",
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
+			name:           "name",
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
 		}
 		assert.PanicsWithValue(t, "group name already stopped", func() {
 			_ = group.Stop()
@@ -418,7 +418,7 @@ func Test_Group_Stop(t *testing.T) {
 			running:         true,
 			services:        []Service{serviceA},
 			fanIn:           fanIn,
-			mutex:           &sync.Mutex{},
+			startStopMutex:  &sync.Mutex{},
 			internalMutex:   &sync.Mutex{},
 			hooks:           hooks,
 			interceptStop:   make(chan struct{}),
@@ -441,11 +441,11 @@ func Test_Group_Stop(t *testing.T) {
 		t.Parallel()
 
 		group := Group{
-			running:       true,
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
-			interceptStop: make(chan struct{}),
-			interceptDone: make(chan struct{}),
+			running:        true,
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
+			interceptStop:  make(chan struct{}),
+			interceptDone:  make(chan struct{}),
 		}
 
 		// Simulate interceptRunError handling a service crash

@@ -12,7 +12,7 @@ type Group struct {
 	running         bool
 	services        []Service
 	hooks           Hooks
-	mutex           *sync.Mutex
+	startStopMutex  *sync.Mutex
 	internalMutex   *sync.Mutex
 	fanIn           *errorsFanIn
 	runningServices map[string]struct{}
@@ -35,7 +35,7 @@ func NewGroup(settings GroupSettings) (group *Group, err error) {
 		name:            settings.Name,
 		services:        services,
 		hooks:           settings.Hooks,
-		mutex:           &sync.Mutex{},
+		startStopMutex:  &sync.Mutex{},
 		internalMutex:   &sync.Mutex{},
 		runningServices: make(map[string]struct{}),
 	}, nil
@@ -63,8 +63,8 @@ func (g *Group) String() string {
 // If the group of services is already started and not
 // stopped previously, the function panics.
 func (g *Group) Start() (runError <-chan error, startErr error) {
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
+	g.startStopMutex.Lock()
+	defer g.startStopMutex.Unlock()
 
 	g.internalMutex.Lock()
 	defer g.internalMutex.Unlock()
@@ -178,8 +178,8 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 // It closes the `runError` channel returned by `Start`.
 // If the group has already been stopped, the function panics.
 func (g *Group) Stop() (err error) {
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
+	g.startStopMutex.Lock()
+	defer g.startStopMutex.Unlock()
 
 	// Check the state and stop the intercept goroutine whilst locking
 	// the internal mutex to prevent a concurrent modification of the state

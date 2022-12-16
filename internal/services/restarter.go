@@ -8,13 +8,13 @@ import (
 var _ Service = (*Restarter)(nil)
 
 type Restarter struct {
-	running       bool
-	service       Service
-	hooks         Hooks
-	mutex         *sync.Mutex
-	startedMutex  *sync.Mutex
-	interceptStop chan struct{}
-	interceptDone chan struct{}
+	running        bool
+	service        Service
+	hooks          Hooks
+	startStopMutex *sync.Mutex
+	startedMutex   *sync.Mutex
+	interceptStop  chan struct{}
+	interceptDone  chan struct{}
 }
 
 func NewRestarter(settings RestarterSettings) (restarter *Restarter, err error) {
@@ -26,10 +26,10 @@ func NewRestarter(settings RestarterSettings) (restarter *Restarter, err error) 
 	}
 
 	return &Restarter{
-		service:      settings.Service,
-		hooks:        settings.Hooks,
-		mutex:        &sync.Mutex{},
-		startedMutex: &sync.Mutex{},
+		service:        settings.Service,
+		hooks:          settings.Hooks,
+		startStopMutex: &sync.Mutex{},
+		startedMutex:   &sync.Mutex{},
 	}, nil
 }
 
@@ -55,8 +55,8 @@ func (r *Restarter) String() string {
 // the function panics.
 func (r *Restarter) Start() (runError <-chan error, startErr error) {
 	// Prevent concurrent Stop and Start calls.
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+	r.startStopMutex.Lock()
+	defer r.startStopMutex.Unlock()
 
 	r.startedMutex.Lock()
 	defer r.startedMutex.Unlock()
@@ -126,8 +126,8 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 // If the group has already been stopped, the function panics.
 func (r *Restarter) Stop() (err error) {
 	// Prevent concurrent Stop and Start calls.
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+	r.startStopMutex.Lock()
+	defer r.startStopMutex.Unlock()
 
 	// Check the state and stop the intercept goroutine whilst locking
 	// the started mutex to prevent a concurrent modification of the state

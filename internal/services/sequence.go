@@ -8,14 +8,14 @@ import (
 var _ Service = (*Sequence)(nil)
 
 type Sequence struct {
-	name          string
-	running       bool
-	servicesStart []Service
-	servicesStop  []Service
-	hooks         Hooks
-	mutex         *sync.Mutex
-	internalMutex *sync.Mutex
-	fanIn         *errorsFanIn
+	name           string
+	running        bool
+	servicesStart  []Service
+	servicesStop   []Service
+	hooks          Hooks
+	startStopMutex *sync.Mutex
+	internalMutex  *sync.Mutex
+	fanIn          *errorsFanIn
 	// runningServices contains service names that are currently running.
 	runningServices map[string]struct{}
 	interceptStop   chan struct{}
@@ -41,7 +41,7 @@ func NewSequence(settings SequenceSettings) (sequence *Sequence, err error) {
 		servicesStart:   servicesStart,
 		servicesStop:    servicesStop,
 		hooks:           settings.Hooks,
-		mutex:           &sync.Mutex{},
+		startStopMutex:  &sync.Mutex{},
 		internalMutex:   &sync.Mutex{},
 		runningServices: make(map[string]struct{}, len(servicesStart)),
 	}, nil
@@ -71,8 +71,8 @@ func (s *Sequence) String() string {
 // If the sequence is already started and not stopped previously,
 // the function panics.
 func (s *Sequence) Start() (runError <-chan error, startErr error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.startStopMutex.Lock()
+	defer s.startStopMutex.Unlock()
 
 	s.internalMutex.Lock()
 	defer s.internalMutex.Unlock()
@@ -148,8 +148,8 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 // It closes the `runError` channel returned by `Start`.
 // If the group has already been stopped, the function panics.
 func (s *Sequence) Stop() (err error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.startStopMutex.Lock()
+	defer s.startStopMutex.Unlock()
 
 	// Check the state and stop the intercept goroutine whilst locking
 	// the internal mutex to prevent a concurrent modification of the state

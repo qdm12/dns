@@ -40,7 +40,7 @@ func Test_NewSequence(t *testing.T) {
 				servicesStart:   []Service{dummyService},
 				servicesStop:    []Service{dummyService},
 				hooks:           hooks.NewWithLog(nil),
-				mutex:           &sync.Mutex{},
+				startStopMutex:  &sync.Mutex{},
 				internalMutex:   &sync.Mutex{},
 				runningServices: map[string]struct{}{},
 			},
@@ -103,10 +103,10 @@ func Test_Sequence_Start(t *testing.T) {
 		t.Parallel()
 
 		sequence := &Sequence{
-			name:          "name",
-			running:       true,
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
+			name:           "name",
+			running:        true,
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
 		}
 
 		assert.PanicsWithValue(t,
@@ -340,13 +340,13 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 				"A": {},
 				"B": {},
 			},
-			servicesStop:  []Service{serviceA, serviceB},
-			fanIn:         fanIn,
-			hooks:         hooks,
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
-			interceptStop: make(chan struct{}),
-			interceptDone: make(chan struct{}),
+			servicesStop:   []Service{serviceA, serviceB},
+			fanIn:          fanIn,
+			hooks:          hooks,
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
+			interceptStop:  make(chan struct{}),
+			interceptDone:  make(chan struct{}),
 		}
 
 		ready := make(chan struct{})
@@ -380,7 +380,7 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 			servicesStop:    []Service{serviceA, serviceB},
 			fanIn:           fanIn,
 			hooks:           hooks,
-			mutex:           &sync.Mutex{},
+			startStopMutex:  &sync.Mutex{},
 			internalMutex:   &sync.Mutex{},
 		}
 
@@ -402,9 +402,9 @@ func Test_Sequence_Stop(t *testing.T) {
 		t.Parallel()
 
 		sequence := Sequence{
-			name:          "name",
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
+			name:           "name",
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
 		}
 		assert.PanicsWithValue(t, "sequence name already stopped", func() {
 			_ = sequence.Stop()
@@ -429,7 +429,7 @@ func Test_Sequence_Stop(t *testing.T) {
 			running:         true,
 			servicesStop:    []Service{serviceA},
 			fanIn:           fanIn,
-			mutex:           &sync.Mutex{},
+			startStopMutex:  &sync.Mutex{},
 			internalMutex:   &sync.Mutex{},
 			hooks:           hooks,
 			interceptStop:   make(chan struct{}),
@@ -452,11 +452,11 @@ func Test_Sequence_Stop(t *testing.T) {
 		t.Parallel()
 
 		sequence := Sequence{
-			running:       true,
-			mutex:         &sync.Mutex{},
-			internalMutex: &sync.Mutex{},
-			interceptStop: make(chan struct{}),
-			interceptDone: make(chan struct{}),
+			running:        true,
+			startStopMutex: &sync.Mutex{},
+			internalMutex:  &sync.Mutex{},
+			interceptStop:  make(chan struct{}),
+			interceptDone:  make(chan struct{}),
 		}
 
 		// Simulate interceptRunError handling a service crash
