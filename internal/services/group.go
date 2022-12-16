@@ -55,7 +55,10 @@ func (g *Group) String() string {
 //
 // If a service fails after `Start` returns without error,
 // all other running services are stopped and the error is
-// returned in the `runError` channel which is then closed.
+// sent in the `runError` channel which is then closed.
+// A caller should listen on `runError` until the `Stop` method
+// call fully completes, since a run error can theoretically happen
+// at the same time the caller calls `Stop` on the group.
 //
 // If the group of services is already started and not
 // stopped previously, the function panics.
@@ -142,8 +145,8 @@ func startGroupedServiceAsync(service Starter, serviceString string,
 	startErrorCh <- nil
 }
 
-// interceptRunError catches an error from the input
-// channel, registers the crashed service of the sequence,
+// interceptRunError, if it catches an error from the input
+// channel, registers the crashed service of the group,
 // stops other running services and forwards the error
 // to the output channel and finally closes this channel.
 // If the stop channel triggers, the function returns
@@ -172,6 +175,7 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 // Only the first non nil service stop error encountered
 // is returned, but the hooks can be used to process each
 // error returned.
+// It closes the `runError` channel returned by `Start`.
 // If the group has already been stopped, the function panics.
 func (g *Group) Stop() (err error) {
 	g.mutex.Lock()

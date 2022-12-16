@@ -61,16 +61,12 @@ func (s *Sequence) String() string {
 // and all other running services are stopped in the order
 // specified by the stop sequence of services.
 //
-// If a service fails after being started in this method call,
-// the error is returned in `startErr` and all other running
-// services are stopped in the order specified by the stop
-// sequence of services.
-//
 // If a service fails after this method call returns without error,
 // all other running services are stopped and the error is
 // returned in the `runError` channel which is then closed.
 // A caller should listen on `runError` until the `Stop` method
-// call fully completes.
+// call fully completes, since a run error can theoretically happen
+// at the same time the caller calls `Stop` on the sequence.
 //
 // If the sequence is already started and not stopped previously,
 // the function panics.
@@ -117,12 +113,12 @@ func (s *Sequence) Start() (runError <-chan error, startErr error) {
 	return runErrorCh, nil
 }
 
-// interceptRunError catches an error from the input
+// interceptRunError, if it catches an error from the input
 // channel, registers the crashed service of the sequence,
 // stops other running services and forwards the error
 // to the output channel and finally closes this channel.
-// If the input error channel is closed, the output channel
-// is closed.
+// If the stop channel triggers, the function returns
+// and closes the output channel.
 func (s *Sequence) interceptRunError(ready chan<- struct{},
 	input <-chan serviceError, output chan<- error) {
 	defer close(s.interceptDone)
@@ -149,6 +145,7 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 // Only the first non nil service stop error encountered
 // is returned, but the hooks can be used to process each
 // error returned.
+// It closes the `runError` channel returned by `Start`.
 // If the group has already been stopped, the function panics.
 func (s *Sequence) Stop() (err error) {
 	s.mutex.Lock()

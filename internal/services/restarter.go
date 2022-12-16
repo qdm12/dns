@@ -46,9 +46,10 @@ func (r *Restarter) String() string {
 // in the `runError` channel.
 //
 // If a subsequent service start fails, the start error is sent in the
-// `runError` channel and the restarter stops.
-//
-// The `runError` channel is closed when the restarter is stopped.
+// `runError` channel, this channel is closed and the restarter stops.
+// A caller should listen on `runError` until the `Stop` method
+// call fully completes, since a run error can theoretically happen
+// at the same time the caller calls `Stop` on the restarter.
 //
 // If the restarter is already started and not stopped previously,
 // the function panics.
