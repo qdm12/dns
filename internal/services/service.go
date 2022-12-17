@@ -15,7 +15,10 @@ type Starter interface {
 	// Start starts the service.
 	// On success, it returns a run error channel and a nil error.
 	// On failure, it returns a nil run error channel and an error.
-	// When the service is stopped, the service should close the run error channel.
+	// If the service crashes, only one single error should be sent in
+	// the error channel.
+	// When the service is stopped, the service should NOT send an error
+	// in the run error channel or close this one.
 	Start() (runError <-chan error, startErr error)
 }
 
@@ -24,7 +27,7 @@ type Stopper interface {
 	// It is assumed to be constant over the lifetime of the stopper.
 	String() string
 	// Stops stops the service.
-	// A service should NOT write an error to its run error channel
+	// A service should NOT close or write an error to its run error channel
 	// if it is stopped.
 	Stop() (err error)
 }
