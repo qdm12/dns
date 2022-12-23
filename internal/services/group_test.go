@@ -103,7 +103,7 @@ func Test_Group_Start(t *testing.T) {
 		group := &Group{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			state:          stateRunning,
+			state:          StateRunning,
 			stateMutex:     &sync.RWMutex{},
 		}
 
@@ -318,7 +318,7 @@ func Test_Group_interceptRunError(t *testing.T) {
 		t.Parallel()
 
 		group := Group{
-			state:         stateStopping,
+			state:         StateStopping,
 			stateMutex:    &sync.RWMutex{},
 			interceptDone: make(chan struct{}),
 		}
@@ -363,7 +363,7 @@ func Test_Group_interceptRunError(t *testing.T) {
 			fanIn:          fanIn,
 			hooks:          hooks,
 			startStopMutex: &sync.Mutex{},
-			state:          stateRunning,
+			state:          StateRunning,
 			stateMutex:     &sync.RWMutex{},
 			interceptStop:  make(chan struct{}),
 			interceptDone:  make(chan struct{}),
@@ -398,7 +398,7 @@ func Test_Group_interceptRunError(t *testing.T) {
 			fanIn:           fanIn,
 			hooks:           hooks,
 			startStopMutex:  &sync.Mutex{},
-			state:           stateCrashed,
+			state:           StateCrashed,
 			stateMutex:      &sync.RWMutex{},
 		}
 		group.interceptStop = nil
@@ -416,7 +416,7 @@ func Test_Group_Stop(t *testing.T) {
 		group := Group{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			state:          stateStopped,
+			state:          StateStopped,
 			stateMutex:     &sync.RWMutex{},
 		}
 		assert.PanicsWithValue(t, "bad calling code: group name already stopped", func() {
@@ -430,7 +430,7 @@ func Test_Group_Stop(t *testing.T) {
 		group := Group{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			state:          stateStarting,
+			state:          StateStarting,
 			stateMutex:     &sync.RWMutex{},
 		}
 		assert.PanicsWithValue(t, "bad group implementation code: this code path should be unreachable", func() {
@@ -456,7 +456,7 @@ func Test_Group_Stop(t *testing.T) {
 			services:        []Service{serviceA},
 			fanIn:           fanIn,
 			startStopMutex:  &sync.Mutex{},
-			state:           stateRunning,
+			state:           StateRunning,
 			stateMutex:      &sync.RWMutex{},
 			hooks:           hooks,
 			interceptStop:   make(chan struct{}),
@@ -480,7 +480,7 @@ func Test_Group_Stop(t *testing.T) {
 
 		group := Group{
 			startStopMutex: &sync.Mutex{},
-			state:          stateCrashed,
+			state:          StateCrashed,
 			stateMutex:     &sync.RWMutex{},
 			interceptDone:  make(chan struct{}),
 		}

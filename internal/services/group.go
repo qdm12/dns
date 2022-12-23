@@ -12,7 +12,7 @@ type Group struct {
 	services        []Service
 	hooks           Hooks
 	startStopMutex  *sync.Mutex
-	state           state
+	state           State
 	stateMutex      *sync.RWMutex
 	fanIn           *errorsFanIn
 	runningServices map[string]struct{}
@@ -36,7 +36,7 @@ func NewGroup(settings GroupSettings) (group *Group, err error) {
 		services:        services,
 		hooks:           settings.Hooks,
 		startStopMutex:  &sync.Mutex{},
-		state:           stateStopped,
+		state:           StateStopped,
 		stateMutex:      &sync.RWMutex{},
 		runningServices: make(map[string]struct{}),
 	}, nil
@@ -68,13 +68,13 @@ func (g *Group) Start() (runError <-chan error, startErr error) {
 
 	// Lock the state in case the group is already running.
 	g.stateMutex.RLock()
-	if g.state == stateRunning {
+	if g.state == StateRunning {
 		panic(fmt.Sprintf("group %s already running", g.name))
 	}
 	// no need to keep a lock on the state since the `startStopMutex`
 	// prevents concurrent calls to `Start` and `Stop`.
 	g.stateMutex.RUnlock()
-	g.state = stateStarting
+	g.state = StateStarting
 
 	var fanInErrorCh <-chan serviceError
 	g.fanIn, fanInErrorCh = newErrorsFanIn()
@@ -129,7 +129,7 @@ func (g *Group) Start() (runError <-chan error, startErr error) {
 	go g.interceptRunError(interceptReady, fanInErrorCh, runErrorCh)
 	<-interceptReady
 
-	g.state = stateRunning
+	g.state = StateRunning
 	g.stateMutex.Unlock()
 
 	return runErrorCh, nil
@@ -173,7 +173,7 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 		// Lock the state mutex in case we are stopping
 		// or trying to stop the group at the same time.
 		g.stateMutex.Lock()
-		if g.state == stateStopping {
+		if g.state == StateStopping {
 			// Discard the eventual single service run error
 			// fanned-in if we are stopping the group.
 			g.stateMutex.Unlock()
@@ -182,7 +182,7 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 
 		// The first and only service fanned-in run error was
 		// caught and we are not currently stopping the group.
-		g.state = stateCrashed
+		g.state = StateCrashed
 		delete(g.runningServices, serviceErr.serviceName)
 		g.stateMutex.Unlock()
 
@@ -206,20 +206,20 @@ func (g *Group) Stop() (err error) {
 
 	g.stateMutex.Lock()
 	switch g.state {
-	case stateRunning: // continue stopping the group
-	case stateCrashed:
+	case StateRunning: // continue stopping the group
+	case StateCrashed:
 		g.stateMutex.Unlock()
 		// group is already stopped or stopping from
 		// the intercept goroutine, so just wait for the
 		// intercept goroutine to finish.
 		<-g.interceptDone
 		return nil
-	case stateStopped:
+	case StateStopped:
 		panic(fmt.Sprintf("bad calling code: group %s already stopped", g.name))
-	case stateStarting, stateStopping:
+	case StateStarting, StateStopping:
 		panic("bad group implementation code: this code path should be unreachable")
 	}
-	g.state = stateStopping
+	g.state = StateStopping
 	g.stateMutex.Unlock()
 
 	err = g.stop()
@@ -233,7 +233,7 @@ func (g *Group) Stop() (err error) {
 	close(g.interceptStop)
 	<-g.interceptDone
 
-	g.state = stateStopped
+	g.state = StateStopped
 
 	return err
 }

@@ -105,7 +105,7 @@ func Test_Sequence_Start(t *testing.T) {
 		sequence := &Sequence{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			state:          stateRunning,
+			state:          StateRunning,
 			stateMutex:     &sync.RWMutex{},
 		}
 
@@ -325,7 +325,7 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 
 		sequence := Sequence{
 			servicesStop:  []Service{service},
-			state:         stateStopping,
+			state:         StateStopping,
 			stateMutex:    &sync.RWMutex{},
 			interceptDone: make(chan struct{}),
 		}
@@ -350,7 +350,7 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 
 		expectedSequence := Sequence{
 			servicesStop: []Service{service},
-			state:        stateStopping,
+			state:        StateStopping,
 			stateMutex:   &sync.RWMutex{},
 		}
 
@@ -387,7 +387,7 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 			fanIn:          fanIn,
 			hooks:          hooks,
 			startStopMutex: &sync.Mutex{},
-			state:          stateRunning,
+			state:          StateRunning,
 			stateMutex:     &sync.RWMutex{},
 			interceptStop:  make(chan struct{}),
 			interceptDone:  make(chan struct{}),
@@ -424,7 +424,7 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 			fanIn:           fanIn,
 			hooks:           hooks,
 			startStopMutex:  &sync.Mutex{},
-			state:           stateCrashed,
+			state:           StateCrashed,
 			stateMutex:      &sync.RWMutex{},
 		}
 
@@ -448,7 +448,7 @@ func Test_Sequence_Stop(t *testing.T) {
 		sequence := Sequence{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			state:          stateCrashed,
+			state:          StateCrashed,
 			stateMutex:     &sync.RWMutex{},
 			interceptDone:  make(chan struct{}),
 		}
@@ -464,7 +464,7 @@ func Test_Sequence_Stop(t *testing.T) {
 		sequence := Sequence{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			state:          stateStopped,
+			state:          StateStopped,
 			stateMutex:     &sync.RWMutex{},
 		}
 		assert.PanicsWithValue(t, "bad calling code: sequence name already stopped", func() {
@@ -478,7 +478,7 @@ func Test_Sequence_Stop(t *testing.T) {
 		sequence := Sequence{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			state:          stateStarting,
+			state:          StateStarting,
 			stateMutex:     &sync.RWMutex{},
 		}
 		assert.PanicsWithValue(t,
@@ -506,7 +506,7 @@ func Test_Sequence_Stop(t *testing.T) {
 			servicesStop:    []Service{serviceA},
 			fanIn:           fanIn,
 			startStopMutex:  &sync.Mutex{},
-			state:           stateRunning,
+			state:           StateRunning,
 			stateMutex:      &sync.RWMutex{},
 			hooks:           hooks,
 			interceptStop:   make(chan struct{}),

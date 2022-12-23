@@ -86,7 +86,7 @@ func Test_Restarter_Start(t *testing.T) {
 		restarter := &Restarter{
 			service:        service,
 			startStopMutex: &sync.Mutex{},
-			state:          stateRunning,
+			state:          StateRunning,
 			stateMutex:     &sync.RWMutex{},
 		}
 
@@ -148,7 +148,7 @@ func Test_Restarter_Start(t *testing.T) {
 
 		runError, err := restarter.Start()
 		require.NoError(t, err)
-		require.Equal(t, stateRunning, restarter.state)
+		require.Equal(t, StateRunning, restarter.state)
 
 		const numberOfRestarts = 5
 		wg := new(sync.WaitGroup)
@@ -176,7 +176,7 @@ func Test_Restarter_Start(t *testing.T) {
 			}
 
 			restarter.stateMutex.Lock()
-			require.Equal(t, stateRunning, restarter.state)
+			require.Equal(t, StateRunning, restarter.state)
 			restarter.stateMutex.Unlock()
 
 			runErrorService = nextRunErrorService
@@ -192,7 +192,7 @@ func Test_Restarter_Start(t *testing.T) {
 		hooks.EXPECT().OnStopped("A", nil)
 		err = restarter.Stop()
 		require.NoError(t, err)
-		require.Equal(t, stateStopped, restarter.state)
+		require.Equal(t, StateStopped, restarter.state)
 	})
 
 	t.Run("restart service fails", func(t *testing.T) {
@@ -218,7 +218,7 @@ func Test_Restarter_Start(t *testing.T) {
 
 		runError, err := restarter.Start()
 		require.NoError(t, err)
-		assert.Equal(t, stateRunning, restarter.state)
+		assert.Equal(t, StateRunning, restarter.state)
 
 		// Restart expectations
 		errTest := errors.New("test error")
@@ -237,7 +237,7 @@ func Test_Restarter_Start(t *testing.T) {
 		assert.EqualError(t, err, "restarting after crash: test error")
 
 		<-runError
-		assert.Equal(t, stateCrashed, restarter.state)
+		assert.Equal(t, StateCrashed, restarter.state)
 	})
 }
 
@@ -263,7 +263,7 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 		t.Parallel()
 
 		restarter := Restarter{
-			state:         stateStopping,
+			state:         StateStopping,
 			stateMutex:    &sync.RWMutex{},
 			interceptDone: make(chan struct{}),
 		}
@@ -358,7 +358,7 @@ func Test_Restarter_Stop(t *testing.T) {
 
 		restarter := Restarter{
 			startStopMutex: &sync.Mutex{},
-			state:          stateCrashed,
+			state:          StateCrashed,
 			stateMutex:     &sync.RWMutex{},
 			interceptDone:  make(chan struct{}),
 		}
@@ -389,7 +389,7 @@ func Test_Restarter_Stop(t *testing.T) {
 
 		restarter := Restarter{
 			startStopMutex: &sync.Mutex{},
-			state:          stateStarting,
+			state:          StateStarting,
 			stateMutex:     &sync.RWMutex{},
 		}
 		assert.PanicsWithValue(t, "bad sequence implementation code: "+
@@ -414,7 +414,7 @@ func Test_Restarter_Stop(t *testing.T) {
 		restarter := Restarter{
 			service:        service,
 			startStopMutex: &sync.Mutex{},
-			state:          stateRunning,
+			state:          StateRunning,
 			stateMutex:     &sync.RWMutex{},
 			hooks:          hooks,
 			interceptStop:  make(chan struct{}),

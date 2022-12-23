@@ -13,7 +13,7 @@ type Sequence struct {
 	servicesStop   []Service
 	hooks          Hooks
 	startStopMutex *sync.Mutex
-	state          state
+	state          State
 	stateMutex     *sync.RWMutex
 	fanIn          *errorsFanIn
 	// runningServices contains service names that are currently running.
@@ -42,7 +42,7 @@ func NewSequence(settings SequenceSettings) (sequence *Sequence, err error) {
 		servicesStop:    servicesStop,
 		hooks:           settings.Hooks,
 		startStopMutex:  &sync.Mutex{},
-		state:           stateStopped,
+		state:           StateStopped,
 		stateMutex:      &sync.RWMutex{},
 		runningServices: make(map[string]struct{}, len(servicesStart)),
 	}, nil
@@ -76,13 +76,13 @@ func (s *Sequence) Start() (runError <-chan error, startErr error) {
 
 	// Lock the state in case the sequence is already running.
 	s.stateMutex.RLock()
-	if s.state == stateRunning {
+	if s.state == StateRunning {
 		panic(fmt.Sprintf("sequence %s already running", s.name))
 	}
 	// no need to keep a lock on the state since the `startStopMutex`
 	// prevents concurrent calls to `Start` and `Stop`.
 	s.stateMutex.RUnlock()
-	s.state = stateStarting
+	s.state = StateStarting
 
 	var fanInErrorCh <-chan serviceError
 	s.fanIn, fanInErrorCh = newErrorsFanIn()
@@ -119,7 +119,7 @@ func (s *Sequence) Start() (runError <-chan error, startErr error) {
 	go s.interceptRunError(interceptReady, fanInErrorCh, runErrorCh)
 	<-interceptReady
 
-	s.state = stateRunning
+	s.state = StateRunning
 	s.stateMutex.Unlock()
 
 	return runErrorCh, nil
@@ -141,7 +141,7 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 		// Lock the state mutex in case we are stopping
 		// or trying to stop the sequence at the same time.
 		s.stateMutex.Lock()
-		if s.state == stateStopping {
+		if s.state == StateStopping {
 			// Discard the eventual single service run error
 			// fanned-in if we are stopping the sequence.
 			s.stateMutex.Unlock()
@@ -150,7 +150,7 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 
 		// The first and only service fanned-in run error was
 		// caught and we are not currently stopping the sequence.
-		s.state = stateCrashed
+		s.state = StateCrashed
 		delete(s.runningServices, serviceErr.serviceName)
 		s.stateMutex.Unlock()
 
@@ -175,20 +175,20 @@ func (s *Sequence) Stop() (err error) {
 
 	s.stateMutex.Lock()
 	switch s.state {
-	case stateRunning: // continue stopping the sequence
-	case stateCrashed:
+	case StateRunning: // continue stopping the sequence
+	case StateCrashed:
 		s.stateMutex.Unlock()
 		// sequence is already stopped or stopping from
 		// the intercept goroutine, so just wait for the
 		// intercept goroutine to finish.
 		<-s.interceptDone
 		return nil
-	case stateStopped:
+	case StateStopped:
 		panic(fmt.Sprintf("bad calling code: sequence %s already stopped", s.name))
-	case stateStarting, stateStopping:
+	case StateStarting, StateStopping:
 		panic("bad sequence implementation code: this code path should be unreachable")
 	}
-	s.state = stateStopping
+	s.state = StateStopping
 	s.stateMutex.Unlock()
 
 	err = s.stop()
@@ -202,7 +202,7 @@ func (s *Sequence) Stop() (err error) {
 	close(s.interceptStop)
 	<-s.interceptDone
 
-	s.state = stateStopped
+	s.state = StateStopped
 
 	return err
 }

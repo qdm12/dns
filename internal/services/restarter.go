@@ -11,7 +11,7 @@ type Restarter struct {
 	service        Service
 	hooks          Hooks
 	startStopMutex *sync.Mutex
-	state          state
+	state          State
 	stateMutex     *sync.RWMutex
 	interceptStop  chan struct{}
 	interceptDone  chan struct{}
@@ -29,7 +29,7 @@ func NewRestarter(settings RestarterSettings) (restarter *Restarter, err error) 
 		service:        settings.Service,
 		hooks:          settings.Hooks,
 		startStopMutex: &sync.Mutex{},
-		state:          stateStopped,
+		state:          StateStopped,
 		stateMutex:     &sync.RWMutex{},
 	}, nil
 }
@@ -61,13 +61,13 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 
 	// Lock the state in case the sequence is already running.
 	r.stateMutex.RLock()
-	if r.state == stateRunning {
+	if r.state == StateRunning {
 		panic(fmt.Sprintf("restarter for %s already running", r.service))
 	}
 	// no need to keep a lock on the state since the `startStopMutex`
 	// prevents concurrent calls to `Start` and `Stop`.
 	r.stateMutex.RUnlock()
-	r.state = stateStarting
+	r.state = StateStarting
 
 	serviceString := r.service.String()
 
@@ -95,7 +95,7 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 		serviceRunError, runErrorCh)
 	<-interceptReady
 
-	r.state = stateRunning
+	r.state = StateRunning
 	r.stateMutex.Unlock()
 
 	return runErrorCh, nil
@@ -114,7 +114,7 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 			// Lock the state mutex in case we are stopping
 			// or trying to stop the restarter at the same time.
 			r.stateMutex.Lock()
-			if r.state == stateStopping {
+			if r.state == StateStopping {
 				// Discard the eventual single service run error
 				// if we are stopping the restarter.
 				r.stateMutex.Unlock()
@@ -129,13 +129,13 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 			r.hooks.OnStarted(serviceName, startErr)
 
 			if startErr != nil {
-				r.state = stateCrashed
+				r.state = StateCrashed
 				r.stateMutex.Unlock()
 				output <- fmt.Errorf("restarting after crash: %w", startErr)
 				close(output)
 				return
 			}
-			r.state = stateRunning
+			r.state = StateRunning
 			r.stateMutex.Unlock()
 		}
 	}
@@ -150,18 +150,18 @@ func (r *Restarter) Stop() (err error) {
 
 	r.stateMutex.Lock()
 	switch r.state {
-	case stateRunning: // continue stopping the restarter
-	case stateCrashed:
+	case StateRunning: // continue stopping the restarter
+	case StateCrashed:
 		// service crashed and failed to restart, just wait
 		// for the intercept goroutine to finish.
 		<-r.interceptDone
 		return nil
-	case stateStopped:
+	case StateStopped:
 		panic(fmt.Sprintf("bad calling code: restarter for %s already stopped", r.service))
-	case stateStarting, stateStopping:
+	case StateStarting, StateStopping:
 		panic("bad sequence implementation code: this code path should be unreachable")
 	}
-	r.state = stateStopping
+	r.state = StateStopping
 	r.stateMutex.Unlock()
 
 	serviceString := r.service.String()
@@ -175,7 +175,7 @@ func (r *Restarter) Stop() (err error) {
 	close(r.interceptStop)
 	<-r.interceptDone
 
-	r.state = stateStopped
+	r.state = StateStopped
 
 	return err
 }

@@ -1,17 +1,17 @@
 package services
 
-// state is the state of a service.
-type state uint8
+// State is the State of a service.
+type State uint8
 
 const (
-	// stateStopped is the state of a service that is stopped.
-	stateStopped state = iota
-	// stateStarting is the state of a service that is starting.
-	stateStarting
-	// stateRunning is the state of a service that is running.
-	stateRunning
-	// stateStopping is the state of a service that is stopping.
-	stateStopping
-	// stateCrashed is the state of a service that has crashed.
-	stateCrashed
+	// StateStopped is the state of a service that is stopped.
+	StateStopped State = iota
+	// StateStarting is the state of a service that is starting.
+	StateStarting
+	// StateRunning is the state of a service that is running.
+	StateRunning
+	// StateStopping is the state of a service that is stopping.
+	StateStopping
+	// StateCrashed is the state of a service that has crashed.
+	StateCrashed
 )
