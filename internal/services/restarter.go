@@ -10,9 +10,9 @@ var _ Service = (*Restarter)(nil)
 type Restarter struct {
 	service        Service
 	hooks          Hooks
-	startStopMutex *sync.Mutex
+	startStopMutex sync.Mutex
 	state          State
-	stateMutex     *sync.RWMutex
+	stateMutex     sync.RWMutex
 	interceptStop  chan struct{}
 	interceptDone  chan struct{}
 }
@@ -26,11 +26,9 @@ func NewRestarter(settings RestarterSettings) (restarter *Restarter, err error) 
 	}
 
 	return &Restarter{
-		service:        settings.Service,
-		hooks:          settings.Hooks,
-		startStopMutex: &sync.Mutex{},
-		state:          StateStopped,
-		stateMutex:     &sync.RWMutex{},
+		service: settings.Service,
+		hooks:   settings.Hooks,
+		state:   StateStopped,
 	}, nil
 }
 

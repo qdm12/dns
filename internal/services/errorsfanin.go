@@ -15,7 +15,7 @@ type errorsFanIn struct {
 	serviceToFaninStop []chan<- struct{}
 	serviceToFaninDone []<-chan struct{}
 	output             chan serviceError
-	runErrorMutex      *sync.Mutex
+	runErrorMutex      sync.Mutex
 }
 
 // newErrorsFanIn returns a new errors fan in object
@@ -23,8 +23,7 @@ type errorsFanIn struct {
 func newErrorsFanIn() (fanIn *errorsFanIn, reader <-chan serviceError) {
 	output := make(chan serviceError)
 	return &errorsFanIn{
-		output:        output,
-		runErrorMutex: &sync.Mutex{},
+		output: output,
 	}, output
 }
 

@@ -11,9 +11,9 @@ type Group struct {
 	name            string
 	services        []Service
 	hooks           Hooks
-	startStopMutex  *sync.Mutex
+	startStopMutex  sync.Mutex
 	state           State
-	stateMutex      *sync.RWMutex
+	stateMutex      sync.RWMutex
 	fanIn           *errorsFanIn
 	runningServices map[string]struct{}
 	interceptStop   chan struct{}
@@ -35,9 +35,7 @@ func NewGroup(settings GroupSettings) (group *Group, err error) {
 		name:            settings.Name,
 		services:        services,
 		hooks:           settings.Hooks,
-		startStopMutex:  &sync.Mutex{},
 		state:           StateStopped,
-		stateMutex:      &sync.RWMutex{},
 		runningServices: make(map[string]struct{}),
 	}, nil
 }

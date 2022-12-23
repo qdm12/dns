@@ -33,10 +33,8 @@ func Test_NewRestarter(t *testing.T) {
 				Service: dummyService,
 			},
 			restarter: &Restarter{
-				service:        dummyService,
-				hooks:          hooks.NewNoop(),
-				startStopMutex: &sync.Mutex{},
-				stateMutex:     &sync.RWMutex{},
+				service: dummyService,
+				hooks:   hooks.NewNoop(),
 			},
 		},
 	}
@@ -84,10 +82,8 @@ func Test_Restarter_Start(t *testing.T) {
 		service.EXPECT().String().Return("A")
 
 		restarter := &Restarter{
-			service:        service,
-			startStopMutex: &sync.Mutex{},
-			state:          StateRunning,
-			stateMutex:     &sync.RWMutex{},
+			service: service,
+			state:   StateRunning,
 		}
 
 		assert.PanicsWithValue(t,
@@ -264,7 +260,6 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 
 		restarter := Restarter{
 			state:         StateStopping,
-			stateMutex:    &sync.RWMutex{},
 			interceptDone: make(chan struct{}),
 		}
 
@@ -284,12 +279,10 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 		hooks := NewMockHooks(ctrl)
 
 		restarter := Restarter{
-			service:        service,
-			hooks:          hooks,
-			startStopMutex: &sync.Mutex{},
-			stateMutex:     &sync.RWMutex{},
-			interceptStop:  make(chan struct{}),
-			interceptDone:  make(chan struct{}),
+			service:       service,
+			hooks:         hooks,
+			interceptStop: make(chan struct{}),
+			interceptDone: make(chan struct{}),
 		}
 		ready := make(chan struct{})
 		const serviceName = "A"
@@ -319,12 +312,10 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 		hooks := NewMockHooks(ctrl)
 
 		restarter := Restarter{
-			service:        service,
-			hooks:          hooks,
-			startStopMutex: &sync.Mutex{},
-			stateMutex:     &sync.RWMutex{},
-			interceptStop:  make(chan struct{}),
-			interceptDone:  make(chan struct{}),
+			service:       service,
+			hooks:         hooks,
+			interceptStop: make(chan struct{}),
+			interceptDone: make(chan struct{}),
 		}
 		ready := make(chan struct{})
 		const serviceName = "A"
@@ -357,10 +348,8 @@ func Test_Restarter_Stop(t *testing.T) {
 		t.Parallel()
 
 		restarter := Restarter{
-			startStopMutex: &sync.Mutex{},
-			state:          StateCrashed,
-			stateMutex:     &sync.RWMutex{},
-			interceptDone:  make(chan struct{}),
+			state:         StateCrashed,
+			interceptDone: make(chan struct{}),
 		}
 		close(restarter.interceptDone)
 		err := restarter.Stop()
@@ -375,9 +364,7 @@ func Test_Restarter_Stop(t *testing.T) {
 		service.EXPECT().String().Return("A")
 
 		restarter := Restarter{
-			service:        service,
-			startStopMutex: &sync.Mutex{},
-			stateMutex:     &sync.RWMutex{},
+			service: service,
 		}
 		assert.PanicsWithValue(t, "bad calling code: restarter for A already stopped", func() {
 			_ = restarter.Stop()
@@ -388,9 +375,7 @@ func Test_Restarter_Stop(t *testing.T) {
 		t.Parallel()
 
 		restarter := Restarter{
-			startStopMutex: &sync.Mutex{},
-			state:          StateStarting,
-			stateMutex:     &sync.RWMutex{},
+			state: StateStarting,
 		}
 		assert.PanicsWithValue(t, "bad sequence implementation code: "+
 			"this code path should be unreachable", func() {
@@ -412,13 +397,11 @@ func Test_Restarter_Stop(t *testing.T) {
 		hooks.EXPECT().OnStopped("A", errTest)
 
 		restarter := Restarter{
-			service:        service,
-			startStopMutex: &sync.Mutex{},
-			state:          StateRunning,
-			stateMutex:     &sync.RWMutex{},
-			hooks:          hooks,
-			interceptStop:  make(chan struct{}),
-			interceptDone:  make(chan struct{}),
+			service:       service,
+			state:         StateRunning,
+			hooks:         hooks,
+			interceptStop: make(chan struct{}),
+			interceptDone: make(chan struct{}),
 		}
 
 		// Simulate interceptRunError exiting from stop signal.

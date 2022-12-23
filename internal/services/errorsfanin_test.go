@@ -3,7 +3,6 @@ package services
 import (
 	"errors"
 	"fmt"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,9 +42,7 @@ func Test_newErrorsFanIn(t *testing.T) {
 	assert.NotNil(t, actual.output)
 	actual.output = nil
 
-	expected := &errorsFanIn{
-		runErrorMutex: &sync.Mutex{},
-	}
+	expected := &errorsFanIn{}
 	assert.Equal(t, expected, actual)
 }
 
@@ -118,8 +115,7 @@ func Test_errorsFanIn_fanIn(t *testing.T) {
 		t.Parallel()
 
 		e := &errorsFanIn{
-			output:        make(chan serviceError, 1),
-			runErrorMutex: &sync.Mutex{},
+			output: make(chan serviceError, 1),
 		}
 		const service = "test"
 		errTest := errors.New("test error")

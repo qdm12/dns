@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"sync"
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
@@ -38,8 +37,6 @@ func Test_NewGroup(t *testing.T) {
 				name:            "name",
 				services:        []Service{dummyService},
 				hooks:           hooks.NewWithLog(nil),
-				startStopMutex:  &sync.Mutex{},
-				stateMutex:      &sync.RWMutex{},
 				runningServices: map[string]struct{}{},
 			},
 		},
@@ -101,10 +98,8 @@ func Test_Group_Start(t *testing.T) {
 		t.Parallel()
 
 		group := &Group{
-			name:           "name",
-			startStopMutex: &sync.Mutex{},
-			state:          StateRunning,
-			stateMutex:     &sync.RWMutex{},
+			name:  "name",
+			state: StateRunning,
 		}
 
 		assert.PanicsWithValue(t,
@@ -319,7 +314,6 @@ func Test_Group_interceptRunError(t *testing.T) {
 
 		group := Group{
 			state:         StateStopping,
-			stateMutex:    &sync.RWMutex{},
 			interceptDone: make(chan struct{}),
 		}
 
@@ -354,19 +348,17 @@ func Test_Group_interceptRunError(t *testing.T) {
 		serviceB.EXPECT().Stop().Return(errStop) // ignored error
 		hooks.EXPECT().OnStopped("B", errStop)
 
-		group := Group{
+		group := &Group{
 			runningServices: map[string]struct{}{
 				"A": {},
 				"B": {},
 			},
-			services:       []Service{serviceA, serviceB},
-			fanIn:          fanIn,
-			hooks:          hooks,
-			startStopMutex: &sync.Mutex{},
-			state:          StateRunning,
-			stateMutex:     &sync.RWMutex{},
-			interceptStop:  make(chan struct{}),
-			interceptDone:  make(chan struct{}),
+			services:      []Service{serviceA, serviceB},
+			fanIn:         fanIn,
+			hooks:         hooks,
+			state:         StateRunning,
+			interceptStop: make(chan struct{}),
+			interceptDone: make(chan struct{}),
 		}
 
 		ready := make(chan struct{})
@@ -392,14 +384,12 @@ func Test_Group_interceptRunError(t *testing.T) {
 
 		<-group.interceptDone
 
-		expectedGroup := Group{
+		expectedGroup := &Group{
 			runningServices: map[string]struct{}{},
 			services:        []Service{serviceA, serviceB},
 			fanIn:           fanIn,
 			hooks:           hooks,
-			startStopMutex:  &sync.Mutex{},
 			state:           StateCrashed,
-			stateMutex:      &sync.RWMutex{},
 		}
 		group.interceptStop = nil
 		group.interceptDone = nil
@@ -414,10 +404,8 @@ func Test_Group_Stop(t *testing.T) {
 		t.Parallel()
 
 		group := Group{
-			name:           "name",
-			startStopMutex: &sync.Mutex{},
-			state:          StateStopped,
-			stateMutex:     &sync.RWMutex{},
+			name:  "name",
+			state: StateStopped,
 		}
 		assert.PanicsWithValue(t, "bad calling code: group name already stopped", func() {
 			_ = group.Stop()
@@ -428,10 +416,8 @@ func Test_Group_Stop(t *testing.T) {
 		t.Parallel()
 
 		group := Group{
-			name:           "name",
-			startStopMutex: &sync.Mutex{},
-			state:          StateStarting,
-			stateMutex:     &sync.RWMutex{},
+			name:  "name",
+			state: StateStarting,
 		}
 		assert.PanicsWithValue(t, "bad group implementation code: this code path should be unreachable", func() {
 			_ = group.Stop()
@@ -455,9 +441,7 @@ func Test_Group_Stop(t *testing.T) {
 		group := Group{
 			services:        []Service{serviceA},
 			fanIn:           fanIn,
-			startStopMutex:  &sync.Mutex{},
 			state:           StateRunning,
-			stateMutex:      &sync.RWMutex{},
 			hooks:           hooks,
 			interceptStop:   make(chan struct{}),
 			interceptDone:   make(chan struct{}),
@@ -479,10 +463,8 @@ func Test_Group_Stop(t *testing.T) {
 		t.Parallel()
 
 		group := Group{
-			startStopMutex: &sync.Mutex{},
-			state:          StateCrashed,
-			stateMutex:     &sync.RWMutex{},
-			interceptDone:  make(chan struct{}),
+			state:         StateCrashed,
+			interceptDone: make(chan struct{}),
 		}
 		close(group.interceptDone)
 
@@ -516,23 +498,21 @@ func Test_Group_stop(t *testing.T) {
 
 		serviceC.EXPECT().String().Return("C")
 
-		group := Group{
+		group := &Group{
 			services:        []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,
 			runningServices: map[string]struct{}{"A": {}, "B": {}},
-			stateMutex:      &sync.RWMutex{},
 		}
 
 		err := group.stop()
 
 		assert.NoError(t, err)
-		expectedGroup := Group{
+		expectedGroup := &Group{
 			services:        []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,
 			runningServices: map[string]struct{}{},
-			stateMutex:      &sync.RWMutex{},
 		}
 		assert.Equal(t, expectedGroup, group)
 	})
@@ -563,12 +543,11 @@ func Test_Group_stop(t *testing.T) {
 		serviceC.EXPECT().Stop().Return(nil)
 		hooks.EXPECT().OnStopped("C", nil)
 
-		group := Group{
+		group := &Group{
 			services:        []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,
 			runningServices: map[string]struct{}{"A": {}, "B": {}, "C": {}},
-			stateMutex:      &sync.RWMutex{},
 		}
 
 		err := group.stop()
@@ -576,12 +555,11 @@ func Test_Group_stop(t *testing.T) {
 		assert.ErrorIs(t, err, errTest)
 		assert.EqualError(t, err, "stopping B: test error")
 
-		expectedGroup := Group{
+		expectedGroup := &Group{
 			services:        []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,
 			runningServices: map[string]struct{}{},
-			stateMutex:      &sync.RWMutex{},
 		}
 		assert.Equal(t, expectedGroup, group)
 	})

@@ -12,9 +12,9 @@ type Sequence struct {
 	servicesStart  []Service
 	servicesStop   []Service
 	hooks          Hooks
-	startStopMutex *sync.Mutex
+	startStopMutex sync.Mutex
 	state          State
-	stateMutex     *sync.RWMutex
+	stateMutex     sync.RWMutex
 	fanIn          *errorsFanIn
 	// runningServices contains service names that are currently running.
 	runningServices map[string]struct{}
@@ -41,9 +41,7 @@ func NewSequence(settings SequenceSettings) (sequence *Sequence, err error) {
 		servicesStart:   servicesStart,
 		servicesStop:    servicesStop,
 		hooks:           settings.Hooks,
-		startStopMutex:  &sync.Mutex{},
 		state:           StateStopped,
-		stateMutex:      &sync.RWMutex{},
 		runningServices: make(map[string]struct{}, len(servicesStart)),
 	}, nil
 }
