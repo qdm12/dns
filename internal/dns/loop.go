@@ -23,10 +23,9 @@ type Loop struct {
 	prometheusRegistry prometheus.Registerer
 
 	// Internal state
-	running      bool
-	runningMutex sync.Mutex
-	// mutex prevents concurrent calls to Start and Stop.
-	mutex sync.Mutex
+	running        bool
+	runningMutex   sync.Mutex
+	startStopMutex sync.Mutex
 
 	// Fields set in the Start method call,
 	// and shared so the Stop method can access them.
@@ -58,8 +57,8 @@ func (l *Loop) String() string {
 }
 
 func (l *Loop) Start() (runError <-chan error, startErr error) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+	l.startStopMutex.Lock()
+	defer l.startStopMutex.Unlock()
 
 	l.runningMutex.Lock()
 	if l.running {
@@ -117,8 +116,8 @@ func (l *Loop) Start() (runError <-chan error, startErr error) {
 }
 
 func (l *Loop) Stop() (err error) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+	l.startStopMutex.Lock()
+	defer l.startStopMutex.Unlock()
 
 	l.runningMutex.Lock()
 	if !l.running {

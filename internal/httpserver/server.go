@@ -16,9 +16,9 @@ type Server struct {
 	settings Settings
 
 	// Internal state
-	running      bool
-	runningMutex sync.Mutex
-	mutex        sync.Mutex // prevents concurrent calls to Start and Stop.
+	running        bool
+	runningMutex   sync.Mutex
+	startStopMutex sync.Mutex
 
 	// Fields set in the Start method call,
 	// and shared so the Stop method can access them.
@@ -56,8 +56,8 @@ func (s *Server) String() string {
 // from the `runError` channel, since the server is already stopped.
 // If this method is called but the server is already started, the function panics.
 func (s *Server) Start() (runError <-chan error, err error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.startStopMutex.Lock()
+	defer s.startStopMutex.Unlock()
 
 	s.runningMutex.Lock()
 	if s.running {
@@ -136,8 +136,8 @@ func (s *Server) GetAddress() (address string, err error) {
 
 // Stop stops the server within the given shutdown timeout.
 func (s *Server) Stop() (err error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.startStopMutex.Lock()
+	defer s.startStopMutex.Unlock()
 
 	shutdownCtx, cancel := context.WithTimeout(
 		context.Background(), s.settings.ShutdownTimeout)

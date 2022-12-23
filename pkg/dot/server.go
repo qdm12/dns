@@ -15,9 +15,9 @@ type Server struct {
 	logger   log.Logger
 
 	// Internal state
-	running      bool
-	runningMutex sync.Mutex
-	mutex        sync.Mutex // prevents concurrent calls to Start and Stop.
+	running        bool
+	runningMutex   sync.Mutex
+	startStopMutex sync.Mutex // prevents concurrent calls to Start and Stop.
 
 	// Fields set in the Start method call,
 	// and shared so the Stop method can access them.
@@ -44,8 +44,8 @@ func (s *Server) String() string {
 }
 
 func (s *Server) Start() (runError <-chan error, startErr error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.startStopMutex.Lock()
+	defer s.startStopMutex.Unlock()
 
 	s.runningMutex.Lock()
 	if s.running {
@@ -114,8 +114,8 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 }
 
 func (s *Server) Stop() (err error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.startStopMutex.Lock()
+	defer s.startStopMutex.Unlock()
 
 	s.runningMutex.Lock()
 	running := s.running //nolint:ifshort
