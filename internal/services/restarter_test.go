@@ -36,7 +36,7 @@ func Test_NewRestarter(t *testing.T) {
 				service:        dummyService,
 				hooks:          hooks.NewNoop(),
 				startStopMutex: &sync.Mutex{},
-				startedMutex:   &sync.Mutex{},
+				stateMutex:     &sync.RWMutex{},
 			},
 		},
 	}
@@ -85,9 +85,9 @@ func Test_Restarter_Start(t *testing.T) {
 
 		restarter := &Restarter{
 			service:        service,
-			running:        true,
 			startStopMutex: &sync.Mutex{},
-			startedMutex:   &sync.Mutex{},
+			state:          stateRunning,
+			stateMutex:     &sync.RWMutex{},
 		}
 
 		assert.PanicsWithValue(t,
@@ -148,7 +148,7 @@ func Test_Restarter_Start(t *testing.T) {
 
 		runError, err := restarter.Start()
 		require.NoError(t, err)
-		require.True(t, restarter.running)
+		require.Equal(t, stateRunning, restarter.state)
 
 		const numberOfRestarts = 5
 		wg := new(sync.WaitGroup)
@@ -175,7 +175,9 @@ func Test_Restarter_Start(t *testing.T) {
 			default:
 			}
 
-			require.True(t, restarter.running)
+			restarter.stateMutex.Lock()
+			require.Equal(t, stateRunning, restarter.state)
+			restarter.stateMutex.Unlock()
 
 			runErrorService = nextRunErrorService
 		}
@@ -190,7 +192,7 @@ func Test_Restarter_Start(t *testing.T) {
 		hooks.EXPECT().OnStopped("A", nil)
 		err = restarter.Stop()
 		require.NoError(t, err)
-		assert.False(t, restarter.running)
+		require.Equal(t, stateStopped, restarter.state)
 	})
 
 	t.Run("restart service fails", func(t *testing.T) {
@@ -216,7 +218,7 @@ func Test_Restarter_Start(t *testing.T) {
 
 		runError, err := restarter.Start()
 		require.NoError(t, err)
-		require.True(t, restarter.running)
+		assert.Equal(t, stateRunning, restarter.state)
 
 		// Restart expectations
 		errTest := errors.New("test error")
@@ -235,7 +237,7 @@ func Test_Restarter_Start(t *testing.T) {
 		assert.EqualError(t, err, "restarting after crash: test error")
 
 		<-runError
-		assert.False(t, restarter.running)
+		assert.Equal(t, stateCrashed, restarter.state)
 	})
 }
 
@@ -251,10 +253,26 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 		}
 
 		ready := make(chan struct{})
-		output := make(chan error)
-		go restarter.interceptRunError(ready, "", nil, output)
+		go restarter.interceptRunError(ready, "", nil, nil)
 		<-ready
 		close(restarter.interceptStop)
+		<-restarter.interceptDone
+	})
+
+	t.Run("already stopping", func(t *testing.T) {
+		t.Parallel()
+
+		restarter := Restarter{
+			state:         stateStopping,
+			stateMutex:    &sync.RWMutex{},
+			interceptDone: make(chan struct{}),
+		}
+
+		ready := make(chan struct{})
+		input := make(chan error)
+		go restarter.interceptRunError(ready, "", input, nil)
+		<-ready
+		input <- nil
 		<-restarter.interceptDone
 	})
 
@@ -269,7 +287,7 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 			service:        service,
 			hooks:          hooks,
 			startStopMutex: &sync.Mutex{},
-			startedMutex:   &sync.Mutex{},
+			stateMutex:     &sync.RWMutex{},
 			interceptStop:  make(chan struct{}),
 			interceptDone:  make(chan struct{}),
 		}
@@ -304,7 +322,7 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 			service:        service,
 			hooks:          hooks,
 			startStopMutex: &sync.Mutex{},
-			startedMutex:   &sync.Mutex{},
+			stateMutex:     &sync.RWMutex{},
 			interceptStop:  make(chan struct{}),
 			interceptDone:  make(chan struct{}),
 		}
@@ -335,6 +353,20 @@ func Test_Restarter_interceptRunError(t *testing.T) {
 func Test_Restarter_Stop(t *testing.T) {
 	t.Parallel()
 
+	t.Run("already crashed", func(t *testing.T) {
+		t.Parallel()
+
+		restarter := Restarter{
+			startStopMutex: &sync.Mutex{},
+			state:          stateCrashed,
+			stateMutex:     &sync.RWMutex{},
+			interceptDone:  make(chan struct{}),
+		}
+		close(restarter.interceptDone)
+		err := restarter.Stop()
+		assert.NoError(t, err)
+	})
+
 	t.Run("already stopped", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
@@ -345,14 +377,28 @@ func Test_Restarter_Stop(t *testing.T) {
 		restarter := Restarter{
 			service:        service,
 			startStopMutex: &sync.Mutex{},
-			startedMutex:   &sync.Mutex{},
+			stateMutex:     &sync.RWMutex{},
 		}
-		assert.PanicsWithValue(t, "restarter for A already stopped", func() {
+		assert.PanicsWithValue(t, "bad calling code: restarter for A already stopped", func() {
 			_ = restarter.Stop()
 		})
 	})
 
-	t.Run("started", func(t *testing.T) {
+	t.Run("illegal state", func(t *testing.T) {
+		t.Parallel()
+
+		restarter := Restarter{
+			startStopMutex: &sync.Mutex{},
+			state:          stateStarting,
+			stateMutex:     &sync.RWMutex{},
+		}
+		assert.PanicsWithValue(t, "bad sequence implementation code: "+
+			"this code path should be unreachable", func() {
+			_ = restarter.Stop()
+		})
+	})
+
+	t.Run("running", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 
@@ -366,10 +412,10 @@ func Test_Restarter_Stop(t *testing.T) {
 		hooks.EXPECT().OnStopped("A", errTest)
 
 		restarter := Restarter{
-			running:        true,
 			service:        service,
 			startStopMutex: &sync.Mutex{},
-			startedMutex:   &sync.Mutex{},
+			state:          stateRunning,
+			stateMutex:     &sync.RWMutex{},
 			hooks:          hooks,
 			interceptStop:  make(chan struct{}),
 			interceptDone:  make(chan struct{}),
@@ -384,27 +430,5 @@ func Test_Restarter_Stop(t *testing.T) {
 		err := restarter.Stop()
 		assert.ErrorIs(t, err, errTest)
 		assert.EqualError(t, err, "test error")
-	})
-
-	t.Run("crash during stop", func(t *testing.T) {
-		t.Parallel()
-
-		restarter := Restarter{
-			running:        true,
-			startStopMutex: &sync.Mutex{},
-			startedMutex:   &sync.Mutex{},
-			interceptStop:  make(chan struct{}),
-			interceptDone:  make(chan struct{}),
-		}
-
-		// Simulate interceptRunError handling a service crash
-		go func() {
-			<-restarter.interceptStop
-			restarter.running = false
-			close(restarter.interceptDone)
-		}()
-
-		err := restarter.Stop()
-		assert.NoError(t, err)
 	})
 }

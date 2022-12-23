@@ -41,7 +41,7 @@ func Test_NewSequence(t *testing.T) {
 				servicesStop:    []Service{dummyService},
 				hooks:           hooks.NewWithLog(nil),
 				startStopMutex:  &sync.Mutex{},
-				internalMutex:   &sync.Mutex{},
+				stateMutex:      &sync.RWMutex{},
 				runningServices: map[string]struct{}{},
 			},
 		},
@@ -104,9 +104,9 @@ func Test_Sequence_Start(t *testing.T) {
 
 		sequence := &Sequence{
 			name:           "name",
-			running:        true,
 			startStopMutex: &sync.Mutex{},
-			internalMutex:  &sync.Mutex{},
+			state:          stateRunning,
+			stateMutex:     &sync.RWMutex{},
 		}
 
 		assert.PanicsWithValue(t,
@@ -317,6 +317,50 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 		<-sequence.interceptDone
 	})
 
+	t.Run("service crash and sequence is already stopping", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+
+		service := NewMockService(ctrl)
+
+		sequence := Sequence{
+			servicesStop:  []Service{service},
+			state:         stateStopping,
+			stateMutex:    &sync.RWMutex{},
+			interceptDone: make(chan struct{}),
+		}
+
+		ready := make(chan struct{})
+		input := make(chan serviceError)
+		output := make(chan error)
+		close(output) // do not write to output channel
+
+		go sequence.interceptRunError(ready, input, output)
+
+		<-ready
+
+		errTest := errors.New("test error")
+		input <- serviceError{
+			format:      errorFormatCrash,
+			serviceName: "A",
+			err:         errTest,
+		}
+
+		<-sequence.interceptDone
+
+		expectedSequence := Sequence{
+			servicesStop: []Service{service},
+			state:        stateStopping,
+			stateMutex:   &sync.RWMutex{},
+		}
+
+		_, ok := <-sequence.interceptDone
+		assert.False(t, ok)
+		sequence.interceptDone = nil
+
+		assert.Equal(t, expectedSequence, sequence)
+	})
+
 	t.Run("one of two services crash", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
@@ -335,7 +379,6 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 		hooks.EXPECT().OnStopped("B", errStop)
 
 		sequence := Sequence{
-			running: true,
 			runningServices: map[string]struct{}{
 				"A": {},
 				"B": {},
@@ -344,7 +387,8 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 			fanIn:          fanIn,
 			hooks:          hooks,
 			startStopMutex: &sync.Mutex{},
-			internalMutex:  &sync.Mutex{},
+			state:          stateRunning,
+			stateMutex:     &sync.RWMutex{},
 			interceptStop:  make(chan struct{}),
 			interceptDone:  make(chan struct{}),
 		}
@@ -375,13 +419,13 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 		<-sequence.interceptDone
 
 		expectedSequence := Sequence{
-			running:         false,
 			runningServices: map[string]struct{}{},
 			servicesStop:    []Service{serviceA, serviceB},
 			fanIn:           fanIn,
 			hooks:           hooks,
 			startStopMutex:  &sync.Mutex{},
-			internalMutex:   &sync.Mutex{},
+			state:           stateCrashed,
+			stateMutex:      &sync.RWMutex{},
 		}
 
 		_, ok = <-sequence.interceptDone
@@ -398,20 +442,53 @@ func Test_Sequence_interceptRunError(t *testing.T) {
 func Test_Sequence_Stop(t *testing.T) {
 	t.Parallel()
 
+	t.Run("already crashed", func(t *testing.T) {
+		t.Parallel()
+
+		sequence := Sequence{
+			name:           "name",
+			startStopMutex: &sync.Mutex{},
+			state:          stateCrashed,
+			stateMutex:     &sync.RWMutex{},
+			interceptDone:  make(chan struct{}),
+		}
+		close(sequence.interceptDone)
+
+		err := sequence.Stop()
+		require.NoError(t, err)
+	})
+
 	t.Run("already stopped", func(t *testing.T) {
 		t.Parallel()
 
 		sequence := Sequence{
 			name:           "name",
 			startStopMutex: &sync.Mutex{},
-			internalMutex:  &sync.Mutex{},
+			state:          stateStopped,
+			stateMutex:     &sync.RWMutex{},
 		}
-		assert.PanicsWithValue(t, "sequence name already stopped", func() {
+		assert.PanicsWithValue(t, "bad calling code: sequence name already stopped", func() {
 			_ = sequence.Stop()
 		})
 	})
 
-	t.Run("started", func(t *testing.T) {
+	t.Run("in starting state", func(t *testing.T) {
+		t.Parallel()
+
+		sequence := Sequence{
+			name:           "name",
+			startStopMutex: &sync.Mutex{},
+			state:          stateStarting,
+			stateMutex:     &sync.RWMutex{},
+		}
+		assert.PanicsWithValue(t,
+			"bad sequence implementation code: this code path should be unreachable",
+			func() {
+				_ = sequence.Stop()
+			})
+	})
+
+	t.Run("running", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 
@@ -426,11 +503,11 @@ func Test_Sequence_Stop(t *testing.T) {
 		hooks.EXPECT().OnStopped("A", errTest)
 
 		sequence := Sequence{
-			running:         true,
 			servicesStop:    []Service{serviceA},
 			fanIn:           fanIn,
 			startStopMutex:  &sync.Mutex{},
-			internalMutex:   &sync.Mutex{},
+			state:           stateRunning,
+			stateMutex:      &sync.RWMutex{},
 			hooks:           hooks,
 			interceptStop:   make(chan struct{}),
 			interceptDone:   make(chan struct{}),
@@ -446,28 +523,6 @@ func Test_Sequence_Stop(t *testing.T) {
 		err := sequence.Stop()
 		assert.ErrorIs(t, err, errTest)
 		assert.EqualError(t, err, "stopping A: test error")
-	})
-
-	t.Run("crash during stop", func(t *testing.T) {
-		t.Parallel()
-
-		sequence := Sequence{
-			running:        true,
-			startStopMutex: &sync.Mutex{},
-			internalMutex:  &sync.Mutex{},
-			interceptStop:  make(chan struct{}),
-			interceptDone:  make(chan struct{}),
-		}
-
-		// Simulate interceptRunError handling a service crash
-		go func() {
-			<-sequence.interceptStop
-			sequence.running = false
-			close(sequence.interceptDone)
-		}()
-
-		err := sequence.Stop()
-		assert.NoError(t, err)
 	})
 }
 
@@ -497,7 +552,6 @@ func Test_Sequence_stop(t *testing.T) {
 		serviceC.EXPECT().String().Return("C")
 
 		sequence := Sequence{
-			running:         true,
 			servicesStop:    []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,
@@ -508,7 +562,6 @@ func Test_Sequence_stop(t *testing.T) {
 
 		assert.NoError(t, err)
 		expectedSequence := Sequence{
-			running:         false,
 			servicesStop:    []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,
@@ -544,7 +597,6 @@ func Test_Sequence_stop(t *testing.T) {
 		hooks.EXPECT().OnStopped("C", nil)
 
 		sequence := Sequence{
-			running:         true,
 			servicesStop:    []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,
@@ -557,7 +609,6 @@ func Test_Sequence_stop(t *testing.T) {
 		assert.EqualError(t, err, "stopping B: test error")
 
 		expectedSequence := Sequence{
-			running:         false,
 			servicesStop:    []Service{serviceA, serviceB, serviceC},
 			fanIn:           fanIn,
 			hooks:           hooks,

@@ -8,11 +8,11 @@ import (
 var _ Service = (*Restarter)(nil)
 
 type Restarter struct {
-	running        bool
 	service        Service
 	hooks          Hooks
 	startStopMutex *sync.Mutex
-	startedMutex   *sync.Mutex
+	state          state
+	stateMutex     *sync.RWMutex
 	interceptStop  chan struct{}
 	interceptDone  chan struct{}
 }
@@ -29,7 +29,8 @@ func NewRestarter(settings RestarterSettings) (restarter *Restarter, err error) 
 		service:        settings.Service,
 		hooks:          settings.Hooks,
 		startStopMutex: &sync.Mutex{},
-		startedMutex:   &sync.Mutex{},
+		state:          stateStopped,
+		stateMutex:     &sync.RWMutex{},
 	}, nil
 }
 
@@ -58,12 +59,15 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 	r.startStopMutex.Lock()
 	defer r.startStopMutex.Unlock()
 
-	r.startedMutex.Lock()
-	defer r.startedMutex.Unlock()
-
-	if r.running {
+	// Lock the state in case the sequence is already running.
+	r.stateMutex.RLock()
+	if r.state == stateRunning {
 		panic(fmt.Sprintf("restarter for %s already running", r.service))
 	}
+	// no need to keep a lock on the state since the `startStopMutex`
+	// prevents concurrent calls to `Start` and `Stop`.
+	r.stateMutex.RUnlock()
+	r.state = stateStarting
 
 	serviceString := r.service.String()
 
@@ -75,6 +79,14 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 		return nil, startErr
 	}
 
+	// Hold the state mutex until the intercept run error goroutine is ready
+	// and we change the state to running.
+	// This is as such because the intercept goroutine may catch a service run error
+	// as soon as it starts, and try to set the sequence state as crashed.
+	// With this lock, the goroutine must wait for the mutex unlock below before
+	// changing the state to crashed.
+	r.stateMutex.Lock()
+
 	interceptReady := make(chan struct{})
 	runErrorCh := make(chan error)
 	r.interceptStop = make(chan struct{})
@@ -83,7 +95,8 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 		serviceRunError, runErrorCh)
 	<-interceptReady
 
-	r.running = true
+	r.state = stateRunning
+	r.stateMutex.Unlock()
 
 	return runErrorCh, nil
 }
@@ -98,8 +111,15 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 		case <-r.interceptStop:
 			return
 		case err := <-input:
-			// Prevent a concurrent entire Start call or Stop call start.
-			r.startedMutex.Lock()
+			// Lock the state mutex in case we are stopping
+			// or trying to stop the restarter at the same time.
+			r.stateMutex.Lock()
+			if r.state == stateStopping {
+				// Discard the eventual single service run error
+				// if we are stopping the restarter.
+				r.stateMutex.Unlock()
+				return
+			}
 
 			r.hooks.OnCrash(serviceName, err)
 
@@ -109,50 +129,40 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 			r.hooks.OnStarted(serviceName, startErr)
 
 			if startErr != nil {
-				r.running = false
+				r.state = stateCrashed
+				r.stateMutex.Unlock()
 				output <- fmt.Errorf("restarting after crash: %w", startErr)
 				close(output)
-				r.startedMutex.Unlock()
 				return
 			}
-			r.startedMutex.Unlock()
+			r.state = stateRunning
+			r.stateMutex.Unlock()
 		}
 	}
 }
 
 // Stop stops the underlying service and the internal
 // run error restart-watcher goroutine.
-// If the group has already been stopped, the function panics.
+// If the restarter has already been stopped, the function panics.
 func (r *Restarter) Stop() (err error) {
-	// Prevent concurrent Stop and Start calls.
 	r.startStopMutex.Lock()
 	defer r.startStopMutex.Unlock()
 
-	// Check the state and stop the intercept goroutine whilst locking
-	// the started mutex to prevent a concurrent modification of the state
-	// in `interceptRunError`.
-	r.startedMutex.Lock()
-	if !r.running {
-		panic(fmt.Sprintf("restarter for %s already stopped", r.service))
-	}
-	close(r.interceptStop)
-
-	// unlock to let `interceptRunError` handle an eventual error from
-	// the underlying service, and exit.
-	// Note Start or another concurrent Stop cannot be called due to the `mutex` lock,
-	// so only the terminating `interceptRunError` goroutine can modify the state.
-	// There is thus no need to lock the started mutex below.
-	r.startedMutex.Unlock()
-
-	<-r.interceptDone
-
-	if !r.running {
-		// The interceptRunError goroutine had failed restarting the
-		// underlying service and set the state to stopped, whilst this
-		// call was waiting on the intercept to be done, so we
-		// return nil since the restarter is already stopped.
+	r.stateMutex.Lock()
+	switch r.state {
+	case stateRunning: // continue stopping the restarter
+	case stateCrashed:
+		// service crashed and failed to restart, just wait
+		// for the intercept goroutine to finish.
+		<-r.interceptDone
 		return nil
+	case stateStopped:
+		panic(fmt.Sprintf("bad calling code: restarter for %s already stopped", r.service))
+	case stateStarting, stateStopping:
+		panic("bad sequence implementation code: this code path should be unreachable")
 	}
+	r.state = stateStopping
+	r.stateMutex.Unlock()
 
 	serviceString := r.service.String()
 
@@ -160,6 +170,12 @@ func (r *Restarter) Stop() (err error) {
 	err = r.service.Stop()
 	r.hooks.OnStopped(serviceString, err)
 
-	r.running = false
+	// Stop the intercept error goroutine after we stop
+	// the restarter underlying service.
+	close(r.interceptStop)
+	<-r.interceptDone
+
+	r.state = stateStopped
+
 	return err
 }

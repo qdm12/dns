@@ -9,11 +9,11 @@ var _ Service = (*Group)(nil)
 
 type Group struct {
 	name            string
-	running         bool
 	services        []Service
 	hooks           Hooks
 	startStopMutex  *sync.Mutex
-	internalMutex   *sync.Mutex
+	state           state
+	stateMutex      *sync.RWMutex
 	fanIn           *errorsFanIn
 	runningServices map[string]struct{}
 	interceptStop   chan struct{}
@@ -36,7 +36,8 @@ func NewGroup(settings GroupSettings) (group *Group, err error) {
 		services:        services,
 		hooks:           settings.Hooks,
 		startStopMutex:  &sync.Mutex{},
-		internalMutex:   &sync.Mutex{},
+		state:           stateStopped,
+		stateMutex:      &sync.RWMutex{},
 		runningServices: make(map[string]struct{}),
 	}, nil
 }
@@ -60,18 +61,20 @@ func (g *Group) String() string {
 // call fully completes, since a run error can theoretically happen
 // at the same time the caller calls `Stop` on the group.
 //
-// If the group of services is already started and not
-// stopped previously, the function panics.
+// If the group is already running then the function panics.
 func (g *Group) Start() (runError <-chan error, startErr error) {
 	g.startStopMutex.Lock()
 	defer g.startStopMutex.Unlock()
 
-	g.internalMutex.Lock()
-	defer g.internalMutex.Unlock()
-
-	if g.running {
+	// Lock the state in case the group is already running.
+	g.stateMutex.RLock()
+	if g.state == stateRunning {
 		panic(fmt.Sprintf("group %s already running", g.name))
 	}
+	// no need to keep a lock on the state since the `startStopMutex`
+	// prevents concurrent calls to `Start` and `Stop`.
+	g.stateMutex.RUnlock()
+	g.state = stateStarting
 
 	var fanInErrorCh <-chan serviceError
 	g.fanIn, fanInErrorCh = newErrorsFanIn()
@@ -111,6 +114,14 @@ func (g *Group) Start() (runError <-chan error, startErr error) {
 		g.fanIn.add(serviceString, runError)
 	}
 
+	// Hold the state mutex until the intercept run error goroutine is ready
+	// and we change the state to running.
+	// This is as such because the intercept goroutine may catch a service run error
+	// as soon as it starts, and try to set the group state as crashed.
+	// With this lock, the goroutine must wait for the mutex unlock below before
+	// changing the state to crashed.
+	g.stateMutex.Lock()
+
 	runErrorCh := make(chan error)
 	interceptReady := make(chan struct{})
 	g.interceptStop = make(chan struct{})
@@ -118,7 +129,8 @@ func (g *Group) Start() (runError <-chan error, startErr error) {
 	go g.interceptRunError(interceptReady, fanInErrorCh, runErrorCh)
 	<-interceptReady
 
-	g.running = true
+	g.state = stateRunning
+	g.stateMutex.Unlock()
 
 	return runErrorCh, nil
 }
@@ -149,8 +161,7 @@ func startGroupedServiceAsync(service Starter, serviceString string,
 // channel, registers the crashed service of the group,
 // stops other running services and forwards the error
 // to the output channel and finally closes this channel.
-// If the stop channel triggers, the function returns
-// and closes the output channel.
+// If the stop channel triggers, the function returns.
 func (g *Group) interceptRunError(ready chan<- struct{},
 	input <-chan serviceError, output chan<- error) {
 	defer close(g.interceptDone)
@@ -159,12 +170,25 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 	select {
 	case <-g.interceptStop:
 	case serviceErr := <-input:
-		// Prevent a concurrent entire Start call or Stop call start.
-		g.internalMutex.Lock()
-		defer g.internalMutex.Unlock()
+		// Lock the state mutex in case we are stopping
+		// or trying to stop the group at the same time.
+		g.stateMutex.Lock()
+		if g.state == stateStopping {
+			// Discard the eventual single service run error
+			// fanned-in if we are stopping the group.
+			g.stateMutex.Unlock()
+			return
+		}
+
+		// The first and only service fanned-in run error was
+		// caught and we are not currently stopping the group.
+		g.state = stateCrashed
 		delete(g.runningServices, serviceErr.serviceName)
+		g.stateMutex.Unlock()
+
+		g.hooks.OnCrash(serviceErr.serviceName, serviceErr.err)
 		_ = g.stop()
-		output <- serviceErr
+		output <- &serviceErr
 		close(output)
 	}
 }
@@ -180,34 +204,38 @@ func (g *Group) Stop() (err error) {
 	g.startStopMutex.Lock()
 	defer g.startStopMutex.Unlock()
 
-	// Check the state and stop the intercept goroutine whilst locking
-	// the internal mutex to prevent a concurrent modification of the state
-	// in `interceptRunError`.
-	g.internalMutex.Lock()
-
-	if !g.running {
-		panic(fmt.Sprintf("group %s already stopped", g.name))
+	g.stateMutex.Lock()
+	switch g.state {
+	case stateRunning: // continue stopping the group
+	case stateCrashed:
+		g.stateMutex.Unlock()
+		// group is already stopped or stopping from
+		// the intercept goroutine, so just wait for the
+		// intercept goroutine to finish.
+		<-g.interceptDone
+		return nil
+	case stateStopped:
+		panic(fmt.Sprintf("bad calling code: group %s already stopped", g.name))
+	case stateStarting, stateStopping:
+		panic("bad group implementation code: this code path should be unreachable")
 	}
+	g.state = stateStopping
+	g.stateMutex.Unlock()
+
+	err = g.stop()
+
+	// Stop the intercept error goroutine after we stop
+	// all the group services. This means the fan in might
+	// send one error to the intercept goroutine, but it will
+	// discard it since we are in the stopping state.
+	// The error fan in takes care of reading and discarding
+	// errors from other services once it caught the first error.
 	close(g.interceptStop)
-
-	// unlock to let `interceptRunError` handle an eventual error from
-	// the underlying service, and exit.
-	// Note Start or another concurrent Stop cannot be called due to the `mutex` lock,
-	// so only the terminating `interceptRunError` goroutine can modify the state.
-	// There is thus no need to lock the internal mutex below.
-	g.internalMutex.Unlock()
-
 	<-g.interceptDone
 
-	if !g.running {
-		// The interceptRunError goroutine caught a service run error
-		// and stopped all services, whilst this call was waiting on
-		// the intercept to be done, so we return nil since the group
-		// is already stopped.
-		return nil
-	}
+	g.state = stateStopped
 
-	return g.stop()
+	return err
 }
 
 // stop stops all running services in the group of services.
@@ -253,8 +281,6 @@ func (g *Group) stop() (err error) {
 	// so it can read and discard any eventual run errors
 	// from these whilst we stop them.
 	g.fanIn.stop()
-
-	g.running = false
 
 	return err
 }
