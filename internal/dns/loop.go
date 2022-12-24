@@ -86,18 +86,18 @@ func (l *Loop) Start() (runError <-chan error, startErr error) {
 		return nil, fmt.Errorf("starting dns server: %w", err)
 	}
 
-	if *l.settings.CheckDNS {
-		err = check.WaitForDNS(ctx, check.Settings{})
-		if err != nil {
-			return nil, fmt.Errorf("waiting for DNS: %w", err)
-		}
-	}
-
 	// Make sure it didn't crash already.
 	select {
 	case err = <-serverRunError:
 		return nil, fmt.Errorf("running DNS server: %w", err)
 	default:
+	}
+
+	if *l.settings.CheckDNS {
+		err = check.WaitForDNS(ctx, check.Settings{})
+		if err != nil {
+			return nil, fmt.Errorf("waiting for DNS: %w", err)
+		}
 	}
 
 	runErrorCh := make(chan error)
