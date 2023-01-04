@@ -57,7 +57,7 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 	r.startStopMutex.Lock()
 	defer r.startStopMutex.Unlock()
 
-	// Lock the state in case the sequence is already running.
+	// Lock the state in case the restarter is already running.
 	r.stateMutex.RLock()
 	if r.state == StateRunning {
 		panic(fmt.Sprintf("restarter for %s already running", r.service))
@@ -80,7 +80,7 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 	// Hold the state mutex until the intercept run error goroutine is ready
 	// and we change the state to running.
 	// This is as such because the intercept goroutine may catch a service run error
-	// as soon as it starts, and try to set the sequence state as crashed.
+	// as soon as it starts, and try to set the restarter state as crashed.
 	// With this lock, the goroutine must wait for the mutex unlock below before
 	// changing the state to crashed.
 	r.stateMutex.Lock()
@@ -157,7 +157,7 @@ func (r *Restarter) Stop() (err error) {
 	case StateStopped:
 		panic(fmt.Sprintf("bad calling code: restarter for %s already stopped", r.service))
 	case StateStarting, StateStopping:
-		panic("bad sequence implementation code: this code path should be unreachable")
+		panic("bad restarter implementation code: this code path should be unreachable")
 	}
 	r.state = StateStopping
 	r.stateMutex.Unlock()

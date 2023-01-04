@@ -166,7 +166,7 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 // Only the first non nil service stop error encountered
 // is returned, but the hooks can be used to process each
 // error returned.
-// If the group has already been stopped, the function panics.
+// If the sequence has already been stopped, the function panics.
 func (s *Sequence) Stop() (err error) {
 	s.startStopMutex.Lock()
 	defer s.startStopMutex.Unlock()
