@@ -50,8 +50,8 @@ func (r *Restarter) String() string {
 // call fully completes, since a run error can theoretically happen
 // at the same time the caller calls `Stop` on the restarter.
 //
-// If the restarter is already started and not stopped previously,
-// the function panics.
+// If the restarter is already running, the `ErrAlreadyStarted` error
+// is returned.
 func (r *Restarter) Start() (runError <-chan error, startErr error) {
 	// Prevent concurrent Stop and Start calls.
 	r.startStopMutex.Lock()
@@ -59,12 +59,14 @@ func (r *Restarter) Start() (runError <-chan error, startErr error) {
 
 	// Lock the state in case the restarter is already running.
 	r.stateMutex.RLock()
-	if r.state == StateRunning {
-		panic(fmt.Sprintf("restarter for %s already running", r.service))
-	}
+	state := r.state
 	// no need to keep a lock on the state since the `startStopMutex`
 	// prevents concurrent calls to `Start` and `Stop`.
 	r.stateMutex.RUnlock()
+	if state == StateRunning {
+		return nil, fmt.Errorf("%s: %w", r, ErrAlreadyStarted)
+	}
+
 	r.state = StateStarting
 
 	serviceString := r.service.String()
@@ -141,7 +143,8 @@ func (r *Restarter) interceptRunError(ready chan<- struct{},
 
 // Stop stops the underlying service and the internal
 // run error restart-watcher goroutine.
-// If the restarter has already been stopped, the function panics.
+// If the restarter is already stopped, the `ErrAlreadyStopped` error
+// is returned.
 func (r *Restarter) Stop() (err error) {
 	r.startStopMutex.Lock()
 	defer r.startStopMutex.Unlock()
@@ -155,7 +158,7 @@ func (r *Restarter) Stop() (err error) {
 		<-r.interceptDone
 		return nil
 	case StateStopped:
-		panic(fmt.Sprintf("bad calling code: restarter for %s already stopped", r.service))
+		return fmt.Errorf("%s: %w", r, ErrAlreadyStopped)
 	case StateStarting, StateStopping:
 		panic("bad restarter implementation code: this code path should be unreachable")
 	}

@@ -74,7 +74,7 @@ func Test_Restarter_String(t *testing.T) {
 func Test_Restarter_Start(t *testing.T) {
 	t.Parallel()
 
-	t.Run("panic if already running", func(t *testing.T) {
+	t.Run("error if already running", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 
@@ -86,11 +86,10 @@ func Test_Restarter_Start(t *testing.T) {
 			state:   StateRunning,
 		}
 
-		assert.PanicsWithValue(t,
-			"restarter for A already running",
-			func() {
-				_, _ = restarter.Start()
-			})
+		_, err := restarter.Start()
+
+		assert.ErrorIs(t, err, ErrAlreadyStarted)
+		assert.EqualError(t, err, "A: already started")
 	})
 
 	t.Run("service first start error", func(t *testing.T) {
@@ -356,7 +355,7 @@ func Test_Restarter_Stop(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("already stopped", func(t *testing.T) {
+	t.Run("already stopped returns an error", func(t *testing.T) {
 		t.Parallel()
 		ctrl := gomock.NewController(t)
 
@@ -366,9 +365,10 @@ func Test_Restarter_Stop(t *testing.T) {
 		restarter := Restarter{
 			service: service,
 		}
-		assert.PanicsWithValue(t, "bad calling code: restarter for A already stopped", func() {
-			_ = restarter.Stop()
-		})
+
+		err := restarter.Stop()
+		assert.ErrorIs(t, err, ErrAlreadyStopped)
+		assert.EqualError(t, err, "A: already stopped")
 	})
 
 	t.Run("illegal state", func(t *testing.T) {
@@ -377,7 +377,7 @@ func Test_Restarter_Stop(t *testing.T) {
 		restarter := Restarter{
 			state: StateStarting,
 		}
-		assert.PanicsWithValue(t, "bad sequence implementation code: "+
+		assert.PanicsWithValue(t, "bad restarter implementation code: "+
 			"this code path should be unreachable", func() {
 			_ = restarter.Stop()
 		})

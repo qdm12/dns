@@ -59,19 +59,22 @@ func (g *Group) String() string {
 // call fully completes, since a run error can theoretically happen
 // at the same time the caller calls `Stop` on the group.
 //
-// If the group is already running then the function panics.
+// If the group is already running, the `ErrAlreadyStarted` error
+// is returned.
 func (g *Group) Start() (runError <-chan error, startErr error) {
 	g.startStopMutex.Lock()
 	defer g.startStopMutex.Unlock()
 
 	// Lock the state in case the group is already running.
 	g.stateMutex.RLock()
-	if g.state == StateRunning {
-		panic(fmt.Sprintf("group %s already running", g.name))
-	}
+	state := g.state
 	// no need to keep a lock on the state since the `startStopMutex`
 	// prevents concurrent calls to `Start` and `Stop`.
 	g.stateMutex.RUnlock()
+	if state == StateRunning {
+		return nil, fmt.Errorf("%s: %w", g, ErrAlreadyStarted)
+	}
+
 	g.state = StateStarting
 
 	var fanInErrorCh <-chan serviceError
@@ -197,7 +200,8 @@ func (g *Group) interceptRunError(ready chan<- struct{},
 // Only the first non nil service stop error encountered
 // is returned, but the hooks can be used to process each
 // error returned.
-// If the group has already been stopped, the function panics.
+// If the group is already stopped, the `ErrAlreadyStopped` error
+// is returned.
 func (g *Group) Stop() (err error) {
 	g.startStopMutex.Lock()
 	defer g.startStopMutex.Unlock()
@@ -213,7 +217,7 @@ func (g *Group) Stop() (err error) {
 		<-g.interceptDone
 		return nil
 	case StateStopped:
-		panic(fmt.Sprintf("bad calling code: group %s already stopped", g.name))
+		return fmt.Errorf("%s: %w", g, ErrAlreadyStopped)
 	case StateStarting, StateStopping:
 		panic("bad group implementation code: this code path should be unreachable")
 	}

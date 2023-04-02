@@ -14,6 +14,9 @@ var (
 	ErrNoServiceStop             = errors.New("no service stop order specified")
 	ErrServicesStartStopMismatch = errors.New("services to start and stop mismatch")
 	ErrServicesNotUnique         = errors.New("services are not unique")
+
+	ErrAlreadyStarted = errors.New("already started")
+	ErrAlreadyStopped = errors.New("already stopped")
 )
 
 const (

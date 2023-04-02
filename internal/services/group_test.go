@@ -94,7 +94,7 @@ func Test_Group_Start(t *testing.T) {
 
 	errTest := errors.New("test error")
 
-	t.Run("panic if already running", func(t *testing.T) {
+	t.Run("error if already running", func(t *testing.T) {
 		t.Parallel()
 
 		group := &Group{
@@ -102,11 +102,10 @@ func Test_Group_Start(t *testing.T) {
 			state: StateRunning,
 		}
 
-		assert.PanicsWithValue(t,
-			"group name already running",
-			func() {
-				_, _ = group.Start()
-			})
+		_, err := group.Start()
+
+		assert.ErrorIs(t, err, ErrAlreadyStarted)
+		assert.EqualError(t, err, "group name: already started")
 	})
 
 	t.Run("one service of two start error", func(t *testing.T) {
@@ -400,16 +399,16 @@ func Test_Group_interceptRunError(t *testing.T) {
 func Test_Group_Stop(t *testing.T) {
 	t.Parallel()
 
-	t.Run("already stopped", func(t *testing.T) {
+	t.Run("already stopped returns an error", func(t *testing.T) {
 		t.Parallel()
 
 		group := Group{
 			name:  "name",
 			state: StateStopped,
 		}
-		assert.PanicsWithValue(t, "bad calling code: group name already stopped", func() {
-			_ = group.Stop()
-		})
+		err := group.Stop()
+		assert.ErrorIs(t, err, ErrAlreadyStopped)
+		assert.EqualError(t, err, "group name: already stopped")
 	})
 
 	t.Run("in starting state", func(t *testing.T) {

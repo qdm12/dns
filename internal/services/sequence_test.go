@@ -96,7 +96,7 @@ func Test_Sequence_Start(t *testing.T) {
 
 	errTest := errors.New("test error")
 
-	t.Run("panic if already running", func(t *testing.T) {
+	t.Run("error if already running", func(t *testing.T) {
 		t.Parallel()
 
 		sequence := &Sequence{
@@ -104,11 +104,10 @@ func Test_Sequence_Start(t *testing.T) {
 			state: StateRunning,
 		}
 
-		assert.PanicsWithValue(t,
-			"sequence name already running",
-			func() {
-				_, _ = sequence.Start()
-			})
+		_, err := sequence.Start()
+
+		assert.ErrorIs(t, err, ErrAlreadyStarted)
+		assert.EqualError(t, err, "sequence name: already started")
 	})
 
 	t.Run("first service start error", func(t *testing.T) {
@@ -452,9 +451,10 @@ func Test_Sequence_Stop(t *testing.T) {
 			name:  "name",
 			state: StateStopped,
 		}
-		assert.PanicsWithValue(t, "bad calling code: sequence name already stopped", func() {
-			_ = sequence.Stop()
-		})
+
+		err := sequence.Stop()
+		assert.ErrorIs(t, err, ErrAlreadyStopped)
+		assert.EqualError(t, err, "sequence name: already stopped")
 	})
 
 	t.Run("in starting state", func(t *testing.T) {

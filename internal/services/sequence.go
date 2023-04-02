@@ -74,12 +74,14 @@ func (s *Sequence) Start() (runError <-chan error, startErr error) {
 
 	// Lock the state in case the sequence is already running.
 	s.stateMutex.RLock()
-	if s.state == StateRunning {
-		panic(fmt.Sprintf("sequence %s already running", s.name))
-	}
+	state := s.state
 	// no need to keep a lock on the state since the `startStopMutex`
 	// prevents concurrent calls to `Start` and `Stop`.
 	s.stateMutex.RUnlock()
+	if state == StateRunning {
+		return nil, fmt.Errorf("%s: %w", s, ErrAlreadyStarted)
+	}
+
 	s.state = StateStarting
 
 	var fanInErrorCh <-chan serviceError
@@ -166,7 +168,8 @@ func (s *Sequence) interceptRunError(ready chan<- struct{},
 // Only the first non nil service stop error encountered
 // is returned, but the hooks can be used to process each
 // error returned.
-// If the sequence has already been stopped, the function panics.
+// If the sequence is already stopped, the `ErrAlreadyStopped` error
+// is returned.
 func (s *Sequence) Stop() (err error) {
 	s.startStopMutex.Lock()
 	defer s.startStopMutex.Unlock()
@@ -182,7 +185,7 @@ func (s *Sequence) Stop() (err error) {
 		<-s.interceptDone
 		return nil
 	case StateStopped:
-		panic(fmt.Sprintf("bad calling code: sequence %s already stopped", s.name))
+		return fmt.Errorf("%s: %w", s, ErrAlreadyStopped)
 	case StateStarting, StateStopping:
 		panic("bad sequence implementation code: this code path should be unreachable")
 	}
