@@ -1,5 +1,7 @@
 package services
 
+import "fmt"
+
 // State is the State of a service.
 type State uint8
 
@@ -15,3 +17,20 @@ const (
 	// StateCrashed is the state of a service that has crashed.
 	StateCrashed
 )
+
+func (s State) String() string {
+	switch s {
+	case StateStopped:
+		return "stopped"
+	case StateStarting:
+		return "starting"
+	case StateRunning:
+		return "running"
+	case StateStopping:
+		return "stopping"
+	case StateCrashed:
+		return "crashed"
+	default:
+		panic(fmt.Sprintf("State %d has not corresponding string", s))
+	}
+}

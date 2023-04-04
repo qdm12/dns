@@ -2,6 +2,7 @@ package services
 
 import (
 	"testing"
+	"time"
 
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,48 @@ func checkErrIsErrTest(t *testing.T, err error, serviceName string,
 		err:         sentinelErr,
 	}
 	assert.Equal(t, expectedServiceErr, err)
+}
+
+type syncMutexTest interface {
+	TryLock() bool
+	Unlock()
+}
+
+func assertMutexUnlocked(t *testing.T, mutex syncMutexTest) {
+	t.Helper()
+	if !mutex.TryLock() {
+		t.Error("mutex is locked")
+	}
+	mutex.Unlock()
+}
+
+func assertNoRunError(t *testing.T, runError <-chan error) {
+	t.Helper()
+	select {
+	case err := <-runError:
+		t.Errorf("unexpected run error: %s", err)
+	default:
+	}
+}
+
+func assertRunError(t *testing.T, runError <-chan error, expectedErr error) {
+	t.Helper()
+	const timeout = 100 * time.Millisecond
+	timer := time.NewTimer(timeout)
+	select {
+	case err := <-runError:
+		assert.ErrorIs(t, err, expectedErr)
+	case <-timer.C:
+		t.Fatal("run error not received")
+	}
+
+	timer.Stop()
+	timer.Reset(timeout)
+	select {
+	case <-runError:
+	case <-timer.C:
+		t.Fatal("run error not closed after receiving error")
+	}
 }
 
 func Test_andStrings(t *testing.T) {
