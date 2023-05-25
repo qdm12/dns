@@ -272,8 +272,12 @@ func (g *Group) stop() (err error) {
 
 	for i := uint(0); i < runningCount; i++ {
 		stopErr := <-stopErrors
-		if stopErr.err != nil && err == nil {
-			err = stopErr
+		switch {
+		case stopErr.err == nil:
+		case err == nil:
+			err = fmt.Errorf("stopping %s: %w", stopErr.serviceName, stopErr.err)
+		default:
+			err = fmt.Errorf("%w; stopping %s: %w", err, stopErr.serviceName, stopErr.err)
 		}
 
 		delete(g.runningServices, stopErr.serviceName)
