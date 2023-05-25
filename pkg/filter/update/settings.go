@@ -3,11 +3,11 @@ package update
 import (
 	"errors"
 	"fmt"
+	"net/netip"
 	"regexp"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/gotree"
-	"inet.af/netaddr"
 )
 
 type Settings struct {
@@ -15,9 +15,9 @@ type Settings struct {
 	// to filter out.
 	FqdnHostnames []string
 	// IPs is a list of IP addresses to filter out.
-	IPs []netaddr.IP
+	IPs []netip.Addr
 	// IPPrefixes is a list of IP prefixes to filter out.
-	IPPrefixes []netaddr.IPPrefix
+	IPPrefixes []netip.Prefix
 }
 
 func (s *Settings) SetDefaults() {}

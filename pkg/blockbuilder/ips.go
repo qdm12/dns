@@ -2,9 +2,8 @@ package blockbuilder
 
 import (
 	"context"
+	"net/netip"
 	"sort"
-
-	"inet.af/netaddr"
 )
 
 const (
@@ -15,9 +14,9 @@ const (
 
 func (b *Builder) buildIPs(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
-	allowedIPs, additionalBlockedIPs []netaddr.IP,
-	allowedIPPrefixes, additionalBlockedIPPrefixes []netaddr.IPPrefix) (
-	blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix, errs []error) {
+	allowedIPs, additionalBlockedIPs []netip.Addr,
+	allowedIPPrefixes, additionalBlockedIPPrefixes []netip.Prefix) (
+	blockedIPs []netip.Addr, blockedIPPrefixes []netip.Prefix, errs []error) {
 	urls := getIPsURLs(blockMalicious, blockAds, blockSurveillance)
 
 	uniqueResults, errs := getLists(ctx, b.client, urls)
@@ -57,18 +56,18 @@ func getIPsURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []string
 }
 
 func parseIPStrings(uniqueResults map[string]struct{}) (
-	blockedIPs []netaddr.IP, blockedIPPrefixes []netaddr.IPPrefix) {
-	blockedIPs = make([]netaddr.IP, 0, len(uniqueResults))
-	blockedIPPrefixes = make([]netaddr.IPPrefix, 0, len(uniqueResults))
+	blockedIPs []netip.Addr, blockedIPPrefixes []netip.Prefix) {
+	blockedIPs = make([]netip.Addr, 0, len(uniqueResults))
+	blockedIPPrefixes = make([]netip.Prefix, 0, len(uniqueResults))
 
 	for s := range uniqueResults {
-		ip, err := netaddr.ParseIP(s)
+		ip, err := netip.ParseAddr(s)
 		if err == nil {
 			blockedIPs = append(blockedIPs, ip)
 			continue
 		}
 
-		ipPrefix, err := netaddr.ParseIPPrefix(s)
+		ipPrefix, err := netip.ParsePrefix(s)
 		if err == nil {
 			blockedIPPrefixes = append(blockedIPPrefixes, ipPrefix)
 			continue

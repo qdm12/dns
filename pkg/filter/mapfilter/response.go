@@ -2,9 +2,9 @@ package mapfilter
 
 import (
 	"net"
+	"net/netip"
 
 	"github.com/miekg/dns"
-	"inet.af/netaddr"
 )
 
 func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
@@ -33,17 +33,19 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 }
 
 func (m *Filter) isIPBlocked(ip net.IP) (blocked bool) {
-	netaddrIP, ok := netaddr.FromStdIP(ip)
-	if !ok {
-		return true
+	var netIP netip.Addr
+	if ip.To4() != nil {
+		netIP = netip.AddrFrom4([4]byte(ip.To4()))
+	} else {
+		netIP = netip.AddrFrom16([16]byte(ip.To16()))
 	}
 
-	if _, blocked := m.ips[netaddrIP]; blocked {
+	if _, blocked := m.ips[netIP]; blocked {
 		return blocked
 	}
 
 	for _, ipPrefix := range m.ipPrefixes {
-		if ipPrefix.Contains(netaddrIP) {
+		if ipPrefix.Contains(netIP) {
 			return true
 		}
 	}

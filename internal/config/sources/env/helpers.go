@@ -2,12 +2,12 @@ package env
 
 import (
 	"fmt"
+	"net/netip"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/qdm12/govalid/binary"
-	"inet.af/netaddr"
 )
 
 func envToCSV(envKey string) (values []string) {
@@ -70,11 +70,11 @@ func lowerAndSplit(csv string) (values []string) {
 	return strings.Split(csv, ",")
 }
 
-func parseIPStrings(ipStrings []string) (ips []netaddr.IP, err error) {
-	ips = make([]netaddr.IP, len(ipStrings))
+func parseIPStrings(ipStrings []string) (ips []netip.Addr, err error) {
+	ips = make([]netip.Addr, len(ipStrings))
 
 	for i, ipString := range ipStrings {
-		ips[i], err = netaddr.ParseIP(ipString)
+		ips[i], err = netip.ParseAddr(ipString)
 		if err != nil {
 			return nil, fmt.Errorf("IP address string is not valid: %w", err)
 		}
@@ -83,11 +83,11 @@ func parseIPStrings(ipStrings []string) (ips []netaddr.IP, err error) {
 	return ips, nil
 }
 
-func parseIPPrefixStrings(ipPrefixStrings []string) (ipPrefixes []netaddr.IPPrefix, err error) {
-	ipPrefixes = make([]netaddr.IPPrefix, len(ipPrefixStrings))
+func parseIPPrefixStrings(ipPrefixStrings []string) (ipPrefixes []netip.Prefix, err error) {
+	ipPrefixes = make([]netip.Prefix, len(ipPrefixStrings))
 
 	for i, ipPrefixString := range ipPrefixStrings {
-		ipPrefixes[i], err = netaddr.ParseIPPrefix(ipPrefixString)
+		ipPrefixes[i], err = netip.ParsePrefix(ipPrefixString)
 		if err != nil {
 			return nil, fmt.Errorf("IP prefix CIDR string is not valid: %w", err)
 		}

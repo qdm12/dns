@@ -1,16 +1,16 @@
 package mapfilter
 
 import (
+	"net/netip"
 	"sync"
 
 	"github.com/qdm12/dns/v2/pkg/filter/metrics"
-	"inet.af/netaddr"
 )
 
 type Filter struct {
 	fqdnHostnames map[string]struct{}
-	ips           map[netaddr.IP]struct{}
-	ipPrefixes    []netaddr.IPPrefix
+	ips           map[netip.Addr]struct{}
+	ipPrefixes    []netip.Prefix
 	metrics       metrics.Interface
 	updateLock    sync.RWMutex
 }

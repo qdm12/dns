@@ -2,11 +2,11 @@ package settings
 
 import (
 	"fmt"
+	"net/netip"
 	"strings"
 
 	"github.com/qdm12/dns/v2/internal/config/defaults"
 	"github.com/qdm12/gotree"
-	"inet.af/netaddr"
 )
 
 type Block struct {
@@ -15,11 +15,11 @@ type Block struct {
 	BlockSurveillance    *bool
 	RebindingProtection  *bool
 	AllowedHosts         []string
-	AllowedIPs           []netaddr.IP
-	AllowedIPPrefixes    []netaddr.IPPrefix
+	AllowedIPs           []netip.Addr
+	AllowedIPPrefixes    []netip.Prefix
 	AddBlockedHosts      []string
-	AddBlockedIPs        []netaddr.IP
-	AddBlockedIPPrefixes []netaddr.IPPrefix
+	AddBlockedIPs        []netip.Addr
+	AddBlockedIPPrefixes []netip.Prefix
 }
 
 func (b *Block) setDefaults() {

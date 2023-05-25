@@ -2,14 +2,13 @@ package blockbuilder
 
 import (
 	"context"
-
-	"inet.af/netaddr"
+	"net/netip"
 )
 
 func (b *Builder) BuildAll(ctx context.Context) (result Result) {
 	chHostnames := make(chan []string)
-	chIPs := make(chan []netaddr.IP)
-	chIPPrefixes := make(chan []netaddr.IPPrefix)
+	chIPs := make(chan []netip.Addr)
+	chIPPrefixes := make(chan []netip.Prefix)
 	chHostnamesErrors := make(chan []error)
 	chIPsErrors := make(chan []error)
 

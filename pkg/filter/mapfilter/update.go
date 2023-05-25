@@ -1,8 +1,9 @@
 package mapfilter
 
 import (
+	"net/netip"
+
 	"github.com/qdm12/dns/v2/pkg/filter/update"
-	"inet.af/netaddr"
 )
 
 func (m *Filter) Update(settings update.Settings) {
@@ -14,7 +15,7 @@ func (m *Filter) Update(settings update.Settings) {
 		m.fqdnHostnames[fqdnHostname] = struct{}{}
 	}
 
-	m.ips = make(map[netaddr.IP]struct{}, len(settings.IPs))
+	m.ips = make(map[netip.Addr]struct{}, len(settings.IPs))
 	for _, ip := range settings.IPs {
 		m.ips[ip] = struct{}{}
 	}

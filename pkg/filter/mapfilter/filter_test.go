@@ -2,13 +2,13 @@ package mapfilter
 
 import (
 	"net"
+	"net/netip"
 	"sync"
 	"testing"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/filter/update"
 	"github.com/stretchr/testify/assert"
-	"inet.af/netaddr"
 )
 
 func Test_Filter(t *testing.T) {
@@ -16,9 +16,9 @@ func Test_Filter(t *testing.T) {
 
 	settings := Settings{
 		Update: update.Settings{
-			IPs: []netaddr.IP{
-				netaddr.IPv4(2, 2, 2, 2),
-				netaddr.IPv4(3, 3, 3, 3),
+			IPs: []netip.Addr{
+				netip.AddrFrom4([4]byte{2, 2, 2, 2}),
+				netip.AddrFrom4([4]byte{3, 3, 3, 3}),
 			},
 		},
 	}
@@ -65,9 +65,9 @@ func Test_Filter_threadSafety(t *testing.T) {
 
 	settings := Settings{
 		Update: update.Settings{
-			IPs: []netaddr.IP{
-				netaddr.IPv4(2, 2, 2, 2),
-				netaddr.IPv4(3, 3, 3, 3),
+			IPs: []netip.Addr{
+				netip.AddrFrom4([4]byte{2, 2, 2, 2}),
+				netip.AddrFrom4([4]byte{3, 3, 3, 3}),
 			},
 			FqdnHostnames: []string{"github.com."},
 		},

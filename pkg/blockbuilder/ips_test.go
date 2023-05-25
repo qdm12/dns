@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"inet.af/netaddr"
 )
 
 func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
@@ -25,10 +25,10 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 		malicious                   blockParams
 		ads                         blockParams
 		surveillance                blockParams
-		allowedIPs                  []netaddr.IP
-		additionalBlockedIPs        []netaddr.IP
-		allowedIPPrefixes           []netaddr.IPPrefix
-		additionalBlockedIPPrefixes []netaddr.IPPrefix
+		allowedIPs                  []netip.Addr
+		additionalBlockedIPs        []netip.Addr
+		allowedIPPrefixes           []netip.Prefix
+		additionalBlockedIPPrefixes []netip.Prefix
 		blockedIPs                  []string // string format for easier comparison
 		blockedIPPrefixes           []string // string format for easier comparison
 		errsString                  []string // string format for easier comparison
@@ -86,11 +86,10 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 				blocked: true,
 				content: []byte("254.254.254.1"),
 			},
-			additionalBlockedIPs: []netaddr.IP{netaddr.IPv4(254, 254, 254, 1)},
-			additionalBlockedIPPrefixes: []netaddr.IPPrefix{{
-				IP:   netaddr.IPv4(55, 55, 55, 0),
-				Bits: 24,
-			}},
+			additionalBlockedIPs: []netip.Addr{netip.AddrFrom4([4]byte{254, 254, 254, 1})},
+			additionalBlockedIPPrefixes: []netip.Prefix{
+				netip.PrefixFrom(netip.AddrFrom4([4]byte{55, 55, 55, 0}), 24),
+			},
 			blockedIPs:        []string{"1.2.3.4", "254.254.254.1"},
 			blockedIPPrefixes: []string{"66.67.68.10/28", "55.55.55.0/24"},
 		},

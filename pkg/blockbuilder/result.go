@@ -1,11 +1,13 @@
 package blockbuilder
 
-import "inet.af/netaddr"
+import (
+	"net/netip"
+)
 
 type Result struct {
 	BlockedHostnames  []string
-	BlockedIPs        []netaddr.IP
-	BlockedIPPrefixes []netaddr.IPPrefix
+	BlockedIPs        []netip.Addr
+	BlockedIPPrefixes []netip.Prefix
 	// Errors contains all errors encountered.
 	Errors []error
 }

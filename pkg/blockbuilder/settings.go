@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/netip"
 	"regexp"
 	"strings"
 
 	"github.com/qdm12/dns/v2/internal/config/defaults"
 	"github.com/qdm12/gotree"
-	"inet.af/netaddr"
 )
 
 type Settings struct {
@@ -18,11 +18,11 @@ type Settings struct {
 	BlockAds             bool
 	BlockSurveillance    bool
 	AllowedHosts         []string
-	AllowedIPs           []netaddr.IP
-	AllowedIPPrefixes    []netaddr.IPPrefix
+	AllowedIPs           []netip.Addr
+	AllowedIPPrefixes    []netip.Prefix
 	AddBlockedHosts      []string
-	AddBlockedIPs        []netaddr.IP
-	AddBlockedIPPrefixes []netaddr.IPPrefix
+	AddBlockedIPs        []netip.Addr
+	AddBlockedIPPrefixes []netip.Prefix
 }
 
 func (s *Settings) SetDefaults() {

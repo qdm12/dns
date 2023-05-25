@@ -1,10 +1,10 @@
 package blockbuilder
 
 import (
-	"inet.af/netaddr"
+	"net/netip"
 )
 
-func convertIPsToString(ips []netaddr.IP) (ipStrings []string) {
+func convertIPsToString(ips []netip.Addr) (ipStrings []string) {
 	ipStrings = make([]string, len(ips))
 	for i := range ips {
 		ipStrings[i] = ips[i].String()
@@ -12,7 +12,7 @@ func convertIPsToString(ips []netaddr.IP) (ipStrings []string) {
 	return ipStrings
 }
 
-func convertIPPrefixesToString(ipPrefixes []netaddr.IPPrefix) (ipPrefixStrings []string) {
+func convertIPPrefixesToString(ipPrefixes []netip.Prefix) (ipPrefixStrings []string) {
 	ipPrefixStrings = make([]string, len(ipPrefixes))
 	for i := range ipPrefixes {
 		ipPrefixStrings[i] = ipPrefixes[i].String()

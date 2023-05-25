@@ -3,8 +3,7 @@ package blockbuilder
 import (
 	"context"
 	"net/http"
-
-	"inet.af/netaddr"
+	"net/netip"
 )
 
 var _ Interface = (*Builder)(nil)
@@ -37,9 +36,9 @@ type Builder struct {
 	blockAds             bool
 	blockSurveillance    bool
 	allowedHosts         []string
-	allowedIPs           []netaddr.IP
-	allowedIPPrefixes    []netaddr.IPPrefix
+	allowedIPs           []netip.Addr
+	allowedIPPrefixes    []netip.Prefix
 	addBlockedHosts      []string
-	addBlockedIPs        []netaddr.IP
-	addBlockedIPPrefixes []netaddr.IPPrefix
+	addBlockedIPs        []netip.Addr
+	addBlockedIPPrefixes []netip.Prefix
 }

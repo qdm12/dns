@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"inet.af/netaddr"
 )
 
 func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
@@ -108,7 +108,7 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 				BlockMalicious:    true,
 				BlockAds:          false,
 				BlockSurveillance: false,
-				AddBlockedIPs:     []netaddr.IP{netaddr.IPv4(1, 2, 3, 7)},
+				AddBlockedIPs:     []netip.Addr{netip.AddrFrom4([4]byte{1, 2, 3, 7})},
 			},
 			maliciousHosts: httpCase{
 				content: []byte("malicious.com"),

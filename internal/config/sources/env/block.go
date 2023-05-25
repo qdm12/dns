@@ -2,9 +2,9 @@ package env
 
 import (
 	"fmt"
+	"net/netip"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
-	"inet.af/netaddr"
 )
 
 func readBlock() (settings settings.Block, err error) {
@@ -59,7 +59,7 @@ func readBlock() (settings settings.Block, err error) {
 
 // getAllowedIPs obtains a list of IPs to unblock from block lists
 // from the comma separated list for the environment variable ALLOWED_IPS.
-func getAllowedIPs() (ips []netaddr.IP, err error) {
+func getAllowedIPs() (ips []netip.Addr, err error) {
 	ipStrings := envToCSV("ALLOWED_IPS")
 
 	ips, err = parseIPStrings(ipStrings)
@@ -72,7 +72,7 @@ func getAllowedIPs() (ips []netaddr.IP, err error) {
 
 // getBlockedIPs obtains a list of IP addresses to block from
 // the comma separated list for the environment variable BLOCK_IPS.
-func getBlockedIPs() (ips []netaddr.IP, err error) {
+func getBlockedIPs() (ips []netip.Addr, err error) {
 	values := envToCSV("BLOCK_IPS")
 
 	ips, err = parseIPStrings(values)
@@ -85,7 +85,7 @@ func getBlockedIPs() (ips []netaddr.IP, err error) {
 
 // getAllowedIPPrefixes obtains a list of IP Prefixes to unblock from block lists
 // from the comma separated list for the environment variable ALLOWED_CIDRS.
-func getAllowedIPPrefixes() (ipPrefixes []netaddr.IPPrefix, err error) {
+func getAllowedIPPrefixes() (ipPrefixes []netip.Prefix, err error) {
 	ipPrefixStrings := envToCSV("ALLOWED_CIDRS")
 
 	ipPrefixes, err = parseIPPrefixStrings(ipPrefixStrings)
@@ -98,7 +98,7 @@ func getAllowedIPPrefixes() (ipPrefixes []netaddr.IPPrefix, err error) {
 
 // getBlockedIPPrefixes obtains a list of IP networks (CIDR notation) to block from
 // the comma separated list for the environment variable BLOCK_CIDRS.
-func getBlockedIPPrefixes() (ipPrefixes []netaddr.IPPrefix, err error) {
+func getBlockedIPPrefixes() (ipPrefixes []netip.Prefix, err error) {
 	values := envToCSV("BLOCK_CIDRS")
 
 	ipPrefixes, err = parseIPPrefixStrings(values)
