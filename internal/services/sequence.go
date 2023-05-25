@@ -67,7 +67,8 @@ func (s *Sequence) String() string {
 // call fully completes, since a run error can theoretically happen
 // at the same time the caller calls `Stop` on the sequence.
 //
-// If the sequence is already running then the function panics.
+// If the sequence is already running then a start error ErrAlreadyStarted
+// is returned.
 func (s *Sequence) Start() (runError <-chan error, startErr error) {
 	s.startStopMutex.Lock()
 	defer s.startStopMutex.Unlock()
