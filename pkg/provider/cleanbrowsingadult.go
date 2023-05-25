@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func CleanBrowsingAdult() Provider {
@@ -26,11 +25,7 @@ func CleanBrowsingAdult() Provider {
 		},
 		// See https://cleanbrowsing.org/guides/dnsoverhttps
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "doh.cleanbrowsing.org",
-				Path:   "/doh/adult-filter/",
-			},
+			URL: "https://doh.cleanbrowsing.org/doh/adult-filter/",
 		},
 	}
 }

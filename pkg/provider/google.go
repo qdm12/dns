@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func Google() Provider {
@@ -26,11 +25,7 @@ func Google() Provider {
 		},
 		// See https://developers.google.com/speed/public-dns/docs/doh
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "dns.google",
-				Path:   "/dns-query",
-			},
+			URL: "https://dns.google/dns-query",
 		},
 	}
 }

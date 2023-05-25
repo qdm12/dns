@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func Quadrant() Provider {
@@ -24,11 +23,7 @@ func Quadrant() Provider {
 		},
 		// See https://quadrantsec.com/quadrants_public_dns_resolver_with_tls_https_support/
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "doh.qis.io",
-				Path:   "/dns-query",
-			},
+			URL: "https://doh.qis.io/dns-query",
 		},
 	}
 }

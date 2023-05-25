@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func CloudflareFamily() Provider {
@@ -26,11 +25,7 @@ func CloudflareFamily() Provider {
 		},
 		// see https://developers.cloudflare.com/1.1.1.1/1.1.1.1-for-families/setup-instructions/dns-over-https
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "family.cloudflare-dns.com",
-				Path:   "/dns-query",
-			},
+			URL: "https://family.cloudflare-dns.com/dns-query",
 		},
 	}
 }

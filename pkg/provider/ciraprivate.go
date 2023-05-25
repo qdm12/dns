@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func CiraPrivate() Provider {
@@ -25,11 +24,7 @@ func CiraPrivate() Provider {
 			Port: defaultDoTPort,
 		},
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "private.canadianshield.cira.ca",
-				Path:   "/dns-query",
-			},
+			URL: "https://private.canadianshield.cira.ca/dns-query",
 		},
 	}
 }

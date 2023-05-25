@@ -8,7 +8,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"net/url"
 	"sync"
 	"time"
 
@@ -40,7 +39,7 @@ func newDoTClient(settings dot.ResolverSettings) (
 }
 
 func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.Pool,
-	url *url.URL, wire []byte) (respWire []byte, err error) { //nolint:interfacer
+	url string, wire []byte) (respWire []byte, err error) { //nolint:interfacer
 	buffer := bufferPool.Get().(*bytes.Buffer) //nolint:forcetypeassert
 	buffer.Reset()
 	defer bufferPool.Put(buffer)
@@ -50,7 +49,7 @@ func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.P
 		return nil, err
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url.String(), buffer)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, buffer)
 	if err != nil {
 		return nil, err
 	}

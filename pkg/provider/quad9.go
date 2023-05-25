@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func Quad9() Provider {
@@ -26,11 +25,7 @@ func Quad9() Provider {
 		},
 		// See https://developers.quad9.com/speed/public-dns/docs/doh
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "dns.quad9.net",
-				Path:   "/dns-query",
-			},
+			URL: "https://dns.quad9.net/dns-query",
 		},
 	}
 }

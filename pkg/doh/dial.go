@@ -53,10 +53,10 @@ func newDoHDial(settings ResolverSettings) (
 		// Pick DoH server pseudo-randomly from the chosen providers
 		DoHServer := picker.DoHServer(dohServers)
 
-		metrics.DoHDialInc(DoHServer.URL.String())
+		metrics.DoHDialInc(DoHServer.URL)
 
 		// Create connection object (no actual IO yet)
-		conn = newDoHConn(ctx, dotClient, bufferPool, &DoHServer.URL)
+		conn = newDoHConn(ctx, dotClient, bufferPool, DoHServer.URL)
 		return conn, nil
 	}, nil
 }

@@ -5,13 +5,12 @@ import (
 	"context"
 	"net"
 	"net/http"
-	"net/url"
 	"sync"
 	"time"
 )
 
 func newDoHConn(ctx context.Context, client *http.Client,
-	bufferPool *sync.Pool, dohURL *url.URL) net.Conn {
+	bufferPool *sync.Pool, dohURL string) net.Conn {
 	ctx, cancel := context.WithCancel(ctx)
 	const maxUDPSize = 4096
 	return &dohConn{
@@ -30,7 +29,7 @@ type dohConn struct {
 	ctx        context.Context //nolint:containedctx
 	client     *http.Client
 	bufferPool *sync.Pool
-	dohURL     *url.URL
+	dohURL     string
 
 	// Internals
 	inBuffer  *bytes.Buffer // TODO obtain from syncPool

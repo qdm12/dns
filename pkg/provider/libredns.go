@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func LibreDNS() Provider {
@@ -24,11 +23,7 @@ func LibreDNS() Provider {
 		},
 		// see https://libredns.gr/
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "doh.libredns.gr",
-				Path:   "/dns-query",
-			},
+			URL: "https://doh.libredns.gr/dns-query",
 		},
 	}
 }

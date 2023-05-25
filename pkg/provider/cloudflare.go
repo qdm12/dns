@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 func Cloudflare() Provider {
@@ -25,11 +24,7 @@ func Cloudflare() Provider {
 			Port: defaultDoTPort,
 		},
 		DoH: DoHServer{
-			URL: url.URL{
-				Scheme: "https",
-				Host:   "cloudflare-dns.com",
-				Path:   "/dns-query",
-			},
+			URL: "https://cloudflare-dns.com/dns-query",
 		},
 	}
 }

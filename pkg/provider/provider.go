@@ -2,7 +2,6 @@ package provider
 
 import (
 	"net"
-	"net/url"
 )
 
 const defaultDoTPort uint16 = 853
@@ -27,5 +26,5 @@ type DoTServer struct {
 }
 
 type DoHServer struct {
-	URL url.URL
+	URL string
 }
