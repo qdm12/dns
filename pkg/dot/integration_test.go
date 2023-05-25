@@ -179,13 +179,14 @@ func Test_Server_Mocks(t *testing.T) {
 	logger := NewMockLogger(ctrl)
 	logger.EXPECT().Info("DNS server listening on :53")
 
-	metrics := NewMockDoTMetrics(ctrl)
-	metrics.EXPECT().
+	dotMetrics := NewMockDialMetrics(ctrl)
+	dotMetrics.EXPECT().
 		DoTDialInc("cloudflare-dns.com",
 			mockhelp.NewMatcherOneOf("1.1.1.1:853", "1.0.0.1:853"), "success").
 		Times(2)
 
 	// middleware metrics
+	metrics := NewMockMiddlewareMetrics(ctrl)
 	metrics.EXPECT().InFlightRequestsInc().Times(2)
 	metrics.EXPECT().InFlightRequestsDec().Times(2)
 	metrics.EXPECT().RequestsInc().Times(2)
@@ -206,7 +207,7 @@ func Test_Server_Mocks(t *testing.T) {
 		Logger:      logger,
 		Middlewares: []Middleware{metricsMiddleware},
 		Resolver: ResolverSettings{
-			Metrics: metrics,
+			Metrics: dotMetrics,
 		},
 	})
 	require.NoError(t, err)
