@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gomock "github.com/golang/mock/gomock"
+	"github.com/qdm12/dns/v2/internal/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -49,6 +50,8 @@ func Test_New(t *testing.T) {
 
 			if testCase.errMessage == "" {
 				assert.NoError(t, err)
+				assert.NotNil(t, server.service)
+				server.service = nil
 			} else {
 				assert.EqualError(t, err, testCase.errMessage)
 			}
@@ -59,42 +62,13 @@ func Test_New(t *testing.T) {
 func Test_Server_GetAddress(t *testing.T) {
 	t.Parallel()
 
-	testCases := map[string]struct {
-		server     *Server
-		address    string
-		errWrapped error
-		errMessage string
-	}{
-		"server not running": {
-			server:     &Server{},
-			errWrapped: ErrServerNotRunning,
-			errMessage: "server is not running",
-		},
-		"server running": {
-			server: &Server{
-				running: true,
-				server: http.Server{ //nolint:gosec
-					Addr: "x",
-				},
-			},
-			address: "x",
-		},
+	server := &Server{
+		listeningAddress: "x",
 	}
 
-	for name, testCase := range testCases {
-		testCase := testCase
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+	address := server.GetAddress()
 
-			address, err := testCase.server.GetAddress()
-
-			assert.Equal(t, testCase.address, address)
-			assert.ErrorIs(t, err, testCase.errWrapped)
-			if testCase.errWrapped != nil {
-				assert.EqualError(t, err, testCase.errMessage)
-			}
-		})
-	}
+	assert.Equal(t, "x", address)
 }
 
 func Test_Server_success(t *testing.T) {
@@ -113,12 +87,13 @@ func Test_Server_success(t *testing.T) {
 		},
 	}
 
-	runError, err := server.Start()
+	serverService := services.NewRunWrapper("server", server.run)
+
+	runError, err := serverService.Start()
 	require.NoError(t, err)
 
 	addressRegex := regexp.MustCompile(`^127.0.0.1:[1-9][0-9]{0,4}$`)
-	address, err := server.GetAddress()
-	require.NoError(t, err)
+	address := server.GetAddress()
 	assert.Regexp(t, addressRegex, address)
 
 	select {
@@ -127,7 +102,7 @@ func Test_Server_success(t *testing.T) {
 	default:
 	}
 
-	err = server.Stop()
+	err = serverService.Stop()
 	require.NoError(t, err)
 }
 
@@ -141,7 +116,9 @@ func Test_Server_startError(t *testing.T) {
 		},
 	}
 
-	runtimeError, err := server.Start()
+	serverService := services.NewRunWrapper("server", server.run)
+
+	runtimeError, err := serverService.Start()
 
 	require.EqualError(t, err, "listen tcp: address -1: invalid port")
 	assert.Nil(t, runtimeError)
