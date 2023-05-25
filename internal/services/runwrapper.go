@@ -175,7 +175,7 @@ func (w *RunWrapper) interceptRunError(ready chan<- struct{},
 			// so we send an error to the `stopError` channel and return.
 			// The `Stop` method will catch the error from the `stopError`
 			// channel and return it as an error from its own call.
-			stopError <- fmt.Errorf("%w (crashed: %s)", ErrAlreadyStopped, err)
+			stopError <- fmt.Errorf("%w (crashed: %w)", ErrAlreadyStopped, err)
 			close(stopError)
 			w.stateMutex.Unlock()
 			return

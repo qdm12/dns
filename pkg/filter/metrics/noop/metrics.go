@@ -7,8 +7,8 @@ func New() (metrics *Metrics) {
 	return new(Metrics)
 }
 
-func (m *Metrics) SetBlockedHostnames(n int)                 {}
-func (m *Metrics) SetBlockedIPs(n int)                       {}
-func (m *Metrics) SetBlockedIPPrefixes(n int)                {}
-func (m *Metrics) HostnamesFilteredInc(qClass, qType string) {}
-func (m *Metrics) IPsFilteredInc(rrtype string)              {}
+func (m *Metrics) SetBlockedHostnames(int)             {}
+func (m *Metrics) SetBlockedIPs(int)                   {}
+func (m *Metrics) SetBlockedIPPrefixes(int)            {}
+func (m *Metrics) HostnamesFilteredInc(string, string) {}
+func (m *Metrics) IPsFilteredInc(string)               {}

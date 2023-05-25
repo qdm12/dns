@@ -6,8 +6,8 @@ func NewNoop() *NoopHooks {
 	return &NoopHooks{}
 }
 
-func (h *NoopHooks) OnStart(service string)              {}
-func (h *NoopHooks) OnStarted(service string, err error) {}
-func (h *NoopHooks) OnStop(service string)               {}
-func (h *NoopHooks) OnStopped(service string, err error) {}
-func (h *NoopHooks) OnCrash(service string, err error)   {}
+func (h *NoopHooks) OnStart(string)          {}
+func (h *NoopHooks) OnStarted(string, error) {}
+func (h *NoopHooks) OnStop(string)           {}
+func (h *NoopHooks) OnStopped(string, error) {}
+func (h *NoopHooks) OnCrash(string, error)   {}

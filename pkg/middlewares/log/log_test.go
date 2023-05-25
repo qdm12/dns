@@ -46,7 +46,7 @@ type testWriter struct {
 	dns.ResponseWriter
 }
 
-func (w *testWriter) WriteMsg(response *dns.Msg) error {
+func (w *testWriter) WriteMsg(*dns.Msg) error {
 	return w.err
 }
 

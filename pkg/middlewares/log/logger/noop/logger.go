@@ -12,7 +12,6 @@ func New() *Logger {
 	return new(Logger)
 }
 
-func (l *Logger) Error(id uint16, errMessage string) {}
-func (l *Logger) Log(remoteAddr net.Addr, request,
-	response *dns.Msg) {
+func (l *Logger) Error(uint16, string) {}
+func (l *Logger) Log(net.Addr, *dns.Msg, *dns.Msg) {
 }

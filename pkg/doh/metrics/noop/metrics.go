@@ -25,4 +25,4 @@ func New() (metrics *Metrics) {
 	}
 }
 
-func (m *Metrics) DoHDialInc(url string) {}
+func (m *Metrics) DoHDialInc(string) {}

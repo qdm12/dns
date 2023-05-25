@@ -113,7 +113,7 @@ func (c *dohConn) SetReadDeadline(t time.Time) error {
 	return nil
 }
 
-func (c *dohConn) SetWriteDeadline(t time.Time) error {
+func (c *dohConn) SetWriteDeadline(time.Time) error {
 	// IO happens in read only so no timeout to set here
 	return nil
 }

@@ -18,5 +18,5 @@ func New() *Metrics {
 	}
 }
 
-func (m *Metrics) DoTDialInc(provider, address, outcome string) {}
-func (m *Metrics) DNSDialInc(address, outcome string)           {}
+func (m *Metrics) DoTDialInc(string, string, string) {}
+func (m *Metrics) DNSDialInc(string, string)         {}
