@@ -1,7 +1,7 @@
 package dot
 
 import (
-	"net"
+	"net/netip"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/provider"
@@ -12,9 +12,9 @@ type Middleware interface {
 }
 
 type Picker interface {
-	IP(ips []net.IP) net.IP
+	IP(ips []netip.Addr) netip.Addr
 	DNSServer(servers []provider.DNSServer) provider.DNSServer
-	DNSIP(server provider.DNSServer, ipv6 bool) net.IP
+	DNSIP(server provider.DNSServer, ipv6 bool) netip.Addr
 	DoTServer(servers []provider.DoTServer) provider.DoTServer
-	DoTIP(server provider.DoTServer, ipv6 bool) net.IP
+	DoTIP(server provider.DoTServer, ipv6 bool) netip.Addr
 }

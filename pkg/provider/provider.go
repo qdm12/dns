@@ -1,8 +1,6 @@
 package provider
 
-import (
-	"net"
-)
+import "net/netip"
 
 const defaultDoTPort uint16 = 853
 
@@ -14,13 +12,13 @@ type Provider struct {
 }
 
 type DNSServer struct {
-	IPv4 []net.IP
-	IPv6 []net.IP
+	IPv4 []netip.Addr
+	IPv6 []netip.Addr
 }
 
 type DoTServer struct {
-	IPv4 []net.IP
-	IPv6 []net.IP
+	IPv4 []netip.Addr
+	IPv6 []netip.Addr
 	Name string // for TLS verification
 	Port uint16
 }

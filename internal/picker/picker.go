@@ -2,7 +2,7 @@ package picker
 
 import (
 	"math/rand"
-	"net"
+	"net/netip"
 
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/golibs/crypto/random/sources/maphash"
@@ -45,9 +45,9 @@ func (p *Picker) DNSServer(servers []provider.DNSServer) provider.DNSServer {
 	return servers[index]
 }
 
-func (p *Picker) DoTIP(server provider.DoTServer, ipv6 bool) net.IP {
+func (p *Picker) DoTIP(server provider.DoTServer, ipv6 bool) netip.Addr {
 	if ipv6 {
-		if ip := p.IP(server.IPv6); ip != nil {
+		if ip := p.IP(server.IPv6); ip.IsValid() {
 			return ip
 		}
 		// if there is no IPv6, fall back to an IPv4 address
@@ -56,9 +56,9 @@ func (p *Picker) DoTIP(server provider.DoTServer, ipv6 bool) net.IP {
 	return p.IP(server.IPv4)
 }
 
-func (p *Picker) DNSIP(server provider.DNSServer, ipv6 bool) net.IP {
+func (p *Picker) DNSIP(server provider.DNSServer, ipv6 bool) netip.Addr {
 	if ipv6 {
-		if ip := p.IP(server.IPv6); ip != nil {
+		if ip := p.IP(server.IPv6); ip.IsValid() {
 			return ip
 		}
 		// if there is no IPv6, fall back to an IPv4 address
@@ -67,10 +67,10 @@ func (p *Picker) DNSIP(server provider.DNSServer, ipv6 bool) net.IP {
 	return p.IP(server.IPv4)
 }
 
-func (p *Picker) IP(ips []net.IP) net.IP {
+func (p *Picker) IP(ips []netip.Addr) netip.Addr {
 	switch len(ips) {
 	case 0:
-		return nil
+		return netip.Addr{}
 	case 1:
 		return ips[0]
 	default:

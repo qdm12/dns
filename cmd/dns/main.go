@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
+	"net/netip"
 	"os"
 	"os/signal"
 	"syscall"
@@ -117,7 +117,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	logger.Info(settings.String())
 
 	internalDNSSettings := nameserver.SettingsInternalDNS{
-		IP: net.IP{127, 0, 0, 1},
+		IP: netip.AddrFrom4([4]byte{127, 0, 0, 1}),
 	}
 	logger.Info("using DNS address " + internalDNSSettings.IP.String() + " internally")
 	nameserver.UseDNSInternally(internalDNSSettings) // use the DoT/DoH server

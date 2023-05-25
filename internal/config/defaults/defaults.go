@@ -3,6 +3,7 @@ package defaults
 import (
 	"net"
 	"net/http"
+	"net/netip"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -37,8 +38,8 @@ func Duration(existing time.Duration, defaultValue time.Duration) time.Duration 
 	return defaultValue
 }
 
-func IP(existing, defaultValue net.IP) net.IP {
-	if existing != nil {
+func IP(existing, defaultValue netip.Addr) netip.Addr {
+	if existing.IsValid() {
 		return existing
 	}
 	return defaultValue

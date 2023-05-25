@@ -2,7 +2,7 @@ package nameserver
 
 import (
 	"io/fs"
-	"net"
+	"net/netip"
 	"os"
 	"strings"
 
@@ -12,7 +12,7 @@ import (
 type SettingsSystemDNS struct {
 	// IP is the IP address to use for the DNS.
 	// It defaults to 127.0.0.1 if nil.
-	IP net.IP
+	IP netip.Addr
 	// ResolvPath is the path to the resolv configuration file.
 	// It defaults to /etc/resolv.conf.
 	ResolvPath string
@@ -22,7 +22,7 @@ type SettingsSystemDNS struct {
 }
 
 func (s *SettingsSystemDNS) SetDefaults() {
-	s.IP = defaults.IP(s.IP, net.IPv4(127, 0, 0, 1)) //nolint:gomnd
+	s.IP = defaults.IP(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
 	s.ResolvPath = defaults.String(s.ResolvPath, "/etc/resolv.conf")
 }
 

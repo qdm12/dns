@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/netip"
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/config/defaults"
@@ -12,7 +13,7 @@ import (
 type SettingsInternalDNS struct {
 	// IP is the IP address to use for the DNS.
 	// It defaults to 127.0.0.1 if nil.
-	IP net.IP
+	IP netip.Addr
 	// Port is the port to reach the DNS server on.
 	// It defaults to 53 if left unset.
 	Port uint16
@@ -22,7 +23,7 @@ type SettingsInternalDNS struct {
 }
 
 func (s *SettingsInternalDNS) SetDefaults() {
-	s.IP = defaults.IP(s.IP, net.IPv4(127, 0, 0, 1)) //nolint:gomnd
+	s.IP = defaults.IP(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
 	const defaultPort = 53
 	s.Port = defaults.Uint16(s.Port, defaultPort)
 }

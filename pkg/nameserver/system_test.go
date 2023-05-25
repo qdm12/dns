@@ -2,7 +2,7 @@ package nameserver
 
 import (
 	"io"
-	"net"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +26,7 @@ func Test_UseDNSSystemWide(t *testing.T) {
 
 		settings := SettingsSystemDNS{
 			ResolvPath: filepath.Join(dirPath, "resolv.conf"),
-			IP:         net.IP{1, 1, 1, 1},
+			IP:         netip.AddrFrom4([4]byte{1, 1, 1, 1}),
 		}
 
 		err = UseDNSSystemWide(settings)
@@ -52,7 +52,7 @@ func Test_UseDNSSystemWide(t *testing.T) {
 
 		settings := SettingsSystemDNS{
 			ResolvPath: resolvConfPath,
-			IP:         net.IP{1, 1, 1, 1},
+			IP:         netip.AddrFrom4([4]byte{1, 1, 1, 1}),
 		}
 
 		err = UseDNSSystemWide(settings)
@@ -85,7 +85,7 @@ func Test_UseDNSSystemWide(t *testing.T) {
 
 		settings := SettingsSystemDNS{
 			ResolvPath:     resolvConfPath,
-			IP:             net.IP{1, 1, 1, 1},
+			IP:             netip.AddrFrom4([4]byte{1, 1, 1, 1}),
 			KeepNameserver: true,
 		}
 

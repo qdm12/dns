@@ -5,7 +5,7 @@
 package dot
 
 import (
-	net "net"
+	netip "net/netip"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,10 +36,10 @@ func (m *MockPicker) EXPECT() *MockPickerMockRecorder {
 }
 
 // DNSIP mocks base method.
-func (m *MockPicker) DNSIP(arg0 provider.DNSServer, arg1 bool) net.IP {
+func (m *MockPicker) DNSIP(arg0 provider.DNSServer, arg1 bool) netip.Addr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DNSIP", arg0, arg1)
-	ret0, _ := ret[0].(net.IP)
+	ret0, _ := ret[0].(netip.Addr)
 	return ret0
 }
 
@@ -64,10 +64,10 @@ func (mr *MockPickerMockRecorder) DNSServer(arg0 interface{}) *gomock.Call {
 }
 
 // DoTIP mocks base method.
-func (m *MockPicker) DoTIP(arg0 provider.DoTServer, arg1 bool) net.IP {
+func (m *MockPicker) DoTIP(arg0 provider.DoTServer, arg1 bool) netip.Addr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DoTIP", arg0, arg1)
-	ret0, _ := ret[0].(net.IP)
+	ret0, _ := ret[0].(netip.Addr)
 	return ret0
 }
 
@@ -92,10 +92,10 @@ func (mr *MockPickerMockRecorder) DoTServer(arg0 interface{}) *gomock.Call {
 }
 
 // IP mocks base method.
-func (m *MockPicker) IP(arg0 []net.IP) net.IP {
+func (m *MockPicker) IP(arg0 []netip.Addr) netip.Addr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IP", arg0)
-	ret0, _ := ret[0].(net.IP)
+	ret0, _ := ret[0].(netip.Addr)
 	return ret0
 }
 
