@@ -3,7 +3,6 @@ package doh
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"sync"
 
 	"github.com/miekg/dns"
@@ -32,12 +31,6 @@ func NewServer(settings ServerSettings) (server *Server, err error) {
 	err = settings.Validate()
 	if err != nil {
 		return nil, fmt.Errorf("validating settings: %w", err)
-	}
-
-	if runtime.GOOS == "windows" {
-		// TODO remove when upgrading Go to Go 1.19
-		// Support was added in https://github.com/golang/go/commit/af88fb6502ceee973aaa118471c9d953a10a68e5
-		settings.Logger.Warn("The Windows host cannot use the DoH server as its DNS")
 	}
 
 	return &Server{
