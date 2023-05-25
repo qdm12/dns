@@ -41,23 +41,10 @@ func checkListeningAddress(address string) (err error) {
 }
 
 func checkProviderNames(providerNames []string) (err error) {
-	allProviders := provider.All()
-	allProviderNames := make([]string, len(allProviders))
-	for i, provider := range allProviders {
-		allProviderNames[i] = provider.Name
-	}
-
 	for _, providerName := range providerNames {
-		valid := false
-		for _, acceptedProviderName := range allProviderNames {
-			if strings.EqualFold(providerName, acceptedProviderName) {
-				valid = true
-				break
-			}
-		}
-		if !valid {
-			return fmt.Errorf("%w: %q must be one of: %s",
-				ErrValueNotOneOf, providerName, orStrings(allProviderNames))
+		_, err := provider.Parse(providerName)
+		if err != nil {
+			return fmt.Errorf("parsing provider: %w", err)
 		}
 	}
 
