@@ -31,7 +31,7 @@ require (
 	github.com/prometheus/common v0.18.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	go4.org/intern v0.0.0-20210108033219-3eb7198706b2 // indirect
-	go4.org/unsafe/assume-no-moving-gc v0.0.0-20220617031537-928513b29760 // indirect
+	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230426161633-7e06285ff160 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985 // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
