@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -26,7 +26,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Client = defaults.HTTPClient(s.Client, http.DefaultClient)
+	s.Client = gosettings.DefaultPointerRaw(s.Client, http.DefaultClient)
 }
 
 var hostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll

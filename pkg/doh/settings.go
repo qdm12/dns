@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
 	"github.com/qdm12/dns/v2/internal/picker"
 	"github.com/qdm12/dns/v2/pkg/cache"
 	cachenoop "github.com/qdm12/dns/v2/pkg/cache/noop"
@@ -17,6 +16,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/log"
 	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 	"github.com/qdm12/govalid/address"
 	"github.com/qdm12/govalid/port"
@@ -70,7 +70,7 @@ type SelfDNS struct {
 
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
-	s.ListeningAddress = defaults.String(s.ListeningAddress, ":53")
+	s.ListeningAddress = gosettings.DefaultString(s.ListeningAddress, ":53")
 
 	if s.Filter == nil {
 		s.Filter = filternoop.New()
@@ -94,7 +94,7 @@ func (s *ResolverSettings) SetDefaults() {
 	}
 
 	const defaultTimeout = 5 * time.Second
-	s.Timeout = defaults.Duration(s.Timeout, defaultTimeout)
+	s.Timeout = gosettings.DefaultNumber(s.Timeout, defaultTimeout)
 
 	if s.Warner == nil {
 		s.Warner = lognoop.New()
@@ -111,7 +111,7 @@ func (s *ResolverSettings) SetDefaults() {
 
 func (s *SelfDNS) SetDefaults() {
 	const defaultTimeout = 5 * time.Second
-	s.Timeout = defaults.Duration(s.Timeout, defaultTimeout)
+	s.Timeout = gosettings.DefaultNumber(s.Timeout, defaultTimeout)
 
 	if len(s.DoTProviders) == 0 {
 		s.DoTProviders = []string{"cloudflare"}

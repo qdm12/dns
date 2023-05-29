@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
 )
 
 type SettingsSystemDNS struct {
@@ -22,8 +22,8 @@ type SettingsSystemDNS struct {
 }
 
 func (s *SettingsSystemDNS) SetDefaults() {
-	s.IP = defaults.IP(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
-	s.ResolvPath = defaults.String(s.ResolvPath, "/etc/resolv.conf")
+	s.IP = gosettings.DefaultValidator(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
+	s.ResolvPath = gosettings.DefaultString(s.ResolvPath, "/etc/resolv.conf")
 }
 
 func (s *SettingsSystemDNS) Validate() (err error) {

@@ -4,7 +4,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
 )
 
 type Settings struct {
@@ -29,17 +29,17 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Resolver = defaults.Resolver(s.Resolver, net.DefaultResolver)
-	s.HostToResolve = defaults.String(s.HostToResolve, "github.com")
+	s.Resolver = gosettings.DefaultPointerRaw(s.Resolver, net.DefaultResolver)
+	s.HostToResolve = gosettings.DefaultString(s.HostToResolve, "github.com")
 
 	const defaultMaxTries = 10
-	s.MaxTries = defaults.Int(s.MaxTries, defaultMaxTries)
+	s.MaxTries = gosettings.DefaultNumber(s.MaxTries, defaultMaxTries)
 
 	const defaultWaitTime = 300 * time.Millisecond
-	s.WaitTime = defaults.Duration(s.WaitTime, defaultWaitTime)
+	s.WaitTime = gosettings.DefaultNumber(s.WaitTime, defaultWaitTime)
 
 	const defaultAddWaitTime = 100 * time.Millisecond
-	s.AddWaitTime = defaults.Duration(s.AddWaitTime, defaultAddWaitTime)
+	s.AddWaitTime = gosettings.DefaultNumber(s.AddWaitTime, defaultAddWaitTime)
 }
 
 func (s Settings) Validate() (err error) {

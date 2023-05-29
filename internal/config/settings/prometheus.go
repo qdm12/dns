@@ -2,9 +2,11 @@ package settings
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
+	"github.com/qdm12/govalid/address"
 )
 
 type Prometheus struct {
@@ -13,17 +15,12 @@ type Prometheus struct {
 }
 
 func (p *Prometheus) SetDefaults() {
-	if p.ListeningAddress == "" {
-		p.ListeningAddress = ":9090"
-	}
-
-	if p.Subsystem == nil {
-		p.Subsystem = defaults.StringPtr(p.Subsystem, "dns")
-	}
+	p.ListeningAddress = gosettings.DefaultString(p.ListeningAddress, ":9090")
+	p.Subsystem = gosettings.DefaultPointer(p.Subsystem, "dns")
 }
 
 func (p *Prometheus) Validate() (err error) {
-	err = checkListeningAddress(p.ListeningAddress)
+	err = address.Validate(p.ListeningAddress, address.OptionListening(os.Getuid()))
 	if err != nil {
 		return fmt.Errorf("listening address: %w", err)
 	}

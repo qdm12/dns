@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -17,7 +17,7 @@ type CacheLRU struct {
 
 func (c *CacheLRU) setDefaults() {
 	const defaultMaxEntries = 10e4
-	c.MaxEntries = defaults.Int(c.MaxEntries, defaultMaxEntries)
+	c.MaxEntries = gosettings.DefaultNumber(c.MaxEntries, defaultMaxEntries)
 }
 
 var ErrMaxEntriesNegative = errors.New("max entries must be positive")

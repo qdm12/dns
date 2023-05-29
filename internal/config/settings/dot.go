@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
 	"github.com/qdm12/dns/v2/pkg/provider"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -18,28 +18,20 @@ type DoT struct {
 }
 
 func (d *DoT) setDefaults() {
-	if len(d.DoTProviders) == 0 {
-		d.DoTProviders = []string{
-			provider.Cloudflare().Name,
-			provider.Google().Name,
-		}
-	}
+	d.DoTProviders = gosettings.DefaultSlice(d.DoTProviders, []string{
+		provider.Cloudflare().Name,
+		provider.Google().Name,
+	})
 
-	if len(d.DNSProviders) == 0 {
-		d.DNSProviders = []string{
-			provider.Cloudflare().Name,
-			provider.Google().Name,
-		}
-	}
+	d.DNSProviders = gosettings.DefaultSlice(d.DNSProviders, []string{
+		provider.Cloudflare().Name,
+		provider.Google().Name,
+	})
 
-	if d.Timeout == 0 {
-		d.Timeout = time.Second
-	}
+	d.Timeout = gosettings.DefaultNumber(d.Timeout, time.Second)
 
-	if d.IPv6 == nil {
-		const defaultIPv6 = false // some systems do not support IPv6
-		d.IPv6 = defaults.BoolPtr(d.IPv6, defaultIPv6)
-	}
+	const defaultIPv6 = false // some systems do not support IPv6
+	d.IPv6 = gosettings.DefaultPointer(d.IPv6, defaultIPv6)
 }
 
 var (

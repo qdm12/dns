@@ -1,9 +1,9 @@
 package lru
 
 import (
-	"github.com/qdm12/dns/v2/internal/config/defaults"
 	"github.com/qdm12/dns/v2/pkg/cache/metrics"
 	"github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -18,7 +18,7 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	const defaultMaxEntries = 10e4
-	s.MaxEntries = defaults.Int(s.MaxEntries, defaultMaxEntries)
+	s.MaxEntries = gosettings.DefaultNumber(s.MaxEntries, defaultMaxEntries)
 
 	if s.Metrics == nil {
 		s.Metrics = noop.New()

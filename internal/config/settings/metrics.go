@@ -3,6 +3,7 @@ package settings //nolint:dupl
 import (
 	"fmt"
 
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
 
@@ -20,7 +21,7 @@ func (m *Metrics) setDefaults() {
 }
 
 func (m *Metrics) validate() (err error) {
-	err = checkIsOneOf(m.Type, "prometheus", "noop")
+	err = validate.IsOneOf(m.Type, "prometheus", "noop")
 	if err != nil {
 		return fmt.Errorf("metrics type: %w", err)
 	}

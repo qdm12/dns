@@ -3,9 +3,11 @@ package settings
 import (
 	"fmt"
 	"net/netip"
+	"regexp"
 	"strings"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
 
@@ -23,19 +25,21 @@ type Block struct {
 }
 
 func (b *Block) setDefaults() {
-	b.BlockMalicious = defaults.BoolPtr(b.BlockMalicious, true)
-	b.BlockAds = defaults.BoolPtr(b.BlockAds, false)
-	b.BlockSurveillance = defaults.BoolPtr(b.BlockSurveillance, false)
-	b.RebindingProtection = defaults.BoolPtr(b.RebindingProtection, true)
+	b.BlockMalicious = gosettings.DefaultPointer(b.BlockMalicious, true)
+	b.BlockAds = gosettings.DefaultPointer(b.BlockAds, false)
+	b.BlockSurveillance = gosettings.DefaultPointer(b.BlockSurveillance, false)
+	b.RebindingProtection = gosettings.DefaultPointer(b.RebindingProtection, true)
 }
 
+var regexHostname = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
+
 func (b *Block) validate() (err error) {
-	err = checkHostnames(b.AllowedHosts)
+	err = validate.AllMatchRegex(b.AllowedHosts, regexHostname)
 	if err != nil {
 		return fmt.Errorf("allowed hosts: %w", err)
 	}
 
-	err = checkHostnames(b.AddBlockedHosts)
+	err = validate.AllMatchRegex(b.AddBlockedHosts, regexHostname)
 	if err != nil {
 		return fmt.Errorf("additional blocked hosts: %w", err)
 	}

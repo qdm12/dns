@@ -20,10 +20,3 @@ func joinStrings(strings []string, lastJoin string) (result string) {
 
 	return result
 }
-
-func boolToEnabled(b bool) string {
-	if b {
-		return "enabled"
-	}
-	return "disabled"
-}

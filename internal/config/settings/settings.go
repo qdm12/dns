@@ -3,10 +3,14 @@ package settings
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
+	"github.com/qdm12/govalid/address"
+	"github.com/qdm12/govalid/port"
 )
 
 // Settings contain settings to configure the entire program
@@ -29,8 +33,8 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Upstream = defaults.String(s.Upstream, "dot")
-	s.ListeningAddress = defaults.String(s.ListeningAddress, ":53")
+	s.Upstream = gosettings.DefaultString(s.Upstream, "dot")
+	s.ListeningAddress = gosettings.DefaultString(s.ListeningAddress, ":53")
 	s.Block.setDefaults()
 	s.Cache.setDefaults()
 	s.DoH.setDefaults()
@@ -38,9 +42,9 @@ func (s *Settings) SetDefaults() {
 	s.Log.setDefaults()
 	s.MiddlewareLog.setDefaults()
 	s.Metrics.setDefaults()
-	s.CheckDNS = defaults.BoolPtr(s.CheckDNS, true)
+	s.CheckDNS = gosettings.DefaultPointer(s.CheckDNS, true)
 	const defaultUpdaterPeriod = 24 * time.Hour
-	s.UpdatePeriod = defaults.DurationPtr(s.UpdatePeriod, defaultUpdaterPeriod)
+	s.UpdatePeriod = gosettings.DefaultPointer(s.UpdatePeriod, defaultUpdaterPeriod)
 }
 
 var (
@@ -48,12 +52,15 @@ var (
 )
 
 func (s *Settings) Validate() (err error) {
-	err = checkIsOneOf(s.Upstream, "dot", "doh")
+	err = validate.IsOneOf(s.Upstream, "dot", "doh")
 	if err != nil {
 		return fmt.Errorf("upstream type: %w", err)
 	}
 
-	err = checkListeningAddress(s.ListeningAddress)
+	const privilegedAllowedPort = 53
+	portOption := port.OptionListeningPortPrivilegedAllowed(privilegedAllowedPort)
+	addressOption := address.OptionListening(os.Getuid(), portOption)
+	err = address.Validate(s.ListeningAddress, addressOption)
 	if err != nil {
 		return fmt.Errorf("listening address: %w", err)
 	}
@@ -107,7 +114,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(s.Log.ToLinesNode())
 	node.AppendNode(s.MiddlewareLog.ToLinesNode())
 	node.AppendNode(s.Metrics.ToLinesNode())
-	node.Appendf("Check DNS: %s", boolToEnabled(*s.CheckDNS))
+	node.Appendf("Check DNS: %s", gosettings.BoolToYesNo(s.CheckDNS))
 
 	if *s.UpdatePeriod == 0 {
 		node.Appendf("Periodic update: disabled")

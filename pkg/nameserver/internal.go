@@ -7,7 +7,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
 )
 
 type SettingsInternalDNS struct {
@@ -23,9 +23,9 @@ type SettingsInternalDNS struct {
 }
 
 func (s *SettingsInternalDNS) SetDefaults() {
-	s.IP = defaults.IP(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
+	s.IP = gosettings.DefaultValidator(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
 	const defaultPort = 53
-	s.Port = defaults.Uint16(s.Port, defaultPort)
+	s.Port = gosettings.DefaultNumber(s.Port, defaultPort)
 }
 
 func (s SettingsInternalDNS) Validate() (err error) {

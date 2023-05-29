@@ -3,6 +3,7 @@ package settings //nolint:dupl
 import (
 	"fmt"
 
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
 
@@ -23,7 +24,7 @@ func (c *Cache) setDefaults() {
 }
 
 func (c *Cache) validate() (err error) {
-	err = checkIsOneOf(c.Type, "lru", "noop")
+	err = validate.IsOneOf(c.Type, "lru", "noop")
 	if err != nil {
 		return fmt.Errorf("cache type: %w", err)
 	}

@@ -1,7 +1,7 @@
 package settings
 
 import (
-	"github.com/qdm12/dns/v2/internal/config/defaults"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 	"github.com/qdm12/log"
 )
@@ -11,7 +11,7 @@ type Log struct {
 }
 
 func (l *Log) setDefaults() {
-	l.Level = defaults.LogLevelPtr(l.Level, log.LevelInfo)
+	l.Level = gosettings.DefaultPointer(l.Level, log.LevelInfo)
 }
 
 func (l *Log) validate() error {

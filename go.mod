@@ -10,12 +10,13 @@ require (
 	github.com/prometheus/client_model v0.2.0
 	github.com/qdm12/golibs v0.0.0-20210915134941-19815c6f95fe
 	github.com/qdm12/goservices v0.1.0-rc2
+	github.com/qdm12/gosettings v0.3.0-rc6
 	github.com/qdm12/gosplash v0.1.0
 	github.com/qdm12/gotree v0.0.0-20211231173558-a8b7dce9989e
 	github.com/qdm12/govalid v0.2.0-rc1
 	github.com/qdm12/log v0.1.0
 	github.com/stretchr/testify v1.8.3
-	golang.org/x/text v0.3.7
+	golang.org/x/text v0.4.0
 )
 
 require (
@@ -30,11 +31,11 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/common v0.18.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
-	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985 // indirect
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
-	golang.org/x/tools v0.1.6-0.20210726203631-07bc1bf47fb2 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
+	golang.org/x/mod v0.6.0 // indirect
+	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/tools v0.2.0 // indirect
 	google.golang.org/protobuf v1.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
