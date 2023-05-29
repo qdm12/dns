@@ -1,7 +1,7 @@
 package health
 
 import (
-	"github.com/qdm12/dns/v2/internal/httpserver"
+	"github.com/qdm12/goservices/httpserver"
 )
 
 type Infoer interface {

@@ -6,7 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/qdm12/dns/v2/internal/config/settings"
-	"github.com/qdm12/dns/v2/internal/httpserver"
+	"github.com/qdm12/goservices/httpserver"
 )
 
 func New(settings settings.Prometheus, gatherer prometheus.Gatherer,

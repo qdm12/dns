@@ -19,10 +19,10 @@ import (
 	"github.com/qdm12/dns/v2/internal/health"
 	"github.com/qdm12/dns/v2/internal/metrics"
 	"github.com/qdm12/dns/v2/internal/models"
-	"github.com/qdm12/dns/v2/internal/services"
-	"github.com/qdm12/dns/v2/internal/services/hooks"
 	"github.com/qdm12/dns/v2/internal/setup"
 	"github.com/qdm12/dns/v2/pkg/nameserver"
+	"github.com/qdm12/goservices"
+	"github.com/qdm12/goservices/hooks"
 	"github.com/qdm12/gosplash"
 	"github.com/qdm12/log"
 )
@@ -154,12 +154,12 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 
 	hooksLogger := logger.New(log.SetComponent("services"))
 	hooks := hooks.NewWithLog(hooksLogger)
-	sequenceSettings := services.SequenceSettings{
-		ServicesStart: []services.Service{dnsLoop, metricsServer, healthServer},
-		ServicesStop:  []services.Service{metricsServer, healthServer, dnsLoop},
+	sequenceSettings := goservices.SequenceSettings{
+		ServicesStart: []goservices.Service{dnsLoop, metricsServer, healthServer},
+		ServicesStop:  []goservices.Service{metricsServer, healthServer, dnsLoop},
 		Hooks:         hooks,
 	}
-	sequence, err := services.NewSequence(sequenceSettings)
+	sequence, err := goservices.NewSequence(sequenceSettings)
 	if err != nil {
 		return fmt.Errorf("creating services sequence: %w", err)
 	}

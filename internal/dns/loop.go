@@ -8,10 +8,10 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/internal/config/settings"
-	"github.com/qdm12/dns/v2/internal/services"
 	"github.com/qdm12/dns/v2/internal/setup"
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
+	"github.com/qdm12/goservices"
 )
 
 type loop struct {
@@ -28,7 +28,7 @@ type loop struct {
 
 func New(settings settings.Settings, logger Logger,
 	blockBuilder BlockBuilder, cache Cache,
-	prometheusRegistry prometheus.Registerer) (loopService *services.RunWrapper, err error) {
+	prometheusRegistry prometheus.Registerer) (loopService *goservices.RunWrapper, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {
@@ -42,7 +42,7 @@ func New(settings settings.Settings, logger Logger,
 		cache:              cache,
 		prometheusRegistry: prometheusRegistry,
 	}
-	return services.NewRunWrapper("dns loop", loop.run), nil
+	return goservices.NewRunWrapper("dns loop", loop.run), nil
 }
 
 func (l *loop) run(ctx context.Context, ready chan<- struct{},

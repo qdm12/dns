@@ -9,11 +9,12 @@ require (
 	github.com/prometheus/client_golang v1.10.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/qdm12/golibs v0.0.0-20210915134941-19815c6f95fe
+	github.com/qdm12/goservices v0.1.0-rc2
 	github.com/qdm12/gosplash v0.1.0
 	github.com/qdm12/gotree v0.0.0-20211231173558-a8b7dce9989e
 	github.com/qdm12/govalid v0.1.0
 	github.com/qdm12/log v0.1.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.8.3
 	golang.org/x/text v0.3.7
 )
 
@@ -35,5 +36,5 @@ require (
 	golang.org/x/tools v0.1.6-0.20210726203631-07bc1bf47fb2 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.23.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
