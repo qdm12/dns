@@ -31,11 +31,7 @@ func envToBoolPtr(envKey string) (boolPtr *bool, err error) {
 	if s == "" {
 		return nil, nil //nolint:nilnil
 	}
-	value, err := binary.Validate(s)
-	if err != nil {
-		return nil, err
-	}
-	return &value, nil
+	return binary.Validate(s)
 }
 
 func envToDuration(envKey string) (d time.Duration, err error) {

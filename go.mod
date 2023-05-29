@@ -12,7 +12,7 @@ require (
 	github.com/qdm12/goservices v0.1.0-rc2
 	github.com/qdm12/gosplash v0.1.0
 	github.com/qdm12/gotree v0.0.0-20211231173558-a8b7dce9989e
-	github.com/qdm12/govalid v0.1.0
+	github.com/qdm12/govalid v0.2.0-rc1
 	github.com/qdm12/log v0.1.0
 	github.com/stretchr/testify v1.8.3
 	golang.org/x/text v0.3.7

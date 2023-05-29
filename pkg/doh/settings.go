@@ -131,7 +131,7 @@ func (s ServerSettings) Validate() (err error) {
 	}
 
 	const defaultUDPPort = 53
-	_, err = address.Validate(s.ListeningAddress,
+	err = address.Validate(s.ListeningAddress,
 		address.OptionListening(
 			os.Getuid(), port.OptionListeningPortPrivilegedAllowed(defaultUDPPort)))
 	if err != nil {
