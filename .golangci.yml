@@ -1,6 +1,4 @@
 linters-settings:
-  maligned:
-    suggest-new: true
   misspell:
     locale: US
 
@@ -9,7 +7,6 @@ issues:
     - path: _test\.go
       linters:
         - dupl
-        - maligned
         - goerr113
         - containedctx
     - path: main\.go
