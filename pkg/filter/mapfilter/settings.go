@@ -9,6 +9,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/filter/metrics/noop"
 	"github.com/qdm12/dns/v2/pkg/filter/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/filter/update"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -22,10 +23,8 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.Update.SetDefaults()
-
-	if s.Metrics == nil {
-		s.Metrics = noop.New()
-	}
+	s.Update = gosettings.DefaultInterface(s.Update, noop.New())
+	s.Metrics = gosettings.DefaultInterface(s.Metrics, noop.New())
 }
 
 func (s Settings) Validate() (err error) {

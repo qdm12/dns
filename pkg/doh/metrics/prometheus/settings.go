@@ -4,6 +4,7 @@ import (
 	dot "github.com/qdm12/dns/v2/pkg/dot/metrics"
 	dotnoop "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
 	prom "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	"github.com/qdm12/gosettings"
 )
 
 type Settings struct {
@@ -16,10 +17,7 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.Prometheus.SetDefaults()
-
-	if s.DoTDialMetrics == nil {
-		s.DoTDialMetrics = dotnoop.New()
-	}
+	s.DoTDialMetrics = gosettings.DefaultInterface(s.DoTDialMetrics, dotnoop.New())
 }
 
 func (s Settings) Validate() (err error) {

@@ -68,42 +68,19 @@ type ResolverSettings struct {
 
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
-
 	s.ListeningAddress = gosettings.DefaultString(s.ListeningAddress, ":53")
-
-	if s.Filter == nil {
-		s.Filter = filternoop.New()
-	}
-
-	if s.Logger == nil {
-		s.Logger = lognoop.New()
-	}
-
-	if s.Cache == nil {
-		// no-op metrics for no-op cache
-		s.Cache = cachenoop.New(cachenoop.Settings{})
-	}
+	s.Filter = gosettings.DefaultInterface(s.Filter, filternoop.New())
+	s.Logger = gosettings.DefaultInterface(s.Logger, lognoop.New())
+	s.Cache = gosettings.DefaultInterface(s.Cache, cachenoop.New(cachenoop.Settings{}))
 }
 
 func (s *ResolverSettings) SetDefaults() {
-	if len(s.DoTProviders) == 0 {
-		s.DoTProviders = []string{"cloudflare"}
-	}
-
+	s.DoTProviders = gosettings.DefaultSlice(s.DoTProviders, []string{"cloudflare"})
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultNumber(s.Timeout, defaultTimeout)
-
-	if s.Warner == nil {
-		s.Warner = lognoop.New()
-	}
-
-	if s.Metrics == nil {
-		s.Metrics = metricsnoop.New()
-	}
-
-	if s.Picker == nil {
-		s.Picker = picker.New()
-	}
+	s.Warner = gosettings.DefaultInterface(s.Warner, lognoop.New())
+	s.Metrics = gosettings.DefaultInterface(s.Metrics, metricsnoop.New())
+	s.Picker = gosettings.DefaultInterface(s.Picker, picker.New())
 }
 
 var (

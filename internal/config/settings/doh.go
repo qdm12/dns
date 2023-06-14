@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/qdm12/dns/v2/pkg/provider"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -15,17 +16,11 @@ type DoH struct {
 }
 
 func (d *DoH) setDefaults() {
-	if len(d.DoHProviders) == 0 {
-		d.DoHProviders = []string{
-			provider.Cloudflare().Name,
-			provider.Google().Name,
-		}
-	}
-
-	if d.Timeout == 0 {
-		d.Timeout = time.Second
-	}
-
+	d.DoHProviders = gosettings.DefaultSlice(d.DoHProviders, []string{
+		provider.Cloudflare().Name,
+		provider.Google().Name,
+	})
+	d.Timeout = gosettings.DefaultNumber(d.Timeout, time.Second)
 	d.Self.setDefaults()
 }
 

@@ -3,6 +3,7 @@ package settings //nolint:dupl
 import (
 	"fmt"
 
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -13,10 +14,7 @@ type Metrics struct {
 }
 
 func (m *Metrics) setDefaults() {
-	if m.Type == "" {
-		m.Type = "prometheus"
-	}
-
+	m.Type = gosettings.DefaultString(m.Type, "prometheus")
 	m.Prometheus.SetDefaults()
 }
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/qdm12/dns/v2/pkg/middlewares/log/logger/noop"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -16,9 +17,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	if s.Logger == nil {
-		s.Logger = noop.New()
-	}
+	s.Logger = gosettings.DefaultInterface(s.Logger, noop.New())
 }
 
 var (

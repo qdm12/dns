@@ -1,6 +1,9 @@
 package metrics
 
-import "github.com/qdm12/dns/v2/pkg/middlewares/metrics/noop"
+import (
+	"github.com/qdm12/dns/v2/pkg/middlewares/metrics/noop"
+	"github.com/qdm12/gosettings"
+)
 
 type Settings struct {
 	// Metrics is the interface to interact with metrics in the
@@ -9,9 +12,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	if s.Metrics == nil {
-		s.Metrics = noop.New()
-	}
+	s.Metrics = gosettings.DefaultInterface(s.Metrics, noop.New())
 }
 
 func (s Settings) Validate() (err error) {

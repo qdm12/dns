@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
 
@@ -24,20 +25,10 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	if s.Writer == nil {
-		s.Writer = os.Stdout
-	}
-
-	if s.LogRequests == nil {
-		s.LogRequests = boolPtr(true)
-	}
-
-	if s.LogResponses == nil {
-		s.LogResponses = boolPtr(false)
-	}
+	s.Writer = gosettings.DefaultInterface(s.Writer, os.Stdout)
+	s.LogRequests = gosettings.DefaultPointer(s.LogRequests, true)
+	s.LogResponses = gosettings.DefaultPointer(s.LogResponses, false)
 }
-
-func boolPtr(b bool) *bool { return &b }
 
 func (s *Settings) Validate() (err error) {
 	return nil

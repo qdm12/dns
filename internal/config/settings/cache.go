@@ -3,6 +3,7 @@ package settings //nolint:dupl
 import (
 	"fmt"
 
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -16,10 +17,7 @@ type Cache struct {
 }
 
 func (c *Cache) setDefaults() {
-	if c.Type == "" {
-		c.Type = "lru"
-	}
-
+	c.Type = gosettings.DefaultString(c.Type, "lru")
 	c.LRU.setDefaults()
 }
 
