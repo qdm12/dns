@@ -256,6 +256,8 @@ github.com/qdm12/goservices v0.1.0-rc2 h1:8tvjgKcp8Sf13d7IhHq3S+zbKVq2lCre09ASFR
 github.com/qdm12/goservices v0.1.0-rc2/go.mod h1:EX1khwYx2pDcHolFowDfk2GmkZqq4gBwrN6qx2gls5Q=
 github.com/qdm12/gosettings v0.3.0-rc6 h1:zsGXIIZ5FWsn9LeFBbr7s2/xgeodfvmWliVAFXHM9ZU=
 github.com/qdm12/gosettings v0.3.0-rc6/go.mod h1:+hHzN8lsE63T01t6SruGzc6xkpvfsZFod/ooDs8FWnQ=
+github.com/qdm12/gosettings v0.3.0 h1:YutcgQzVaOB3LuLj+Smtoy90JOH/5B5p2IH3BvV3ra4=
+github.com/qdm12/gosettings v0.3.0/go.mod h1:JRV3opOpHvnKlIA29lKQMdYw1WSMVMfHYLLHPHol5ME=
 github.com/qdm12/gosplash v0.1.0 h1:Sfl+zIjFZFP7b0iqf2l5UkmEY97XBnaKkH3FNY6Gf7g=
 github.com/qdm12/gosplash v0.1.0/go.mod h1:+A3fWW4/rUeDXhY3ieBzwghKdnIPFJgD8K3qQkenJlw=
 github.com/qdm12/gotree v0.0.0-20211231173558-a8b7dce9989e h1:L1zGR8xaYpbGFO9GjphGHmN91nIzwVp2EO6cauAtwoI=
