@@ -17,9 +17,8 @@ import (
 	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
-	"github.com/qdm12/govalid/address"
-	"github.com/qdm12/govalid/port"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -105,9 +104,7 @@ func (s ServerSettings) Validate() (err error) {
 	}
 
 	const defaultUDPPort = 53
-	err = address.Validate(s.ListeningAddress,
-		address.OptionListening(
-			os.Getuid(), port.OptionListeningPortPrivilegedAllowed(defaultUDPPort)))
+	err = validate.ListeningAddress(s.ListeningAddress, os.Getuid(), defaultUDPPort)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, s.ListeningAddress)
 	}

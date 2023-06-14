@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
-	"github.com/qdm12/govalid/address"
 )
 
 type Prometheus struct {
@@ -20,7 +20,7 @@ func (p *Prometheus) SetDefaults() {
 }
 
 func (p *Prometheus) Validate() (err error) {
-	err = address.Validate(p.ListeningAddress, address.OptionListening(os.Getuid()))
+	err = validate.ListeningAddress(p.ListeningAddress, os.Getuid())
 	if err != nil {
 		return fmt.Errorf("listening address: %w", err)
 	}

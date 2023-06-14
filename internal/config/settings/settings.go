@@ -9,8 +9,6 @@ import (
 	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
-	"github.com/qdm12/govalid/address"
-	"github.com/qdm12/govalid/port"
 )
 
 // Settings contain settings to configure the entire program
@@ -58,9 +56,7 @@ func (s *Settings) Validate() (err error) {
 	}
 
 	const privilegedAllowedPort = 53
-	portOption := port.OptionListeningPortPrivilegedAllowed(privilegedAllowedPort)
-	addressOption := address.OptionListening(os.Getuid(), portOption)
-	err = address.Validate(s.ListeningAddress, addressOption)
+	err = validate.ListeningAddress(s.ListeningAddress, os.Getuid(), privilegedAllowedPort)
 	if err != nil {
 		return fmt.Errorf("listening address: %w", err)
 	}
