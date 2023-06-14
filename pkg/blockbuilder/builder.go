@@ -17,9 +17,9 @@ func New(settings Settings) *Builder {
 
 	return &Builder{
 		client:               settings.Client,
-		blockMalicious:       settings.BlockMalicious,
-		blockAds:             settings.BlockAds,
-		blockSurveillance:    settings.BlockSurveillance,
+		blockMalicious:       *settings.BlockMalicious,
+		blockAds:             *settings.BlockAds,
+		blockSurveillance:    *settings.BlockSurveillance,
 		allowedHosts:         settings.AllowedHosts,
 		allowedIPs:           settings.AllowedIPs,
 		allowedIPPrefixes:    settings.AllowedIPPrefixes,

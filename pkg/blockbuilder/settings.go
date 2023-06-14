@@ -14,9 +14,9 @@ import (
 
 type Settings struct {
 	Client               *http.Client
-	BlockMalicious       bool
-	BlockAds             bool
-	BlockSurveillance    bool
+	BlockMalicious       *bool
+	BlockAds             *bool
+	BlockSurveillance    *bool
 	AllowedHosts         []string
 	AllowedIPs           []netip.Addr
 	AllowedIPPrefixes    []netip.Prefix
@@ -27,6 +27,9 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.Client = gosettings.DefaultPointerRaw(s.Client, http.DefaultClient)
+	s.BlockMalicious = gosettings.DefaultPointer(s.BlockMalicious, false)
+	s.BlockAds = gosettings.DefaultPointer(s.BlockAds, false)
+	s.BlockSurveillance = gosettings.DefaultPointer(s.BlockSurveillance, false)
 }
 
 var hostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
@@ -60,13 +63,13 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Filter build settings:")
 
 	var blockedCategories []string
-	if s.BlockMalicious {
+	if *s.BlockMalicious {
 		blockedCategories = append(blockedCategories, "malicious")
 	}
-	if s.BlockSurveillance {
+	if *s.BlockSurveillance {
 		blockedCategories = append(blockedCategories, "surveillance")
 	}
-	if s.BlockAds {
+	if *s.BlockAds {
 		blockedCategories = append(blockedCategories, "ads")
 	}
 

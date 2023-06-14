@@ -12,9 +12,9 @@ func BuildBlockBuilder(userSettings settings.Block,
 	client *http.Client) (blockBuilder *blockbuilder.Builder) {
 	settings := blockbuilder.Settings{
 		Client:            client,
-		BlockMalicious:    *userSettings.BlockMalicious,
-		BlockAds:          *userSettings.BlockAds,
-		BlockSurveillance: *userSettings.BlockSurveillance,
+		BlockMalicious:    userSettings.BlockMalicious,
+		BlockAds:          userSettings.BlockAds,
+		BlockSurveillance: userSettings.BlockSurveillance,
 	}
 
 	settings.AllowedHosts = make([]string, len(userSettings.AllowedHosts))
