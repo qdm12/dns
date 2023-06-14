@@ -18,12 +18,13 @@ type SettingsSystemDNS struct {
 	ResolvPath string
 	// KeepNameserver can be set to preserve existing nameserver lines
 	// in the resolv configuration file.
-	KeepNameserver bool
+	KeepNameserver *bool
 }
 
 func (s *SettingsSystemDNS) SetDefaults() {
 	s.IP = gosettings.DefaultValidator(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
 	s.ResolvPath = gosettings.DefaultString(s.ResolvPath, "/etc/resolv.conf")
+	s.KeepNameserver = gosettings.DefaultPointer(s.KeepNameserver, false)
 }
 
 func (s *SettingsSystemDNS) Validate() (err error) {
@@ -48,7 +49,7 @@ func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
 	}
 	for _, line := range strings.Split(s, "\n") {
 		if line == "" ||
-			(!settings.KeepNameserver && strings.HasPrefix(line, "nameserver ")) {
+			(!*settings.KeepNameserver && strings.HasPrefix(line, "nameserver ")) {
 			continue
 		}
 		lines = append(lines, line)

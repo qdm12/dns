@@ -11,6 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func ptrTo[T any](value T) *T {
+	return &value
+}
+
 func Test_UseDNSSystemWide(t *testing.T) {
 	t.Parallel()
 
@@ -86,7 +90,7 @@ func Test_UseDNSSystemWide(t *testing.T) {
 		settings := SettingsSystemDNS{
 			ResolvPath:     resolvConfPath,
 			IP:             netip.AddrFrom4([4]byte{1, 1, 1, 1}),
-			KeepNameserver: true,
+			KeepNameserver: ptrTo(true),
 		}
 
 		err = UseDNSSystemWide(settings)
