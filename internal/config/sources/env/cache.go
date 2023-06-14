@@ -4,17 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"os"
 	"strconv"
-	"strings"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
 )
 
-func readCache() (settings settings.Cache, err error) {
-	settings.Type = strings.ToLower(os.Getenv("CACHE_TYPE"))
+func (r *Reader) readCache() (settings settings.Cache, err error) {
+	settings.Type = r.env.String("CACHE_TYPE")
 
-	settings.LRU.MaxEntries, err = getLRUCacheMaxEntries()
+	settings.LRU.MaxEntries, err = r.getLRUCacheMaxEntries()
 	if err != nil {
 		return settings, fmt.Errorf("LRU max entries: %w", err)
 	}
@@ -24,8 +22,8 @@ func readCache() (settings settings.Cache, err error) {
 
 var ErrCacheLRUMaxEntries = errors.New("invalid value for max entries of the LRU cache")
 
-func getLRUCacheMaxEntries() (maxEntries uint, err error) {
-	s := os.Getenv("CACHE_LRU_MAX_ENTRIES")
+func (r *Reader) getLRUCacheMaxEntries() (maxEntries uint, err error) {
+	s := r.env.String("CACHE_LRU_MAX_ENTRIES")
 	if s == "" {
 		return 0, nil
 	}
