@@ -1,9 +1,11 @@
 package nameserver
 
 import (
-	"io/fs"
+	"errors"
+	"fmt"
 	"net/netip"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/qdm12/gosettings"
@@ -27,8 +29,19 @@ func (s *SettingsSystemDNS) SetDefaults() {
 	s.KeepNameserver = gosettings.DefaultPointer(s.KeepNameserver, false)
 }
 
+var (
+	ErrResolvPathIsDirectory = errors.New("resolv path is a directory")
+)
+
 func (s *SettingsSystemDNS) Validate() (err error) {
-	// TODO check s.ResolvPath file exists
+	stat, err := os.Stat(s.ResolvPath)
+	switch {
+	case errors.Is(err, os.ErrNotExist): // it will be created
+	case err != nil:
+		return fmt.Errorf("stating resolv path: %w", err)
+	case stat.IsDir():
+		return fmt.Errorf("%w: %s", ErrResolvPathIsDirectory, s.ResolvPath)
+	}
 	return nil
 }
 
@@ -37,26 +50,64 @@ func (s *SettingsSystemDNS) Validate() (err error) {
 func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
 	settings.SetDefaults()
 
-	data, err := os.ReadFile(settings.ResolvPath)
+	stat, err := os.Stat(settings.ResolvPath)
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+		return createResolvFile(settings.ResolvPath, settings.IP)
+	case err != nil:
+		return fmt.Errorf("stating resolv path: %w", err)
+	case stat.IsDir():
+		return fmt.Errorf("%w: %s", ErrResolvPathIsDirectory, settings.ResolvPath)
+	}
+
+	return patchResolvFile(settings.ResolvPath, settings.IP, *settings.KeepNameserver)
+}
+
+func createResolvFile(resolvPath string, ip netip.Addr) (err error) {
+	parentDirectory := filepath.Dir(resolvPath)
+	const defaultPerms os.FileMode = 0o755
+	err = os.MkdirAll(parentDirectory, defaultPerms)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating resolv path parent directory: %w", err)
 	}
 
-	s := strings.TrimSuffix(string(data), "\n")
-
-	lines := []string{
-		"nameserver " + settings.IP.String(),
+	const filePermissions os.FileMode = 0600
+	data := []byte("nameserver " + ip.String() + "\n")
+	err = os.WriteFile(resolvPath, data, filePermissions)
+	if err != nil {
+		return fmt.Errorf("creating resolv file: %w", err)
 	}
-	for _, line := range strings.Split(s, "\n") {
-		if line == "" ||
-			(!*settings.KeepNameserver && strings.HasPrefix(line, "nameserver ")) {
-			continue
+	return nil
+}
+
+func patchResolvFile(resolvPath string, ip netip.Addr,
+	keepNameserver bool) (err error) {
+	data, err := os.ReadFile(resolvPath)
+	if err != nil {
+		return fmt.Errorf("reading file: %w", err)
+	}
+
+	lines := strings.Split(string(data), "\n")
+	patchedLines := make([]string, 0, len(lines)+1)
+	patchedLines = append(patchedLines, "nameserver "+ip.String())
+	for _, line := range lines {
+		if keepNameserver || !strings.HasPrefix(line, "nameserver ") {
+			patchedLines = append(patchedLines, line)
 		}
-		lines = append(lines, line)
 	}
 
-	s = strings.Join(lines, "\n") + "\n"
+	patchedString := strings.Join(patchedLines, "\n")
+	patchedString = strings.TrimRight(patchedString, "\n")
+	hadTrailNewLine := patchedLines[len(patchedLines)-1] == ""
+	if hadTrailNewLine {
+		patchedString += "\n"
+	}
 
-	const permissions fs.FileMode = 0600
-	return os.WriteFile(settings.ResolvPath, []byte(s), permissions)
+	patchedData := []byte(patchedString)
+	const permissions os.FileMode = 0600
+	err = os.WriteFile(resolvPath, patchedData, permissions)
+	if err != nil {
+		return fmt.Errorf("writing resolv file: %w", err)
+	}
+	return nil
 }
