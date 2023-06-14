@@ -23,7 +23,7 @@ type Interface interface {
 	CacheHitInc()
 	CacheMissInc()
 	CacheExpiredInc()
-	CacheMaxEntriesSet(maxEntries int)
+	CacheMaxEntriesSet(maxEntries uint)
 }
 
 type Settings struct {

@@ -10,7 +10,7 @@ import (
 type Settings struct {
 	// MaxEntries is the maximum number of request<->response pairs
 	// to be stored in the cache. It defaults to 10e4 if left unset.
-	MaxEntries int
+	MaxEntries uint
 	// Metrics is the metrics interface to record metric information
 	// for the cache. It defaults to a No-Op metric implementation.
 	Metrics metrics.Interface

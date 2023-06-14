@@ -1,9 +1,6 @@
 package settings
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 )
@@ -12,7 +9,7 @@ type CacheLRU struct {
 	// MaxEntries is the number of maximum entries
 	// to keep in the LRU cache. It defaults to 10e4
 	// if letf unset.
-	MaxEntries int
+	MaxEntries uint
 }
 
 func (c *CacheLRU) setDefaults() {
@@ -20,13 +17,7 @@ func (c *CacheLRU) setDefaults() {
 	c.MaxEntries = gosettings.DefaultNumber(c.MaxEntries, defaultMaxEntries)
 }
 
-var ErrMaxEntriesNegative = errors.New("max entries must be positive")
-
 func (c *CacheLRU) validate() error {
-	if c.MaxEntries < 0 {
-		return fmt.Errorf("%w: %d", ErrMaxEntriesNegative, c.MaxEntries)
-	}
-
 	return nil
 }
 

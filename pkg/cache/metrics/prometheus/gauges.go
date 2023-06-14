@@ -24,6 +24,6 @@ func newGauges(settings prom.Settings) (g *gauges, err error) {
 	return g, nil
 }
 
-func (g *gauges) CacheMaxEntriesSet(maxEntries int) {
+func (g *gauges) CacheMaxEntriesSet(maxEntries uint) {
 	g.maxEntries.Set(float64(maxEntries))
 }
