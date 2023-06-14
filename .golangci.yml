@@ -43,6 +43,7 @@ linters:
     - decorder
     - dogsled
     - dupl
+    - dupword
     - durationcheck
     - errchkjson
     - errname
@@ -52,6 +53,7 @@ linters:
     - exportloopref
     - forcetypeassert
     - gci
+    - gocheckcompilerdirectives
     - gochecknoglobals
     - gochecknoinits
     - gocognit
@@ -74,6 +76,7 @@ linters:
     - maintidx
     - makezero
     - misspell
+    - musttag
     - nakedret
     - nestif
     - nilerr
@@ -81,6 +84,7 @@ linters:
     - noctx
     - nolintlint
     - nosprintfhostport
+    - paralleltest
     - prealloc
     - predeclared
     - promlinter

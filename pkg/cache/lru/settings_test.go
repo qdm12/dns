@@ -7,6 +7,8 @@ import (
 )
 
 func Test_Settings_SetDefaults(t *testing.T) {
+	t.Parallel()
+
 	settings := Settings{}
 	settings.SetDefaults()
 
