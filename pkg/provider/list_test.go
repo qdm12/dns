@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"net/netip"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,8 +9,11 @@ import (
 
 func Test_All(t *testing.T) {
 	t.Parallel()
+
+	t.Logf("%#v", netip.MustParseAddr("2620:119:35::35").As16())
+
 	providers := All()
-	assert.Len(t, providers, 15)
+	assert.Len(t, providers, 16)
 
 	for _, provider := range providers {
 		errMessage := "for provider " + provider.DoT.Name
