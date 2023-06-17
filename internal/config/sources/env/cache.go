@@ -33,9 +33,9 @@ func (r *Reader) getLRUCacheMaxEntries() (maxEntries uint, err error) {
 	switch {
 	case err != nil:
 		return 0, fmt.Errorf("environment variable CACHE_LRU_MAX_ENTRIES: %w", err)
-	case maxEntries == 0:
+	case maxEntriesUint64 == 0:
 		return 0, fmt.Errorf("%w: cannot be zero", ErrCacheLRUMaxEntries)
-	case maxEntries > math.MaxInt:
+	case maxEntriesUint64 > math.MaxInt:
 		// down the call stack, maxEntries is converted to int
 		// for a map size, and the max int depends on the platform.
 		return 0, fmt.Errorf("%w: %s must be less than %d",
