@@ -105,6 +105,15 @@ func Test_Server_Mocks(t *testing.T) {
 			Qtype:  dns.TypeA,
 			Qclass: dns.ClassINET,
 		}},
+		Extra: []dns.RR{
+			&dns.OPT{
+				Hdr: dns.RR_Header{
+					Name:   ".",
+					Rrtype: dns.TypeOPT,
+					Class:  1232, // UDP size
+				},
+			},
+		},
 	}
 	expectedResponseA := &dns.Msg{
 		MsgHdr: dns.MsgHdr{
@@ -129,6 +138,15 @@ func Test_Server_Mocks(t *testing.T) {
 				A: net.IP{1, 2, 3, 4}, // compared on length
 			},
 		},
+		Extra: []dns.RR{
+			&dns.OPT{
+				Hdr: dns.RR_Header{
+					Name:   ".",
+					Rrtype: dns.TypeOPT,
+					Class:  1232, // UDP size
+				},
+			},
+		},
 	}
 
 	expectedRequestAAAA := &dns.Msg{
@@ -142,6 +160,15 @@ func Test_Server_Mocks(t *testing.T) {
 			Qtype:  dns.TypeAAAA,
 			Qclass: dns.ClassINET,
 		}},
+		Extra: []dns.RR{
+			&dns.OPT{
+				Hdr: dns.RR_Header{
+					Name:   ".",
+					Rrtype: dns.TypeOPT,
+					Class:  1232, // UDP size
+				},
+			},
+		},
 	}
 	expectedResponseAAAA := &dns.Msg{
 		MsgHdr: dns.MsgHdr{
@@ -164,6 +191,15 @@ func Test_Server_Mocks(t *testing.T) {
 					Class:  dns.ClassINET,
 				},
 				AAAA: net.IP{1, 2, 3, 4}, // compared on length > 0
+			},
+		},
+		Extra: []dns.RR{
+			&dns.OPT{
+				Hdr: dns.RR_Header{
+					Name:   ".",
+					Rrtype: dns.TypeOPT,
+					Class:  1232, // UDP size
+				},
 			},
 		},
 	}

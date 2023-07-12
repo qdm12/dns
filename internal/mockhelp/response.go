@@ -32,6 +32,7 @@ func (m *MatcherResponse) Matches(x interface{}) bool {
 		return false
 	}
 
+	// Copy since these are mutated by this function
 	received := msg.Copy()
 	expected := m.response.Copy()
 
@@ -42,8 +43,8 @@ func (m *MatcherResponse) Matches(x interface{}) bool {
 	// Clear randomly set fields
 	received.MsgHdr.Id = 0
 	expected.MsgHdr.Id = 0
-	for i, answer := range received.Answer {
-		if !answersAreEqual(expected.Answer[i], answer) {
+	for i := range received.Answer {
+		if !answersAreEqual(expected.Answer[i], received.Answer[i]) {
 			return false
 		}
 	}
@@ -91,6 +92,9 @@ func answersAEqual(expected, actual dns.RR) (equal bool) {
 	} else if len(expectedIP) > 0 && len(receivedIP) == 0 {
 		return false
 	}
+	// Clear values for packed bytes comparison in caller function
+	receivedAnswer.A = nil
+	expectedAnswer.A = nil
 	return true
 }
 
@@ -111,5 +115,8 @@ func answersAAAAEqual(expected, actual dns.RR) (equal bool) {
 	} else if len(expectedIP) > 0 && len(receivedIP) == 0 {
 		return false
 	}
+	// Clear values for packed bytes comparison in caller function
+	receivedAnswer.AAAA = nil
+	expectedAnswer.AAAA = nil
 	return true
 }
