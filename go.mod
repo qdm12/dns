@@ -3,7 +3,7 @@ module github.com/qdm12/dns/v2
 go 1.20
 
 require (
-	github.com/breml/rootcerts v0.2.4
+	github.com/breml/rootcerts v0.2.11
 	github.com/golang/mock v1.6.0
 	github.com/miekg/dns v1.1.54
 	github.com/prometheus/client_golang v1.10.0
