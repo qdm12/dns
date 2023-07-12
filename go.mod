@@ -15,7 +15,7 @@ require (
 	github.com/qdm12/gotree v0.0.0-20211231173558-a8b7dce9989e
 	github.com/qdm12/log v0.1.0
 	github.com/stretchr/testify v1.8.3
-	golang.org/x/text v0.4.0
+	golang.org/x/text v0.11.0
 )
 
 require (
@@ -31,10 +31,10 @@ require (
 	github.com/prometheus/common v0.18.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
-	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/tools v0.3.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/net v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/protobuf v1.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
