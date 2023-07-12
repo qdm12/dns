@@ -24,6 +24,13 @@ jobs:
           globs: "**.md"
           config: .github/workflows/.markdownlint.json
 
+      - uses: reviewdog/action-misspell@v1
+        with:
+          locale: "US"
+          level: error
+          pattern: |
+            *.md
+
       - uses: peter-evans/dockerhub-description@v3
         if: github.repository == 'qdm12/dns' && github.event_name == 'push'
         with:
