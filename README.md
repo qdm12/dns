@@ -38,13 +38,14 @@ DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers w
 ## Features
 
 - It can be connected to one or more of the following DNS-over-TLS/HTTPs providers:
+  - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
+  - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
   - [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
   - [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
-  - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
   - [LibreDNS](https://libredns.gr)
+  - OpenDNS
+  - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
   - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
-  - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
-  - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
 - Split-horizon DNS (randomly picks one of the DoT/DoH providers specified for each request)
 - Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
 - Block custom hostnames and IP addresses using environment variables
@@ -93,7 +94,7 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 
 ## Docker tags 🐳
 
-💁 [Migrate from v1.x.x to v2.x.x](#Migrate)
+💁 [Migrate from v1.x.x to v2.x.x](#migrate)
 
 | Docker image | Github release |
 | --- | --- |
