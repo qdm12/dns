@@ -87,7 +87,8 @@ func Test_Server(t *testing.T) {
 }
 
 //go:generate mockgen -destination=mock_cache_test.go -package $GOPACKAGE -mock_names Interface=MockCache github.com/qdm12/dns/v2/pkg/cache Interface
-//go:generate mockgen -destination=mock_doh_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockDoHMetrics github.com/qdm12/dns/v2/pkg/doh/metrics Interface
+//go:generate mockgen -destination=mock_doh_metrics_test.go -package $GOPACKAGE -mock_names DialMetrics=MockDoHMetrics github.com/qdm12/dns/v2/pkg/doh/metrics DialMetrics
+//go:generate mockgen -destination=mock_middleware_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockMiddlewareMetrics github.com/qdm12/dns/v2/pkg/middlewares/metrics Interface
 //go:generate mockgen -destination=mock_filter_test.go -package $GOPACKAGE -mock_names Interface=MockFilter github.com/qdm12/dns/v2/pkg/filter Interface
 //go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE github.com/qdm12/dns/v2/pkg/log Logger
 
@@ -244,18 +245,18 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().
 		DoHDialInc("https://cloudflare-dns.com/dns-query").
 		Times(2)
-	// middleware metrics
-	metrics.EXPECT().InFlightRequestsInc().Times(2)
-	metrics.EXPECT().InFlightRequestsDec().Times(2)
-	metrics.EXPECT().RequestsInc().Times(2)
-	metrics.EXPECT().ResponsesInc().Times(2)
-	metrics.EXPECT().QuestionsInc("IN", "A")
-	metrics.EXPECT().QuestionsInc("IN", "AAAA")
-	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
+	middlewareMetrics := NewMockMiddlewareMetrics(ctrl)
+	middlewareMetrics.EXPECT().InFlightRequestsInc().Times(2)
+	middlewareMetrics.EXPECT().InFlightRequestsDec().Times(2)
+	middlewareMetrics.EXPECT().RequestsInc().Times(2)
+	middlewareMetrics.EXPECT().ResponsesInc().Times(2)
+	middlewareMetrics.EXPECT().QuestionsInc("IN", "A")
+	middlewareMetrics.EXPECT().QuestionsInc("IN", "AAAA")
+	middlewareMetrics.EXPECT().RcodeInc("NOERROR").Times(2)
 
 	metricsMiddleware := metricsmiddleware.New(
 		metricsmiddleware.Settings{
-			Metrics: metrics,
+			Metrics: middlewareMetrics,
 		},
 	)
 
