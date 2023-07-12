@@ -1,4 +1,4 @@
-name: Docker Hub description
+name: Markdown
 on:
   push:
     branches: [master]
@@ -6,7 +6,7 @@ on:
       - README.md
       - .github/workflows/markdown.yml
 jobs:
-  dockerHubDescription:
+  markdown:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
