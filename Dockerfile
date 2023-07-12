@@ -51,13 +51,13 @@ FROM --platform=${BUILDPLATFORM} base AS build
 COPY --from=xcputranslate /xcputranslate /usr/local/bin/xcputranslate
 ARG TARGETPLATFORM
 ARG VERSION=unknown
-ARG BUILD_DATE="an unknown date"
+ARG CREATED=unknown
 ARG COMMIT=unknown
 RUN GOARCH="$(xcputranslate translate -field arch -targetplatform ${TARGETPLATFORM})" \
     GOARM="$(xcputranslate translate -field arm -targetplatform ${TARGETPLATFORM})" \
     go build -trimpath -ldflags="\
     -X 'main.version=$VERSION' \
-    -X 'main.buildDate=$BUILD_DATE' \
+    -X 'main.created=$CREATED' \
     -X 'main.commit=$COMMIT' \
     " -o entrypoint cmd/dns/main.go
 RUN apk --update --no-cache add libcap && \
@@ -100,7 +100,7 @@ ENV \
     CHECK_DNS=on \
     UPDATE_PERIOD=24h
 ARG VERSION=unknown
-ARG CREATED="an unknown date"
+ARG CREATED=unknown
 ARG COMMIT=unknown
 LABEL \
     org.opencontainers.image.authors="quentin.mcgaw@gmail.com" \

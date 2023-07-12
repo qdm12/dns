@@ -28,16 +28,16 @@ import (
 )
 
 var (
-	version   string
-	buildDate string //nolint:gochecknoglobals
-	commit    string //nolint:gochecknoglobals
+	version string
+	created string //nolint:gochecknoglobals
+	commit  string //nolint:gochecknoglobals
 )
 
 func main() {
 	buildInfo := models.BuildInformation{
-		Version:   version,
-		Commit:    commit,
-		BuildDate: buildDate,
+		Version: version,
+		Commit:  commit,
+		Created: created,
 	}
 
 	ctx := context.Background()
@@ -192,7 +192,7 @@ func initialDisplay(buildInfo models.BuildInformation) {
 		Emails:       []string{"quentin.mcgaw@gmail.com"},
 		Version:      buildInfo.Version,
 		Commit:       buildInfo.Commit,
-		BuildDate:    buildInfo.BuildDate,
+		BuildDate:    buildInfo.Created,
 		Announcement: "Check out qmcgaw/dns:v2.0.0-beta",
 		AnnounceExp:  announcementExp,
 		// Sponsor information
