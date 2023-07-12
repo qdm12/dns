@@ -5,7 +5,6 @@ import (
 	"net/netip"
 
 	"github.com/qdm12/dns/v2/pkg/provider"
-	"github.com/qdm12/golibs/crypto/random/sources/maphash"
 )
 
 type Picker struct {
@@ -15,7 +14,7 @@ type Picker struct {
 // New returns a new fast thread safe random picker
 // to use for DNS servers and their IP addresses.
 func New() *Picker {
-	source := maphash.New()
+	source := newMaphashSource()
 	return &Picker{
 		rand: rand.New(source), //nolint:gosec
 	}
