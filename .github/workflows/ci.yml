@@ -78,6 +78,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -92,6 +93,7 @@ jobs:
             latest=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
           images: |
             qmcgaw/dns
+            ghcr.io/qdm12/dns
           tags: |
             type=ref,event=pr
             type=semver,pattern={{major}}.{{minor}}.{{patch}}
@@ -107,6 +109,12 @@ jobs:
         with:
           username: qmcgaw
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: qdm12
+          password: ${{ github.token }}
 
       - name: Short commit
         id: shortcommit

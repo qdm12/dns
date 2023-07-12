@@ -84,6 +84,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 
     More environment variables are described in the [environment variables](#environment-variables) section.
 
+    The image is also available at `ghcr.io/qdm12/dns`.
 1. See the [Connect clients to it](#connect-clients-to-it) section, you can also refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
 
 〽️ [Metrics setup](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
