@@ -3,8 +3,13 @@ on:
   push:
     branches: [master]
     paths:
-      - README.md
+      - "**.md"
       - .github/workflows/markdown.yml
+  pull_request:
+    paths:
+      - "**.md"
+      - .github/workflows/markdown.yml
+
 jobs:
   markdown:
     runs-on: ubuntu-latest
@@ -13,6 +18,11 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v3
+
+      - uses: DavidAnson/markdownlint-cli2-action@v11
+        with:
+          globs: "**.md"
+          config: .github/workflows/.markdownlint.json
 
       - uses: peter-evans/dockerhub-description@v3
         if: github.repository == 'qdm12/dns' && github.event_name == 'push'
