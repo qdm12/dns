@@ -8,11 +8,14 @@ on:
 jobs:
   markdown:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Docker Hub Description
-        uses: peter-evans/dockerhub-description@v2.4.1
+      - uses: actions/checkout@v3
+
+      - uses: peter-evans/dockerhub-description@v3
+        if: github.repository == 'qdm12/dns' && github.event_name == 'push'
         with:
           username: qmcgaw
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
