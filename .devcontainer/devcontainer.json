@@ -28,43 +28,15 @@
                 "bajdzis.vscode-database", // Supports connections to mysql or postgres, over SSL, socked
                 "IBM.output-colorizer", // Colorize your output/test logs
                 "github.copilot" // AI code completion
-                // "mohsen1.prettify-json", // Prettify JSON data
-                // "zxh404.vscode-proto3", // Supports Proto syntax
-                // "jrebocho.vscode-random", // Generates random values
-                // "alefragnani.Bookmarks", // Manage bookmarks
-                // "quicktype.quicktype", // Paste JSON as code
-                // "spikespaz.vscode-smoothtype", // smooth cursor animation
             ],
             "settings": {
                 "files.eol": "\n",
-                "remote.extensionKind": {
-                    "ms-azuretools.vscode-docker": "workspace"
-                },
-                "go.useLanguageServer": true,
-                "[go]": {
-                    "editor.codeActionsOnSave": {
-                        "source.organizeImports": true
-                    }
-                },
-                "[go.mod]": {
-                    "editor.codeActionsOnSave": {
-                        "source.organizeImports": true
-                    }
-                },
-                "gopls": {
-                    "build.buildFlags": [
-                        "-tags",
-                        ""
-                    ],
-                    "usePlaceholders": false,
-                    "staticcheck": true
-                },
-                "go.lintTool": "golangci-lint",
-                "go.lintOnSave": "package",
                 "editor.formatOnSave": true,
+                "go.buildTags": "integration",
                 "go.toolsEnvVars": {
                     "CGO_ENABLED": "0"
                 },
+                "go.useLanguageServer": true,
                 "go.testEnvVars": {
                     "CGO_ENABLED": "1"
                 },
@@ -75,7 +47,22 @@
                 "go.testTimeout": "10s",
                 "go.coverOnSingleTest": true,
                 "go.coverOnSingleTestFile": true,
-                "go.coverOnTestPackage": true
+                "go.coverOnTestPackage": true,
+                "go.lintTool": "golangci-lint",
+                "go.lintOnSave": "package",
+                "[go]": {
+                    "editor.codeActionsOnSave": {
+                        "source.organizeImports": true
+                    }
+                },
+                "gopls": {
+                    "usePlaceholders": false,
+                    "staticcheck": true,
+                    "vulncheck": "Imports"
+                },
+                "remote.extensionKind": {
+                    "ms-azuretools.vscode-docker": "workspace"
+                }
             }
         }
     }
