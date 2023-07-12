@@ -28,8 +28,8 @@ data:
   BLOCK_ADS: 'off'
 
   LOG_LEVEL: warning
-  LOG_REQUESTS: 'off'
-  LOG_RESPONSES: 'off'
+  MIDDLEWARE_LOG_REQUESTS: 'off'
+  MIDDLEWARE_LOG_RESPONSES: 'off'
 
   DOT_TIMEOUT: 3s
   DOH_TIMEOUT: 3s
