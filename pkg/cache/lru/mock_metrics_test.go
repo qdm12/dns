@@ -129,6 +129,18 @@ func (mr *MockMetricsMockRecorder) CacheMoveInc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CacheMoveInc", reflect.TypeOf((*MockMetrics)(nil).CacheMoveInc))
 }
 
+// CacheRemoveEmptyInc mocks base method.
+func (m *MockMetrics) CacheRemoveEmptyInc() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "CacheRemoveEmptyInc")
+}
+
+// CacheRemoveEmptyInc indicates an expected call of CacheRemoveEmptyInc.
+func (mr *MockMetricsMockRecorder) CacheRemoveEmptyInc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CacheRemoveEmptyInc", reflect.TypeOf((*MockMetrics)(nil).CacheRemoveEmptyInc))
+}
+
 // CacheRemoveInc mocks base method.
 func (m *MockMetrics) CacheRemoveInc() {
 	m.ctrl.T.Helper()

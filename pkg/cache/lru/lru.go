@@ -112,6 +112,28 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	return entryPtr.response.Copy()
 }
 
+// Remove removes the cache response for the given
+// request message.
+func (l *LRU) Remove(request *dns.Msg) {
+	if len(request.Question) == 0 {
+		// cannot make key if there is no question
+		l.metrics.CacheRemoveEmptyInc()
+		return
+	}
+
+	key := makeKey(request)
+
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+
+	listElement, ok := l.kv[key]
+	if !ok {
+		return
+	}
+
+	l.remove(listElement)
+}
+
 // remove removes a list element
 // It is NOT thread safe and its parent should have
 // a locking mechanism to stay thread safe.

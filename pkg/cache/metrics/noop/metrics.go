@@ -13,6 +13,7 @@ func (m *Metrics) CacheRemoveInc()         {}
 func (m *Metrics) CacheMoveInc()           {}
 func (m *Metrics) CacheGetEmptyInc()       {}
 func (m *Metrics) CacheInsertEmptyInc()    {}
+func (m *Metrics) CacheRemoveEmptyInc()    {}
 func (m *Metrics) CacheHitInc()            {}
 func (m *Metrics) CacheMissInc()           {}
 func (m *Metrics) CacheExpiredInc()        {}

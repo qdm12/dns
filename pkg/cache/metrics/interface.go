@@ -13,13 +13,14 @@ var (
 	_ Interface = (*noop.Metrics)(nil)
 )
 
-type Interface interface {
+type Interface interface { //nolint:interfacebloat
 	SetCacheType(cacheType string)
 	CacheInsertInc()
 	CacheRemoveInc()
 	CacheMoveInc()
 	CacheGetEmptyInc()
 	CacheInsertEmptyInc()
+	CacheRemoveEmptyInc()
 	CacheHitInc()
 	CacheMissInc()
 	CacheExpiredInc()

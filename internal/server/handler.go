@@ -39,6 +39,12 @@ func (h *Handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	if response := h.cache.Get(r); response != nil {
+		if h.filter.FilterResponse(response) {
+			h.cache.Remove(r)
+			response := new(dns.Msg).SetRcode(r, dns.RcodeRefused)
+			_ = w.WriteMsg(response)
+			return
+		}
 		response.SetReply(r)
 		_ = w.WriteMsg(response)
 		return
