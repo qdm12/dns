@@ -1,7 +1,6 @@
 package lru
 
 import (
-	"github.com/qdm12/dns/v2/pkg/cache/metrics"
 	"github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
 	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
@@ -13,7 +12,7 @@ type Settings struct {
 	MaxEntries uint
 	// Metrics is the metrics interface to record metric information
 	// for the cache. It defaults to a No-Op metric implementation.
-	Metrics metrics.Interface
+	Metrics Metrics
 }
 
 func (s *Settings) SetDefaults() {

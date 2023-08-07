@@ -36,11 +36,6 @@ func Test_settingsToServers(t *testing.T) {
 	}, dnsServers)
 }
 
-//go:generate mockgen -destination=mocks_test.go -package $GOPACKAGE . Picker
-//go:generate mockgen -destination=mock_middleware_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockMiddlewareMetrics github.com/qdm12/dns/v2/pkg/middlewares/metrics Interface
-//go:generate mockgen -destination=mock_dot_metrics_test.go -package $GOPACKAGE github.com/qdm12/dns/v2/pkg/dot/metrics DialMetrics
-//go:generate mockgen -destination=mock_warner_test.go -package $GOPACKAGE github.com/qdm12/dns/v2/pkg/log Warner
-
 func Test_pickNameAddress(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
@@ -100,12 +95,12 @@ func Test_dialPlaintext(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			warner := NewMockWarner(ctrl)
+			warner := NewMockLogger(ctrl)
 			if testCase.err != nil {
 				warner.EXPECT().Warn(testCase.err.Error())
 			}
 
-			metrics := NewMockDialMetrics(ctrl)
+			metrics := NewMockMetrics(ctrl)
 			metrics.EXPECT().DNSDialInc(testCase.expectedAddr, testCase.metricOutcome)
 
 			picker := NewMockPicker(ctrl)

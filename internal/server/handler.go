@@ -4,9 +4,6 @@ import (
 	"context"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/cache"
-	"github.com/qdm12/dns/v2/pkg/filter"
-	"github.com/qdm12/dns/v2/pkg/log"
 )
 
 var _ dns.Handler = (*Handler)(nil)
@@ -14,14 +11,13 @@ var _ dns.Handler = (*Handler)(nil)
 type Handler struct {
 	ctx      context.Context //nolint:containedctx
 	exchange Exchange
-	filter   filter.Interface
-	cache    cache.Interface
-	logger   log.Logger
+	filter   Filter
+	cache    Cache
+	logger   Logger
 }
 
 func New(ctx context.Context, exchange Exchange,
-	filter filter.Interface, cache cache.Interface,
-	logger log.Logger) *Handler {
+	filter Filter, cache Cache, logger Logger) *Handler {
 	return &Handler{
 		ctx:      ctx,
 		exchange: exchange,

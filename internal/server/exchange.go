@@ -6,7 +6,6 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/log"
 )
 
 type Exchange = func(ctx context.Context, request *dns.Msg) (
@@ -15,7 +14,7 @@ type Exchange = func(ctx context.Context, request *dns.Msg) (
 
 type Dial = func(ctx context.Context, _, _ string) (net.Conn, error)
 
-func NewExchange(name string, dial Dial, warner log.Warner) Exchange {
+func NewExchange(name string, dial Dial, warner Warner) Exchange {
 	client := &dns.Client{}
 	return func(ctx context.Context, request *dns.Msg) (response *dns.Msg, err error) {
 		netConn, err := dial(ctx, "", "")

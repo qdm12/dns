@@ -7,7 +7,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/internal/config/settings"
 	"github.com/qdm12/dns/v2/pkg/cache/lru"
-	"github.com/qdm12/dns/v2/pkg/cache/metrics"
 	noopmetrics "github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
 	prommetrics "github.com/qdm12/dns/v2/pkg/cache/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/cache/noop"
@@ -21,7 +20,7 @@ type Cache interface {
 }
 
 func BuildCache(userSettings settings.Cache, //nolint:ireturn
-	metrics metrics.Interface) (
+	metrics CacheMetrics) (
 	cache Cache) {
 	switch userSettings.Type {
 	case noop.CacheType:
@@ -36,9 +35,9 @@ func BuildCache(userSettings settings.Cache, //nolint:ireturn
 	}
 }
 
-func CacheMetrics(userSettings settings.Metrics, //nolint:ireturn
+func BuildCacheMetrics(userSettings settings.Metrics, //nolint:ireturn
 	registry prometheus.Registerer) (
-	metrics metrics.Interface, err error) {
+	metrics CacheMetrics, err error) {
 	switch userSettings.Type {
 	case noopString:
 		return noopmetrics.New(), nil

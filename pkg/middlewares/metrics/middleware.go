@@ -10,7 +10,7 @@ import (
 )
 
 type Middleware struct {
-	metrics Interface
+	metrics Metrics
 }
 
 func New(settings Settings) *Middleware {
@@ -30,7 +30,7 @@ func (m *Middleware) Wrap(next dns.Handler) dns.Handler { //nolint:ireturn
 
 type handler struct {
 	next    dns.Handler
-	metrics Interface
+	metrics Metrics
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, response *dns.Msg) {

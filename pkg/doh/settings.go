@@ -7,13 +7,9 @@ import (
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/picker"
-	"github.com/qdm12/dns/v2/pkg/cache"
 	cachenoop "github.com/qdm12/dns/v2/pkg/cache/noop"
-	"github.com/qdm12/dns/v2/pkg/doh/metrics"
 	metricsnoop "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
-	"github.com/qdm12/dns/v2/pkg/filter"
 	filternoop "github.com/qdm12/dns/v2/pkg/filter/noop"
-	"github.com/qdm12/dns/v2/pkg/log"
 	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
@@ -33,13 +29,13 @@ type ServerSettings struct {
 	// Cache is the cache to use in the server.
 	// It defaults to a No-Op cache implementation with
 	// a No-Op cache metrics implementation.
-	Cache cache.Interface
+	Cache Cache
 	// Filter is the filter for DNS requests and responses.
 	// It defaults to a No-Op filter implementation.
-	Filter filter.Interface
+	Filter Filter
 	// Logger is the logger to log information.
 	// It defaults to a No-Op logger implementation.
-	Logger log.Logger
+	Logger Logger
 }
 
 type ResolverSettings struct {
@@ -48,10 +44,10 @@ type ResolverSettings struct {
 	Timeout      time.Duration
 	// Warner is the warning logger to log dial errors.
 	// It defaults to a No-Op warner implementation.
-	Warner log.Warner
+	Warner Warner
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
-	Metrics metrics.DialMetrics
+	Metrics Metrics
 	// Picker is the picker to use for each upstream call to pick
 	// a server from a pool of servers. It must be thread safe.
 	// It defaults to a fast thread safe pseudo random picker

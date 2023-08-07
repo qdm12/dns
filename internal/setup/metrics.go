@@ -12,7 +12,15 @@ import (
 func middlewareMetrics(metricsType string,
 	commonPrometheus prometheus.Settings) (
 	middleware *metricsmiddleware.Middleware, err error) {
-	var metrics metricsmiddleware.Interface
+	var metrics interface {
+		RequestsInc()
+		QuestionsInc(class, qType string)
+		RcodeInc(rcode string)
+		AnswersInc(class, qType string)
+		ResponsesInc()
+		InFlightRequestsInc()
+		InFlightRequestsDec()
+	}
 	switch metricsType {
 	case noopString:
 		metrics = noopmetrics.New()

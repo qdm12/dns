@@ -1,16 +1,9 @@
 package blockbuilder
 
 import (
-	"context"
 	"net/http"
 	"net/netip"
 )
-
-var _ Interface = (*Builder)(nil)
-
-type Interface interface {
-	BuildAll(ctx context.Context) Result
-}
 
 func New(settings Settings) *Builder {
 	settings.SetDefaults()

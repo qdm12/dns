@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/qdm12/dns/v2/pkg/filter/metrics"
 	"github.com/qdm12/dns/v2/pkg/filter/metrics/noop"
 	"github.com/qdm12/dns/v2/pkg/filter/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/filter/update"
@@ -18,7 +17,7 @@ type Settings struct {
 	Update update.Settings
 	// Metrics is the metric interface and defaults
 	// to a no-op implementation if left unset.
-	Metrics metrics.Interface
+	Metrics Metrics
 }
 
 func (s *Settings) SetDefaults() {

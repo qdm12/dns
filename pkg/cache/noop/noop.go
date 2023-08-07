@@ -2,11 +2,10 @@ package noop
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/cache/metrics"
 )
 
 type NoOp struct {
-	metrics metrics.Interface
+	metrics Metrics
 }
 
 func New(settings Settings) *NoOp {

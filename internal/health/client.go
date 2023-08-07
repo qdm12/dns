@@ -13,12 +13,6 @@ func IsClientMode(args []string) bool {
 	return len(args) > 1 && args[1] == "healthcheck"
 }
 
-var _ Querier = (*Client)(nil)
-
-type Querier interface {
-	Query(ctx context.Context) error
-}
-
 type Client struct {
 	*http.Client
 }

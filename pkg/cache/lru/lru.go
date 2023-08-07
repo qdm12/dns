@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/cache/metrics"
 )
 
 type LRU struct {
@@ -19,7 +18,7 @@ type LRU struct {
 	mutex      sync.Mutex
 
 	// External objects
-	metrics metrics.Interface
+	metrics Metrics
 
 	// Mock fields
 	timeNow func() time.Time

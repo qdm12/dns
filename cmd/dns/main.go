@@ -136,7 +136,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	client := &http.Client{Timeout: clientTimeout}
 	blockBuilder := setup.BuildBlockBuilder(settings.Block, client)
 	prometheusRegistry := prometheus.NewRegistry()
-	cacheMetrics, err := setup.CacheMetrics(settings.Metrics, prometheusRegistry)
+	cacheMetrics, err := setup.BuildCacheMetrics(settings.Metrics, prometheusRegistry)
 	if err != nil {
 		return fmt.Errorf("cache metrics: %w", err)
 	}

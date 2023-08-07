@@ -3,12 +3,12 @@ package prometheus
 
 import (
 	"fmt"
-
-	dotmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics"
 )
 
 type (
-	dotDialMetrics = dotmetrics.DialMetrics
+	// unexported alias so it is not exposed through
+	// the Metrics struct.
+	dotDialMetrics = DialMetrics
 )
 
 type Metrics struct {

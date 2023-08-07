@@ -6,13 +6,12 @@ import (
 	"sync"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/log"
 )
 
 type Server struct {
 	// Dependencies injected
 	settings ServerSettings
-	logger   log.Logger
+	logger   Logger
 
 	// Internal state
 	running        bool

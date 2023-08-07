@@ -140,7 +140,7 @@ func (l *loop) runSubsequent(ctx context.Context, ready chan<- struct{}) (err er
 
 func (l *loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint:ireturn
 	dnsServer Service, err error) {
-	filterMetrics, err := setup.FilterMetrics(l.settings.Metrics, l.prometheusRegistry)
+	filterMetrics, err := setup.BuildFilterMetrics(l.settings.Metrics, l.prometheusRegistry)
 	if err != nil {
 		return nil, fmt.Errorf("setting up filter metrics: %w", err)
 	}

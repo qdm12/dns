@@ -11,12 +11,8 @@ import (
 	"github.com/qdm12/log"
 )
 
-type Logger interface {
+type ParentLogger interface {
 	New(options ...log.Option) *log.Logger
-	Debug(s string)
-	Info(s string)
-	Warn(s string)
-	Error(s string)
 }
 
 type PrometheusGatherer interface {
@@ -30,7 +26,7 @@ type Service interface {
 }
 
 func New(settings settings.Metrics, //nolint:ireturn
-	parentLogger Logger, prometheusGatherer PrometheusGatherer) (
+	parentLogger ParentLogger, prometheusGatherer PrometheusGatherer) (
 	service Service, err error) {
 	switch settings.Type {
 	case "noop":

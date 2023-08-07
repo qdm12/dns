@@ -19,16 +19,19 @@ type Filter interface {
 	Update(settings update.Settings)
 }
 
+type FilterMetrics interface {
+	SetBlockedHostnames(n int)
+	SetBlockedIPs(n int)
+	SetBlockedIPPrefixes(n int)
+	HostnamesFilteredInc(qClass, qType string)
+	IPsFilteredInc(rrtype string)
+}
+
 type Middleware interface {
 	Wrap(next dns.Handler) dns.Handler
 }
 
 type PrometheusRegisterer prometheus.Registerer
-
-type Metrics interface {
-	DoTMetrics
-	DoHMetrics
-}
 
 type DoTMetrics interface {
 	DoTDialInc(provider, address, outcome string)
@@ -39,4 +42,18 @@ type DoHMetrics interface {
 	DoHDialInc(url string)
 	DoTDialInc(provider, address, outcome string)
 	DNSDialInc(address, outcome string)
+}
+
+type CacheMetrics interface { //nolint:interfacebloat
+	SetCacheType(cacheType string)
+	CacheInsertInc()
+	CacheRemoveInc()
+	CacheMoveInc()
+	CacheGetEmptyInc()
+	CacheInsertEmptyInc()
+	CacheRemoveEmptyInc()
+	CacheHitInc()
+	CacheMissInc()
+	CacheExpiredInc()
+	CacheMaxEntriesSet(maxEntries uint)
 }

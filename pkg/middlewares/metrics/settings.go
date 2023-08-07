@@ -8,7 +8,7 @@ import (
 type Settings struct {
 	// Metrics is the interface to interact with metrics in the
 	// DNS middleware. It defaults to a No-Op implementation.
-	Metrics Interface
+	Metrics Metrics
 }
 
 func (s *Settings) SetDefaults() {

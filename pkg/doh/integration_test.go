@@ -86,12 +86,6 @@ func Test_Server(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-//go:generate mockgen -destination=mock_cache_test.go -package $GOPACKAGE -mock_names Interface=MockCache github.com/qdm12/dns/v2/pkg/cache Interface
-//go:generate mockgen -destination=mock_doh_metrics_test.go -package $GOPACKAGE -mock_names DialMetrics=MockDoHMetrics github.com/qdm12/dns/v2/pkg/doh/metrics DialMetrics
-//go:generate mockgen -destination=mock_middleware_metrics_test.go -package $GOPACKAGE -mock_names Interface=MockMiddlewareMetrics github.com/qdm12/dns/v2/pkg/middlewares/metrics Interface
-//go:generate mockgen -destination=mock_filter_test.go -package $GOPACKAGE -mock_names Interface=MockFilter github.com/qdm12/dns/v2/pkg/filter Interface
-//go:generate mockgen -destination=mock_logger_test.go -package $GOPACKAGE github.com/qdm12/dns/v2/pkg/log Logger
-
 func Test_Server_Mocks(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
@@ -237,7 +231,7 @@ func Test_Server_Mocks(t *testing.T) {
 	logger := NewMockLogger(ctrl)
 	logger.EXPECT().Info("DNS server listening on :53")
 
-	metrics := NewMockDoHMetrics(ctrl)
+	metrics := NewMockMetrics(ctrl)
 	metrics.EXPECT().
 		DoTDialInc("cloudflare-dns.com",
 			mockhelp.NewMatcherOneOf("1.1.1.1:853", "1.0.0.1:853"), "success").
@@ -245,7 +239,7 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().
 		DoHDialInc("https://cloudflare-dns.com/dns-query").
 		Times(2)
-	middlewareMetrics := NewMockMiddlewareMetrics(ctrl)
+	middlewareMetrics := NewMockmiddlewareMetrics(ctrl)
 	middlewareMetrics.EXPECT().InFlightRequestsInc().Times(2)
 	middlewareMetrics.EXPECT().InFlightRequestsDec().Times(2)
 	middlewareMetrics.EXPECT().RequestsInc().Times(2)

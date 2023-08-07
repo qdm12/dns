@@ -7,8 +7,6 @@ import (
 	"net"
 
 	"github.com/qdm12/dns/v2/internal/server"
-	"github.com/qdm12/dns/v2/pkg/dot/metrics"
-	"github.com/qdm12/dns/v2/pkg/log"
 	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
@@ -85,7 +83,7 @@ func pickNameAddress(picker Picker, servers []provider.DoTServer,
 func onDialError(ctx context.Context, dialErr error,
 	dotName, dotAddress string, dialer *net.Dialer,
 	picker Picker, ipv6 bool, dnsServers []provider.DNSServer,
-	warner log.Warner, metrics metrics.DialMetrics) (
+	warner Warner, metrics Metrics) (
 	conn net.Conn, err error) {
 	warner.Warn(dialErr.Error())
 	metrics.DoTDialInc(dotName, dotAddress, "error")
@@ -101,7 +99,7 @@ func onDialError(ctx context.Context, dialErr error,
 
 func dialPlaintext(ctx context.Context, dialer *net.Dialer,
 	picker Picker, ipv6 bool, dnsServers []provider.DNSServer,
-	warner log.Warner, metrics metrics.DialDNSMetrics) (
+	warner Warner, metrics Metrics) (
 	conn net.Conn, err error) {
 	dnsServer := picker.DNSServer(dnsServers)
 	ip := picker.DNSIP(dnsServer, ipv6)
