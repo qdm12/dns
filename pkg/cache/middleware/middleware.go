@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/middlewares/stateful"
+	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
 type Middleware struct {
