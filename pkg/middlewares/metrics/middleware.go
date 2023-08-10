@@ -45,7 +45,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
 		h.metrics.QuestionsInc(class, qType)
 	}
 
-	statefulWriter := stateful.NewWriter(w)
+	statefulWriter := stateful.NewWriter()
 	h.next.ServeDNS(statefulWriter, request)
 	response := statefulWriter.Response
 
@@ -60,6 +60,8 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
 	}
 
 	h.metrics.ResponsesInc()
+
+	_ = w.WriteMsg(statefulWriter.Response)
 }
 
 func rcodeToString(rcode int) (rcodeString string) {

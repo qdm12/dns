@@ -36,6 +36,7 @@ func Test_New(t *testing.T) {
 
 	writer := NewMockResponseWriter(ctrl)
 	writer.EXPECT().RemoteAddr().Return(remoteAddress)
+	writer.EXPECT().WriteMsg(nil).Return(nil)
 
 	handler.ServeDNS(writer, request)
 }

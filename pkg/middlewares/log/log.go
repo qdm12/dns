@@ -40,11 +40,15 @@ type Logger interface {
 	Error(id uint16, errorString string)
 }
 
+// ServeDNS implements the dns.Handler interface.
+// Note the response writer passed as argument should be an actual
+// IO writer, not a buffered writer, so it can return an actual error.
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-	sw := stateful.NewWriter(w)
+	sw := stateful.NewWriter()
 	h.next.ServeDNS(sw, r)
 	h.logger.Log(w.RemoteAddr(), r, sw.Response)
-	if err := sw.WriteErr; err != nil {
+	err := w.WriteMsg(sw.Response)
+	if err != nil {
 		errString := "cannot write DNS response: " + err.Error()
 		h.logger.Error(r.Id, errString)
 	}

@@ -32,6 +32,10 @@ func DNS(userSettings settings.Settings, //nolint:ireturn
 	}
 	middlewares = append(middlewares, middlewareMetrics)
 
+	// Log middleware should be one of the top most middlewares
+	// so it actually calls `.WriteMsg` on an actual dns.ResponseWriter
+	// writing to the network. Having it as the last element of the
+	// middlewares slice achieves this.
 	logMiddleware, err := logMiddleware(userSettings.MiddlewareLog)
 	if err != nil {
 		return nil, fmt.Errorf("log middleware: %w", err)
