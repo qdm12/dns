@@ -33,25 +33,25 @@ type handler struct {
 	metrics Metrics
 }
 
-func (h *handler) ServeDNS(w dns.ResponseWriter, response *dns.Msg) {
+func (h *handler) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
 	h.metrics.InFlightRequestsInc()
 	defer h.metrics.InFlightRequestsDec()
 
 	h.metrics.RequestsInc()
 
-	for _, question := range response.Question {
+	for _, question := range request.Question {
 		class := dns.Class(question.Qclass).String()
 		qType := dns.Type(question.Qtype).String()
 		h.metrics.QuestionsInc(class, qType)
 	}
 
 	statefulWriter := stateful.NewWriter(w)
-	h.next.ServeDNS(statefulWriter, response)
+	h.next.ServeDNS(statefulWriter, request)
 
 	rcode := rcodeToString(statefulWriter.Response.Rcode)
 	h.metrics.RcodeInc(rcode)
 
-	for _, rr := range response.Answer {
+	for _, rr := range request.Answer {
 		header := rr.Header()
 		class := dns.Class(header.Class).String()
 		rrType := dns.Type(header.Rrtype).String()
