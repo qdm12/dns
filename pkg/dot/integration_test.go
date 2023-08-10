@@ -242,6 +242,8 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().QuestionsInc("IN", "A")
 	metrics.EXPECT().QuestionsInc("IN", "AAAA")
 	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
+	metrics.EXPECT().AnswersInc("IN", "A")
+	metrics.EXPECT().AnswersInc("IN", "AAAA")
 
 	metricsMiddleware := metricsmiddleware.New(
 		metricsmiddleware.Settings{

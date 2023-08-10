@@ -47,11 +47,12 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
 
 	statefulWriter := stateful.NewWriter(w)
 	h.next.ServeDNS(statefulWriter, request)
+	response := statefulWriter.Response
 
-	rcode := rcodeToString(statefulWriter.Response.Rcode)
+	rcode := rcodeToString(response.Rcode)
 	h.metrics.RcodeInc(rcode)
 
-	for _, rr := range request.Answer {
+	for _, rr := range response.Answer {
 		header := rr.Header()
 		class := dns.Class(header.Class).String()
 		rrType := dns.Type(header.Rrtype).String()
