@@ -11,9 +11,8 @@ import (
 )
 
 func dotServer(userSettings settings.Settings,
-	middlewares []Middleware,
-	logger Logger, metrics DoTMetrics,
-	cache Cache, filter Filter) (server *dot.Server, err error) {
+	middlewares []Middleware, logger Logger, metrics DoTMetrics) (
+	server *dot.Server, err error) {
 	resolverSettings := dot.ResolverSettings{
 		DoTProviders: userSettings.DoT.DoTProviders,
 		DNSProviders: userSettings.DoT.DNSProviders,
@@ -26,8 +25,6 @@ func dotServer(userSettings settings.Settings,
 		Resolver:         resolverSettings,
 		ListeningAddress: userSettings.ListeningAddress,
 		Middlewares:      toDoTMiddlewares(middlewares),
-		Cache:            cache,
-		Filter:           filter,
 		Logger:           logger,
 	}
 

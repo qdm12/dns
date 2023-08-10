@@ -16,6 +16,5 @@ func newDNSHandler(ctx context.Context, settings ServerSettings) (
 
 	exchange := server.NewExchange("DoT", dial, settings.Logger)
 
-	return server.New(ctx, exchange, settings.Filter,
-		settings.Cache, settings.Logger), nil
+	return server.New(ctx, exchange, settings.Logger), nil
 }

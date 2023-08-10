@@ -8,6 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	dns "github.com/miekg/dns"
+	update "github.com/qdm12/dns/v2/pkg/filter/update"
 )
 
 // MockmiddlewareMetrics is a mock of middlewareMetrics interface.
@@ -115,4 +117,128 @@ func (m *MockmiddlewareMetrics) ResponsesInc() {
 func (mr *MockmiddlewareMetricsMockRecorder) ResponsesInc() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResponsesInc", reflect.TypeOf((*MockmiddlewareMetrics)(nil).ResponsesInc))
+}
+
+// Mockfilter is a mock of filter interface.
+type Mockfilter struct {
+	ctrl     *gomock.Controller
+	recorder *MockfilterMockRecorder
+}
+
+// MockfilterMockRecorder is the mock recorder for Mockfilter.
+type MockfilterMockRecorder struct {
+	mock *Mockfilter
+}
+
+// NewMockfilter creates a new mock instance.
+func NewMockfilter(ctrl *gomock.Controller) *Mockfilter {
+	mock := &Mockfilter{ctrl: ctrl}
+	mock.recorder = &MockfilterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *Mockfilter) EXPECT() *MockfilterMockRecorder {
+	return m.recorder
+}
+
+// FilterRequest mocks base method.
+func (m *Mockfilter) FilterRequest(request *dns.Msg) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterRequest", request)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// FilterRequest indicates an expected call of FilterRequest.
+func (mr *MockfilterMockRecorder) FilterRequest(request interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterRequest", reflect.TypeOf((*Mockfilter)(nil).FilterRequest), request)
+}
+
+// FilterResponse mocks base method.
+func (m *Mockfilter) FilterResponse(response *dns.Msg) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterResponse", response)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// FilterResponse indicates an expected call of FilterResponse.
+func (mr *MockfilterMockRecorder) FilterResponse(response interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterResponse", reflect.TypeOf((*Mockfilter)(nil).FilterResponse), response)
+}
+
+// Update mocks base method.
+func (m *Mockfilter) Update(settings update.Settings) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Update", settings)
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockfilterMockRecorder) Update(settings interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*Mockfilter)(nil).Update), settings)
+}
+
+// Mockcache is a mock of cache interface.
+type Mockcache struct {
+	ctrl     *gomock.Controller
+	recorder *MockcacheMockRecorder
+}
+
+// MockcacheMockRecorder is the mock recorder for Mockcache.
+type MockcacheMockRecorder struct {
+	mock *Mockcache
+}
+
+// NewMockcache creates a new mock instance.
+func NewMockcache(ctrl *gomock.Controller) *Mockcache {
+	mock := &Mockcache{ctrl: ctrl}
+	mock.recorder = &MockcacheMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *Mockcache) EXPECT() *MockcacheMockRecorder {
+	return m.recorder
+}
+
+// Add mocks base method.
+func (m *Mockcache) Add(request, response *dns.Msg) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Add", request, response)
+}
+
+// Add indicates an expected call of Add.
+func (mr *MockcacheMockRecorder) Add(request, response interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*Mockcache)(nil).Add), request, response)
+}
+
+// Get mocks base method.
+func (m *Mockcache) Get(request *dns.Msg) *dns.Msg {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", request)
+	ret0, _ := ret[0].(*dns.Msg)
+	return ret0
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockcacheMockRecorder) Get(request interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*Mockcache)(nil).Get), request)
+}
+
+// Remove mocks base method.
+func (m *Mockcache) Remove(request *dns.Msg) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Remove", request)
+}
+
+// Remove indicates an expected call of Remove.
+func (mr *MockcacheMockRecorder) Remove(request interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*Mockcache)(nil).Remove), request)
 }

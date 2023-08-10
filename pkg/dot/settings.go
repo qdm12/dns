@@ -7,9 +7,7 @@ import (
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/picker"
-	cachenoop "github.com/qdm12/dns/v2/pkg/cache/noop"
 	metricsnoop "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
-	filternoop "github.com/qdm12/dns/v2/pkg/filter/noop"
 	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
@@ -26,13 +24,6 @@ type ServerSettings struct {
 	// The first one is the first wrapper, and the last one
 	// is the last wrapper of the handlers in the chain.
 	Middlewares []Middleware
-	// Cache is the cache to use in the server.
-	// It defaults to a No-Op cache implementation with
-	// a No-Op cache metrics implementation.
-	Cache Cache
-	// Filter is the filter for DNS requests and responses.
-	// It defaults to a No-Op filter implementation.
-	Filter Filter
 	// Logger is the logger to log information.
 	// It defaults to a No-Op logger implementation.
 	Logger Logger
@@ -64,9 +55,7 @@ type ResolverSettings struct {
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
 	s.ListeningAddress = gosettings.DefaultString(s.ListeningAddress, ":53")
-	s.Filter = gosettings.DefaultInterface(s.Filter, filternoop.New())
 	s.Logger = gosettings.DefaultInterface(s.Logger, lognoop.New())
-	s.Cache = gosettings.DefaultInterface(s.Cache, cachenoop.New(cachenoop.Settings{}))
 }
 
 func (s *ResolverSettings) SetDefaults() {

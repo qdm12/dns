@@ -20,8 +20,7 @@ type Cache interface {
 }
 
 func BuildCache(userSettings settings.Cache, //nolint:ireturn
-	metrics CacheMetrics) (
-	cache Cache) {
+	metrics CacheMetrics) (cache Cache) {
 	switch userSettings.Type {
 	case noop.CacheType:
 		return noop.New(noop.Settings{Metrics: metrics})

@@ -11,9 +11,7 @@ import (
 )
 
 func dohServer(userSettings settings.Settings,
-	middlewares []Middleware,
-	logger Logger, metrics DoHMetrics,
-	cache Cache, filter Filter) (
+	middlewares []Middleware, logger Logger, metrics DoHMetrics) (
 	server *doh.Server, err error) {
 	resolverSettings := doh.ResolverSettings{
 		DoHProviders: userSettings.DoH.DoHProviders,
@@ -31,8 +29,6 @@ func dohServer(userSettings settings.Settings,
 		Resolver:         resolverSettings,
 		ListeningAddress: userSettings.ListeningAddress,
 		Middlewares:      toDoHMiddlewares(middlewares),
-		Cache:            cache,
-		Filter:           filter,
 		Logger:           logger,
 	}
 

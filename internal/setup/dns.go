@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
+	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
+	filtermiddleware "github.com/qdm12/dns/v2/pkg/filter/middleware"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 )
 
@@ -18,6 +20,11 @@ func DNS(userSettings settings.Settings, //nolint:ireturn
 	server Service, err error) {
 	var middlewares []Middleware
 
+	middlewares = append(middlewares, cachemiddleware.New(cache))
+	// Note the filter middleware must be wrapping the cache middleware
+	// to catch filtered responses found from the cache.
+	middlewares = append(middlewares, filtermiddleware.New(filter, cache))
+
 	commonPrometheus := prometheus.Settings{
 		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,
 		Registry: promRegistry,
@@ -25,12 +32,12 @@ func DNS(userSettings settings.Settings, //nolint:ireturn
 
 	metricsType := userSettings.Metrics.Type
 
-	middlewareMetrics, err := middlewareMetrics(metricsType,
+	metricsMiddleware, err := middlewareMetrics(metricsType,
 		commonPrometheus)
 	if err != nil {
 		return nil, fmt.Errorf("middleware metrics: %w", err)
 	}
-	middlewares = append(middlewares, middlewareMetrics)
+	middlewares = append(middlewares, metricsMiddleware)
 
 	// Log middleware should be one of the top most middlewares
 	// so it actually calls `.WriteMsg` on an actual dns.ResponseWriter
@@ -50,7 +57,7 @@ func DNS(userSettings settings.Settings, //nolint:ireturn
 		}
 
 		return dotServer(userSettings, middlewares,
-			logger, dotMetrics, cache, filter)
+			logger, dotMetrics)
 	case "doh":
 		dohMetrics, err := dohMetrics(metricsType, commonPrometheus)
 		if err != nil {
@@ -58,7 +65,7 @@ func DNS(userSettings settings.Settings, //nolint:ireturn
 		}
 
 		return dohServer(userSettings, middlewares,
-			logger, dohMetrics, cache, filter)
+			logger, dohMetrics)
 	default:
 		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))
 	}

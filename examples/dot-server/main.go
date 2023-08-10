@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/qdm12/dns/v2/pkg/cache/lru"
+	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
 	"github.com/qdm12/dns/v2/pkg/dot"
 )
 
@@ -16,9 +17,12 @@ func main() {
 	defer stop()
 
 	logger := new(Logger)
+
+	cacheMiddleware := cachemiddleware.New(lru.New(lru.Settings{}))
+
 	server, err := dot.NewServer(dot.ServerSettings{
-		Cache:  lru.New(lru.Settings{}),
-		Logger: logger,
+		Middlewares: []dot.Middleware{cacheMiddleware},
+		Logger:      logger,
 	})
 	if err != nil {
 		log.Fatal(err)

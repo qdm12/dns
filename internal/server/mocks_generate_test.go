@@ -1,3 +1,3 @@
 package server
 
-//go:generate mockgen -destination=mocks_test.go -package=$GOPACKAGE . Filter,Cache,Logger
+//go:generate mockgen -destination=mocks_test.go -package=$GOPACKAGE . Logger

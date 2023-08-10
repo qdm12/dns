@@ -13,6 +13,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/mockhelp"
+	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
+	filtermiddleware "github.com/qdm12/dns/v2/pkg/filter/middleware"
 	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -195,22 +197,22 @@ func Test_Server_Mocks(t *testing.T) {
 		},
 	}
 
-	cache := NewMockCache(ctrl)
+	cache := NewMockcache(ctrl)
 	cache.EXPECT().
 		Get(mockhelp.NewMatcherRequest(expectedRequestA)).
 		Return(nil)
 	cache.EXPECT().
 		Get(mockhelp.NewMatcherRequest(expectedRequestAAAA)).
 		Return(nil)
-
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestA),
 		mockhelp.NewMatcherResponse(expectedResponseA))
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
 		mockhelp.NewMatcherResponse(expectedResponseAAAA))
+	cacheMiddleware := cachemiddleware.New(cache)
 
-	filter := NewMockFilter(ctrl)
+	filter := NewMockfilter(ctrl)
 	filter.EXPECT().
 		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestA)).
 		Return(false)
@@ -223,6 +225,7 @@ func Test_Server_Mocks(t *testing.T) {
 	filter.EXPECT().
 		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
 		Return(false)
+	filterMiddleware := filtermiddleware.New(filter, cache)
 
 	logger := NewMockLogger(ctrl)
 	logger.EXPECT().Info("DNS server listening on :53")
@@ -252,10 +255,8 @@ func Test_Server_Mocks(t *testing.T) {
 	)
 
 	server, err := NewServer(ServerSettings{
-		Cache:       cache,
-		Filter:      filter,
 		Logger:      logger,
-		Middlewares: []Middleware{metricsMiddleware},
+		Middlewares: []Middleware{metricsMiddleware, cacheMiddleware, filterMiddleware},
 		Resolver: ResolverSettings{
 			Metrics: dotMetrics,
 		},
