@@ -18,15 +18,11 @@ type SettingsSystemDNS struct {
 	// ResolvPath is the path to the resolv configuration file.
 	// It defaults to /etc/resolv.conf.
 	ResolvPath string
-	// KeepNameserver can be set to preserve existing nameserver lines
-	// in the resolv configuration file.
-	KeepNameserver *bool
 }
 
 func (s *SettingsSystemDNS) SetDefaults() {
 	s.IP = gosettings.DefaultValidator(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
 	s.ResolvPath = gosettings.DefaultString(s.ResolvPath, "/etc/resolv.conf")
-	s.KeepNameserver = gosettings.DefaultPointer(s.KeepNameserver, false)
 }
 
 var (
@@ -60,7 +56,7 @@ func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
 		return fmt.Errorf("%w: %s", ErrResolvPathIsDirectory, settings.ResolvPath)
 	}
 
-	return patchResolvFile(settings.ResolvPath, settings.IP, *settings.KeepNameserver)
+	return patchResolvFile(settings.ResolvPath, settings.IP)
 }
 
 func createResolvFile(resolvPath string, ip netip.Addr) (err error) {
@@ -80,8 +76,7 @@ func createResolvFile(resolvPath string, ip netip.Addr) (err error) {
 	return nil
 }
 
-func patchResolvFile(resolvPath string, ip netip.Addr,
-	keepNameserver bool) (err error) {
+func patchResolvFile(resolvPath string, ip netip.Addr) (err error) {
 	data, err := os.ReadFile(resolvPath)
 	if err != nil {
 		return fmt.Errorf("reading file: %w", err)
@@ -91,7 +86,7 @@ func patchResolvFile(resolvPath string, ip netip.Addr,
 	patchedLines := make([]string, 0, len(lines)+1)
 	patchedLines = append(patchedLines, "nameserver "+ip.String())
 	for _, line := range lines {
-		if keepNameserver || !strings.HasPrefix(line, "nameserver ") {
+		if !strings.HasPrefix(line, "nameserver ") {
 			patchedLines = append(patchedLines, line)
 		}
 	}
