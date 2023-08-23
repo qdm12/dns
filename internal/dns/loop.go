@@ -10,7 +10,7 @@ import (
 	"github.com/qdm12/dns/v2/internal/config/settings"
 	"github.com/qdm12/dns/v2/internal/setup"
 	"github.com/qdm12/dns/v2/pkg/check"
-	"github.com/qdm12/dns/v2/pkg/filter/mapfilter"
+	"github.com/qdm12/dns/v2/pkg/middlewares/filter/mapfilter"
 	"github.com/qdm12/goservices"
 )
 

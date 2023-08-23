@@ -3,7 +3,7 @@ package mapfilter
 import (
 	"net/netip"
 
-	"github.com/qdm12/dns/v2/pkg/filter/update"
+	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 )
 
 func (m *Filter) Update(settings update.Settings) {

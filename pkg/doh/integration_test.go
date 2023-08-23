@@ -14,7 +14,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/mockhelp"
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
-	filtermiddleware "github.com/qdm12/dns/v2/pkg/filter/middleware"
+	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

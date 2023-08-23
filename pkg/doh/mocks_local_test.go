@@ -9,7 +9,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	dns "github.com/miekg/dns"
-	update "github.com/qdm12/dns/v2/pkg/filter/update"
+	update "github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 )
 
 // MockmiddlewareMetrics is a mock of middlewareMetrics interface.

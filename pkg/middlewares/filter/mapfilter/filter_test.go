@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/filter/update"
+	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 	"github.com/stretchr/testify/assert"
 )
 

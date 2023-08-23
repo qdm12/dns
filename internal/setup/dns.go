@@ -5,8 +5,8 @@ import (
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
-	filtermiddleware "github.com/qdm12/dns/v2/pkg/filter/middleware"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 )
 
 type Service interface {

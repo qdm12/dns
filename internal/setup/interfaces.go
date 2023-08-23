@@ -3,7 +3,7 @@ package setup
 import (
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/qdm12/dns/v2/pkg/filter/update"
+	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 )
 
 type Logger interface {

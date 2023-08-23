@@ -1,4 +1,4 @@
-package middleware
+package filter
 
 import (
 	"github.com/miekg/dns"
