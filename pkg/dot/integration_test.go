@@ -13,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/mockhelp"
-	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
+	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
 	"github.com/stretchr/testify/assert"

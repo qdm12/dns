@@ -6,11 +6,11 @@ import (
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/internal/config/settings"
-	"github.com/qdm12/dns/v2/pkg/cache/lru"
-	noopmetrics "github.com/qdm12/dns/v2/pkg/cache/metrics/noop"
-	prommetrics "github.com/qdm12/dns/v2/pkg/cache/metrics/prometheus"
-	"github.com/qdm12/dns/v2/pkg/cache/noop"
 	promcommon "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	"github.com/qdm12/dns/v2/pkg/middlewares/cache/lru"
+	noopmetrics "github.com/qdm12/dns/v2/pkg/middlewares/cache/metrics/noop"
+	prommetrics "github.com/qdm12/dns/v2/pkg/middlewares/cache/metrics/prometheus"
+	"github.com/qdm12/dns/v2/pkg/middlewares/cache/noop"
 )
 
 type Cache interface {

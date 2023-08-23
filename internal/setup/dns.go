@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
-	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 )
 

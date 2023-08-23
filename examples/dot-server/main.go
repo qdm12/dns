@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/qdm12/dns/v2/pkg/cache/lru"
-	cachemiddleware "github.com/qdm12/dns/v2/pkg/cache/middleware"
 	"github.com/qdm12/dns/v2/pkg/dot"
+	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
+	"github.com/qdm12/dns/v2/pkg/middlewares/cache/lru"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-package middleware
+package cache
 
 import "github.com/miekg/dns"
 
