@@ -230,15 +230,3 @@ func (mr *MockcacheMockRecorder) Get(request interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*Mockcache)(nil).Get), request)
 }
-
-// Remove mocks base method.
-func (m *Mockcache) Remove(request *dns.Msg) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Remove", request)
-}
-
-// Remove indicates an expected call of Remove.
-func (mr *MockcacheMockRecorder) Remove(request interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*Mockcache)(nil).Remove), request)
-}

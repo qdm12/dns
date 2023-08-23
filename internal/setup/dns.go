@@ -23,7 +23,7 @@ func DNS(userSettings settings.Settings, //nolint:ireturn
 	middlewares = append(middlewares, cachemiddleware.New(cache))
 	// Note the filter middleware must be wrapping the cache middleware
 	// to catch filtered responses found from the cache.
-	middlewares = append(middlewares, filtermiddleware.New(filter, cache))
+	middlewares = append(middlewares, filtermiddleware.New(filter))
 
 	commonPrometheus := prometheus.Settings{
 		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,

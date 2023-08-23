@@ -18,4 +18,3 @@ func New(settings Settings) *NoOp {
 
 func (n *NoOp) Add(*dns.Msg, *dns.Msg)           {}
 func (n *NoOp) Get(*dns.Msg) (response *dns.Msg) { return nil }
-func (n *NoOp) Remove(*dns.Msg)                  {}

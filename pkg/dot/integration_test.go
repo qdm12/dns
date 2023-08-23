@@ -225,7 +225,7 @@ func Test_Server_Mocks(t *testing.T) {
 	filter.EXPECT().
 		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
 		Return(false)
-	filterMiddleware := filtermiddleware.New(filter, cache)
+	filterMiddleware := filtermiddleware.New(filter)
 
 	logger := NewMockLogger(ctrl)
 	logger.EXPECT().Info("DNS server listening on :53")

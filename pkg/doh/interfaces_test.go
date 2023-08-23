@@ -24,5 +24,4 @@ type filter interface { //nolint:unused
 type cache interface { //nolint:unused
 	Add(request, response *dns.Msg)
 	Get(request *dns.Msg) (response *dns.Msg)
-	Remove(request *dns.Msg)
 }
