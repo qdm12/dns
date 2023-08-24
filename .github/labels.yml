@@ -36,5 +36,7 @@
   color: "ffc7ea"
 - name: "Filter"
   color: "ffc7ea"
+- name: "Cache"
+  color: "ffc7ea"
 - name: "Go code library"
   color: "ffc7ea"
