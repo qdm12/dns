@@ -14,9 +14,9 @@ type Settings struct {
 	// Prefix, aka Subsystem, is the prefix string in front
 	// of all metric names.
 	Prefix string
-	// Registry is the Prometheus registerer to use for the metrics.
+	// Registry is the Prometheus registry to use for the metrics.
 	// It defaults to prometheus.DefaultRegisterer if left unset.
-	Registry prometheus.Registerer
+	Registry Registry
 }
 
 func (s *Settings) SetDefaults() {

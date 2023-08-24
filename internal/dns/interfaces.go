@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/miekg/dns"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/pkg/blockbuilder"
 )
 
@@ -27,4 +28,8 @@ type Cache interface {
 
 type BlockBuilder interface {
 	BuildAll(ctx context.Context) blockbuilder.Result
+}
+
+type PrometheusRegistry interface {
+	prometheus.Registerer
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/internal/config/settings"
 	"github.com/qdm12/dns/v2/internal/setup"
 	"github.com/qdm12/dns/v2/pkg/check"
@@ -20,7 +19,7 @@ type loop struct {
 	logger             Logger
 	blockBuilder       BlockBuilder
 	cache              Cache
-	prometheusRegistry prometheus.Registerer
+	prometheusRegistry PrometheusRegistry
 
 	dnsServer   Service
 	updateTimer *time.Timer
@@ -28,7 +27,7 @@ type loop struct {
 
 func New(settings settings.Settings, logger Logger,
 	blockBuilder BlockBuilder, cache Cache,
-	prometheusRegistry prometheus.Registerer) (loopService *goservices.RunWrapper, err error) {
+	prometheusRegistry PrometheusRegistry) (loopService *goservices.RunWrapper, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {

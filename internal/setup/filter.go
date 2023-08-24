@@ -3,7 +3,6 @@ package setup
 import (
 	"fmt"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/internal/config/settings"
 	promcommon "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	noopmetrics "github.com/qdm12/dns/v2/pkg/middlewares/filter/metrics/noop"
@@ -11,7 +10,7 @@ import (
 )
 
 func BuildFilterMetrics(userSettings settings.Metrics, //nolint:ireturn
-	registry prometheus.Registerer) (
+	registry PrometheusRegistry) (
 	metrics FilterMetrics, err error) {
 	switch userSettings.Type {
 	case noopString:

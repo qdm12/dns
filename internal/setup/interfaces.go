@@ -31,8 +31,6 @@ type Middleware interface {
 	Wrap(next dns.Handler) dns.Handler
 }
 
-type PrometheusRegisterer prometheus.Registerer
-
 type DoTMetrics interface {
 	DoTDialInc(provider, address, outcome string)
 	DNSDialInc(address, outcome string)
@@ -56,4 +54,8 @@ type CacheMetrics interface { //nolint:interfacebloat
 	CacheMissInc()
 	CacheExpiredInc()
 	CacheMaxEntriesSet(maxEntries uint)
+}
+
+type PrometheusRegistry interface {
+	prometheus.Registerer
 }

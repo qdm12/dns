@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/miekg/dns"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/internal/config/settings"
 	promcommon "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/middlewares/cache/lru"
@@ -34,7 +33,7 @@ func BuildCache(userSettings settings.Cache, //nolint:ireturn
 }
 
 func BuildCacheMetrics(userSettings settings.Metrics, //nolint:ireturn
-	registry prometheus.Registerer) (
+	registry PrometheusRegistry) (
 	metrics CacheMetrics, err error) {
 	switch userSettings.Type {
 	case noopString:

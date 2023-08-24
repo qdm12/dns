@@ -16,7 +16,7 @@ type Service interface {
 }
 
 func DNS(userSettings settings.Settings, //nolint:ireturn
-	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegisterer) (
+	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegistry) (
 	server Service, err error) {
 	var middlewares []Middleware
 

@@ -4,8 +4,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func Register(registry prometheus.Registerer,
-	collectors ...prometheus.Collector) (err error) {
+type PrometheusRegistry interface {
+	prometheus.Registerer
+}
+
+type PrometheusCollector interface {
+	prometheus.Collector
+}
+
+func Register(registry PrometheusRegistry,
+	collectors ...PrometheusCollector) (err error) {
 	for _, collector := range collectors {
 		_ = registry.Unregister(collector)
 
