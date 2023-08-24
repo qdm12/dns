@@ -10,10 +10,9 @@ import (
 	"github.com/qdm12/dns/v2/internal/setup"
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/mapfilter"
-	"github.com/qdm12/goservices"
 )
 
-type loop struct {
+type Loop struct {
 	// Dependencies injected
 	settings           settings.Settings
 	logger             Logger
@@ -23,57 +22,75 @@ type loop struct {
 
 	dnsServer   Service
 	updateTimer *time.Timer
+	runCancel   context.CancelFunc
+	runDone     chan struct{}
 }
 
 func New(settings settings.Settings, logger Logger,
 	blockBuilder BlockBuilder, cache Cache,
-	prometheusRegistry PrometheusRegistry) (loopService *goservices.RunWrapper, err error) {
+	prometheusRegistry PrometheusRegistry) (loop *Loop, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {
 		return nil, fmt.Errorf("validating settings: %w", err)
 	}
 
-	loop := &loop{
+	return &Loop{
 		settings:           settings,
 		logger:             logger,
 		blockBuilder:       blockBuilder,
 		cache:              cache,
 		prometheusRegistry: prometheusRegistry,
-	}
-	return goservices.NewRunWrapper("dns loop", loop.run), nil
+	}, nil
 }
 
-func (l *loop) run(ctx context.Context, ready chan<- struct{},
-	runError, stopError chan<- error) {
-	err := l.runFirst(ctx)
+func (l *Loop) String() string {
+	return "dns loop"
+}
+
+func (l *Loop) Start(ctx context.Context) (
+	runError <-chan error, err error) {
+	err = l.runFirst(ctx)
 	if err != nil {
-		runError <- err
-		close(runError)
-		return
+		return nil, err
 	}
 
-	for {
-		err := l.runSubsequent(ctx, ready)
-		ready = nil // ensure we don't close it again
-		switch {
-		case err == nil: // planned update restart
-		case errors.Is(err, errStopped):
-			close(stopError)
-			return
-		default:
-			runError <- err
-			close(runError)
-			return
+	runErrorBidirectional := make(chan error)
+	runError = runErrorBidirectional
+
+	var runCtx context.Context
+	runCtx, l.runCancel = context.WithCancel(context.Background())
+	l.runDone = make(chan struct{})
+	ready := make(chan struct{})
+
+	go func() {
+		defer close(l.runDone)
+		for runCtx.Err() == nil {
+			err := l.runSubsequent(runCtx, ready)
+			switch {
+			case err == nil: // planned update restart
+			case errors.Is(err, runCtx.Err()):
+				return
+			default:
+				runErrorBidirectional <- err
+				close(runErrorBidirectional)
+				return
+			}
 		}
-	}
+	}()
+	<-ready
+	ready = nil
+
+	return runError, nil
 }
 
-var (
-	errStopped = errors.New("stopped")
-)
+func (l *Loop) Stop() (err error) {
+	l.runCancel()
+	<-l.runDone
+	return l.dnsServer.Stop()
+}
 
-func (l *loop) runFirst(ctx context.Context) (err error) {
+func (l *Loop) runFirst(ctx context.Context) (err error) {
 	const downloadBlockFiles = false
 	l.dnsServer, err = l.setupAll(ctx, downloadBlockFiles)
 	if err != nil {
@@ -99,7 +116,8 @@ func (l *loop) runFirst(ctx context.Context) (err error) {
 	return nil
 }
 
-func (l *loop) runSubsequent(ctx context.Context, ready chan<- struct{}) (err error) {
+func (l *Loop) runSubsequent(ctx context.Context,
+	ready chan<- struct{}) (err error) {
 	const downloadBlockFiles = true
 	newDNSServer, err := l.setupAll(ctx, downloadBlockFiles)
 	if err != nil {
@@ -139,7 +157,7 @@ func (l *loop) runSubsequent(ctx context.Context, ready chan<- struct{}) (err er
 	return l.wait(ctx, serverRunError)
 }
 
-func (l *loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint:ireturn
+func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint:ireturn
 	dnsServer Service, err error) {
 	filterMetrics, err := setup.BuildFilterMetrics(l.settings.Metrics, l.prometheusRegistry)
 	if err != nil {
@@ -175,19 +193,14 @@ func (l *loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 	return server, nil
 }
 
-func (l *loop) wait(ctx context.Context, serverRunError <-chan error) (err error) {
+func (l *Loop) wait(ctx context.Context, serverRunError <-chan error) (err error) {
 	select {
 	case <-l.updateTimer.C:
 		l.logger.Info("planned periodic restart of DNS server")
 		l.updateTimer.Reset(*l.settings.UpdatePeriod)
 		return nil
 	case <-ctx.Done():
-		l.logger.Info("stopping DNS server run loop")
-		err = l.dnsServer.Stop()
-		if err != nil {
-			return fmt.Errorf("stopping DNS server: %w", err)
-		}
-		return fmt.Errorf("%w", errStopped)
+		return ctx.Err()
 	case err = <-serverRunError:
 		return err
 	}
