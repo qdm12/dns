@@ -89,6 +89,7 @@ func (l *loop) runFirst(ctx context.Context) (err error) {
 	if *l.settings.CheckDNS {
 		err = check.WaitForDNS(ctx, check.Settings{})
 		if err != nil {
+			_ = l.dnsServer.Stop()
 			return fmt.Errorf("waiting for DNS: %w", err)
 		}
 	}
@@ -120,6 +121,7 @@ func (l *loop) runSubsequent(ctx context.Context, ready chan<- struct{}) (err er
 	if *l.settings.CheckDNS {
 		err = check.WaitForDNS(ctx, check.Settings{})
 		if err != nil {
+			_ = l.dnsServer.Stop()
 			return fmt.Errorf("waiting for DNS: %w", err)
 		}
 	}
