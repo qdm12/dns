@@ -2,6 +2,7 @@
 package metrics
 
 import (
+	"context"
 	"fmt"
 
 	dto "github.com/prometheus/client_model/go"
@@ -21,7 +22,7 @@ type PrometheusGatherer interface {
 
 type Service interface {
 	String() string
-	Start() (runError <-chan error, startErr error)
+	Start(ctx context.Context) (runError <-chan error, startErr error)
 	Stop() (err error)
 }
 

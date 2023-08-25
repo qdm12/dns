@@ -164,7 +164,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 		return fmt.Errorf("creating services sequence: %w", err)
 	}
 
-	runError, err := sequence.Start()
+	runError, err := sequence.Start(ctx)
 	if err != nil {
 		return err
 	}

@@ -8,7 +8,7 @@ require (
 	github.com/miekg/dns v1.1.55
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/client_model v0.3.0
-	github.com/qdm12/goservices v0.1.0-rc2
+	github.com/qdm12/goservices v0.1.0
 	github.com/qdm12/gosettings v0.4.0-rc1
 	github.com/qdm12/gosplash v0.1.0
 	github.com/qdm12/gotree v0.2.0
