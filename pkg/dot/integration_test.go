@@ -215,7 +215,8 @@ func Test_Server_Mocks(t *testing.T) {
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
 		mockhelp.NewMatcherResponse(expectedResponseAAAA))
-	cacheMiddleware := cachemiddleware.New(cache)
+	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
+	require.NoError(t, err)
 
 	filter := NewMockfilter(ctrl)
 	filter.EXPECT().
@@ -230,7 +231,8 @@ func Test_Server_Mocks(t *testing.T) {
 	filter.EXPECT().
 		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
 		Return(false)
-	filterMiddleware := filtermiddleware.New(filter)
+	filterMiddleware, err := filtermiddleware.New(filtermiddleware.Settings{Filter: filter})
+	require.NoError(t, err)
 
 	logger := NewMockLogger(ctrl)
 	logger.EXPECT().Info(mockhelp.NewMatcherRegex("DNS server listening on .*:[1-9][0-9]{0,4}"))

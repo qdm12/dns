@@ -22,7 +22,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cacheMiddleware := cachemiddleware.New(cache)
+
+	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	server, err := dot.NewServer(dot.ServerSettings{
 		Middlewares: []dot.Middleware{cacheMiddleware},
