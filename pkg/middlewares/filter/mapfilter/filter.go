@@ -13,14 +13,17 @@ type Filter struct {
 	updateLock    sync.RWMutex
 }
 
-func New(settings Settings) *Filter {
+func New(settings Settings) (filter *Filter, err error) {
 	settings.SetDefaults()
 
-	filter := &Filter{
+	filter = &Filter{
 		metrics: settings.Metrics,
 	}
 
-	filter.Update(settings.Update)
+	err = filter.Update(settings.Update)
+	if err != nil {
+		return nil, err
+	}
 
-	return filter
+	return filter, nil
 }

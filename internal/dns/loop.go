@@ -182,7 +182,10 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 		filterSettings.Update.BlockHostnames(result.BlockedHostnames)
 	}
 
-	filter := mapfilter.New(filterSettings)
+	filter, err := mapfilter.New(filterSettings)
+	if err != nil {
+		return nil, fmt.Errorf("setting up filter: %w", err)
+	}
 
 	server, err := setup.DNS(l.settings, l.cache,
 		filter, l.logger, l.prometheusRegistry)

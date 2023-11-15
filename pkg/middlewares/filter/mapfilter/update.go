@@ -6,7 +6,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 )
 
-func (m *Filter) Update(settings update.Settings) {
+func (m *Filter) Update(settings update.Settings) (err error) {
 	m.updateLock.Lock()
 	defer m.updateLock.Unlock()
 
@@ -25,4 +25,6 @@ func (m *Filter) Update(settings update.Settings) {
 	m.metrics.SetBlockedHostnames(len(m.fqdnHostnames))
 	m.metrics.SetBlockedIPs(len(m.ips))
 	m.metrics.SetBlockedIPPrefixes(len(m.ips))
+
+	return nil
 }

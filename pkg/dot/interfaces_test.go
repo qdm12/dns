@@ -18,7 +18,7 @@ type middlewareMetrics interface { //nolint:unused
 type filter interface { //nolint:unused
 	FilterRequest(request *dns.Msg) (blocked bool)
 	FilterResponse(response *dns.Msg) (blocked bool)
-	Update(settings update.Settings)
+	Update(settings update.Settings) (err error)
 }
 
 type cache interface { //nolint:unused

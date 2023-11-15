@@ -16,7 +16,7 @@ type Logger interface {
 type Filter interface {
 	FilterRequest(request *dns.Msg) (blocked bool)
 	FilterResponse(response *dns.Msg) (blocked bool)
-	Update(settings update.Settings)
+	Update(settings update.Settings) (err error)
 }
 
 type FilterMetrics interface {

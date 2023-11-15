@@ -9,6 +9,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Filter(t *testing.T) {
@@ -25,7 +26,8 @@ func Test_Filter(t *testing.T) {
 
 	settings.Update.BlockHostnames([]string{"github.com", "google.com"})
 
-	filter := New(settings)
+	filter, err := New(settings)
+	require.NoError(t, err)
 
 	assert.True(t, filter.FilterRequest(&dns.Msg{
 		Question: []dns.Question{
@@ -83,7 +85,8 @@ func Test_Filter_threadSafety(t *testing.T) {
 		},
 		}}
 
-	filter := New(settings)
+	filter, err := New(settings)
+	require.NoError(t, err)
 
 	startWg := new(sync.WaitGroup)
 	endWg := new(sync.WaitGroup)

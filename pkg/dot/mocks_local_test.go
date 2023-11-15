@@ -171,9 +171,11 @@ func (mr *MockfilterMockRecorder) FilterResponse(response interface{}) *gomock.C
 }
 
 // Update mocks base method.
-func (m *Mockfilter) Update(settings update.Settings) {
+func (m *Mockfilter) Update(settings update.Settings) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Update", settings)
+	ret := m.ctrl.Call(m, "Update", settings)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Update indicates an expected call of Update.
