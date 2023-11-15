@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
@@ -253,7 +254,8 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 				}),
 			}
 
-			builder := New(tc.settings)
+			builder, err := New(tc.settings)
+			require.NoError(t, err)
 
 			result := builder.BuildAll(ctx)
 

@@ -18,10 +18,10 @@ type Cache interface {
 }
 
 func BuildCache(userSettings settings.Cache, //nolint:ireturn
-	metrics CacheMetrics) (cache Cache) {
+	metrics CacheMetrics) (cache Cache, err error) {
 	switch userSettings.Type {
 	case noop.CacheType:
-		return noop.New(noop.Settings{Metrics: metrics})
+		return noop.New(noop.Settings{Metrics: metrics}), nil
 	case lru.CacheType:
 		return lru.New(lru.Settings{
 			MaxEntries: userSettings.LRU.MaxEntries,

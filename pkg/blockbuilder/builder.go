@@ -1,12 +1,18 @@
 package blockbuilder
 
 import (
+	"fmt"
 	"net/http"
 	"net/netip"
 )
 
-func New(settings Settings) *Builder {
+func New(settings Settings) (builder *Builder, err error) {
 	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
 
 	return &Builder{
 		client:               settings.Client,
@@ -20,7 +26,7 @@ func New(settings Settings) *Builder {
 		addBlockedIPs:        settings.AddBlockedIPs,
 		addBlockedIPPrefixes: settings.AddBlockedIPPrefixes,
 		// TODO cache blocked IPs and hostnames after first request?
-	}
+	}, nil
 }
 
 type Builder struct {

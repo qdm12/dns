@@ -253,11 +253,12 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().AnswersInc("IN", "A")
 	metrics.EXPECT().AnswersInc("IN", "AAAA")
 
-	metricsMiddleware := metricsmiddleware.New(
+	metricsMiddleware, err := metricsmiddleware.New(
 		metricsmiddleware.Settings{
 			Metrics: metrics,
 		},
 	)
+	require.NoError(t, err)
 
 	server, err := NewServer(ServerSettings{
 		Logger:      logger,

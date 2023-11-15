@@ -18,7 +18,11 @@ func main() {
 
 	logger := new(Logger)
 
-	cacheMiddleware := cachemiddleware.New(lru.New(lru.Settings{}))
+	cache, err := lru.New(lru.Settings{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	cacheMiddleware := cachemiddleware.New(cache)
 
 	server, err := dot.NewServer(dot.ServerSettings{
 		Middlewares: []dot.Middleware{cacheMiddleware},

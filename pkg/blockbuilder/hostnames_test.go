@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
@@ -156,7 +157,8 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 			}
 
 			settings := Settings{Client: client}
-			builder := New(settings)
+			builder, err := New(settings)
+			require.NoError(t, err)
 
 			blockedHostnames, errs := builder.buildHostnames(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,

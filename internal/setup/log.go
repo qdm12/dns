@@ -16,7 +16,7 @@ func logMiddleware(userSettings settings.MiddlewareLog) (middleware *log.Middlew
 		settings := log.Settings{
 			Logger: noop.New(),
 		}
-		return log.New(settings), nil
+		return log.New(settings)
 	}
 
 	const dirPerm = os.FileMode(0744)
@@ -38,12 +38,16 @@ func logMiddleware(userSettings settings.MiddlewareLog) (middleware *log.Middlew
 		LogRequests:  boolPtr(*userSettings.LogRequests),
 		LogResponses: boolPtr(*userSettings.LogResponses),
 	}
-	middlewareLogger := console.New(middlewareLoggerSettings)
+	middlewareLogger, err := console.New(middlewareLoggerSettings)
+	if err != nil {
+		return nil, fmt.Errorf("creating logger: %w", err)
+	}
+
 	settings := log.Settings{
 		Logger: middlewareLogger,
 	}
 
-	return log.New(settings), nil
+	return log.New(settings)
 }
 
 func boolPtr(b bool) *bool { return &b }

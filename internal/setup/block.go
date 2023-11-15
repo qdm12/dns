@@ -9,7 +9,7 @@ import (
 )
 
 func BuildBlockBuilder(userSettings settings.Block,
-	client *http.Client) (blockBuilder *blockbuilder.Builder) {
+	client *http.Client) (blockBuilder *blockbuilder.Builder, err error) {
 	settings := blockbuilder.Settings{
 		Client:            client,
 		BlockMalicious:    userSettings.BlockMalicious,

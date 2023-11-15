@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
@@ -154,7 +155,8 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 			}
 
 			settings := Settings{Client: client}
-			builder := New(settings)
+			builder, err := New(settings)
+			require.NoError(t, err)
 
 			blockedIPs, blockedIPPrefixes, errs := builder.buildIPs(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,

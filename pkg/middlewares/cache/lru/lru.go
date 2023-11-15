@@ -2,6 +2,7 @@ package lru
 
 import (
 	"container/list"
+	"fmt"
 	"sync"
 	"time"
 
@@ -24,8 +25,13 @@ type LRU struct {
 	timeNow func() time.Time
 }
 
-func New(settings Settings) *LRU {
+func New(settings Settings) (cache *LRU, err error) {
 	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
 
 	settings.Metrics.SetCacheType(CacheType)
 	settings.Metrics.CacheMaxEntriesSet(settings.MaxEntries)
@@ -36,7 +42,7 @@ func New(settings Settings) *LRU {
 		linkedList: list.New(),
 		metrics:    settings.Metrics,
 		timeNow:    time.Now,
-	}
+	}, nil
 }
 
 func (l *LRU) Add(request, response *dns.Msg) {

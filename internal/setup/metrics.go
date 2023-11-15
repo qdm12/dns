@@ -39,5 +39,5 @@ func middlewareMetrics(metricsType string,
 	settings := metricsmiddleware.Settings{
 		Metrics: metrics,
 	}
-	return metricsmiddleware.New(settings), nil
+	return metricsmiddleware.New(settings)
 }

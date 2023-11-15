@@ -134,13 +134,21 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	dnsLogger := logger.New(log.SetComponent("DNS server loop"))
 	const clientTimeout = 15 * time.Second
 	client := &http.Client{Timeout: clientTimeout}
-	blockBuilder := setup.BuildBlockBuilder(settings.Block, client)
+	blockBuilder, err := setup.BuildBlockBuilder(settings.Block, client)
+	if err != nil {
+		return fmt.Errorf("block builder: %w", err)
+	}
+
 	prometheusRegistry := prometheus.NewRegistry()
 	cacheMetrics, err := setup.BuildCacheMetrics(settings.Metrics, prometheusRegistry)
 	if err != nil {
 		return fmt.Errorf("cache metrics: %w", err)
 	}
-	cache := setup.BuildCache(settings.Cache, cacheMetrics) // share the same cache across DNS server restarts
+	cache, err := setup.BuildCache(settings.Cache, cacheMetrics) // share the same cache across DNS server restarts
+	if err != nil {
+		return fmt.Errorf("cache: %w", err)
+	}
+
 	dnsLoop, err := dns.New(settings, dnsLogger, blockBuilder, cache, prometheusRegistry)
 	if err != nil {
 		return fmt.Errorf("creating DNS loop: %w", err)

@@ -13,11 +13,17 @@ type Middleware struct {
 	metrics Metrics
 }
 
-func New(settings Settings) *Middleware {
+func New(settings Settings) (middleware *Middleware, err error) {
 	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
+
 	return &Middleware{
 		metrics: settings.Metrics,
-	}
+	}, nil
 }
 
 // Wrap wraps the DNS handler with the middleware.

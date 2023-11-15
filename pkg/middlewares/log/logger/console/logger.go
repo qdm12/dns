@@ -18,14 +18,20 @@ type Logger struct {
 }
 
 // New creates a new console middleware logger.
-func New(settings Settings) *Logger {
+func New(settings Settings) (logger *Logger, err error) {
 	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
+
 	return &Logger{
 		writer:      settings.Writer,
 		logRequest:  *settings.LogRequests,
 		logResponse: *settings.LogResponses,
 		timeNow:     time.Now,
-	}
+	}, nil
 }
 
 func (l *Logger) Error(id uint16, errMessage string) {

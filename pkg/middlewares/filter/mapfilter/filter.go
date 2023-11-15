@@ -1,6 +1,7 @@
 package mapfilter
 
 import (
+	"fmt"
 	"net/netip"
 	"sync"
 )
@@ -15,6 +16,11 @@ type Filter struct {
 
 func New(settings Settings) (filter *Filter, err error) {
 	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
 
 	filter = &Filter{
 		metrics: settings.Metrics,

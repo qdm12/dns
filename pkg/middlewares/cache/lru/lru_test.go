@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func newTestMsgs(name string, expUnix uint32) (request, response *dns.Msg) {
@@ -43,7 +44,8 @@ func Test_lru_e2e(t *testing.T) {
 
 	metrics.EXPECT().SetCacheType(CacheType)
 	metrics.EXPECT().CacheMaxEntriesSet(settings.MaxEntries)
-	lru := New(settings)
+	lru, err := New(settings)
+	require.NoError(t, err)
 
 	metrics.EXPECT().CacheInsertInc()
 	lru.Add(requestA, responseA)

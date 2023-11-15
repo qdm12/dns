@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_New(t *testing.T) {
@@ -29,7 +30,8 @@ func Test_New(t *testing.T) {
 		Logger: logger,
 	}
 
-	middleware := New(settings)
+	middleware, err := New(settings)
+	require.NoError(t, err)
 
 	next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {})
 	handler := middleware.Wrap(next)

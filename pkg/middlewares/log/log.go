@@ -3,6 +3,7 @@
 package log
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/miekg/dns"
@@ -13,11 +14,17 @@ type Middleware struct {
 	logger Logger
 }
 
-func New(settings Settings) *Middleware {
+func New(settings Settings) (middleware *Middleware, err error) {
 	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
+
 	return &Middleware{
 		logger: settings.Logger,
-	}
+	}, nil
 }
 
 // Wrap wraps the DNS handler with the middleware.

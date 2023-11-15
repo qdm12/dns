@@ -15,6 +15,11 @@ type Metrics struct {
 func New(settings Settings) (metrics *Metrics, err error) {
 	settings.SetDefaults()
 
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
+
 	metrics = new(Metrics)
 
 	metrics.counters, err = newCounters(settings.Prometheus)
