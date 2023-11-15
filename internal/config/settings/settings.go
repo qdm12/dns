@@ -17,8 +17,12 @@ type Settings struct {
 	// Upstream is the DNS upstream connection type
 	// and can be either 'dot' or 'doh'.
 	// It defaults to 'dot' if left uset.
-	Upstream         string
-	ListeningAddress string
+	Upstream string
+	// ListeningAddress is the DNS server listening address.
+	// It can be set to the empty string to listen on all interfaces
+	// on a random available port.
+	// It defaults to ":53".
+	ListeningAddress *string
 	Block            Block
 	Cache            Cache
 	DoH              DoH
@@ -32,7 +36,7 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.Upstream = gosettings.DefaultString(s.Upstream, "dot")
-	s.ListeningAddress = gosettings.DefaultString(s.ListeningAddress, ":53")
+	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
 	s.Block.setDefaults()
 	s.Cache.setDefaults()
 	s.DoH.setDefaults()
@@ -56,7 +60,7 @@ func (s *Settings) Validate() (err error) {
 	}
 
 	const privilegedAllowedPort = 53
-	err = validate.ListeningAddress(s.ListeningAddress, os.Getuid(), privilegedAllowedPort)
+	err = validate.ListeningAddress(*s.ListeningAddress, os.Getuid(), privilegedAllowedPort)
 	if err != nil {
 		return fmt.Errorf("listening address: %w", err)
 	}
@@ -94,7 +98,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Settings:")
 
 	node.Appendf("DNS upstream connection: %s", s.Upstream)
-	node.Appendf("DNS server listening address: %s", s.ListeningAddress)
+	node.Appendf("DNS server listening address: %s", *s.ListeningAddress)
 
 	switch s.Upstream {
 	case "dot":

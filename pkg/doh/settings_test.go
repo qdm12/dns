@@ -48,7 +48,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 			Metrics: metrics,
 			Picker:  picker,
 		},
-		ListeningAddress: ":53",
+		ListeningAddress: ptrTo(":53"),
 	}
 	assert.Equal(t, expectedSettings, s)
 }

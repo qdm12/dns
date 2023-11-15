@@ -2,7 +2,9 @@ package dot
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"sync"
 
 	"github.com/miekg/dns"
@@ -53,12 +55,16 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 	s.runningMutex.Unlock()
 
 	handlerCtx, handlerCancel := context.WithCancel(context.Background())
+	defer func() {
+		if startErr != nil {
+			handlerCancel()
+		}
+	}()
 
 	var handler dns.Handler
 	var err error
 	handler, err = newDNSHandler(handlerCtx, s.settings)
 	if err != nil {
-		handlerCancel()
 		return nil, fmt.Errorf("creating DNS handler: %w", err)
 	}
 
@@ -68,10 +74,20 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 
 	s.stop = make(chan struct{})
 	s.done = new(sync.WaitGroup)
+
+	listeningAddress, err := net.ResolveUDPAddr("udp", *s.settings.ListeningAddress)
+	if err != nil {
+		return nil, fmt.Errorf("resolving listening address: %w", err)
+	}
+
+	udpListener, err := net.ListenUDP("udp", listeningAddress)
+	if err != nil {
+		return nil, fmt.Errorf("creating UDP listener: %w", err)
+	}
+
 	s.dnsServer = dns.Server{
-		Addr:    s.settings.ListeningAddress,
-		Net:     "udp",
-		Handler: handler,
+		PacketConn: udpListener,
+		Handler:    handler,
 	}
 
 	var ready sync.WaitGroup
@@ -89,9 +105,9 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 	s.done.Add(1)
 	go func() {
 		defer s.done.Done()
-		s.settings.Logger.Info("DNS server listening on " + s.dnsServer.Addr)
+		s.settings.Logger.Info("DNS server listening on " + s.dnsServer.PacketConn.LocalAddr().String())
 		ready.Done()
-		err := s.dnsServer.ListenAndServe()
+		err := s.dnsServer.ActivateAndServe()
 		s.runningMutex.Lock()
 		s.running = false
 		s.runningMutex.Unlock()
@@ -130,4 +146,19 @@ func (s *Server) Stop() (err error) {
 	s.done.Wait()
 
 	return err
+}
+
+var (
+	ErrServerNotRunning = errors.New("server not running")
+)
+
+func (s *Server) ListeningAddress() (address net.Addr, err error) {
+	s.startStopMutex.Lock()
+	defer s.startStopMutex.Unlock()
+
+	if !s.running {
+		return nil, fmt.Errorf("%w", ErrServerNotRunning)
+	}
+
+	return s.dnsServer.PacketConn.LocalAddr(), nil
 }

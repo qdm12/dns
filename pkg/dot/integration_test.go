@@ -36,18 +36,23 @@ func Test_Resolver(t *testing.T) {
 }
 
 func Test_Server(t *testing.T) {
-	server, err := NewServer(ServerSettings{})
+	server, err := NewServer(ServerSettings{
+		ListeningAddress: ptrTo(""),
+	})
 	require.NoError(t, err)
 
 	runError, startErr := server.Start()
 	require.NoError(t, startErr)
+
+	listeningAddress, err := server.ListeningAddress()
+	require.NoError(t, err)
 
 	resolver := &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,
 		Dial: func(ctx context.Context, network string, address string) (net.Conn, error) {
 			dialer := &net.Dialer{Timeout: time.Second}
-			return dialer.DialContext(ctx, "udp", "127.0.0.1:53")
+			return dialer.DialContext(ctx, "udp", listeningAddress.String())
 		},
 	}
 
@@ -228,7 +233,7 @@ func Test_Server_Mocks(t *testing.T) {
 	filterMiddleware := filtermiddleware.New(filter)
 
 	logger := NewMockLogger(ctrl)
-	logger.EXPECT().Info("DNS server listening on :53")
+	logger.EXPECT().Info(mockhelp.NewMatcherRegex("DNS server listening on .*:[1-9][0-9]{0,4}"))
 
 	dotMetrics := NewMockMetrics(ctrl)
 	dotMetrics.EXPECT().
@@ -260,18 +265,22 @@ func Test_Server_Mocks(t *testing.T) {
 		Resolver: ResolverSettings{
 			Metrics: dotMetrics,
 		},
+		ListeningAddress: ptrTo(""),
 	})
 	require.NoError(t, err)
 
 	runError, startErr := server.Start()
 	require.NoError(t, startErr)
 
+	listeningAddress, err := server.ListeningAddress()
+	require.NoError(t, err)
+
 	resolver := &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,
 		Dial: func(ctx context.Context, network string, address string) (net.Conn, error) {
 			dialer := &net.Dialer{Timeout: time.Second}
-			return dialer.DialContext(ctx, "udp", "127.0.0.1:53")
+			return dialer.DialContext(ctx, "udp", listeningAddress.String())
 		},
 	}
 

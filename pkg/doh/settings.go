@@ -19,7 +19,7 @@ import (
 
 type ServerSettings struct {
 	Resolver         ResolverSettings
-	ListeningAddress string
+	ListeningAddress *string
 	// Middlewares is a list of middlewares to use.
 	// The first one is the first wrapper, and the last one
 	// is the last wrapper of the handlers in the chain.
@@ -56,7 +56,7 @@ type SelfDNS struct {
 
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
-	s.ListeningAddress = gosettings.DefaultString(s.ListeningAddress, ":53")
+	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
 	s.Logger = gosettings.DefaultInterface(s.Logger, lognoop.New())
 }
 
@@ -89,9 +89,9 @@ func (s ServerSettings) Validate() (err error) {
 	}
 
 	const defaultUDPPort = 53
-	err = validate.ListeningAddress(s.ListeningAddress, os.Getuid(), defaultUDPPort)
+	err = validate.ListeningAddress(*s.ListeningAddress, os.Getuid(), defaultUDPPort)
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, s.ListeningAddress)
+		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, *s.ListeningAddress)
 	}
 
 	return nil
@@ -145,7 +145,7 @@ func (s *SelfDNS) String() string {
 
 func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoH server settings:")
-	node.Appendf("Listening address: %s", s.ListeningAddress)
+	node.Appendf("Listening address: %s", *s.ListeningAddress)
 	node.AppendNode(s.Resolver.ToLinesNode())
 	return node
 }

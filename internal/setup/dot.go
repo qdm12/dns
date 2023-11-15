@@ -8,6 +8,7 @@ import (
 	noopmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	"github.com/qdm12/gosettings"
 )
 
 func dotServer(userSettings settings.Settings,
@@ -23,7 +24,7 @@ func dotServer(userSettings settings.Settings,
 
 	settings := dot.ServerSettings{
 		Resolver:         resolverSettings,
-		ListeningAddress: userSettings.ListeningAddress,
+		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
 		Middlewares:      toDoTMiddlewares(middlewares),
 		Logger:           logger,
 	}

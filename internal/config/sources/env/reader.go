@@ -31,7 +31,7 @@ func (r *Reader) Read() (settings settings.Settings, err error) {
 	}
 
 	settings.Upstream = r.env.String("UPSTREAM_TYPE")
-	settings.ListeningAddress = r.env.String("LISTENING_ADDRESS")
+	settings.ListeningAddress = r.env.Get("LISTENING_ADDRESS")
 
 	settings.Block, err = r.readBlock()
 	if err != nil {
