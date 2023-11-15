@@ -1,7 +1,6 @@
 package blockbuilder
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/netip"
@@ -9,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
 
@@ -34,22 +34,15 @@ func (s *Settings) SetDefaults() {
 
 var hostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
 
-var (
-	ErrAllowedHostNotValid = errors.New("allowed host is not valid")
-	ErrBlockedHostNotValid = errors.New("blocked host is not valid")
-)
-
 func (s Settings) Validate() (err error) {
-	for _, host := range s.AllowedHosts {
-		if !hostRegex.MatchString(host) {
-			return fmt.Errorf("%w: %s", ErrAllowedHostNotValid, host)
-		}
+	err = validate.AllMatchRegex(s.AllowedHosts, hostRegex)
+	if err != nil {
+		return fmt.Errorf("allowed hosts: %w", err)
 	}
 
-	for _, host := range s.AddBlockedHosts {
-		if !hostRegex.MatchString(host) {
-			return fmt.Errorf("%w: %s", ErrBlockedHostNotValid, host)
-		}
+	err = validate.AllMatchRegex(s.AddBlockedHosts, hostRegex)
+	if err != nil {
+		return fmt.Errorf("additional blocked hosts: %w", err)
 	}
 
 	return nil

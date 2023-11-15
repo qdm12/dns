@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
 
@@ -29,10 +30,9 @@ var (
 )
 
 func (s Settings) Validate() (err error) {
-	for _, fqdnHost := range s.FqdnHostnames {
-		if !fqdnHostRegex.MatchString(fqdnHost) {
-			return fmt.Errorf("%w: %s", ErrFqdnHostnameNotValid, fqdnHost)
-		}
+	err = validate.AllMatchRegex(s.FqdnHostnames, fqdnHostRegex)
+	if err != nil {
+		return fmt.Errorf("FQDN hostnames: %w", err)
 	}
 
 	return nil
