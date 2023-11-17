@@ -60,6 +60,8 @@ func (s *ServerSettings) SetDefaults() {
 
 func (s *ResolverSettings) SetDefaults() {
 	s.DoTProviders = gosettings.DefaultSlice(s.DoTProviders, []string{"cloudflare"})
+	// No default DNS fallback server for the internal HTTP client
+	// to avoid leaking we are using a DoT server.
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultNumber(s.Timeout, defaultTimeout)
 	s.Warner = gosettings.DefaultInterface(s.Warner, lognoop.New())
@@ -86,7 +88,16 @@ func (s ServerSettings) Validate() (err error) {
 	return nil
 }
 
+var (
+	ErrDoTProvidersNotSet = errors.New("DoT providers are not set")
+)
+
 func (s ResolverSettings) Validate() (err error) {
+	if len(s.DoTProviders) == 0 {
+		// just in case the user sets the slice to the empty non-nil slice
+		return fmt.Errorf("%w", ErrDoTProvidersNotSet)
+	}
+
 	for _, s := range s.DoTProviders {
 		_, err = provider.Parse(s)
 		if err != nil {
@@ -94,6 +105,8 @@ func (s ResolverSettings) Validate() (err error) {
 		}
 	}
 
+	// Note DNSProviders can be the empty slice or nil to prevent plaintext
+	// DNS fallback queries.
 	for _, s := range s.DNSProviders {
 		_, err = provider.Parse(s)
 		if err != nil {

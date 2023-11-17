@@ -97,7 +97,17 @@ func (s ServerSettings) Validate() (err error) {
 	return nil
 }
 
+var (
+	ErrDoHProvidersNotSet = errors.New("DoH providers are not set")
+	ErrDoTProvidersNotSet = errors.New("DoT providers are not set")
+)
+
 func (s ResolverSettings) Validate() (err error) {
+	if len(s.DoHProviders) == 0 {
+		// just in case the user sets the slice to the empty non-nil slice
+		return fmt.Errorf("%w", ErrDoHProvidersNotSet)
+	}
+
 	for _, s := range s.DoHProviders {
 		_, err = provider.Parse(s)
 		if err != nil {
@@ -114,6 +124,11 @@ func (s ResolverSettings) Validate() (err error) {
 }
 
 func (s SelfDNS) Validate() (err error) {
+	if len(s.DoTProviders) == 0 {
+		// just in case the user sets the slice to the empty non-nil slice
+		return fmt.Errorf("%w", ErrDoTProvidersNotSet)
+	}
+
 	for _, s := range s.DoTProviders {
 		_, err = provider.Parse(s)
 		if err != nil {
@@ -121,6 +136,8 @@ func (s SelfDNS) Validate() (err error) {
 		}
 	}
 
+	// Note DNSProviders can be the empty slice or nil to prevent plaintext
+	// DNS fallback queries.
 	for _, s := range s.DNSProviders {
 		_, err = provider.Parse(s)
 		if err != nil {
