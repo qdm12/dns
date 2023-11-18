@@ -8,15 +8,28 @@ import (
 	noopmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
+	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
 )
 
 func dotServer(userSettings settings.Settings,
 	middlewares []Middleware, logger Logger, metrics DoTMetrics) (
 	server *dot.Server, err error) {
+	providers := provider.NewProviders()
+
+	DoTProviders, err := stringsToProviders(providers, userSettings.DoT.DoTProviders)
+	if err != nil {
+		return nil, fmt.Errorf("DNS over TLS providers: %w", err)
+	}
+
+	DNSProviders, err := stringsToProviders(providers, userSettings.DoT.DNSProviders)
+	if err != nil {
+		return nil, fmt.Errorf("plaintext DNS providers: %w", err)
+	}
+
 	resolverSettings := dot.ResolverSettings{
-		DoTProviders: userSettings.DoT.DoTProviders,
-		DNSProviders: userSettings.DoT.DNSProviders,
+		DoTProviders: DoTProviders,
+		DNSProviders: DNSProviders,
 		IPv6:         *userSettings.DoT.IPv6,
 		Warner:       logger,
 		Metrics:      metrics,

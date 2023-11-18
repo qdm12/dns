@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Parse(t *testing.T) {
+func Test_Providers_Get(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
@@ -16,12 +16,12 @@ func Test_Parse(t *testing.T) {
 		errMessage string
 	}{
 		"empty string": {
-			errWrapped: ErrParse,
+			errWrapped: ErrParseProviderNameUnknown,
 			errMessage: "provider does not match any known providers: ",
 		},
 		"bad provider string": {
 			s:          "invalid",
-			errWrapped: ErrParse,
+			errWrapped: ErrParseProviderNameUnknown,
 			errMessage: "provider does not match any known providers: invalid",
 		},
 		"cirafamily": {
@@ -91,7 +91,8 @@ func Test_Parse(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			provider, err := Parse(testCase.s)
+			providers := NewProviders()
+			provider, err := providers.Get(testCase.s)
 
 			assert.ErrorIs(t, err, testCase.errWrapped)
 			if testCase.errWrapped != nil {
@@ -99,5 +100,27 @@ func Test_Parse(t *testing.T) {
 			}
 			assert.Equal(t, testCase.provider, provider)
 		})
+	}
+}
+
+func Test_Providers_List(t *testing.T) {
+	t.Parallel()
+
+	providers := NewProviders()
+	listed := providers.List()
+	assert.Len(t, listed, 16)
+
+	for _, provider := range listed {
+		errMessage := "for provider " + provider.DoT.Name
+
+		assert.NotEmpty(t, provider.DNS.IPv4, errMessage)
+		assert.NotEmpty(t, provider.DNS.IPv6, errMessage)
+
+		assert.NotEmpty(t, provider.DoT.IPv4, errMessage)
+		assert.NotNil(t, provider.DoT.IPv6, errMessage)
+		assert.NotEmpty(t, provider.DoT.Name, errMessage)
+		assert.NotZero(t, provider.DoT.Port, errMessage)
+
+		assert.NotNil(t, provider.DoH, errMessage)
 	}
 }

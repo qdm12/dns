@@ -33,8 +33,8 @@ type ServerSettings struct {
 }
 
 type ResolverSettings struct {
-	DoTProviders []string
-	DNSProviders []string
+	DoTProviders []provider.Provider
+	DNSProviders []provider.Provider
 	Timeout      time.Duration
 	// IPv6 is false if the resolver should connect to
 	// nameservers over IPv4 and true to connect over IPv6.
@@ -59,7 +59,8 @@ func (s *ServerSettings) SetDefaults() {
 }
 
 func (s *ResolverSettings) SetDefaults() {
-	s.DoTProviders = gosettings.DefaultSlice(s.DoTProviders, []string{"cloudflare"})
+	s.DoTProviders = gosettings.DefaultSlice(s.DoTProviders,
+		[]provider.Provider{provider.Cloudflare()})
 	// No default DNS fallback server for the internal HTTP client
 	// to avoid leaking we are using a DoT server.
 	const defaultTimeout = 5 * time.Second
@@ -98,19 +99,19 @@ func (s ResolverSettings) Validate() (err error) {
 		return fmt.Errorf("%w", ErrDoTProvidersNotSet)
 	}
 
-	for _, s := range s.DoTProviders {
-		_, err = provider.Parse(s)
+	for _, provider := range s.DoTProviders {
+		err = provider.ValidateForDoT()
 		if err != nil {
-			return fmt.Errorf("DoT provider: %w", err)
+			return fmt.Errorf("DNS over TLS provider %s: %w", provider.Name, err)
 		}
 	}
 
 	// Note DNSProviders can be the empty slice or nil to prevent plaintext
 	// DNS fallback queries.
-	for _, s := range s.DNSProviders {
-		_, err = provider.Parse(s)
+	for _, provider := range s.DNSProviders {
+		err = provider.ValdidateForPlaintext()
 		if err != nil {
-			return fmt.Errorf("plaintext DNS provider: %w", err)
+			return fmt.Errorf("plaintext DNS provider %s: %w", provider.Name, err)
 		}
 	}
 
@@ -138,12 +139,12 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	DoTProvidersNode := node.Appendf("DNS over TLS providers:")
 	caser := cases.Title(language.English)
 	for _, provider := range s.DoTProviders {
-		DoTProvidersNode.Appendf(caser.String(provider))
+		DoTProvidersNode.Appendf(caser.String(provider.Name))
 	}
 
 	fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
 	for _, provider := range s.DNSProviders {
-		fallbackPlaintextProvidersNode.Appendf(caser.String(provider))
+		fallbackPlaintextProvidersNode.Appendf(caser.String(provider.Name))
 	}
 
 	node.Appendf("Quey timeout: %s", s.Timeout)

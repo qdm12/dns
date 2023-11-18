@@ -18,11 +18,7 @@ func newDoHDial(settings ResolverSettings) (
 	metrics := settings.Metrics
 
 	dohServers := make([]provider.DoHServer, len(settings.DoHProviders))
-	for i, s := range settings.DoHProviders {
-		provider, err := provider.Parse(s)
-		if err != nil {
-			return nil, err
-		}
+	for i, provider := range settings.DoHProviders {
 		dohServers[i] = provider.DoH
 	}
 

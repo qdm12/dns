@@ -62,11 +62,7 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 	}()
 
 	var handler dns.Handler
-	var err error
-	handler, err = newDNSHandler(handlerCtx, s.settings)
-	if err != nil {
-		return nil, fmt.Errorf("creating DNS handler: %w", err)
-	}
+	handler = newDNSHandler(handlerCtx, s.settings)
 
 	for _, middleware := range s.settings.Middlewares {
 		handler = middleware.Wrap(handler)

@@ -10,15 +10,11 @@ import (
 	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
-func newDoTDial(settings ResolverSettings) (
-	dial server.Dial, err error) {
+func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 	warner := settings.Warner
 	metrics := settings.Metrics
 
-	dotServers, dnsServers, err := settingsToServers(settings)
-	if err != nil {
-		return nil, err
-	}
+	dotServers, dnsServers := settingsToServers(settings)
 
 	dialer := &net.Dialer{
 		Timeout: settings.Timeout,
@@ -44,32 +40,22 @@ func newDoTDial(settings ResolverSettings) (
 		}
 		// TODO handshake? See tls.DialWithDialer
 		return tls.Client(conn, tlsConf), nil
-	}, nil
+	}
 }
 
 func settingsToServers(settings ResolverSettings) (
-	dotServers []provider.DoTServer,
-	dnsServers []provider.DNSServer,
-	err error) {
+	dotServers []provider.DoTServer, dnsServers []provider.DNSServer) {
 	dotServers = make([]provider.DoTServer, len(settings.DoTProviders))
-	for i, s := range settings.DoTProviders {
-		provider, err := provider.Parse(s)
-		if err != nil {
-			return nil, nil, err
-		}
+	for i, provider := range settings.DoTProviders {
 		dotServers[i] = provider.DoT
 	}
 
 	dnsServers = make([]provider.DNSServer, len(settings.DNSProviders))
-	for i, s := range settings.DNSProviders {
-		provider, err := provider.Parse(s)
-		if err != nil {
-			return nil, nil, err
-		}
+	for i, provider := range settings.DNSProviders {
 		dnsServers[i] = provider.DNS
 	}
 
-	return dotServers, dnsServers, nil
+	return dotServers, dnsServers
 }
 
 func pickNameAddress(picker Picker, servers []provider.DoTServer,

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,11 +32,11 @@ func Test_ServerSettings_String(t *testing.T) {
 			settings: ServerSettings{
 				ListeningAddress: ptrTo(":8000"),
 				Resolver: ResolverSettings{
-					DoTProviders: []string{
-						"cloudflare",
+					DoTProviders: []provider.Provider{
+						provider.Cloudflare(),
 					},
-					DNSProviders: []string{
-						"cloudflare", "google",
+					DNSProviders: []provider.Provider{
+						provider.Cloudflare(), provider.Google(),
 					},
 					Timeout: time.Second,
 					IPv6:    true,

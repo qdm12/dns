@@ -1,6 +1,7 @@
 package dot
 
 import (
+	"fmt"
 	"net"
 )
 
@@ -8,15 +9,14 @@ import (
 func NewResolver(settings ResolverSettings) (
 	resolver *net.Resolver, err error) {
 	settings.SetDefaults()
-
-	dial, err := newDoTDial(settings)
+	err = settings.Validate()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("settings validation: %w", err)
 	}
 
 	return &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,
-		Dial:         dial,
+		Dial:         newDoTDial(settings),
 	}, nil
 }

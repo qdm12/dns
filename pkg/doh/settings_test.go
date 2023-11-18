@@ -7,6 +7,7 @@ import (
 	"github.com/qdm12/dns/v2/internal/picker"
 	metrics "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
 	log "github.com/qdm12/dns/v2/pkg/log/noop"
+	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,9 +39,9 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 		Middlewares: []Middleware{},
 		Logger:      logger,
 		Resolver: ResolverSettings{
-			DoHProviders: []string{"cloudflare"},
+			DoHProviders: []provider.Provider{provider.Cloudflare()},
 			SelfDNS: SelfDNS{
-				DoTProviders: []string{"cloudflare"},
+				DoTProviders: []provider.Provider{provider.Cloudflare()},
 				Timeout:      5 * time.Second,
 			},
 			Timeout: 5 * time.Second,
