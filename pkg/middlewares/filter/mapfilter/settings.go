@@ -22,7 +22,6 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.Update.SetDefaults()
-	s.Update = gosettings.DefaultInterface(s.Update, noop.New())
 	s.Metrics = gosettings.DefaultInterface(s.Metrics, noop.New())
 }
 
