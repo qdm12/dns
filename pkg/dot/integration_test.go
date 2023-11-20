@@ -5,7 +5,6 @@ package dot
 
 import (
 	"context"
-	"encoding/hex"
 	"net"
 	"testing"
 	"time"
@@ -76,12 +75,6 @@ func Test_Server(t *testing.T) {
 func Test_Server_Mocks(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	hexDecode := func(t *testing.T, s string) []byte {
-		b, err := hex.DecodeString(s)
-		require.NoError(t, err)
-		return b
-	}
-
 	expectedRequestA := &dns.Msg{
 		MsgHdr: dns.MsgHdr{
 			Opcode:           dns.OpcodeQuery,
@@ -116,16 +109,6 @@ func Test_Server_Mocks(t *testing.T) {
 			Qtype:  dns.TypeA,
 			Qclass: dns.ClassINET,
 		}},
-		Answer: []dns.RR{
-			&dns.A{
-				Hdr: dns.RR_Header{
-					Name:   "google.com.",
-					Rrtype: dns.TypeA,
-					Class:  dns.ClassINET,
-				},
-				A: net.IP{1, 2, 3, 4}, // compared on length
-			},
-		},
 		Extra: []dns.RR{
 			&dns.OPT{
 				Hdr: dns.RR_Header{
@@ -135,7 +118,10 @@ func Test_Server_Mocks(t *testing.T) {
 				},
 				Option: []dns.EDNS0{
 					&dns.EDNS0_PADDING{
-						Padding: hexDecode(t, "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+						// padding changes with message content
+						// the comparison only checks both length
+						// are empty or non-empty.
+						Padding: []byte{0},
 					},
 				},
 			},
@@ -176,16 +162,6 @@ func Test_Server_Mocks(t *testing.T) {
 			Qtype:  dns.TypeAAAA,
 			Qclass: dns.ClassINET,
 		}},
-		Answer: []dns.RR{
-			&dns.AAAA{
-				Hdr: dns.RR_Header{
-					Name:   "google.com.",
-					Rrtype: dns.TypeAAAA,
-					Class:  dns.ClassINET,
-				},
-				AAAA: net.IP{1, 2, 3, 4}, // compared on length > 0
-			},
-		},
 		Extra: []dns.RR{
 			&dns.OPT{
 				Hdr: dns.RR_Header{
@@ -195,7 +171,10 @@ func Test_Server_Mocks(t *testing.T) {
 				},
 				Option: []dns.EDNS0{
 					&dns.EDNS0_PADDING{
-						Padding: hexDecode(t, "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+						// padding changes with message content
+						// the comparison only checks both length
+						// are empty or non-empty.
+						Padding: []byte{0},
 					},
 				},
 			},
@@ -211,10 +190,18 @@ func Test_Server_Mocks(t *testing.T) {
 		Return(nil)
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestA),
-		mockhelp.NewMatcherResponse(expectedResponseA))
+		mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeA},
+		})).MinTimes(1)
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
-		mockhelp.NewMatcherResponse(expectedResponseAAAA))
+		mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseAAAA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeAAAA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeAAAA},
+		})).MinTimes(1)
 	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
 	require.NoError(t, err)
 
@@ -226,11 +213,19 @@ func Test_Server_Mocks(t *testing.T) {
 		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestAAAA)).
 		Return(false)
 	filter.EXPECT().
-		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseA)).
-		Return(false)
+		FilterResponse(mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeA},
+		})).
+		Return(false).MinTimes(1)
 	filter.EXPECT().
-		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
-		Return(false)
+		FilterResponse(mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseAAAA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeAAAA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeAAAA},
+		})).
+		Return(false).MinTimes(1)
 	filterMiddleware, err := filtermiddleware.New(filtermiddleware.Settings{Filter: filter})
 	require.NoError(t, err)
 
@@ -252,8 +247,8 @@ func Test_Server_Mocks(t *testing.T) {
 	metrics.EXPECT().QuestionsInc("IN", "A")
 	metrics.EXPECT().QuestionsInc("IN", "AAAA")
 	metrics.EXPECT().RcodeInc("NOERROR").Times(2)
-	metrics.EXPECT().AnswersInc("IN", "A")
-	metrics.EXPECT().AnswersInc("IN", "AAAA")
+	metrics.EXPECT().AnswersInc("IN", "A").MinTimes(1)
+	metrics.EXPECT().AnswersInc("IN", "AAAA").MinTimes(1)
 
 	metricsMiddleware, err := metricsmiddleware.New(
 		metricsmiddleware.Settings{

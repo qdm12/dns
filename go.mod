@@ -14,6 +14,7 @@ require (
 	github.com/qdm12/gotree v0.2.0
 	github.com/qdm12/log v0.1.0
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/text v0.11.0
 )
 
@@ -31,7 +32,6 @@ require (
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect

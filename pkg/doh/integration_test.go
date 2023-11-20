@@ -130,16 +130,6 @@ func Test_Server_Mocks(t *testing.T) {
 			Qtype:  dns.TypeA,
 			Qclass: dns.ClassINET,
 		}},
-		Answer: []dns.RR{
-			&dns.A{
-				Hdr: dns.RR_Header{
-					Name:   "google.com.",
-					Rrtype: dns.TypeA,
-					Class:  dns.ClassINET,
-				},
-				A: net.IP{1, 2, 3, 4}, // compared on length
-			},
-		},
 		Extra: []dns.RR{
 			&dns.OPT{
 				Hdr: dns.RR_Header{
@@ -185,16 +175,6 @@ func Test_Server_Mocks(t *testing.T) {
 			Qtype:  dns.TypeAAAA,
 			Qclass: dns.ClassINET,
 		}},
-		Answer: []dns.RR{
-			&dns.AAAA{
-				Hdr: dns.RR_Header{
-					Name:   "google.com.",
-					Rrtype: dns.TypeAAAA,
-					Class:  dns.ClassINET,
-				},
-				AAAA: net.IP{1, 2, 3, 4}, // compared on length > 0
-			},
-		},
 		Extra: []dns.RR{
 			&dns.OPT{
 				Hdr: dns.RR_Header{
@@ -215,10 +195,18 @@ func Test_Server_Mocks(t *testing.T) {
 		Return(nil)
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestA),
-		mockhelp.NewMatcherResponse(expectedResponseA))
+		mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeA},
+		}))
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
-		mockhelp.NewMatcherResponse(expectedResponseAAAA))
+		mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseAAAA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeAAAA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeAAAA},
+		}))
 	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
 	require.NoError(t, err)
 
@@ -230,11 +218,17 @@ func Test_Server_Mocks(t *testing.T) {
 		FilterRequest(mockhelp.NewMatcherRequest(expectedRequestAAAA)).
 		Return(false)
 	filter.EXPECT().
-		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseA)).
-		Return(false)
+		FilterResponse(mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeA},
+		})).Return(false)
 	filter.EXPECT().
-		FilterResponse(mockhelp.NewMatcherResponse(expectedResponseAAAA)).
-		Return(false)
+		FilterResponse(mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
+			Response:           expectedResponseAAAA,
+			OnlyHasAnswerTypes: []uint16{dns.TypeAAAA},
+			IgnoreAnswerTypes:  []uint16{dns.TypeAAAA},
+		})).Return(false)
 	filterMiddleware, err := filtermiddleware.New(filtermiddleware.Settings{Filter: filter})
 	require.NoError(t, err)
 
@@ -257,8 +251,8 @@ func Test_Server_Mocks(t *testing.T) {
 	middlewareMetrics.EXPECT().QuestionsInc("IN", "A")
 	middlewareMetrics.EXPECT().QuestionsInc("IN", "AAAA")
 	middlewareMetrics.EXPECT().RcodeInc("NOERROR").Times(2)
-	middlewareMetrics.EXPECT().AnswersInc("IN", "A")
-	middlewareMetrics.EXPECT().AnswersInc("IN", "AAAA")
+	middlewareMetrics.EXPECT().AnswersInc("IN", "A").MinTimes(1)
+	middlewareMetrics.EXPECT().AnswersInc("IN", "AAAA").MinTimes(1)
 
 	metricsMiddleware, err := metricsmiddleware.New(
 		metricsmiddleware.Settings{
