@@ -47,7 +47,7 @@ func Test_pickNameAddress(t *testing.T) {
 	const ipv6 = true
 
 	picker.EXPECT().DoTServer(servers).Return(servers[0])
-	picker.EXPECT().DoTIP(servers[0], ipv6).Return(servers[0].IPv6[0])
+	picker.EXPECT().DoTAddrPort(servers[0], ipv6).Return(servers[0].IPv6[0])
 
 	name, address := pickNameAddress(picker, servers, ipv6)
 
@@ -105,7 +105,7 @@ func Test_dialPlaintext(t *testing.T) {
 			picker := NewMockPicker(ctrl)
 			picker.EXPECT().DNSServer(testCase.dnsServers).
 				Return(testCase.dnsServers[0])
-			picker.EXPECT().DNSIP(testCase.dnsServers[0], false).
+			picker.EXPECT().DNSAddrPort(testCase.dnsServers[0], false).
 				Return(testCase.dnsServers[0].IPv4[0])
 
 			dialer := &net.Dialer{} // cannot mock

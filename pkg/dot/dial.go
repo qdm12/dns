@@ -3,7 +3,6 @@ package dot
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net"
 
 	"github.com/qdm12/dns/v2/internal/server"
@@ -61,9 +60,8 @@ func settingsToServers(settings ResolverSettings) (
 func pickNameAddress(picker Picker, servers []provider.DoTServer,
 	ipv6 bool) (name, address string) {
 	server := picker.DoTServer(servers)
-	ip := picker.DoTIP(server, ipv6)
-	address = net.JoinHostPort(ip.String(), fmt.Sprint(server.Port))
-	return server.Name, address
+	addrPort := picker.DoTAddrPort(server, ipv6)
+	return server.Name, addrPort.String()
 }
 
 func onDialError(ctx context.Context, dialErr error,
@@ -88,9 +86,8 @@ func dialPlaintext(ctx context.Context, dialer *net.Dialer,
 	warner Warner, metrics Metrics) (
 	conn net.Conn, err error) {
 	dnsServer := picker.DNSServer(dnsServers)
-	ip := picker.DNSIP(dnsServer, ipv6)
-
-	plainAddr := net.JoinHostPort(ip.String(), "53")
+	addrPort := picker.DNSAddrPort(dnsServer, ipv6)
+	plainAddr := addrPort.String()
 
 	conn, err = dialer.DialContext(ctx, "udp", plainAddr)
 	if err != nil {

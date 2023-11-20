@@ -153,18 +153,18 @@ func (m *MockPicker) EXPECT() *MockPickerMockRecorder {
 	return m.recorder
 }
 
-// DNSIP mocks base method.
-func (m *MockPicker) DNSIP(arg0 provider.DNSServer, arg1 bool) netip.Addr {
+// DNSAddrPort mocks base method.
+func (m *MockPicker) DNSAddrPort(arg0 provider.DNSServer, arg1 bool) netip.AddrPort {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DNSIP", arg0, arg1)
-	ret0, _ := ret[0].(netip.Addr)
+	ret := m.ctrl.Call(m, "DNSAddrPort", arg0, arg1)
+	ret0, _ := ret[0].(netip.AddrPort)
 	return ret0
 }
 
-// DNSIP indicates an expected call of DNSIP.
-func (mr *MockPickerMockRecorder) DNSIP(arg0, arg1 interface{}) *gomock.Call {
+// DNSAddrPort indicates an expected call of DNSAddrPort.
+func (mr *MockPickerMockRecorder) DNSAddrPort(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DNSIP", reflect.TypeOf((*MockPicker)(nil).DNSIP), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DNSAddrPort", reflect.TypeOf((*MockPicker)(nil).DNSAddrPort), arg0, arg1)
 }
 
 // DNSServer mocks base method.
@@ -181,18 +181,18 @@ func (mr *MockPickerMockRecorder) DNSServer(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DNSServer", reflect.TypeOf((*MockPicker)(nil).DNSServer), arg0)
 }
 
-// DoTIP mocks base method.
-func (m *MockPicker) DoTIP(arg0 provider.DoTServer, arg1 bool) netip.Addr {
+// DoTAddrPort mocks base method.
+func (m *MockPicker) DoTAddrPort(arg0 provider.DoTServer, arg1 bool) netip.AddrPort {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DoTIP", arg0, arg1)
-	ret0, _ := ret[0].(netip.Addr)
+	ret := m.ctrl.Call(m, "DoTAddrPort", arg0, arg1)
+	ret0, _ := ret[0].(netip.AddrPort)
 	return ret0
 }
 
-// DoTIP indicates an expected call of DoTIP.
-func (mr *MockPickerMockRecorder) DoTIP(arg0, arg1 interface{}) *gomock.Call {
+// DoTAddrPort indicates an expected call of DoTAddrPort.
+func (mr *MockPickerMockRecorder) DoTAddrPort(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoTIP", reflect.TypeOf((*MockPicker)(nil).DoTIP), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoTAddrPort", reflect.TypeOf((*MockPicker)(nil).DoTAddrPort), arg0, arg1)
 }
 
 // DoTServer mocks base method.
@@ -207,18 +207,4 @@ func (m *MockPicker) DoTServer(arg0 []provider.DoTServer) provider.DoTServer {
 func (mr *MockPickerMockRecorder) DoTServer(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoTServer", reflect.TypeOf((*MockPicker)(nil).DoTServer), arg0)
-}
-
-// IP mocks base method.
-func (m *MockPicker) IP(arg0 []netip.Addr) netip.Addr {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IP", arg0)
-	ret0, _ := ret[0].(netip.Addr)
-	return ret0
-}
-
-// IP indicates an expected call of IP.
-func (mr *MockPickerMockRecorder) IP(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IP", reflect.TypeOf((*MockPicker)(nil).IP), arg0)
 }

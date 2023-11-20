@@ -44,36 +44,36 @@ func (p *Picker) DNSServer(servers []provider.DNSServer) provider.DNSServer {
 	return servers[index]
 }
 
-func (p *Picker) DoTIP(server provider.DoTServer, ipv6 bool) netip.Addr {
+func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPort {
 	if ipv6 {
-		if ip := p.IP(server.IPv6); ip.IsValid() {
+		if ip := p.addrPort(server.IPv6); ip.IsValid() {
 			return ip
 		}
 		// if there is no IPv6, fall back to an IPv4 address
 		// as all provider have at least an IPv4 address.
 	}
-	return p.IP(server.IPv4)
+	return p.addrPort(server.IPv4)
 }
 
-func (p *Picker) DNSIP(server provider.DNSServer, ipv6 bool) netip.Addr {
+func (p *Picker) DNSAddrPort(server provider.DNSServer, ipv6 bool) netip.AddrPort {
 	if ipv6 {
-		if ip := p.IP(server.IPv6); ip.IsValid() {
+		if ip := p.addrPort(server.IPv6); ip.IsValid() {
 			return ip
 		}
 		// if there is no IPv6, fall back to an IPv4 address
 		// as all provider have at least an IPv4 address.
 	}
-	return p.IP(server.IPv4)
+	return p.addrPort(server.IPv4)
 }
 
-func (p *Picker) IP(ips []netip.Addr) netip.Addr {
-	switch len(ips) {
+func (p *Picker) addrPort(addrPorts []netip.AddrPort) netip.AddrPort {
+	switch len(addrPorts) {
 	case 0:
-		return netip.Addr{}
+		return netip.AddrPort{}
 	case 1:
-		return ips[0]
+		return addrPorts[0]
 	default:
-		index := p.rand.Intn(len(ips))
-		return ips[index]
+		index := p.rand.Intn(len(addrPorts))
+		return addrPorts[index]
 	}
 }

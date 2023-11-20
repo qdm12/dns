@@ -6,8 +6,6 @@ import (
 	"net/netip"
 )
 
-const defaultDoTPort uint16 = 853
-
 type Provider struct {
 	Name string    `json:"name" yaml:"name"`
 	DNS  DNSServer `json:"dns" yaml:"dns"`
@@ -16,15 +14,14 @@ type Provider struct {
 }
 
 type DNSServer struct {
-	IPv4 []netip.Addr `json:"ipv4" yaml:"ipv4"`
-	IPv6 []netip.Addr `json:"ipv6" yaml:"ipv6"`
+	IPv4 []netip.AddrPort `json:"ipv4" yaml:"ipv4"`
+	IPv6 []netip.AddrPort `json:"ipv6" yaml:"ipv6"`
 }
 
 type DoTServer struct {
-	IPv4 []netip.Addr `json:"ipv4" yaml:"ipv4"`
-	IPv6 []netip.Addr `json:"ipv6" yaml:"ipv6"`
-	Name string       `json:"name" yaml:"name"` // for TLS verification
-	Port uint16       `json:"port" yaml:"port"`
+	IPv4 []netip.AddrPort `json:"ipv4" yaml:"ipv4"`
+	IPv6 []netip.AddrPort `json:"ipv6" yaml:"ipv6"`
+	Name string           `json:"name" yaml:"name"` // for TLS verification
 }
 
 type DoHServer struct {
@@ -52,6 +49,16 @@ func (p Provider) ValdidateForPlaintext() (err error) {
 		return fmt.Errorf("%w", ErrDNSIPv6NotSet)
 	}
 
+	err = checkAddrPorts(p.DNS.IPv4)
+	if err != nil {
+		return fmt.Errorf("IPv4 addresses: %w", err)
+	}
+
+	err = checkAddrPorts(p.DNS.IPv6)
+	if err != nil {
+		return fmt.Errorf("IPv6 addresses: %w", err)
+	}
+
 	return nil
 }
 
@@ -67,8 +74,16 @@ func (p Provider) ValidateForDoT() (err error) {
 		return fmt.Errorf("%w", ErrDoTIPv6NotSet)
 	case p.DoT.Name == "":
 		return fmt.Errorf("%w: %s", ErrDoTNameNotSet, p.DoT.Name)
-	case p.DoT.Port == 0:
-		return fmt.Errorf("%w", ErrDoTPortNotSet)
+	}
+
+	err = checkAddrPorts(p.DoT.IPv4)
+	if err != nil {
+		return fmt.Errorf("IPv4 addresses: %w", err)
+	}
+
+	err = checkAddrPorts(p.DoT.IPv6)
+	if err != nil {
+		return fmt.Errorf("IPv6 addresses: %w", err)
 	}
 
 	return nil

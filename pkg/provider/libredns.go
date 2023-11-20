@@ -7,21 +7,20 @@ func LibreDNS() Provider {
 		Name: "LibreDNS",
 		// see https://libreops.cc/radicaldns.html
 		DNS: DNSServer{
-			IPv4: []netip.Addr{
-				netip.AddrFrom4([4]byte{88, 198, 92, 222}),
+			IPv4: []netip.AddrPort{
+				defaultDNSIPv4AddrPort([4]byte{88, 198, 92, 222}),
 			},
-			IPv6: []netip.Addr{
-				netip.AddrFrom16([16]byte{0x2a, 0x1, 0x4, 0xf8, 0x1c, 0xc, 0x82, 0xc0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}),
+			IPv6: []netip.AddrPort{
+				defaultDNSIPv6AddrPort([16]byte{0x2a, 0x1, 0x4, 0xf8, 0x1c, 0xc, 0x82, 0xc0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}),
 			},
 		},
 		// see https://libredns.gr/
 		DoT: DoTServer{
-			IPv4: []netip.Addr{
-				netip.AddrFrom4([4]byte{116, 202, 176, 26}),
+			IPv4: []netip.AddrPort{
+				defaultDoTIPv4AddrPort([4]byte{116, 202, 176, 26}),
 			},
-			IPv6: []netip.Addr{},
+			IPv6: []netip.AddrPort{},
 			Name: "dot.libredns.gr",
-			Port: defaultDoTPort,
 		},
 		// see https://libredns.gr/
 		DoH: DoHServer{
