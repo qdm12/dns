@@ -7,14 +7,14 @@ import (
 )
 
 func (r *Reader) readDoT() (settings settings.DoT, err error) {
-	settings.DoTProviders = r.env.CSV("DOT_RESOLVERS")
-	settings.DNSProviders = r.env.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
-	settings.Timeout, err = r.env.Duration("DOT_TIMEOUT")
+	settings.DoTProviders = r.reader.CSV("DOT_RESOLVERS")
+	settings.DNSProviders = r.reader.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
+	settings.Timeout, err = r.reader.Duration("DOT_TIMEOUT")
 	if err != nil {
 		return settings, fmt.Errorf("environment variable DOT_TIMEOUT: %w", err)
 	}
 
-	settings.IPv6, err = r.env.BoolPtr("DOT_CONNECT_IPV6")
+	settings.IPv6, err = r.reader.BoolPtr("DOT_CONNECT_IPV6")
 	if err != nil {
 		return settings, fmt.Errorf("environment variable DOT_CONNECT_IPV6: %w", err)
 	}

@@ -25,7 +25,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Writer = gosettings.DefaultInterface(s.Writer, os.Stdout)
+	s.Writer = gosettings.DefaultComparable[io.Writer](s.Writer, os.Stdout)
 	s.LogRequests = gosettings.DefaultPointer(s.LogRequests, true)
 	s.LogResponses = gosettings.DefaultPointer(s.LogResponses, false)
 }

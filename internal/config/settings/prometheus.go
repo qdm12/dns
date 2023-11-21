@@ -15,7 +15,7 @@ type Prometheus struct {
 }
 
 func (p *Prometheus) SetDefaults() {
-	p.ListeningAddress = gosettings.DefaultString(p.ListeningAddress, ":9090")
+	p.ListeningAddress = gosettings.DefaultComparable(p.ListeningAddress, ":9090")
 	p.Subsystem = gosettings.DefaultPointer(p.Subsystem, "dns")
 }
 

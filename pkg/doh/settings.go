@@ -57,7 +57,7 @@ type SelfDNS struct {
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
 	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
-	s.Logger = gosettings.DefaultInterface(s.Logger, lognoop.New())
+	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, lognoop.New())
 }
 
 func (s *ResolverSettings) SetDefaults() {
@@ -65,15 +65,15 @@ func (s *ResolverSettings) SetDefaults() {
 	s.DoHProviders = gosettings.DefaultSlice(s.DoHProviders,
 		[]provider.Provider{provider.Cloudflare()})
 	const defaultTimeout = 5 * time.Second
-	s.Timeout = gosettings.DefaultNumber(s.Timeout, defaultTimeout)
-	s.Warner = gosettings.DefaultInterface(s.Warner, lognoop.New())
-	s.Metrics = gosettings.DefaultInterface(s.Metrics, metricsnoop.New())
-	s.Picker = gosettings.DefaultInterface(s.Picker, picker.New())
+	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
+	s.Warner = gosettings.DefaultComparable[Warner](s.Warner, lognoop.New())
+	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
+	s.Picker = gosettings.DefaultComparable[Picker](s.Picker, picker.New())
 }
 
 func (s *SelfDNS) SetDefaults() {
 	const defaultTimeout = 5 * time.Second
-	s.Timeout = gosettings.DefaultNumber(s.Timeout, defaultTimeout)
+	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
 	s.DoTProviders = gosettings.DefaultSlice(s.DoTProviders,
 		[]provider.Provider{provider.Cloudflare()})
 	// No default DNS fallback server for the internal HTTP client

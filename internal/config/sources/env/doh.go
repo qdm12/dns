@@ -7,20 +7,20 @@ import (
 )
 
 func (r *Reader) readDoH() (settings settings.DoH, err error) {
-	settings.DoHProviders = r.env.CSV("DOH_RESOLVERS")
-	settings.Timeout, err = r.env.Duration("DOH_TIMEOUT")
+	settings.DoHProviders = r.reader.CSV("DOH_RESOLVERS")
+	settings.Timeout, err = r.reader.Duration("DOH_TIMEOUT")
 	if err != nil {
 		return settings, fmt.Errorf("environment variable DOH_TIMEOUT: %w", err)
 	}
 
-	settings.Self.DoTProviders = r.env.CSV("DOT_RESOLVERS")
-	settings.Self.DNSProviders = r.env.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
-	settings.Self.IPv6, err = r.env.BoolPtr("DOT_CONNECT_IPV6")
+	settings.Self.DoTProviders = r.reader.CSV("DOT_RESOLVERS")
+	settings.Self.DNSProviders = r.reader.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
+	settings.Self.IPv6, err = r.reader.BoolPtr("DOT_CONNECT_IPV6")
 	if err != nil {
 		return settings, fmt.Errorf("environment variable DOT_CONNECT_IPV6: %w", err)
 	}
 
-	settings.Self.Timeout, err = r.env.Duration("DOT_TIMEOUT")
+	settings.Self.Timeout, err = r.reader.Duration("DOT_TIMEOUT")
 	if err != nil {
 		return settings, fmt.Errorf("environment variable DOT_TIMEOUT: %w", err)
 	}

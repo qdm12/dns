@@ -22,7 +22,7 @@ type SettingsSystemDNS struct {
 
 func (s *SettingsSystemDNS) SetDefaults() {
 	s.IP = gosettings.DefaultValidator(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
-	s.ResolvPath = gosettings.DefaultString(s.ResolvPath, "/etc/resolv.conf")
+	s.ResolvPath = gosettings.DefaultComparable(s.ResolvPath, "/etc/resolv.conf")
 }
 
 var (

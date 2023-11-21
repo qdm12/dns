@@ -35,7 +35,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Upstream = gosettings.DefaultString(s.Upstream, "dot")
+	s.Upstream = gosettings.DefaultComparable(s.Upstream, "dot")
 	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
 	s.Block.setDefaults()
 	s.Cache.setDefaults()

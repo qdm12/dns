@@ -5,7 +5,7 @@ import (
 )
 
 func (r *Reader) readMetrics() (settings settings.Metrics) {
-	settings.Type = r.env.String("METRICS_TYPE")
+	settings.Type = r.reader.String("METRICS_TYPE")
 	settings.Prometheus = r.readPrometheus()
 	return settings
 }

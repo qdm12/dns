@@ -20,7 +20,7 @@ func (d *DoH) setDefaults() {
 		provider.Cloudflare().Name,
 		provider.Google().Name,
 	})
-	d.Timeout = gosettings.DefaultNumber(d.Timeout, time.Second)
+	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
 	d.Self.setDefaults()
 }
 

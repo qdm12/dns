@@ -14,7 +14,7 @@ type CacheLRU struct {
 
 func (c *CacheLRU) setDefaults() {
 	const defaultMaxEntries = 10e4
-	c.MaxEntries = gosettings.DefaultNumber(c.MaxEntries, defaultMaxEntries)
+	c.MaxEntries = gosettings.DefaultComparable(c.MaxEntries, defaultMaxEntries)
 }
 
 func (c *CacheLRU) validate() error {

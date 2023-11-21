@@ -20,7 +20,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Registry = gosettings.DefaultInterface(s.Registry, prometheus.DefaultRegisterer)
+	s.Registry = gosettings.DefaultComparable[Registry](s.Registry, prometheus.DefaultRegisterer)
 }
 
 var (

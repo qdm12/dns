@@ -26,7 +26,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Client = gosettings.DefaultPointerRaw(s.Client, http.DefaultClient)
+	s.Client = gosettings.DefaultComparable(s.Client, http.DefaultClient)
 	s.BlockMalicious = gosettings.DefaultPointer(s.BlockMalicious, false)
 	s.BlockAds = gosettings.DefaultPointer(s.BlockAds, false)
 	s.BlockSurveillance = gosettings.DefaultPointer(s.BlockSurveillance, false)

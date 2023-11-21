@@ -16,7 +16,7 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.Prometheus.SetDefaults()
-	s.DoTDialMetrics = gosettings.DefaultInterface(s.DoTDialMetrics, dotnoop.New())
+	s.DoTDialMetrics = gosettings.DefaultComparable[DialMetrics](s.DoTDialMetrics, dotnoop.New())
 }
 
 func (s Settings) Validate() (err error) {

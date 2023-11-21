@@ -25,7 +25,7 @@ type SettingsInternalDNS struct {
 func (s *SettingsInternalDNS) SetDefaults() {
 	s.IP = gosettings.DefaultValidator(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
 	const defaultPort = 53
-	s.Port = gosettings.DefaultNumber(s.Port, defaultPort)
+	s.Port = gosettings.DefaultComparable(s.Port, defaultPort)
 }
 
 func (s SettingsInternalDNS) Validate() (err error) {

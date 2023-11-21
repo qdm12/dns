@@ -12,7 +12,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Metrics = gosettings.DefaultInterface(s.Metrics, noop.New())
+	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, noop.New())
 }
 
 func (s Settings) Validate() (err error) {

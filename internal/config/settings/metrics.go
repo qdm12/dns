@@ -14,7 +14,7 @@ type Metrics struct {
 }
 
 func (m *Metrics) setDefaults() {
-	m.Type = gosettings.DefaultString(m.Type, "prometheus")
+	m.Type = gosettings.DefaultComparable(m.Type, "prometheus")
 	m.Prometheus.SetDefaults()
 }
 

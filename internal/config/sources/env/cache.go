@@ -10,7 +10,7 @@ import (
 )
 
 func (r *Reader) readCache() (settings settings.Cache, err error) {
-	settings.Type = r.env.String("CACHE_TYPE")
+	settings.Type = r.reader.String("CACHE_TYPE")
 
 	settings.LRU.MaxEntries, err = r.getLRUCacheMaxEntries()
 	if err != nil {
@@ -23,7 +23,7 @@ func (r *Reader) readCache() (settings settings.Cache, err error) {
 var ErrCacheLRUMaxEntries = errors.New("invalid value for max entries of the LRU cache")
 
 func (r *Reader) getLRUCacheMaxEntries() (maxEntries uint, err error) {
-	s := r.env.String("CACHE_LRU_MAX_ENTRIES")
+	s := r.reader.String("CACHE_LRU_MAX_ENTRIES")
 	if s == "" {
 		return 0, nil
 	}

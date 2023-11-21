@@ -18,7 +18,7 @@ type MiddlewareLog struct {
 
 func (m *MiddlewareLog) setDefaults() {
 	m.Enabled = gosettings.DefaultPointer(m.Enabled, false)
-	m.DirPath = gosettings.DefaultString(m.DirPath, "/var/log/dns/")
+	m.DirPath = gosettings.DefaultComparable(m.DirPath, "/var/log/dns/")
 	m.LogRequests = gosettings.DefaultPointer(m.LogRequests, true)
 	m.LogResponses = gosettings.DefaultPointer(m.LogResponses, false)
 }

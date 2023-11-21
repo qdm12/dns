@@ -29,17 +29,17 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Resolver = gosettings.DefaultPointerRaw(s.Resolver, net.DefaultResolver)
-	s.HostToResolve = gosettings.DefaultString(s.HostToResolve, "github.com")
+	s.Resolver = gosettings.DefaultComparable(s.Resolver, net.DefaultResolver)
+	s.HostToResolve = gosettings.DefaultComparable(s.HostToResolve, "github.com")
 
 	const defaultMaxTries = 10
-	s.MaxTries = gosettings.DefaultNumber(s.MaxTries, defaultMaxTries)
+	s.MaxTries = gosettings.DefaultComparable(s.MaxTries, defaultMaxTries)
 
 	const defaultWaitTime = 300 * time.Millisecond
-	s.WaitTime = gosettings.DefaultNumber(s.WaitTime, defaultWaitTime)
+	s.WaitTime = gosettings.DefaultComparable(s.WaitTime, defaultWaitTime)
 
 	const defaultAddWaitTime = 100 * time.Millisecond
-	s.AddWaitTime = gosettings.DefaultNumber(s.AddWaitTime, defaultAddWaitTime)
+	s.AddWaitTime = gosettings.DefaultComparable(s.AddWaitTime, defaultAddWaitTime)
 }
 
 func (s Settings) Validate() (err error) {

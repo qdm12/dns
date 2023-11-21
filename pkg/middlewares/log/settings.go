@@ -17,7 +17,7 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Logger = gosettings.DefaultInterface(s.Logger, noop.New())
+	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
 }
 
 var (

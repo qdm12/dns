@@ -17,8 +17,8 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	const defaultMaxEntries = 10e4
-	s.MaxEntries = gosettings.DefaultNumber(s.MaxEntries, defaultMaxEntries)
-	s.Metrics = gosettings.DefaultInterface(s.Metrics, noop.New())
+	s.MaxEntries = gosettings.DefaultComparable(s.MaxEntries, defaultMaxEntries)
+	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, noop.New())
 }
 
 func (s Settings) Validate() (err error) {

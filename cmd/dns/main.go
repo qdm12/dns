@@ -23,6 +23,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/nameserver"
 	"github.com/qdm12/goservices"
 	"github.com/qdm12/goservices/hooks"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosplash"
 	"github.com/qdm12/log"
 )
@@ -45,7 +46,10 @@ func main() {
 
 	args := os.Args
 	logger := log.New()
-	settingsSource := env.New(logger)
+	settingsSources := []reader.Source{
+		reader.NewEnv(os.Environ()),
+	}
+	settingsSource := env.New(settingsSources, logger)
 
 	errorCh := make(chan error)
 	go func() {

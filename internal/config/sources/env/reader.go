@@ -2,14 +2,13 @@ package env
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/qdm12/dns/v2/internal/config/settings"
-	"github.com/qdm12/gosettings/sources/env"
+	"github.com/qdm12/gosettings/reader"
 )
 
 type Reader struct {
-	env    env.Env
+	reader *reader.Reader
 	warner Warner
 }
 
@@ -17,21 +16,24 @@ type Warner interface {
 	Warn(s string)
 }
 
-func New(warner Warner) *Reader {
+func New(sources []reader.Source, warner Warner) *Reader {
+	reader := reader.New(reader.Settings{
+		Sources: sources,
+	})
 	return &Reader{
+		reader: reader,
 		warner: warner,
-		env:    *env.New(os.Environ(), nil),
 	}
 }
 
 func (r *Reader) Read() (settings settings.Settings, err error) {
-	warnings := checkOutdatedVariables()
+	warnings := checkOutdatedVariables(r.reader)
 	for _, warning := range warnings {
 		r.warner.Warn(warning)
 	}
 
-	settings.Upstream = r.env.String("UPSTREAM_TYPE")
-	settings.ListeningAddress = r.env.Get("LISTENING_ADDRESS")
+	settings.Upstream = r.reader.String("UPSTREAM_TYPE")
+	settings.ListeningAddress = r.reader.Get("LISTENING_ADDRESS")
 
 	settings.Block, err = r.readBlock()
 	if err != nil {
@@ -65,12 +67,12 @@ func (r *Reader) Read() (settings settings.Settings, err error) {
 
 	settings.Metrics = r.readMetrics()
 
-	settings.CheckDNS, err = r.env.BoolPtr("CHECK_DNS")
+	settings.CheckDNS, err = r.reader.BoolPtr("CHECK_DNS")
 	if err != nil {
 		return settings, fmt.Errorf("environment variable CHECK_DNS: %w", err)
 	}
 
-	settings.UpdatePeriod, err = r.env.DurationPtr("UPDATE_PERIOD")
+	settings.UpdatePeriod, err = r.reader.DurationPtr("UPDATE_PERIOD")
 	if err != nil {
 		return settings, fmt.Errorf("environment variable UPDATE_PERIOD: %w", err)
 	}

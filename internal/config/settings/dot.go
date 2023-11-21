@@ -28,7 +28,7 @@ func (d *DoT) setDefaults() {
 		provider.Google().Name,
 	})
 
-	d.Timeout = gosettings.DefaultNumber(d.Timeout, time.Second)
+	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
 
 	const defaultIPv6 = false // some systems do not support IPv6
 	d.IPv6 = gosettings.DefaultPointer(d.IPv6, defaultIPv6)

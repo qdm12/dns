@@ -17,7 +17,7 @@ type Cache struct {
 }
 
 func (c *Cache) setDefaults() {
-	c.Type = gosettings.DefaultString(c.Type, "lru")
+	c.Type = gosettings.DefaultComparable(c.Type, "lru")
 	c.LRU.setDefaults()
 }
 

@@ -45,8 +45,9 @@ github.com/prometheus/procfs v0.10.1 h1:kYK1Va/YMlutzCGazswoHKo//tZVlFpKYh+Pymzi
 github.com/prometheus/procfs v0.10.1/go.mod h1:nwNm2aOCAYw8uTR/9bWRREkZFxAUcWzPHWJq+XBB/FM=
 github.com/qdm12/goservices v0.1.0 h1:9sODefm/yuIGS7ynCkEnNlMTAYn9GzPhtcK4F69JWvc=
 github.com/qdm12/goservices v0.1.0/go.mod h1:/JOFsAnHFiSjyoXxa5FlfX903h20K5u/3rLzCjYVMck=
-github.com/qdm12/gosettings v0.4.0-rc1 h1:UYA92yyeDPbmZysIuG65yrpZVPtdIoRmtEHft/AyI38=
 github.com/qdm12/gosettings v0.4.0-rc1/go.mod h1:JRV3opOpHvnKlIA29lKQMdYw1WSMVMfHYLLHPHol5ME=
+github.com/qdm12/gosettings v0.4.0-rc2 h1:Oa8dgA4JJliDeH0gYuGiMfo0hhBIIoqXXBl4eXumTFk=
+github.com/qdm12/gosettings v0.4.0-rc2/go.mod h1:JRV3opOpHvnKlIA29lKQMdYw1WSMVMfHYLLHPHol5ME=
 github.com/qdm12/gosplash v0.1.0 h1:Sfl+zIjFZFP7b0iqf2l5UkmEY97XBnaKkH3FNY6Gf7g=
 github.com/qdm12/gosplash v0.1.0/go.mod h1:+A3fWW4/rUeDXhY3ieBzwghKdnIPFJgD8K3qQkenJlw=
 github.com/qdm12/gotree v0.2.0 h1:+58ltxkNLUyHtATFereAcOjBVfY6ETqRex8XK90Fb/c=

@@ -17,7 +17,7 @@ func (r *Reader) readLog() (settings settings.Log, err error) {
 }
 
 func (r *Reader) readLogLevel() (level *log.Level, err error) {
-	levelString := r.env.String("LOG_LEVEL")
+	levelString := r.reader.String("LOG_LEVEL")
 	if levelString == "" {
 		return nil, nil //nolint:nilnil
 	}

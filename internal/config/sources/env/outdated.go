@@ -2,11 +2,12 @@ package env
 
 import (
 	"fmt"
-	"os"
 	"strings"
+
+	"github.com/qdm12/gosettings/reader"
 )
 
-func checkOutdatedVariables() (warnings []string) {
+func checkOutdatedVariables(reader *reader.Reader) (warnings []string) {
 	outdatedToNew := map[string][]string{
 		"LISTENINGPORT":       {"LISTENING_ADDRESS"},
 		"PROVIDERS":           {"DOT_RESOLVERS", "DOH_RESOLVERS", "DNS_FALLBACK_PLAINTEXT_RESOLVERS"},
@@ -23,8 +24,8 @@ func checkOutdatedVariables() (warnings []string) {
 	}
 
 	for outdated, new := range outdatedToNew {
-		value := os.Getenv(outdated)
-		if value == "" {
+		value := reader.Get(outdated)
+		if value == nil {
 			continue
 		}
 
