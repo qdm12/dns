@@ -1,4 +1,4 @@
-package settings
+package config
 
 import (
 	"github.com/qdm12/dns/v2/pkg/provider"

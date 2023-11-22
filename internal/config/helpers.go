@@ -1,4 +1,4 @@
-package settings
+package config
 
 func andStrings(strings []string) (result string) {
 	return joinStrings(strings, "and")

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	dto "github.com/prometheus/client_model/go"
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/internal/metrics/noop"
 	"github.com/qdm12/dns/v2/internal/metrics/prometheus"
 	"github.com/qdm12/log"
@@ -26,7 +26,7 @@ type Service interface {
 	Stop() (err error)
 }
 
-func New(settings settings.Metrics, //nolint:ireturn
+func New(settings config.Metrics, //nolint:ireturn
 	parentLogger ParentLogger, prometheusGatherer PrometheusGatherer) (
 	service Service, err error) {
 	switch settings.Type {

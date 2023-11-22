@@ -1,4 +1,4 @@
-package settings
+package config
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -123,4 +124,58 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	}
 
 	return node
+}
+
+func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) {
+	warnings := checkOutdatedEnv(reader)
+	for _, warning := range warnings {
+		warner.Warn(warning)
+	}
+
+	s.Upstream = reader.String("UPSTREAM_TYPE")
+	s.ListeningAddress = reader.Get("LISTENING_ADDRESS")
+
+	err = s.Block.read(reader)
+	if err != nil {
+		return fmt.Errorf("block settings: %w", err)
+	}
+
+	err = s.Cache.read(reader)
+	if err != nil {
+		return fmt.Errorf("cache settings: %w", err)
+	}
+
+	err = s.DoH.read(reader)
+	if err != nil {
+		return fmt.Errorf("DoH settings: %w", err)
+	}
+
+	err = s.DoT.read(reader)
+	if err != nil {
+		return fmt.Errorf("DoT settings: %w", err)
+	}
+
+	err = s.Log.read(reader)
+	if err != nil {
+		return fmt.Errorf("log settings: %w", err)
+	}
+
+	err = s.MiddlewareLog.read(reader)
+	if err != nil {
+		return fmt.Errorf("middleware log settings: %w", err)
+	}
+
+	s.Metrics.read(reader)
+
+	s.CheckDNS, err = reader.BoolPtr("CHECK_DNS")
+	if err != nil {
+		return err
+	}
+
+	s.UpdatePeriod, err = reader.DurationPtr("UPDATE_PERIOD")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

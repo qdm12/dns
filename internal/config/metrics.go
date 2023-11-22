@@ -1,9 +1,10 @@
-package settings //nolint:dupl
+package config
 
 import (
 	"fmt"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -50,4 +51,9 @@ func (m *Metrics) ToLinesNode() (node *gotree.Node) {
 	}
 
 	return node
+}
+
+func (m *Metrics) read(reader *reader.Reader) {
+	m.Type = reader.String("METRICS_TYPE")
+	m.Prometheus.read(reader)
 }

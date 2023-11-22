@@ -1,4 +1,4 @@
-package settings
+package config
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -96,4 +97,54 @@ func (b *Block) ToLinesNode() (node *gotree.Node) { //nolint:cyclop
 	}
 
 	return node
+}
+
+func (b *Block) read(reader *reader.Reader) (err error) {
+	b.BlockMalicious, err = reader.BoolPtr("BLOCK_MALICIOUS")
+	if err != nil {
+		return err
+	}
+
+	b.BlockSurveillance, err = reader.BoolPtr("BLOCK_SURVEILLANCE")
+	if err != nil {
+		return err
+	}
+
+	b.BlockAds, err = reader.BoolPtr("BLOCK_ADS")
+	if err != nil {
+		return err
+	}
+
+	b.RebindingProtection, err = reader.BoolPtr("REBINDING_PROTECTION")
+	if err != nil {
+		return err
+	}
+
+	b.AllowedHosts = reader.CSV("ALLOWED_HOSTNAMES")
+	b.AddBlockedHosts = reader.CSV("BLOCK_HOSTNAMES")
+
+	b.AllowedIPs, err = reader.CSVNetipAddresses("ALLOWED_IPS")
+	if err != nil {
+		return err
+	}
+	b.AddBlockedIPs, err = reader.CSVNetipAddresses("BLOCK_IPS")
+	if err != nil {
+		return err
+	}
+
+	b.AllowedIPPrefixes, err = reader.CSVNetipPrefixes("ALLOWED_CIDRS")
+	if err != nil {
+		return err
+	}
+	b.AddBlockedIPPrefixes, err = reader.CSVNetipPrefixes("BLOCK_CIDRS")
+	if err != nil {
+		return err
+	}
+
+	b.RebindingProtection, err = reader.BoolPtr("REBINDING_PROTECTION")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

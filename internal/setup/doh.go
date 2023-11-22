@@ -3,7 +3,7 @@ package setup
 import (
 	"fmt"
 
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/pkg/doh"
 	noopmetrics "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/doh/metrics/prometheus"
@@ -12,7 +12,7 @@ import (
 	"github.com/qdm12/gosettings"
 )
 
-func dohServer(userSettings settings.Settings,
+func dohServer(userSettings config.Settings,
 	middlewares []Middleware, logger Logger, metrics DoHMetrics) (
 	server *doh.Server, err error) {
 	providers := provider.NewProviders()

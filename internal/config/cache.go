@@ -1,9 +1,10 @@
-package settings //nolint:dupl
+package config
 
 import (
 	"fmt"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -50,4 +51,15 @@ func (c *Cache) ToLinesNode() (node *gotree.Node) {
 		panic(fmt.Sprintf("unknown cache type: %s", c.Type))
 	}
 	return node
+}
+
+func (c *Cache) read(reader *reader.Reader) (err error) {
+	c.Type = reader.String("CACHE_TYPE")
+
+	c.LRU.MaxEntries, err = reader.Int("CACHE_LRU_MAX_ENTRIES")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,4 +1,4 @@
-package settings
+package config
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gotree"
 )
 
@@ -52,4 +53,25 @@ func (m *MiddlewareLog) ToLinesNode() (node *gotree.Node) {
 	node.Appendf("Log requests: %s", gosettings.BoolToYesNo(m.LogRequests))
 	node.Appendf("Log responses: %s", gosettings.BoolToYesNo(m.LogResponses))
 	return node
+}
+
+func (m *MiddlewareLog) read(reader *reader.Reader) (err error) {
+	m.Enabled, err = reader.BoolPtr("MIDDLEWARE_LOG_ENABLED")
+	if err != nil {
+		return err
+	}
+
+	m.DirPath = reader.String("MIDDLEWARE_LOG_DIRECTORY")
+
+	m.LogRequests, err = reader.BoolPtr("MIDDLEWARE_LOG_REQUESTS")
+	if err != nil {
+		return err
+	}
+
+	m.LogResponses, err = reader.BoolPtr("MIDDLEWARE_LOG_RESPONSES")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

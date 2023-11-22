@@ -13,8 +13,7 @@ import (
 
 	_ "github.com/breml/rootcerts"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/qdm12/dns/v2/internal/config/settings"
-	"github.com/qdm12/dns/v2/internal/config/sources/env"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/internal/dns"
 	"github.com/qdm12/dns/v2/internal/health"
 	"github.com/qdm12/dns/v2/internal/metrics"
@@ -24,7 +23,7 @@ import (
 	"github.com/qdm12/goservices"
 	"github.com/qdm12/goservices/hooks"
 	"github.com/qdm12/gosettings/reader"
-	envsource "github.com/qdm12/gosettings/reader/sources/env"
+	"github.com/qdm12/gosettings/reader/sources/env"
 	"github.com/qdm12/gosplash"
 	"github.com/qdm12/log"
 )
@@ -48,13 +47,15 @@ func main() {
 	args := os.Args
 	logger := log.New()
 	settingsSources := []reader.Source{
-		envsource.New(os.Environ()),
+		env.New(os.Environ()),
 	}
-	settingsSource := env.New(settingsSources, logger)
+	settingsReader := reader.New(reader.Settings{
+		Sources: settingsSources,
+	})
 
 	errorCh := make(chan error)
 	go func() {
-		errorCh <- _main(ctx, buildInfo, args, logger, settingsSource)
+		errorCh <- _main(ctx, buildInfo, args, logger, settingsReader)
 	}()
 
 	select {
@@ -91,12 +92,8 @@ type Logger interface {
 	Error(s string)
 }
 
-type SettingsSource interface {
-	Read() (settings settings.Settings, err error)
-}
-
 func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cyclop
-	args []string, logger Logger, settingsSource SettingsSource) error {
+	args []string, logger Logger, settingsReader *reader.Reader) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the
@@ -107,9 +104,10 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 
 	initialDisplay(buildInfo)
 
-	settings, err := settingsSource.Read()
+	var settings config.Settings
+	err := settings.Read(settingsReader, logger)
 	if err != nil {
-		return fmt.Errorf("reading environment variables: %w", err)
+		return fmt.Errorf("reading settings: %w", err)
 	}
 	settings.SetDefaults()
 

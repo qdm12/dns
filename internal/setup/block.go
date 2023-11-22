@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"net/netip"
 
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/pkg/blockbuilder"
 )
 
-func BuildBlockBuilder(userSettings settings.Block,
+func BuildBlockBuilder(userSettings config.Block,
 	client *http.Client) (blockBuilder *blockbuilder.Builder, err error) {
 	settings := blockbuilder.Settings{
 		Client:            client,

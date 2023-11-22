@@ -1,10 +1,11 @@
-package settings
+package config
 
 import (
 	"fmt"
 	"os"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -39,4 +40,9 @@ func (p *Prometheus) ToLinesNode() (node *gotree.Node) {
 		node.Appendf("Subsystem: %s", *p.Subsystem)
 	}
 	return node
+}
+
+func (p *Prometheus) read(reader *reader.Reader) {
+	p.ListeningAddress = reader.String("METRICS_PROMETHEUS_ADDRESS")
+	p.Subsystem = reader.Get("METRICS_PROMETHEUS_SUBSYSTEM")
 }

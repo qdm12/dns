@@ -3,7 +3,7 @@ package setup
 import (
 	"fmt"
 
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
@@ -15,7 +15,7 @@ type Service interface {
 	Stop() (err error)
 }
 
-func DNS(userSettings settings.Settings, //nolint:ireturn
+func DNS(userSettings config.Settings, //nolint:ireturn
 	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegistry) (
 	server Service, err error) {
 	var middlewares []Middleware

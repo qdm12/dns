@@ -1,4 +1,4 @@
-package settings
+package config
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gotree"
 )
 
@@ -80,4 +81,20 @@ func (d *DoT) ToLinesNode() (node *gotree.Node) {
 	node.Appendf("Connecting over: %s", connectOver)
 
 	return node
+}
+
+func (d *DoT) read(reader *reader.Reader) (err error) {
+	d.DoTProviders = reader.CSV("DOT_RESOLVERS")
+	d.DNSProviders = reader.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
+	d.Timeout, err = reader.Duration("DOT_TIMEOUT")
+	if err != nil {
+		return err
+	}
+
+	d.IPv6, err = reader.BoolPtr("DOT_CONNECT_IPV6")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

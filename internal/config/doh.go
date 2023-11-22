@@ -1,4 +1,4 @@
-package settings
+package config
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gotree"
 )
 
@@ -58,4 +59,26 @@ func (d *DoH) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(d.Self.ToLinesNode())
 
 	return node
+}
+
+func (d *DoH) read(reader *reader.Reader) (err error) {
+	d.DoHProviders = reader.CSV("DOH_RESOLVERS")
+	d.Timeout, err = reader.Duration("DOH_TIMEOUT")
+	if err != nil {
+		return err
+	}
+
+	d.Self.DoTProviders = reader.CSV("DOT_RESOLVERS")
+	d.Self.DNSProviders = reader.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
+	d.Self.IPv6, err = reader.BoolPtr("DOT_CONNECT_IPV6")
+	if err != nil {
+		return err
+	}
+
+	d.Self.Timeout, err = reader.Duration("DOT_TIMEOUT")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

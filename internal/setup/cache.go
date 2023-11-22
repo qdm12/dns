@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	promcommon "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/middlewares/cache/lru"
 	noopmetrics "github.com/qdm12/dns/v2/pkg/middlewares/cache/metrics/noop"
@@ -17,7 +17,7 @@ type Cache interface {
 	Get(request *dns.Msg) (response *dns.Msg)
 }
 
-func BuildCache(userSettings settings.Cache, //nolint:ireturn
+func BuildCache(userSettings config.Cache, //nolint:ireturn
 	metrics CacheMetrics) (cache Cache, err error) {
 	switch userSettings.Type {
 	case noop.CacheType:
@@ -32,7 +32,7 @@ func BuildCache(userSettings settings.Cache, //nolint:ireturn
 	}
 }
 
-func BuildCacheMetrics(userSettings settings.Metrics, //nolint:ireturn
+func BuildCacheMetrics(userSettings config.Metrics, //nolint:ireturn
 	registry PrometheusRegistry) (
 	metrics CacheMetrics, err error) {
 	switch userSettings.Type {

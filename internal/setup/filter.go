@@ -3,13 +3,13 @@ package setup
 import (
 	"fmt"
 
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	promcommon "github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	noopmetrics "github.com/qdm12/dns/v2/pkg/middlewares/filter/metrics/noop"
 	prommetrics "github.com/qdm12/dns/v2/pkg/middlewares/filter/metrics/prometheus"
 )
 
-func BuildFilterMetrics(userSettings settings.Metrics, //nolint:ireturn
+func BuildFilterMetrics(userSettings config.Metrics, //nolint:ireturn
 	registry PrometheusRegistry) (
 	metrics FilterMetrics, err error) {
 	switch userSettings.Type {

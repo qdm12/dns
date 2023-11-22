@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/goservices/httpserver"
 )
 
-func New(settings settings.Prometheus, gatherer Gatherer,
+func New(settings config.Prometheus, gatherer Gatherer,
 	logger Logger) (server *httpserver.Server, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()

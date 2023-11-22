@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/internal/setup"
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/mapfilter"
@@ -14,7 +14,7 @@ import (
 
 type Loop struct {
 	// Dependencies injected
-	settings           settings.Settings
+	settings           config.Settings
 	logger             Logger
 	blockBuilder       BlockBuilder
 	cache              Cache
@@ -26,7 +26,7 @@ type Loop struct {
 	runDone     chan struct{}
 }
 
-func New(settings settings.Settings, logger Logger,
+func New(settings config.Settings, logger Logger,
 	blockBuilder BlockBuilder, cache Cache,
 	prometheusRegistry PrometheusRegistry) (loop *Loop, err error) {
 	settings.SetDefaults()

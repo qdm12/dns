@@ -3,7 +3,7 @@ package setup
 import (
 	"fmt"
 
-	"github.com/qdm12/dns/v2/internal/config/settings"
+	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/pkg/dot"
 	noopmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
@@ -12,7 +12,7 @@ import (
 	"github.com/qdm12/gosettings"
 )
 
-func dotServer(userSettings settings.Settings,
+func dotServer(userSettings config.Settings,
 	middlewares []Middleware, logger Logger, metrics DoTMetrics) (
 	server *dot.Server, err error) {
 	providers := provider.NewProviders()

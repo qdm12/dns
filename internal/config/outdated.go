@@ -1,4 +1,4 @@
-package env
+package config
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/qdm12/gosettings/reader"
 )
 
-func checkOutdatedVariables(reader *reader.Reader) (warnings []string) {
+func checkOutdatedEnv(reader *reader.Reader) (warnings []string) {
 	outdatedToNew := map[string][]string{
 		"LISTENINGPORT":       {"LISTENING_ADDRESS"},
 		"PROVIDERS":           {"DOT_RESOLVERS", "DOH_RESOLVERS", "DNS_FALLBACK_PLAINTEXT_RESOLVERS"},
