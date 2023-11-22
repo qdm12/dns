@@ -7,14 +7,14 @@ func New() (metrics *Metrics) {
 	return new(Metrics)
 }
 
-func (m *Metrics) SetCacheType(string)     {}
-func (m *Metrics) CacheInsertInc()         {}
-func (m *Metrics) CacheRemoveInc()         {}
-func (m *Metrics) CacheMoveInc()           {}
-func (m *Metrics) CacheGetEmptyInc()       {}
-func (m *Metrics) CacheInsertEmptyInc()    {}
-func (m *Metrics) CacheRemoveEmptyInc()    {}
-func (m *Metrics) CacheHitInc()            {}
-func (m *Metrics) CacheMissInc()           {}
-func (m *Metrics) CacheExpiredInc()        {}
-func (m *Metrics) CacheMaxEntriesSet(uint) {}
+func (m *Metrics) SetCacheType(string)    {}
+func (m *Metrics) CacheInsertInc()        {}
+func (m *Metrics) CacheRemoveInc()        {}
+func (m *Metrics) CacheMoveInc()          {}
+func (m *Metrics) CacheGetEmptyInc()      {}
+func (m *Metrics) CacheInsertEmptyInc()   {}
+func (m *Metrics) CacheRemoveEmptyInc()   {}
+func (m *Metrics) CacheHitInc()           {}
+func (m *Metrics) CacheMissInc()          {}
+func (m *Metrics) CacheExpiredInc()       {}
+func (m *Metrics) CacheMaxEntriesSet(int) {}

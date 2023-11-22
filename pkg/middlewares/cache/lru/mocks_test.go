@@ -94,7 +94,7 @@ func (mr *MockMetricsMockRecorder) CacheInsertInc() *gomock.Call {
 }
 
 // CacheMaxEntriesSet mocks base method.
-func (m *MockMetrics) CacheMaxEntriesSet(arg0 uint) {
+func (m *MockMetrics) CacheMaxEntriesSet(arg0 int) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "CacheMaxEntriesSet", arg0)
 }

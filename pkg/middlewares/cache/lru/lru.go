@@ -11,7 +11,7 @@ import (
 
 type LRU struct {
 	// Configuration
-	maxEntries uint
+	maxEntries int // 0 to math.MaxInt
 
 	// State
 	kv         map[string]*list.Element
@@ -75,7 +75,7 @@ func (l *LRU) Add(request, response *dns.Msg) {
 		response: responseCopy,
 	}
 
-	if l.maxEntries > 0 && l.linkedList.Len() == int(l.maxEntries) {
+	if l.maxEntries > 0 && l.linkedList.Len() == l.maxEntries {
 		l.removeOldest()
 	}
 

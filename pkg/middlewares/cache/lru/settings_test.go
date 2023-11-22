@@ -12,6 +12,6 @@ func Test_Settings_SetDefaults(t *testing.T) {
 	settings := Settings{}
 	settings.SetDefaults()
 
-	assert.Greater(t, settings.MaxEntries, uint(1))
+	assert.Greater(t, settings.MaxEntries, 1)
 	assert.NotNil(t, settings.Metrics)
 }

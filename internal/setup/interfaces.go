@@ -53,7 +53,7 @@ type CacheMetrics interface { //nolint:interfacebloat
 	CacheHitInc()
 	CacheMissInc()
 	CacheExpiredInc()
-	CacheMaxEntriesSet(maxEntries uint)
+	CacheMaxEntriesSet(maxEntries int)
 }
 
 type PrometheusRegistry interface {
