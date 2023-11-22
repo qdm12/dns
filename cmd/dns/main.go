@@ -24,6 +24,7 @@ import (
 	"github.com/qdm12/goservices"
 	"github.com/qdm12/goservices/hooks"
 	"github.com/qdm12/gosettings/reader"
+	envsource "github.com/qdm12/gosettings/reader/sources/env"
 	"github.com/qdm12/gosplash"
 	"github.com/qdm12/log"
 )
@@ -47,7 +48,7 @@ func main() {
 	args := os.Args
 	logger := log.New()
 	settingsSources := []reader.Source{
-		reader.NewEnv(os.Environ()),
+		envsource.New(os.Environ()),
 	}
 	settingsSource := env.New(settingsSources, logger)
 
