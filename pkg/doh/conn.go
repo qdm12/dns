@@ -3,6 +3,7 @@ package doh
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"sync"
@@ -49,7 +50,7 @@ func (c *dohConn) Read(b []byte) (n int, err error) {
 	// TODO move http request in Write perhaps?
 	n, err = c.readOutputBuffer(b)
 	if err != nil {
-		return n, err
+		return n, fmt.Errorf("reading from output buffer: %w", err)
 	} else if n > 0 {
 		// We had the result of a previous HTTP request
 		// to the DoH server, so return here.
@@ -69,14 +70,19 @@ func (c *dohConn) Read(b []byte) (n int, err error) {
 	dnsAnswerBytes, err := dohHTTPRequest(c.ctx, c.client, c.bufferPool, c.dohURL, dnsQueryBytes)
 	c.cancel()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("doing HTTP request: %w", err)
 	}
 
 	if err := c.writeToOutputBuffer(dnsAnswerBytes); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("writing to output buffer: %w", err)
 	}
 
-	return c.outBuffer.Read(b)
+	n, err = c.outBuffer.Read(b)
+	if err != nil {
+		return 0, fmt.Errorf("reading from output buffer: %w", err)
+	}
+
+	return n, nil
 }
 
 // Write only writes the bytes to send in the connection
