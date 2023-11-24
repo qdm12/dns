@@ -24,7 +24,7 @@ func dohServer(userSettings config.Settings,
 
 	resolverSettings := doh.ResolverSettings{
 		DoHProviders: DoHProviders,
-		IPv6:         ptrTo(userSettings.DoH.IPVersion == "ipv6"),
+		IPVersion:    userSettings.DoH.IPVersion,
 		Metrics:      metrics,
 	}
 

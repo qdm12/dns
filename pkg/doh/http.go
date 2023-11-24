@@ -18,12 +18,12 @@ var (
 	ErrHTTPStatus = errors.New("bad HTTP status")
 )
 
-func newHTTPClient(dohServers []provider.DoHServer, ipv6 bool) (
+func newHTTPClient(dohServers []provider.DoHServer, ipVersion string) (
 	client *http.Client) {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
 
 	dialer := &net.Dialer{
-		Resolver: newHTTPClientResolver(dohServers, ipv6),
+		Resolver: newHTTPClientResolver(dohServers, ipVersion),
 	}
 	httpTransport.DialContext = dialer.DialContext
 	const timeout = 5 * time.Second
@@ -34,9 +34,9 @@ func newHTTPClient(dohServers []provider.DoHServer, ipv6 bool) (
 }
 
 func newHTTPClientResolver(dohServers []provider.DoHServer,
-	ipv6 bool) *net.Resolver {
+	ipVersion string) *net.Resolver {
 	// Compute mappings early and once for all dial calls
-	fqdnToIPv4, fqdnToIPv6 := dohServersToHardcodedMaps(dohServers, ipv6)
+	fqdnToIPv4, fqdnToIPv6 := dohServersToHardcodedMaps(dohServers, ipVersion)
 
 	return &net.Resolver{
 		PreferGo:     true,

@@ -19,7 +19,7 @@ func Test_ServerSettings_String(t *testing.T) {
 			settings: ServerSettings{
 				ListeningAddress: ptrTo("localhost:53"),
 				Resolver: ResolverSettings{
-					IPv6: ptrTo(false),
+					IPVersion: "ipv4",
 				},
 			},
 			s: `DoT server settings:
@@ -27,7 +27,7 @@ func Test_ServerSettings_String(t *testing.T) {
 └── DoT resolver settings:
     ├── DNS over TLS providers:
     ├── Query timeout: 0s
-    └── Connecting over: IPv4`,
+    └── Connecting over: ipv4`,
 		},
 		"non empty settings": {
 			settings: ServerSettings{
@@ -36,8 +36,8 @@ func Test_ServerSettings_String(t *testing.T) {
 					DoTProviders: []provider.Provider{
 						provider.Cloudflare(),
 					},
-					Timeout: time.Second,
-					IPv6:    ptrTo(true),
+					Timeout:   time.Second,
+					IPVersion: "ipv6",
 				},
 			},
 			s: `DoT server settings:
@@ -46,7 +46,7 @@ func Test_ServerSettings_String(t *testing.T) {
     ├── DNS over TLS providers:
     |   └── Cloudflare
     ├── Query timeout: 1s
-    └── Connecting over: IPv6`,
+    └── Connecting over: ipv6`,
 		},
 	}
 

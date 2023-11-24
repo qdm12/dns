@@ -191,7 +191,7 @@ func (c *hardcodedConn) SetWriteDeadline(time.Time) error {
 	return nil
 }
 
-func dohServersToHardcodedMaps(dohServers []provider.DoHServer, ipv6 bool) (
+func dohServersToHardcodedMaps(dohServers []provider.DoHServer, ipVersion string) (
 	fqdnToIPv4, fqdnToIPv6 map[string][]netip.Addr) {
 	fqdnToIPv4 = make(map[string][]netip.Addr, len(dohServers))
 	fqdnToIPv6 = make(map[string][]netip.Addr, len(dohServers))
@@ -204,14 +204,14 @@ func dohServersToHardcodedMaps(dohServers []provider.DoHServer, ipv6 bool) (
 		}
 		fqdn := dns.Fqdn(u.Hostname())
 
-		if ipv6 {
-			ips := make([]netip.Addr, len(dohServer.IPv6))
-			copy(ips, dohServer.IPv6)
-			fqdnToIPv6[fqdn] = ips
-		} else {
+		if ipVersion == "ipv4" {
 			ips := make([]netip.Addr, len(dohServer.IPv4))
 			copy(ips, dohServer.IPv4)
 			fqdnToIPv4[fqdn] = ips
+		} else {
+			ips := make([]netip.Addr, len(dohServer.IPv6))
+			copy(ips, dohServer.IPv6)
+			fqdnToIPv6[fqdn] = ips
 		}
 	}
 	return fqdnToIPv4, fqdnToIPv6

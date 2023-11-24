@@ -19,7 +19,7 @@ func newDoHDial(settings ResolverSettings) (dial server.Dial) {
 		dohServers[i] = provider.DoH
 	}
 
-	httpClient := newHTTPClient(dohServers, *settings.IPv6)
+	httpClient := newHTTPClient(dohServers, settings.IPVersion)
 
 	// HTTP bodies buffer pool
 	bufferPool := &sync.Pool{

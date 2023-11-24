@@ -30,7 +30,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 
 	// Check this otherwise things will blow up if no option is passed.
 	assert.GreaterOrEqual(t, len(s.Resolver.DoHProviders), 1)
-	assert.False(t, *s.Resolver.IPv6)
+	assert.Equal(t, "ipv4", s.Resolver.IPVersion)
 	assert.GreaterOrEqual(t, int64(s.Resolver.Timeout), int64(time.Millisecond))
 
 	expectedSettings := ServerSettings{
@@ -38,7 +38,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 		Logger:      logger,
 		Resolver: ResolverSettings{
 			DoHProviders: []provider.Provider{provider.Cloudflare()},
-			IPv6:         ptrTo(false),
+			IPVersion:    "ipv4",
 			Timeout:      5 * time.Second,
 			Metrics:      metrics,
 			Picker:       picker,
@@ -61,7 +61,7 @@ func Test_ServerSettings_String(t *testing.T) {
 └── DoH resolver settings:
     ├── DNS over HTTPs providers:
     |   └── Cloudflare
-    ├── Connecting over IPv4
+    ├── Connecting over ipv4
     └── Query timeout: 5s`
 	assert.Equal(t, expected, s)
 }

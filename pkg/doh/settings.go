@@ -31,14 +31,12 @@ type ServerSettings struct {
 
 type ResolverSettings struct {
 	DoHProviders []provider.Provider
-	// IPv6 indicates whether to use IPv6 only or IPv4 only for
-	// DNS over HTTPS. If set to true, the hardcoded resolver
-	// used by the DoH HTTP client will return only IPv6 addresses
-	// of the providers. If set to false, it returns only IPv4
-	// addresses from the given providers. If left unset to nil,
-	// it defaults to false.
-	IPv6    *bool
-	Timeout time.Duration
+	// IPVersion indicates whether to use IPv4 only or IPv6 only for
+	// DNS over HTTPS. The hardcoded resolver used by the DoH HTTP
+	// client will return only IP addresses matching the version set
+	// from all the providers. If left unset, it defaults to "ipv4".
+	IPVersion string
+	Timeout   time.Duration
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics Metrics
@@ -58,7 +56,7 @@ func (s *ServerSettings) SetDefaults() {
 func (s *ResolverSettings) SetDefaults() {
 	s.DoHProviders = gosettings.DefaultSlice(s.DoHProviders,
 		[]provider.Provider{provider.Cloudflare()})
-	s.IPv6 = gosettings.DefaultPointer(s.IPv6, false)
+	s.IPVersion = gosettings.DefaultComparable(s.IPVersion, "ipv4")
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
@@ -102,6 +100,11 @@ func (s ResolverSettings) Validate() (err error) {
 		}
 	}
 
+	err = validate.IsOneOf(s.IPVersion, "ipv4", "ipv6")
+	if err != nil {
+		return fmt.Errorf("IP version: %w", err)
+	}
+
 	return nil
 }
 
@@ -129,12 +132,7 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 		DoTProvidersNode.Appendf(caser.String(provider.Name))
 	}
 
-	connectOver := "IPv4"
-	if *s.IPv6 {
-		connectOver = "IPv6"
-	}
-	node.Appendf("Connecting over %s", connectOver)
-
+	node.Appendf("Connecting over %s", s.IPVersion)
 	node.Appendf("Query timeout: %s", s.Timeout)
 
 	return node
