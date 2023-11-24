@@ -7,17 +7,8 @@ import (
 )
 
 const (
-	defaultDNSPort uint16 = 53
 	defaultDoTPort uint16 = 853
 )
-
-func defaultDNSIPv4AddrPort(bytes [4]byte) netip.AddrPort {
-	return netip.AddrPortFrom(netip.AddrFrom4(bytes), defaultDNSPort)
-}
-
-func defaultDNSIPv6AddrPort(bytes [16]byte) netip.AddrPort {
-	return netip.AddrPortFrom(netip.AddrFrom16(bytes), defaultDNSPort)
-}
 
 func defaultDoTIPv4AddrPort(bytes [4]byte) netip.AddrPort {
 	return netip.AddrPortFrom(netip.AddrFrom4(bytes), defaultDoTPort)
