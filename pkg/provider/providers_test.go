@@ -119,6 +119,10 @@ func Test_Providers_List(t *testing.T) {
 		err = checkAddrPorts(provider.DoT.IPv6)
 		assert.NoError(t, err, errMessage)
 
-		assert.NotNil(t, provider.DoH, errMessage)
+		assert.NotEmpty(t, provider.DoH.URL, errMessage)
+		err = checkAddresses(provider.DoH.IPv4)
+		assert.NoError(t, err, errMessage)
+		err = checkAddresses(provider.DoH.IPv6)
+		assert.NoError(t, err, errMessage)
 	}
 }
