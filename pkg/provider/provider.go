@@ -8,14 +8,8 @@ import (
 
 type Provider struct {
 	Name string    `json:"name" yaml:"name"`
-	DNS  DNSServer `json:"dns" yaml:"dns"`
 	DoT  DoTServer `json:"dot" yaml:"dot"`
 	DoH  DoHServer `json:"doh" yaml:"doh"`
-}
-
-type DNSServer struct {
-	IPv4 []netip.AddrPort `json:"ipv4" yaml:"ipv4"`
-	IPv6 []netip.AddrPort `json:"ipv6" yaml:"ipv6"`
 }
 
 type DoTServer struct {
@@ -41,29 +35,6 @@ var (
 	ErrDoHURLNotSet       = errors.New("DoH URL not set")
 	ErrDoHNoIPSet         = errors.New("DoH server IPv4 address not set")
 )
-
-func (p Provider) ValdidateForPlaintext() (err error) {
-	switch {
-	case p.Name == "":
-		return fmt.Errorf("%w", ErrProviderNameNotSet)
-	case len(p.DNS.IPv4) == 0:
-		return fmt.Errorf("%w", ErrDNSIPv4NotSet)
-	case len(p.DNS.IPv6) == 0:
-		return fmt.Errorf("%w", ErrDNSIPv6NotSet)
-	}
-
-	err = checkAddrPorts(p.DNS.IPv4)
-	if err != nil {
-		return fmt.Errorf("IPv4 addresses: %w", err)
-	}
-
-	err = checkAddrPorts(p.DNS.IPv6)
-	if err != nil {
-		return fmt.Errorf("IPv6 addresses: %w", err)
-	}
-
-	return nil
-}
 
 func (p Provider) ValidateForDoT() (err error) {
 	if p.Name == "" {

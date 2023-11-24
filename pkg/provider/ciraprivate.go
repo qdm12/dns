@@ -5,16 +5,6 @@ import "net/netip"
 func CiraPrivate() Provider {
 	return Provider{
 		Name: "CIRA Private",
-		DNS: DNSServer{
-			IPv4: []netip.AddrPort{
-				defaultDNSIPv4AddrPort([4]byte{149, 112, 121, 10}),
-				defaultDNSIPv4AddrPort([4]byte{149, 112, 122, 10}),
-			},
-			IPv6: []netip.AddrPort{
-				defaultDNSIPv6AddrPort([16]byte{0x26, 0x20, 0x1, 0xa, 0x80, 0xbb, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10}),
-				defaultDNSIPv6AddrPort([16]byte{0x26, 0x20, 0x1, 0xa, 0x80, 0xbc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10}),
-			},
-		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{149, 112, 121, 10}),

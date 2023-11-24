@@ -5,16 +5,6 @@ import "net/netip"
 func Quad9Unsecured() Provider {
 	return Provider{
 		Name: "Quad9 Unsecured",
-		DNS: DNSServer{
-			IPv4: []netip.AddrPort{
-				defaultDNSIPv4AddrPort([4]byte{9, 9, 9, 10}),
-				defaultDNSIPv4AddrPort([4]byte{149, 112, 112, 10}),
-			},
-			IPv6: []netip.AddrPort{
-				defaultDNSIPv6AddrPort([16]byte{0x26, 0x20, 0x0, 0xfe, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10}),
-				defaultDNSIPv6AddrPort([16]byte{0x26, 0x20, 0x0, 0xfe, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xfe, 0x0, 0x10}),
-			},
-		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{9, 9, 9, 10}),

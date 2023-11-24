@@ -34,7 +34,6 @@ type ServerSettings struct {
 
 type ResolverSettings struct {
 	DoTProviders []provider.Provider
-	DNSProviders []provider.Provider
 	Timeout      time.Duration
 	// IPv6 is false if the resolver should connect to
 	// nameservers over IPv4 and true to connect over IPv6.
@@ -106,15 +105,6 @@ func (s ResolverSettings) Validate() (err error) {
 		}
 	}
 
-	// Note DNSProviders can be the empty slice or nil to prevent plaintext
-	// DNS fallback queries.
-	for _, provider := range s.DNSProviders {
-		err = provider.ValdidateForPlaintext()
-		if err != nil {
-			return fmt.Errorf("plaintext DNS provider %s: %w", provider.Name, err)
-		}
-	}
-
 	return nil
 }
 
@@ -140,11 +130,6 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	caser := cases.Title(language.English)
 	for _, provider := range s.DoTProviders {
 		DoTProvidersNode.Appendf(caser.String(provider.Name))
-	}
-
-	fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
-	for _, provider := range s.DNSProviders {
-		fallbackPlaintextProvidersNode.Appendf(caser.String(provider.Name))
 	}
 
 	node.Appendf("Query timeout: %s", s.Timeout)

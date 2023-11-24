@@ -13,7 +13,10 @@ func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 	warner := settings.Warner
 	metrics := settings.Metrics
 
-	dotServers, dnsServers := settingsToServers(settings)
+	dotServers := make([]provider.DoTServer, len(settings.DoTProviders))
+	for i, provider := range settings.DoTProviders {
+		dotServers[i] = provider.DoT
+	}
 
 	dialer := &net.Dialer{
 		Timeout: settings.Timeout,
@@ -27,8 +30,9 @@ func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 
 		conn, err := dialer.DialContext(ctx, "tcp", serverAddress)
 		if err != nil {
-			return onDialError(ctx, err, serverName, serverAddress, dialer,
-				picker, settings.IPv6, dnsServers, warner, metrics)
+			warner.Warn(err.Error())
+			metrics.DoTDialInc(serverName, serverAddress, "error")
+			return nil, err
 		}
 
 		metrics.DoTDialInc(serverName, serverAddress, "success")
@@ -42,60 +46,9 @@ func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 	}
 }
 
-func settingsToServers(settings ResolverSettings) (
-	dotServers []provider.DoTServer, dnsServers []provider.DNSServer) {
-	dotServers = make([]provider.DoTServer, len(settings.DoTProviders))
-	for i, provider := range settings.DoTProviders {
-		dotServers[i] = provider.DoT
-	}
-
-	dnsServers = make([]provider.DNSServer, len(settings.DNSProviders))
-	for i, provider := range settings.DNSProviders {
-		dnsServers[i] = provider.DNS
-	}
-
-	return dotServers, dnsServers
-}
-
 func pickNameAddress(picker Picker, servers []provider.DoTServer,
 	ipv6 bool) (name, address string) {
 	server := picker.DoTServer(servers)
 	addrPort := picker.DoTAddrPort(server, ipv6)
 	return server.Name, addrPort.String()
-}
-
-func onDialError(ctx context.Context, dialErr error,
-	dotName, dotAddress string, dialer *net.Dialer,
-	picker Picker, ipv6 bool, dnsServers []provider.DNSServer,
-	warner Warner, metrics Metrics) (
-	conn net.Conn, err error) {
-	warner.Warn(dialErr.Error())
-	metrics.DoTDialInc(dotName, dotAddress, "error")
-
-	if len(dnsServers) == 0 {
-		return nil, dialErr
-	}
-
-	// fallback on plain DNS if DoT does not work and
-	// some plaintext DNS servers are set.
-	return dialPlaintext(ctx, dialer, picker, ipv6, dnsServers, warner, metrics)
-}
-
-func dialPlaintext(ctx context.Context, dialer *net.Dialer,
-	picker Picker, ipv6 bool, dnsServers []provider.DNSServer,
-	warner Warner, metrics Metrics) (
-	conn net.Conn, err error) {
-	dnsServer := picker.DNSServer(dnsServers)
-	addrPort := picker.DNSAddrPort(dnsServer, ipv6)
-	plainAddr := addrPort.String()
-
-	conn, err = dialer.DialContext(ctx, "udp", plainAddr)
-	if err != nil {
-		warner.Warn(err.Error())
-		metrics.DNSDialInc(plainAddr, "error")
-		return nil, err
-	}
-
-	metrics.DNSDialInc(plainAddr, "success")
-	return conn, nil
 }

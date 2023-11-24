@@ -153,34 +153,6 @@ func (m *MockPicker) EXPECT() *MockPickerMockRecorder {
 	return m.recorder
 }
 
-// DNSAddrPort mocks base method.
-func (m *MockPicker) DNSAddrPort(arg0 provider.DNSServer, arg1 bool) netip.AddrPort {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DNSAddrPort", arg0, arg1)
-	ret0, _ := ret[0].(netip.AddrPort)
-	return ret0
-}
-
-// DNSAddrPort indicates an expected call of DNSAddrPort.
-func (mr *MockPickerMockRecorder) DNSAddrPort(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DNSAddrPort", reflect.TypeOf((*MockPicker)(nil).DNSAddrPort), arg0, arg1)
-}
-
-// DNSServer mocks base method.
-func (m *MockPicker) DNSServer(arg0 []provider.DNSServer) provider.DNSServer {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DNSServer", arg0)
-	ret0, _ := ret[0].(provider.DNSServer)
-	return ret0
-}
-
-// DNSServer indicates an expected call of DNSServer.
-func (mr *MockPickerMockRecorder) DNSServer(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DNSServer", reflect.TypeOf((*MockPicker)(nil).DNSServer), arg0)
-}
-
 // DoTAddrPort mocks base method.
 func (m *MockPicker) DoTAddrPort(arg0 provider.DoTServer, arg1 bool) netip.AddrPort {
 	m.ctrl.T.Helper()

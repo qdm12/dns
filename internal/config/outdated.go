@@ -10,8 +10,8 @@ import (
 func checkOutdatedEnv(reader *reader.Reader) (warnings []string) {
 	outdatedToNew := map[string][]string{
 		"LISTENINGPORT":       {"LISTENING_ADDRESS"},
-		"PROVIDERS":           {"DOT_RESOLVERS", "DOH_RESOLVERS", "DNS_FALLBACK_PLAINTEXT_RESOLVERS"},
-		"PROVIDER":            {"DOT_RESOLVERS", "DOH_RESOLVERS", "DNS_FALLBACK_PLAINTEXT_RESOLVERS"},
+		"PROVIDERS":           {"DOT_RESOLVERS", "DOH_RESOLVERS"},
+		"PROVIDER":            {"DOT_RESOLVERS", "DOH_RESOLVERS"},
 		"CACHING":             {"CACHE_TYPE"},
 		"IPV4":                {"DOT_CONNECT_IPV6", "DOH_IP_VERSION"},
 		"IPV6":                {"DOT_CONNECT_IPV6", "DOH_IP_VERSION"},

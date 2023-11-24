@@ -5,16 +5,6 @@ import "net/netip"
 func Google() Provider {
 	return Provider{
 		Name: "Google",
-		DNS: DNSServer{
-			IPv4: []netip.AddrPort{
-				defaultDNSIPv4AddrPort([4]byte{8, 8, 8, 8}),
-				defaultDNSIPv4AddrPort([4]byte{8, 8, 4, 4}),
-			},
-			IPv6: []netip.AddrPort{
-				defaultDNSIPv6AddrPort([16]byte{0x20, 0x1, 0x48, 0x60, 0x48, 0x60, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x88, 0x88}),
-				defaultDNSIPv6AddrPort([16]byte{0x20, 0x1, 0x48, 0x60, 0x48, 0x60, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x88, 0x44}),
-			},
-		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{8, 8, 8, 8}),

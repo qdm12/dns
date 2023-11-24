@@ -13,18 +13,12 @@ import (
 
 type DoT struct {
 	DoTProviders []string
-	DNSProviders []string
 	Timeout      time.Duration
 	IPv6         *bool
 }
 
 func (d *DoT) setDefaults() {
 	d.DoTProviders = gosettings.DefaultSlice(d.DoTProviders, []string{
-		provider.Cloudflare().Name,
-		provider.Google().Name,
-	})
-
-	d.DNSProviders = gosettings.DefaultSlice(d.DNSProviders, []string{
 		provider.Cloudflare().Name,
 		provider.Google().Name,
 	})
@@ -45,11 +39,6 @@ func (d *DoT) validate() (err error) {
 		return fmt.Errorf("DoT provider: %w", err)
 	}
 
-	err = checkProviderNames(d.DNSProviders)
-	if err != nil {
-		return fmt.Errorf("fallback DNS plaintext provider: %w", err)
-	}
-
 	const minTimeout = time.Millisecond
 	if d.Timeout < minTimeout {
 		return fmt.Errorf("%w: %s must be at least %s",
@@ -68,10 +57,6 @@ func (d *DoT) ToLinesNode() (node *gotree.Node) {
 
 	node.Appendf("DNS over TLS providers: %s", andStrings(d.DoTProviders))
 
-	if len(d.DNSProviders) > 0 {
-		node.Appendf("Plaintext fallback DNS providers: %s", andStrings(d.DNSProviders))
-	}
-
 	node.Appendf("Request timeout: %s", d.Timeout)
 
 	connectOver := "IPv4"
@@ -85,7 +70,6 @@ func (d *DoT) ToLinesNode() (node *gotree.Node) {
 
 func (d *DoT) read(reader *reader.Reader) (err error) {
 	d.DoTProviders = reader.CSV("DOT_RESOLVERS")
-	d.DNSProviders = reader.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
 	d.Timeout, err = reader.Duration("DOT_TIMEOUT")
 	if err != nil {
 		return err

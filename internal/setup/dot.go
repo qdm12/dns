@@ -22,14 +22,8 @@ func dotServer(userSettings config.Settings,
 		return nil, fmt.Errorf("DNS over TLS providers: %w", err)
 	}
 
-	DNSProviders, err := stringsToProviders(providers, userSettings.DoT.DNSProviders)
-	if err != nil {
-		return nil, fmt.Errorf("plaintext DNS providers: %w", err)
-	}
-
 	resolverSettings := dot.ResolverSettings{
 		DoTProviders: DoTProviders,
-		DNSProviders: DNSProviders,
 		IPv6:         *userSettings.DoT.IPv6,
 		Warner:       logger,
 		Metrics:      metrics,

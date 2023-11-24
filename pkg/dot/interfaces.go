@@ -28,8 +28,6 @@ type Warner interface {
 }
 
 type Picker interface {
-	DNSServer(servers []provider.DNSServer) provider.DNSServer
-	DNSAddrPort(server provider.DNSServer, ipv6 bool) netip.AddrPort
 	DoTServer(servers []provider.DoTServer) provider.DoTServer
 	DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPort
 }

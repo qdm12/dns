@@ -24,7 +24,6 @@ func Test_ServerSettings_String(t *testing.T) {
 ├── Listening address: localhost:53
 └── DoT resolver settings:
     ├── DNS over TLS providers:
-    ├── Fallback plaintext DNS providers:
     ├── Query timeout: 0s
     └── Connecting over: IPv4`,
 		},
@@ -35,9 +34,6 @@ func Test_ServerSettings_String(t *testing.T) {
 					DoTProviders: []provider.Provider{
 						provider.Cloudflare(),
 					},
-					DNSProviders: []provider.Provider{
-						provider.Cloudflare(), provider.Google(),
-					},
 					Timeout: time.Second,
 					IPv6:    true,
 				},
@@ -47,9 +43,6 @@ func Test_ServerSettings_String(t *testing.T) {
 └── DoT resolver settings:
     ├── DNS over TLS providers:
     |   └── Cloudflare
-    ├── Fallback plaintext DNS providers:
-    |   ├── Cloudflare
-    |   └── Google
     ├── Query timeout: 1s
     └── Connecting over: IPv6`,
 		},
