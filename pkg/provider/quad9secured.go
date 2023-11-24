@@ -26,9 +26,17 @@ func Quad9Secured() Provider {
 			},
 			Name: "dns9.quad9.net",
 		},
-		// See https://developers.quad9.com/speed/public-dns/docs/doh
+		// See https://www.quad9.net/news/blog/doh-with-quad9-dns-servers/
 		DoH: DoHServer{
 			URL: "https://dns9.quad9.net/dns-query",
+			IPv4: []netip.Addr{
+				netip.AddrFrom4([4]byte{9, 9, 9, 9}),
+				netip.AddrFrom4([4]byte{149, 112, 112, 9}),
+			},
+			IPv6: []netip.Addr{
+				netip.AddrFrom16([16]byte{0x26, 0x20, 0x0, 0xfe, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x9}),
+				netip.AddrFrom16([16]byte{0x26, 0x20, 0x0, 0xfe, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xfe, 0x0, 0x9}),
+			},
 		},
 	}
 }

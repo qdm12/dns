@@ -25,7 +25,9 @@ type DoTServer struct {
 }
 
 type DoHServer struct {
-	URL string `json:"url" yaml:"url"`
+	URL  string       `json:"url" yaml:"url"`
+	IPv4 []netip.Addr `json:"ipv4" yaml:"ipv4"`
+	IPv6 []netip.Addr `json:"ipv6" yaml:"ipv6"`
 }
 
 var (
@@ -37,6 +39,7 @@ var (
 	ErrDoTNameNotSet      = errors.New("DoT server name not set")
 	ErrDoTPortNotSet      = errors.New("DoT server port not set")
 	ErrDoHURLNotSet       = errors.New("DoH URL not set")
+	ErrDoHNoIPSet         = errors.New("DoH server IPv4 address not set")
 )
 
 func (p Provider) ValdidateForPlaintext() (err error) {
@@ -95,6 +98,18 @@ func (p Provider) ValidateForDoH() (err error) {
 		return fmt.Errorf("%w", ErrProviderNameNotSet)
 	case p.DoH.URL == "":
 		return fmt.Errorf("%w", ErrDoHURLNotSet)
+	case len(p.DoH.IPv4) == 0 && len(p.DoH.IPv6) == 0:
+		return fmt.Errorf("%w", ErrDoHNoIPSet)
+	}
+
+	err = checkAddresses(p.DoH.IPv4)
+	if err != nil {
+		return fmt.Errorf("IPv4 addresses: %w", err)
+	}
+
+	err = checkAddresses(p.DoH.IPv6)
+	if err != nil {
+		return fmt.Errorf("IPv6 addresses: %w", err)
 	}
 
 	return nil

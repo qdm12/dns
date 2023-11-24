@@ -14,10 +14,7 @@ func NewResolver(settings ResolverSettings) (
 		return nil, fmt.Errorf("settings validation: %w", err)
 	}
 
-	dial, err := newDoHDial(settings)
-	if err != nil {
-		return nil, fmt.Errorf("creating DoH dial: %w", err)
-	}
+	dial := newDoHDial(settings)
 
 	return &net.Resolver{
 		PreferGo:     true,

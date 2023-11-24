@@ -33,6 +33,21 @@ var (
 	ErrPortNotSet      = errors.New("port is not set")
 )
 
+func checkAddresses(addresses []netip.Addr) (err error) {
+	for i, address := range addresses {
+		switch {
+		case !address.IsValid():
+			return fmt.Errorf("address %d of %d: %w",
+				i+1, len(addresses), ErrIPNotSet)
+		case address.IsUnspecified():
+			return fmt.Errorf("address %d of %d: %w",
+				i+1, len(addresses), ErrIPIsUnspecified)
+		}
+	}
+
+	return nil
+}
+
 func checkAddrPorts(addrPorts []netip.AddrPort) (err error) {
 	for i, addrPort := range addrPorts {
 		ip := addrPort.Addr()

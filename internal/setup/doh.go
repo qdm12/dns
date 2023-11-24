@@ -22,26 +22,10 @@ func dohServer(userSettings config.Settings,
 		return nil, fmt.Errorf("DNS over HTTPS providers: %w", err)
 	}
 
-	selfDoTProviders, err := stringsToProviders(providers, userSettings.DoT.DoTProviders)
-	if err != nil {
-		return nil, fmt.Errorf("DNS over TLS providers: %w", err)
-	}
-
-	selfDNSProviders, err := stringsToProviders(providers, userSettings.DoT.DNSProviders)
-	if err != nil {
-		return nil, fmt.Errorf("plaintext DNS providers: %w", err)
-	}
-
 	resolverSettings := doh.ResolverSettings{
 		DoHProviders: DoHProviders,
-		SelfDNS: doh.SelfDNS{
-			DoTProviders: selfDoTProviders,
-			DNSProviders: selfDNSProviders,
-			Timeout:      userSettings.DoH.Self.Timeout,
-			IPv6:         *userSettings.DoH.Self.IPv6,
-		},
-		Warner:  logger,
-		Metrics: metrics,
+		IPv6:         ptrTo(userSettings.DoH.IPVersion == "ipv6"),
+		Metrics:      metrics,
 	}
 
 	settings := doh.ServerSettings{

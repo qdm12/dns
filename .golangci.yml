@@ -29,7 +29,7 @@ issues:
       source: "^//go:generate "
     - linters:
         - lll
-      source: "^\\t+(defaultDNSIPv6AddrPort|defaultDoTIPv6AddrPort)\\(.+\\),$"
+      source: "^\\t+(defaultDNSIPv6AddrPort|defaultDoTIPv6AddrPort|netip.AddrFrom16)\\(.+\\),$"
     - linters:
         - ireturn
       text: ".+returns interface \\(github\\.com\\/prometheus\\/client_golang\\/prometheus\\.[a-zA-Z]+\\)$"

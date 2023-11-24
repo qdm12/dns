@@ -31,11 +31,14 @@ type ServerSettings struct {
 
 type ResolverSettings struct {
 	DoHProviders []provider.Provider
-	SelfDNS      SelfDNS
-	Timeout      time.Duration
-	// Warner is the warning logger to log dial errors.
-	// It defaults to a No-Op warner implementation.
-	Warner Warner
+	// IPv6 indicates whether to use IPv6 only or IPv4 only for
+	// DNS over HTTPS. If set to true, the hardcoded resolver
+	// used by the DoH HTTP client will return only IPv6 addresses
+	// of the providers. If set to false, it returns only IPv4
+	// addresses from the given providers. If left unset to nil,
+	// it defaults to false.
+	IPv6    *bool
+	Timeout time.Duration
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics Metrics
@@ -46,14 +49,6 @@ type ResolverSettings struct {
 	Picker Picker
 }
 
-type SelfDNS struct {
-	// for the internal HTTP client to resolve the DoH url hostname.
-	DoTProviders []provider.Provider
-	DNSProviders []provider.Provider
-	Timeout      time.Duration
-	IPv6         bool
-}
-
 func (s *ServerSettings) SetDefaults() {
 	s.Resolver.SetDefaults()
 	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
@@ -61,23 +56,13 @@ func (s *ServerSettings) SetDefaults() {
 }
 
 func (s *ResolverSettings) SetDefaults() {
-	s.SelfDNS.SetDefaults()
 	s.DoHProviders = gosettings.DefaultSlice(s.DoHProviders,
 		[]provider.Provider{provider.Cloudflare()})
+	s.IPv6 = gosettings.DefaultPointer(s.IPv6, false)
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
-	s.Warner = gosettings.DefaultComparable[Warner](s.Warner, lognoop.New())
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
 	s.Picker = gosettings.DefaultComparable[Picker](s.Picker, picker.New())
-}
-
-func (s *SelfDNS) SetDefaults() {
-	const defaultTimeout = 5 * time.Second
-	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
-	s.DoTProviders = gosettings.DefaultSlice(s.DoTProviders,
-		[]provider.Provider{provider.Cloudflare()})
-	// No default DNS fallback server for the internal HTTP client
-	// to avoid leaking we are using a DoH server.
 }
 
 var (
@@ -117,36 +102,6 @@ func (s ResolverSettings) Validate() (err error) {
 		}
 	}
 
-	err = s.SelfDNS.Validate()
-	if err != nil {
-		return fmt.Errorf("DoH self DNS settings: %w", err)
-	}
-
-	return nil
-}
-
-func (s SelfDNS) Validate() (err error) {
-	if len(s.DoTProviders) == 0 {
-		// just in case the user sets the slice to the empty non-nil slice
-		return fmt.Errorf("%w", ErrDoTProvidersNotSet)
-	}
-
-	for _, provider := range s.DoTProviders {
-		err = provider.ValidateForDoT()
-		if err != nil {
-			return fmt.Errorf("DNS over TLS provider %s: %w", provider.Name, err)
-		}
-	}
-
-	// Note DNSProviders can be the empty slice or nil to prevent plaintext
-	// DNS fallback queries.
-	for _, provider := range s.DNSProviders {
-		err = provider.ValdidateForPlaintext()
-		if err != nil {
-			return fmt.Errorf("plaintext DNS provider %s: %w", provider.Name, err)
-		}
-	}
-
 	return nil
 }
 
@@ -155,10 +110,6 @@ func (s *ServerSettings) String() string {
 }
 
 func (s *ResolverSettings) String() string {
-	return s.ToLinesNode().String()
-}
-
-func (s *SelfDNS) String() string {
 	return s.ToLinesNode().String()
 }
 
@@ -178,38 +129,13 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 		DoTProvidersNode.Appendf(caser.String(provider.Name))
 	}
 
-	node.AppendNode(s.SelfDNS.ToLinesNode())
-
-	node.Appendf("Query timeout: %s", s.Timeout)
-
-	return node
-}
-
-func (s *SelfDNS) ToLinesNode() (node *gotree.Node) {
-	node = gotree.New("Internal DNS settings:")
-	node.Appendf("Query timeout: %s", s.Timeout)
-
 	connectOver := "IPv4"
-	if s.IPv6 {
+	if *s.IPv6 {
 		connectOver = "IPv6"
 	}
-	node.Appendf("Connecting over: %s", connectOver)
+	node.Appendf("Connecting over %s", connectOver)
 
-	caser := cases.Title(language.English)
-
-	if len(s.DoTProviders) > 0 {
-		DoTProvidersNode := node.Appendf("DNS over TLS providers:")
-		for _, provider := range s.DoTProviders {
-			DoTProvidersNode.Appendf(caser.String(provider.Name))
-		}
-	}
-
-	if len(s.DNSProviders) > 0 {
-		fallbackPlaintextProvidersNode := node.Appendf("Fallback plaintext DNS providers:")
-		for _, provider := range s.DNSProviders {
-			fallbackPlaintextProvidersNode.Appendf(caser.String(provider.Name))
-		}
-	}
+	node.Appendf("Query timeout: %s", s.Timeout)
 
 	return node
 }

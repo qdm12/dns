@@ -16,6 +16,7 @@ import (
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 	metricsmiddleware "github.com/qdm12/dns/v2/pkg/middlewares/metrics"
+	"github.com/qdm12/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,6 +39,7 @@ func Test_Resolver(t *testing.T) {
 func Test_Server(t *testing.T) {
 	server, err := NewServer(ServerSettings{
 		ListeningAddress: ptrTo(""),
+		Logger:           log.New(),
 	})
 	require.NoError(t, err)
 
@@ -236,10 +238,6 @@ func Test_Server_Mocks(t *testing.T) {
 	logger.EXPECT().Info(mockhelp.NewMatcherRegex("DNS server listening on .*:[1-9][0-9]{0,4}"))
 
 	metrics := NewMockMetrics(ctrl)
-	metrics.EXPECT().
-		DoTDialInc("cloudflare-dns.com",
-			mockhelp.NewMatcherOneOf("1.1.1.1:853", "1.0.0.1:853"), "success").
-		Times(2)
 	metrics.EXPECT().
 		DoHDialInc("https://cloudflare-dns.com/dns-query").
 		Times(2)

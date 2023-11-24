@@ -22,7 +22,6 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 		Middlewares: []Middleware{},
 		Logger:      logger,
 		Resolver: ResolverSettings{
-			Warner:  logger,
 			Metrics: metrics,
 			Picker:  picker,
 		},
@@ -31,8 +30,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 
 	// Check this otherwise things will blow up if no option is passed.
 	assert.GreaterOrEqual(t, len(s.Resolver.DoHProviders), 1)
-	assert.GreaterOrEqual(t, len(s.Resolver.SelfDNS.DoTProviders), 1)
-	assert.Empty(t, s.Resolver.SelfDNS.DNSProviders)
+	assert.False(t, *s.Resolver.IPv6)
 	assert.GreaterOrEqual(t, int64(s.Resolver.Timeout), int64(time.Millisecond))
 
 	expectedSettings := ServerSettings{
@@ -40,14 +38,10 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 		Logger:      logger,
 		Resolver: ResolverSettings{
 			DoHProviders: []provider.Provider{provider.Cloudflare()},
-			SelfDNS: SelfDNS{
-				DoTProviders: []provider.Provider{provider.Cloudflare()},
-				Timeout:      5 * time.Second,
-			},
-			Timeout: 5 * time.Second,
-			Warner:  logger,
-			Metrics: metrics,
-			Picker:  picker,
+			IPv6:         ptrTo(false),
+			Timeout:      5 * time.Second,
+			Metrics:      metrics,
+			Picker:       picker,
 		},
 		ListeningAddress: ptrTo(":53"),
 	}
@@ -67,11 +61,7 @@ func Test_ServerSettings_String(t *testing.T) {
 └── DoH resolver settings:
     ├── DNS over HTTPs providers:
     |   └── Cloudflare
-    ├── Internal DNS settings:
-    |   ├── Query timeout: 5s
-    |   ├── Connecting over: IPv4
-    |   └── DNS over TLS providers:
-    |       └── Cloudflare
+    ├── Connecting over IPv4
     └── Query timeout: 5s`
 	assert.Equal(t, expected, s)
 }

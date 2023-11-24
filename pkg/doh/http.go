@@ -11,31 +11,43 @@ import (
 	"sync"
 	"time"
 
-	"github.com/qdm12/dns/v2/pkg/dot"
+	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
 var (
 	ErrHTTPStatus = errors.New("bad HTTP status")
 )
 
-func newDoTClient(settings dot.ResolverSettings) (
-	client *http.Client, err error) {
+func newHTTPClient(dohServers []provider.DoHServer, ipv6 bool) (
+	client *http.Client) {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
 
-	resolver, err := dot.NewResolver(settings)
-	if err != nil {
-		return nil, fmt.Errorf("creating DoT resolver: %w", err)
-	}
-
 	dialer := &net.Dialer{
-		Resolver: resolver,
+		Resolver: newHTTPClientResolver(dohServers, ipv6),
 	}
 	httpTransport.DialContext = dialer.DialContext
 	const timeout = 5 * time.Second
 	return &http.Client{
 		Timeout:   timeout,
 		Transport: httpTransport,
-	}, nil
+	}
+}
+
+func newHTTPClientResolver(dohServers []provider.DoHServer,
+	ipv6 bool) *net.Resolver {
+	// Compute mappings early and once for all dial calls
+	fqdnToIPv4, fqdnToIPv6 := dohServersToHardcodedMaps(dohServers, ipv6)
+
+	return &net.Resolver{
+		PreferGo:     true,
+		StrictErrors: true,
+		Dial: func(ctx context.Context, _, _ string) (net.Conn, error) {
+			return &hardcodedConn{
+				fqdnToIPv4: fqdnToIPv4,
+				fqdnToIPv6: fqdnToIPv6,
+			}, nil
+		},
+	}
 }
 
 func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.Pool,

@@ -7,13 +7,14 @@ import (
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/reader"
+	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
 
 type DoH struct {
 	DoHProviders []string
+	IPVersion    string
 	Timeout      time.Duration
-	Self         DoT
 }
 
 func (d *DoH) setDefaults() {
@@ -21,8 +22,8 @@ func (d *DoH) setDefaults() {
 		provider.Cloudflare().Name,
 		provider.Google().Name,
 	})
+	d.IPVersion = gosettings.DefaultComparable(d.IPVersion, "ipv4")
 	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
-	d.Self.setDefaults()
 }
 
 func (d *DoH) validate() (err error) {
@@ -31,15 +32,15 @@ func (d *DoH) validate() (err error) {
 		return fmt.Errorf("DoH provider: %w", err)
 	}
 
+	err = validate.IsOneOf(d.IPVersion, "ipv4", "ipv6")
+	if err != nil {
+		return fmt.Errorf("IP version: %w", err)
+	}
+
 	const minTimeout = time.Millisecond
 	if d.Timeout < minTimeout {
 		return fmt.Errorf("%w: %s must be at least %s",
 			ErrTimeoutTooSmall, d.Timeout, minTimeout)
-	}
-
-	err = d.Self.validate()
-	if err != nil {
-		return fmt.Errorf("self dns: %w", err)
 	}
 
 	return nil
@@ -53,29 +54,17 @@ func (d *DoH) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DNS over HTTPs:")
 
 	node.Appendf("DNS over HTTPs providers: %s", andStrings(d.DoHProviders))
-
-	node.Appendf("Request timeout: %s", d.Timeout)
-
-	node.AppendNode(d.Self.ToLinesNode())
+	node.Appendf("Connecting over %s", d.IPVersion)
+	node.Appendf("Query timeout: %s", d.Timeout)
 
 	return node
 }
 
 func (d *DoH) read(reader *reader.Reader) (err error) {
 	d.DoHProviders = reader.CSV("DOH_RESOLVERS")
+	d.IPVersion = reader.String("DOH_IP_VERSION")
+
 	d.Timeout, err = reader.Duration("DOH_TIMEOUT")
-	if err != nil {
-		return err
-	}
-
-	d.Self.DoTProviders = reader.CSV("DOT_RESOLVERS")
-	d.Self.DNSProviders = reader.CSV("DNS_FALLBACK_PLAINTEXT_RESOLVERS")
-	d.Self.IPv6, err = reader.BoolPtr("DOT_CONNECT_IPV6")
-	if err != nil {
-		return err
-	}
-
-	d.Self.Timeout, err = reader.Duration("DOT_TIMEOUT")
 	if err != nil {
 		return err
 	}

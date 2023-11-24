@@ -29,6 +29,10 @@ func CleanBrowsingAdult() Provider {
 		// See https://cleanbrowsing.org/guides/dnsoverhttps
 		DoH: DoHServer{
 			URL: "https://doh.cleanbrowsing.org/doh/adult-filter/",
+			IPv4: []netip.Addr{
+				netip.AddrFrom4([4]byte{185, 228, 168, 10}),
+				netip.AddrFrom4([4]byte{185, 228, 168, 168}),
+			},
 		},
 	}
 }

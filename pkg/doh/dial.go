@@ -3,17 +3,14 @@ package doh
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"net"
 	"sync"
 
 	"github.com/qdm12/dns/v2/internal/server"
-	"github.com/qdm12/dns/v2/pkg/dot"
 	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
-func newDoHDial(settings ResolverSettings) (
-	dial server.Dial, err error) {
+func newDoHDial(settings ResolverSettings) (dial server.Dial) {
 	// note: settings are already defaulted
 	metrics := settings.Metrics
 
@@ -22,19 +19,7 @@ func newDoHDial(settings ResolverSettings) (
 		dohServers[i] = provider.DoH
 	}
 
-	// DoT HTTP client to resolve the DoH URL hostname
-	DoTSettings := dot.ResolverSettings{
-		DoTProviders: settings.SelfDNS.DoTProviders,
-		DNSProviders: settings.SelfDNS.DNSProviders,
-		Timeout:      settings.Timeout, // http client timeout really
-		IPv6:         settings.SelfDNS.IPv6,
-		Warner:       settings.Warner,
-		Metrics:      metrics,
-	}
-	dotClient, err := newDoTClient(DoTSettings)
-	if err != nil {
-		return nil, fmt.Errorf("creating DoT client: %w", err)
-	}
+	httpClient := newHTTPClient(dohServers, *settings.IPv6)
 
 	// HTTP bodies buffer pool
 	bufferPool := &sync.Pool{
@@ -52,7 +37,7 @@ func newDoHDial(settings ResolverSettings) (
 		metrics.DoHDialInc(DoHServer.URL)
 
 		// Create connection object (no actual IO yet)
-		conn = newDoHConn(ctx, dotClient, bufferPool, DoHServer.URL)
+		conn = newDoHConn(ctx, httpClient, bufferPool, DoHServer.URL)
 		return conn, nil
-	}, nil
+	}
 }
