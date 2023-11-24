@@ -84,7 +84,6 @@ func (s ServerSettings) Validate() (err error) {
 
 var (
 	ErrDoHProvidersNotSet = errors.New("DoH providers are not set")
-	ErrDoTProvidersNotSet = errors.New("DoT providers are not set")
 )
 
 func (s ResolverSettings) Validate() (err error) {
