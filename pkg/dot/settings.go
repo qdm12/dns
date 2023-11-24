@@ -147,7 +147,7 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 		fallbackPlaintextProvidersNode.Appendf(caser.String(provider.Name))
 	}
 
-	node.Appendf("Quey timeout: %s", s.Timeout)
+	node.Appendf("Query timeout: %s", s.Timeout)
 
 	connectOver := "IPv4"
 	if s.IPv6 {

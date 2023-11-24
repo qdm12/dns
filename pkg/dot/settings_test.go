@@ -25,7 +25,7 @@ func Test_ServerSettings_String(t *testing.T) {
 └── DoT resolver settings:
     ├── DNS over TLS providers:
     ├── Fallback plaintext DNS providers:
-    ├── Quey timeout: 0s
+    ├── Query timeout: 0s
     └── Connecting over: IPv4`,
 		},
 		"non empty settings": {
@@ -50,7 +50,7 @@ func Test_ServerSettings_String(t *testing.T) {
     ├── Fallback plaintext DNS providers:
     |   ├── Cloudflare
     |   └── Google
-    ├── Quey timeout: 1s
+    ├── Query timeout: 1s
     └── Connecting over: IPv6`,
 		},
 	}
