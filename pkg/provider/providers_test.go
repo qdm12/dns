@@ -113,7 +113,6 @@ func Test_Providers_List(t *testing.T) {
 	for _, provider := range listed {
 		errMessage := "for provider " + provider.DoT.Name
 
-		assert.NotNil(t, provider.DoT.IPv6, errMessage)
 		assert.NotEmpty(t, provider.DoT.Name, errMessage)
 		err := checkAddrPorts(provider.DoT.IPv4)
 		assert.NoError(t, err, errMessage)

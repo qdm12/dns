@@ -10,7 +10,6 @@ func Quadrant() Provider {
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{12, 159, 2, 159}),
 			},
-			IPv6: []netip.AddrPort{},
 			Name: "dns-tls.qis.io",
 		},
 		// See https://quadrantsec.com/blog/quadrants-public-dns-resolver-tls-https-support
