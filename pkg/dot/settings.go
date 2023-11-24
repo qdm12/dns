@@ -35,9 +35,11 @@ type ServerSettings struct {
 type ResolverSettings struct {
 	DoTProviders []provider.Provider
 	Timeout      time.Duration
-	// IPv6 is false if the resolver should connect to
-	// nameservers over IPv4 and true to connect over IPv6.
-	IPv6 bool
+	// IPv6 indicates whether to use IPv6 for DNS over TLS.
+	// If set to true, only IPv6 server addresses will be picked,
+	// otherwise no IPv6 address will be picked at all.
+	// If left unset to nil, it defaults to false.
+	IPv6 *bool
 	// Warner is the warning logger to log dial errors.
 	// It defaults to a No-Op warner implementation.
 	Warner Warner
@@ -64,6 +66,7 @@ func (s *ResolverSettings) SetDefaults() {
 	// to avoid leaking we are using a DoT server.
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
+	s.IPv6 = gosettings.DefaultPointer(s.IPv6, false)
 	s.Warner = gosettings.DefaultComparable[Warner](s.Warner, lognoop.New())
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
 	s.Picker = gosettings.DefaultComparable[Picker](s.Picker, picker.New())
@@ -135,7 +138,7 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node.Appendf("Query timeout: %s", s.Timeout)
 
 	connectOver := "IPv4"
-	if s.IPv6 {
+	if *s.IPv6 {
 		connectOver = "IPv6"
 	}
 	node.Appendf("Connecting over: %s", connectOver)

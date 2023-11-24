@@ -18,7 +18,9 @@ func Test_ServerSettings_String(t *testing.T) {
 		"empty settings": {
 			settings: ServerSettings{
 				ListeningAddress: ptrTo("localhost:53"),
-				Resolver:         ResolverSettings{},
+				Resolver: ResolverSettings{
+					IPv6: ptrTo(false),
+				},
 			},
 			s: `DoT server settings:
 ├── Listening address: localhost:53
@@ -35,7 +37,7 @@ func Test_ServerSettings_String(t *testing.T) {
 						provider.Cloudflare(),
 					},
 					Timeout: time.Second,
-					IPv6:    true,
+					IPv6:    ptrTo(true),
 				},
 			},
 			s: `DoT server settings:
