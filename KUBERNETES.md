@@ -41,7 +41,6 @@ data:
 
   CHECK_DNS: 'off'
   UPDATE_PERIOD: '0' # actually 24h, but there is bug currently
-  DOT_IP_VERSION: 'ipv4'
   REBINDING_PROTECTION: 'on'
 ```
 

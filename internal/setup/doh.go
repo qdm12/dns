@@ -12,7 +12,7 @@ import (
 	"github.com/qdm12/gosettings"
 )
 
-func dohServer(userSettings config.Settings,
+func dohServer(userSettings config.Settings, ipv6Support bool,
 	middlewares []Middleware, logger Logger, metrics DoHMetrics) (
 	server *doh.Server, err error) {
 	providers := provider.NewProviders()
@@ -22,9 +22,14 @@ func dohServer(userSettings config.Settings,
 		return nil, fmt.Errorf("upstream resolvers: %w", err)
 	}
 
+	ipVersion := "ipv4"
+	if ipv6Support {
+		ipVersion = "ipv6"
+	}
+
 	resolverSettings := doh.ResolverSettings{
 		UpstreamResolvers: upstreamResolvers,
-		IPVersion:         userSettings.DoH.IPVersion,
+		IPVersion:         ipVersion,
 		Metrics:           metrics,
 	}
 

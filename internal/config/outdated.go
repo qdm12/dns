@@ -8,14 +8,28 @@ import (
 )
 
 func checkOutdatedEnv(reader *reader.Reader) (warnings []string) {
+	outdatedToMessage := map[string]string{
+		"IPV4": "The environment variable IPV4 is no longer functional or needed, " +
+			"since IPv6 addresses are used automatically if IPv6 support is detected.",
+		"IPV6": "The environment variable IPV6 is no longer functional or needed, " +
+			"since IPv6 addresses are used automatically if IPv6 support is detected.",
+		"DOT_CONNECT_IPV6": "The environment variable IPV6 is no longer functional or needed, " +
+			"since IPv6 addresses are used automatically if IPv6 support is detected.", // v2.0.0-beta variable
+	}
+
+	for outdated, warning := range outdatedToMessage {
+		value := reader.Get(outdated)
+		if value == nil {
+			continue
+		}
+		warnings = append(warnings, warning)
+	}
+
 	outdatedToNew := map[string][]string{
 		"LISTENINGPORT":       {"LISTENING_ADDRESS"},
 		"PROVIDERS":           {"DOT_RESOLVERS", "DOH_RESOLVERS"},
 		"PROVIDER":            {"DOT_RESOLVERS", "DOH_RESOLVERS"},
 		"CACHING":             {"CACHE_TYPE"},
-		"IPV4":                {"DOT_IP_VERSION", "DOH_IP_VERSION"},
-		"IPV6":                {"DOT_IP_VERSION", "DOH_IP_VERSION"},
-		"DOT_CONNECT_IPV6":    {"DOT_IP_VERSION"}, // v2.0.0-beta variable
 		"UNBLOCK":             {"ALLOWED_HOSTNAMES"},
 		"PRIVATE_ADDRESS":     {"REBINDING_PROTECTION"},
 		"CHECK_UNBOUND":       {"CHECK_DNS"},

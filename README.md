@@ -143,8 +143,6 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `METRICS_PROMETHEUS_SUBSYSTEM` | `dns` | Prometheus metrics prefix/subsystem |
 | `REBINDING_PROTECTION` | `on` | `on` or `off`. Enabling will prevent the server from returning any private IP address to the client. |
 | `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
-| `DOT_IP_VERSION` | `ipv4` | `ipv4` or `ipv6`. Connects to the DNS upstream servers only over IPv4 addresses or only over IPv6 addresses |
-| `DOH_IP_VERSION` | `ipv4` | `ipv4` or `ipv6`. Connects to the DNS upstream servers only over IPv4 addresses or only over IPv6 addresses |
 | `UPDATE_PERIOD` | `24h` | Period to update block lists and restart Unbound. Set to `0` to disable. |
 
 ## Migrate

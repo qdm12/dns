@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/netip"
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/internal/setup"
+	"github.com/qdm12/dns/v2/internal/support"
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/mapfilter"
 )
@@ -24,6 +26,7 @@ type Loop struct {
 	updateTimer *time.Timer
 	runCancel   context.CancelFunc
 	runDone     chan struct{}
+	ipv6Support bool
 }
 
 func New(settings config.Settings, logger Logger,
@@ -50,6 +53,11 @@ func (l *Loop) String() string {
 
 func (l *Loop) Start(ctx context.Context) (
 	runError <-chan error, err error) {
+	err = l.checkIPv6Support(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("checking IPv6 support: %w", err)
+	}
+
 	err = l.runFirst(ctx)
 	if err != nil {
 		return nil, err
@@ -88,6 +96,19 @@ func (l *Loop) Stop() (err error) {
 	l.runCancel()
 	<-l.runDone
 	return l.dnsServer.Stop()
+}
+
+func (l *Loop) checkIPv6Support(ctx context.Context) (err error) {
+	l.ipv6Support, err = support.IPv6(ctx, netip.MustParseAddrPort("[2606:4700:4700::1111]:443"))
+	if err != nil {
+		return err
+	}
+	if l.ipv6Support {
+		l.logger.Info("IPv6 is supported, communicating with upstream resolvers only over IPv6")
+	} else {
+		l.logger.Info("IPv6 is not supported, communicating with upstream resolvers only over IPv4")
+	}
+	return nil
 }
 
 func (l *Loop) runFirst(ctx context.Context) (err error) {
@@ -187,7 +208,7 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 		return nil, fmt.Errorf("setting up filter: %w", err)
 	}
 
-	server, err := setup.DNS(l.settings, l.cache,
+	server, err := setup.DNS(l.settings, l.ipv6Support, l.cache,
 		filter, l.logger, l.prometheusRegistry)
 	if err != nil {
 		return nil, err

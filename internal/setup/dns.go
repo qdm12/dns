@@ -15,7 +15,7 @@ type Service interface {
 	Stop() (err error)
 }
 
-func DNS(userSettings config.Settings, //nolint:ireturn
+func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegistry) (
 	server Service, err error) {
 	var middlewares []Middleware
@@ -65,7 +65,7 @@ func DNS(userSettings config.Settings, //nolint:ireturn
 			return nil, fmt.Errorf("DoT metrics: %w", err)
 		}
 
-		return dotServer(userSettings, middlewares,
+		return dotServer(userSettings, ipv6Support, middlewares,
 			logger, dotMetrics)
 	case "doh":
 		dohMetrics, err := dohMetrics(metricsType, commonPrometheus)
@@ -73,7 +73,7 @@ func DNS(userSettings config.Settings, //nolint:ireturn
 			return nil, fmt.Errorf("DoH metrics: %w", err)
 		}
 
-		return dohServer(userSettings, middlewares,
+		return dohServer(userSettings, ipv6Support, middlewares,
 			logger, dohMetrics)
 	default:
 		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))

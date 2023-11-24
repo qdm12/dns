@@ -12,7 +12,7 @@ import (
 	"github.com/qdm12/gosettings"
 )
 
-func dotServer(userSettings config.Settings,
+func dotServer(userSettings config.Settings, ipv6Support bool,
 	middlewares []Middleware, logger Logger, metrics DoTMetrics) (
 	server *dot.Server, err error) {
 	providers := provider.NewProviders()
@@ -22,9 +22,14 @@ func dotServer(userSettings config.Settings,
 		return nil, fmt.Errorf("upstream resolvers: %w", err)
 	}
 
+	ipVersion := "ipv4"
+	if ipv6Support {
+		ipVersion = "ipv6"
+	}
+
 	resolverSettings := dot.ResolverSettings{
 		UpstreamResolvers: upstreamResolvers,
-		IPVersion:         userSettings.DoT.IPVersion,
+		IPVersion:         ipVersion,
 		Warner:            logger,
 		Metrics:           metrics,
 	}

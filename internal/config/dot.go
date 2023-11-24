@@ -18,8 +18,7 @@ type DoT struct {
 	// Timeout is the maximum duration to wait for a response from
 	// upstream DNS over TLS servers. If left unset, it defaults to
 	// 1 second.
-	Timeout   time.Duration
-	IPVersion string
+	Timeout time.Duration
 }
 
 func (d *DoT) setDefaults() {
@@ -29,7 +28,6 @@ func (d *DoT) setDefaults() {
 	})
 
 	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
-	d.IPVersion = gosettings.DefaultComparable(d.IPVersion, "ipv4")
 }
 
 var (
@@ -60,7 +58,6 @@ func (d *DoT) ToLinesNode() (node *gotree.Node) {
 
 	node.Appendf("Upstream resolvers: %s", andStrings(d.UpstreamResolvers))
 	node.Appendf("Request timeout: %s", d.Timeout)
-	node.Appendf("Connecting over: %s", d.IPVersion)
 
 	return node
 }
@@ -72,6 +69,5 @@ func (d *DoT) read(reader *reader.Reader) (err error) {
 		return err
 	}
 
-	d.IPVersion = reader.String("DOT_IP_VERSION")
 	return nil
 }
