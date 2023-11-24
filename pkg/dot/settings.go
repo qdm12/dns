@@ -100,16 +100,16 @@ func (s ResolverSettings) Validate() (err error) {
 		return fmt.Errorf("%w", ErrDoTProvidersNotSet)
 	}
 
-	for _, provider := range s.DoTProviders {
-		err = provider.ValidateForDoT()
-		if err != nil {
-			return fmt.Errorf("DNS over TLS provider %s: %w", provider.Name, err)
-		}
-	}
-
 	err = validate.IsOneOf(s.IPVersion, "ipv4", "ipv6")
 	if err != nil {
 		return fmt.Errorf("IP version: %w", err)
+	}
+
+	for _, provider := range s.DoTProviders {
+		err = provider.ValidateForDoT(s.IPVersion == "ipv6")
+		if err != nil {
+			return fmt.Errorf("DNS over TLS provider %s: %w", provider.Name, err)
+		}
 	}
 
 	return nil

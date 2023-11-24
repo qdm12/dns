@@ -1,6 +1,7 @@
 package picker
 
 import (
+	"fmt"
 	"math/rand"
 	"net/netip"
 
@@ -37,14 +38,22 @@ func (p *Picker) DoTServer(servers []provider.DoTServer) provider.DoTServer {
 }
 
 func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPort {
+	ipVersion := "ipv4"
+	serverIPs := server.IPv4
 	if ipv6 {
-		if ip := p.addrPort(server.IPv6); ip.IsValid() {
-			return ip
-		}
-		// if there is no IPv6, fall back to an IPv4 address
-		// as all provider have at least an IPv4 address.
+		ipVersion = "ipv6"
+		serverIPs = server.IPv6
 	}
-	return p.addrPort(server.IPv4)
+
+	addrPort := p.addrPort(serverIPs)
+	if addrPort.IsValid() {
+		return addrPort
+	}
+	// this should never happen since every servers
+	// should have at least one IP address matching the
+	// IP version given. This is more of a programming
+	// safety.
+	panic(fmt.Sprintf("no valid " + ipVersion + " address found"))
 }
 
 func (p *Picker) addrPort(addrPorts []netip.AddrPort) netip.AddrPort {

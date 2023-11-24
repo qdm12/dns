@@ -33,21 +33,20 @@ var (
 	ErrDoTNameNotSet      = errors.New("DoT server name not set")
 	ErrDoTPortNotSet      = errors.New("DoT server port not set")
 	ErrDoHURLNotSet       = errors.New("DoH URL not set")
-	ErrDoHNoIPSet         = errors.New("DoH server IPv4 address not set")
+	ErrDoHIPv4NotSet      = errors.New("DoH server IPv4 addresses not set")
+	ErrDoHIPv6NotSet      = errors.New("DoH server IPv6 addresses not set")
 )
 
-func (p Provider) ValidateForDoT() (err error) {
-	if p.Name == "" {
-		return fmt.Errorf("%w", ErrProviderNameNotSet)
-	}
-
+func (p Provider) ValidateForDoT(ipv6 bool) (err error) {
 	switch {
-	case len(p.DoT.IPv4) == 0:
+	case p.Name == "":
+		return fmt.Errorf("%w", ErrProviderNameNotSet)
+	case !ipv6 && len(p.DoT.IPv4) == 0:
 		return fmt.Errorf("%w", ErrDoTIPv4NotSet)
-	case len(p.DoT.IPv6) == 0:
+	case ipv6 && len(p.DoT.IPv6) == 0:
 		return fmt.Errorf("%w", ErrDoTIPv6NotSet)
 	case p.DoT.Name == "":
-		return fmt.Errorf("%w: %s", ErrDoTNameNotSet, p.DoT.Name)
+		return fmt.Errorf("%w", ErrDoTNameNotSet)
 	}
 
 	err = checkAddrPorts(p.DoT.IPv4)
@@ -63,14 +62,16 @@ func (p Provider) ValidateForDoT() (err error) {
 	return nil
 }
 
-func (p Provider) ValidateForDoH() (err error) {
+func (p Provider) ValidateForDoH(ipv6 bool) (err error) {
 	switch {
 	case p.Name == "":
 		return fmt.Errorf("%w", ErrProviderNameNotSet)
 	case p.DoH.URL == "":
 		return fmt.Errorf("%w", ErrDoHURLNotSet)
-	case len(p.DoH.IPv4) == 0 && len(p.DoH.IPv6) == 0:
-		return fmt.Errorf("%w", ErrDoHNoIPSet)
+	case !ipv6 && len(p.DoH.IPv4) == 0:
+		return fmt.Errorf("%w", ErrDoHIPv4NotSet)
+	case ipv6 && len(p.DoH.IPv6) == 0:
+		return fmt.Errorf("%w", ErrDoHIPv6NotSet)
 	}
 
 	err = checkAddresses(p.DoH.IPv4)
