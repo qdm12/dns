@@ -14,7 +14,7 @@ import (
 type DoT struct {
 	DoTProviders []string
 	Timeout      time.Duration
-	IPv6         *bool
+	IPVersion    string
 }
 
 func (d *DoT) setDefaults() {
@@ -24,9 +24,7 @@ func (d *DoT) setDefaults() {
 	})
 
 	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
-
-	const defaultIPv6 = false // some systems do not support IPv6
-	d.IPv6 = gosettings.DefaultPointer(d.IPv6, defaultIPv6)
+	d.IPVersion = gosettings.DefaultComparable(d.IPVersion, "ipv4")
 }
 
 var (
@@ -56,14 +54,8 @@ func (d *DoT) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DNS over TLS:")
 
 	node.Appendf("DNS over TLS providers: %s", andStrings(d.DoTProviders))
-
 	node.Appendf("Request timeout: %s", d.Timeout)
-
-	connectOver := "IPv4"
-	if *d.IPv6 {
-		connectOver = "IPv6"
-	}
-	node.Appendf("Connecting over: %s", connectOver)
+	node.Appendf("Connecting over: %s", d.IPVersion)
 
 	return node
 }
@@ -75,10 +67,6 @@ func (d *DoT) read(reader *reader.Reader) (err error) {
 		return err
 	}
 
-	d.IPv6, err = reader.BoolPtr("DOT_CONNECT_IPV6")
-	if err != nil {
-		return err
-	}
-
+	d.IPVersion = reader.String("DOT_IP_VERSION")
 	return nil
 }

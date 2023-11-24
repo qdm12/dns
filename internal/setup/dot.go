@@ -24,7 +24,7 @@ func dotServer(userSettings config.Settings,
 
 	resolverSettings := dot.ResolverSettings{
 		DoTProviders: DoTProviders,
-		IPv6:         gosettings.CopyPointer(userSettings.DoT.IPv6),
+		IPv6:         ptrTo(userSettings.DoT.IPVersion == "ipv6"),
 		Warner:       logger,
 		Metrics:      metrics,
 	}

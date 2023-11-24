@@ -13,8 +13,9 @@ func checkOutdatedEnv(reader *reader.Reader) (warnings []string) {
 		"PROVIDERS":           {"DOT_RESOLVERS", "DOH_RESOLVERS"},
 		"PROVIDER":            {"DOT_RESOLVERS", "DOH_RESOLVERS"},
 		"CACHING":             {"CACHE_TYPE"},
-		"IPV4":                {"DOT_CONNECT_IPV6", "DOH_IP_VERSION"},
-		"IPV6":                {"DOT_CONNECT_IPV6", "DOH_IP_VERSION"},
+		"IPV4":                {"DOT_IP_VERSION", "DOH_IP_VERSION"},
+		"IPV6":                {"DOT_IP_VERSION", "DOH_IP_VERSION"},
+		"DOT_CONNECT_IPV6":    {"DOT_IP_VERSION"}, // v2.0.0-beta variable
 		"UNBLOCK":             {"ALLOWED_HOSTNAMES"},
 		"PRIVATE_ADDRESS":     {"REBINDING_PROTECTION"},
 		"CHECK_UNBOUND":       {"CHECK_DNS"},
