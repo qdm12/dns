@@ -29,7 +29,7 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 	s.SetDefaults()
 
 	// Check this otherwise things will blow up if no option is passed.
-	assert.GreaterOrEqual(t, len(s.Resolver.DoHProviders), 1)
+	assert.GreaterOrEqual(t, len(s.Resolver.UpstreamResolvers), 1)
 	assert.Equal(t, "ipv4", s.Resolver.IPVersion)
 	assert.GreaterOrEqual(t, int64(s.Resolver.Timeout), int64(time.Millisecond))
 
@@ -37,11 +37,11 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 		Middlewares: []Middleware{},
 		Logger:      logger,
 		Resolver: ResolverSettings{
-			DoHProviders: []provider.Provider{provider.Cloudflare()},
-			IPVersion:    "ipv4",
-			Timeout:      5 * time.Second,
-			Metrics:      metrics,
-			Picker:       picker,
+			UpstreamResolvers: []provider.Provider{provider.Cloudflare()},
+			IPVersion:         "ipv4",
+			Timeout:           5 * time.Second,
+			Metrics:           metrics,
+			Picker:            picker,
 		},
 		ListeningAddress: ptrTo(":53"),
 	}
@@ -59,7 +59,7 @@ func Test_ServerSettings_String(t *testing.T) {
 	const expected = `DoH server settings:
 ├── Listening address: :53
 └── DoH resolver settings:
-    ├── DNS over HTTPs providers:
+    ├── Upstream resolvers:
     |   └── Cloudflare
     ├── Connecting over ipv4
     └── Query timeout: 5s`

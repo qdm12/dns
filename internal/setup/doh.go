@@ -17,15 +17,15 @@ func dohServer(userSettings config.Settings,
 	server *doh.Server, err error) {
 	providers := provider.NewProviders()
 
-	DoHProviders, err := stringsToProviders(providers, userSettings.DoH.DoHProviders)
+	upstreamResolvers, err := stringsToUpstreamResolvers(providers, userSettings.DoH.UpstreamResolvers)
 	if err != nil {
-		return nil, fmt.Errorf("DNS over HTTPS providers: %w", err)
+		return nil, fmt.Errorf("upstream resolvers: %w", err)
 	}
 
 	resolverSettings := doh.ResolverSettings{
-		DoHProviders: DoHProviders,
-		IPVersion:    userSettings.DoH.IPVersion,
-		Metrics:      metrics,
+		UpstreamResolvers: upstreamResolvers,
+		IPVersion:         userSettings.DoH.IPVersion,
+		Metrics:           metrics,
 	}
 
 	settings := doh.ServerSettings{
@@ -68,7 +68,7 @@ func toDoHMiddlewares(middlewares []Middleware) (dohMiddlewres []doh.Middleware)
 	return dohMiddlewres
 }
 
-func stringsToProviders(providers *provider.Providers, providerNames []string) (
+func stringsToUpstreamResolvers(providers *provider.Providers, providerNames []string) (
 	providersSlice []provider.Provider, err error) {
 	providersSlice = make([]provider.Provider, len(providerNames))
 	for i, providerName := range providerNames {

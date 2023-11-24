@@ -13,9 +13,9 @@ func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 	warner := settings.Warner
 	metrics := settings.Metrics
 
-	dotServers := make([]provider.DoTServer, len(settings.DoTProviders))
-	for i, provider := range settings.DoTProviders {
-		dotServers[i] = provider.DoT
+	dotServers := make([]provider.DoTServer, len(settings.UpstreamResolvers))
+	for i, upstreamResolver := range settings.UpstreamResolvers {
+		dotServers[i] = upstreamResolver.DoT
 	}
 
 	dialer := &net.Dialer{

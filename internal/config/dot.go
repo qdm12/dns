@@ -12,13 +12,18 @@ import (
 )
 
 type DoT struct {
-	DoTProviders []string
-	Timeout      time.Duration
-	IPVersion    string
+	// UpstreamResolvers is a list of DNS over TLS upstream
+	// resolvers to use.
+	UpstreamResolvers []string
+	// Timeout is the maximum duration to wait for a response from
+	// upstream DNS over TLS servers. If left unset, it defaults to
+	// 1 second.
+	Timeout   time.Duration
+	IPVersion string
 }
 
 func (d *DoT) setDefaults() {
-	d.DoTProviders = gosettings.DefaultSlice(d.DoTProviders, []string{
+	d.UpstreamResolvers = gosettings.DefaultSlice(d.UpstreamResolvers, []string{
 		provider.Cloudflare().Name,
 		provider.Google().Name,
 	})
@@ -32,9 +37,9 @@ var (
 )
 
 func (d *DoT) validate() (err error) {
-	err = checkProviderNames(d.DoTProviders)
+	err = checkUpstreamResolverNames(d.UpstreamResolvers)
 	if err != nil {
-		return fmt.Errorf("DoT provider: %w", err)
+		return fmt.Errorf("upstream resolvers: %w", err)
 	}
 
 	const minTimeout = time.Millisecond
@@ -53,7 +58,7 @@ func (d *DoT) String() string {
 func (d *DoT) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DNS over TLS:")
 
-	node.Appendf("DNS over TLS providers: %s", andStrings(d.DoTProviders))
+	node.Appendf("Upstream resolvers: %s", andStrings(d.UpstreamResolvers))
 	node.Appendf("Request timeout: %s", d.Timeout)
 	node.Appendf("Connecting over: %s", d.IPVersion)
 
@@ -61,7 +66,7 @@ func (d *DoT) ToLinesNode() (node *gotree.Node) {
 }
 
 func (d *DoT) read(reader *reader.Reader) (err error) {
-	d.DoTProviders = reader.CSV("DOT_RESOLVERS")
+	d.UpstreamResolvers = reader.CSV("DOT_RESOLVERS")
 	d.Timeout, err = reader.Duration("DOT_TIMEOUT")
 	if err != nil {
 		return err

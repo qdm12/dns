@@ -30,7 +30,9 @@ type ServerSettings struct {
 }
 
 type ResolverSettings struct {
-	DoHProviders []provider.Provider
+	// UpstreamResolvers is a list of DNS over TLS upstream resolvers
+	// to use.
+	UpstreamResolvers []provider.Provider
 	// IPVersion indicates whether to use IPv4 only or IPv6 only for
 	// DNS over HTTPS. The hardcoded resolver used by the DoH HTTP
 	// client will return only IP addresses matching the version set
@@ -54,7 +56,7 @@ func (s *ServerSettings) SetDefaults() {
 }
 
 func (s *ResolverSettings) SetDefaults() {
-	s.DoHProviders = gosettings.DefaultSlice(s.DoHProviders,
+	s.UpstreamResolvers = gosettings.DefaultSlice(s.UpstreamResolvers,
 		[]provider.Provider{provider.Cloudflare()})
 	s.IPVersion = gosettings.DefaultComparable(s.IPVersion, "ipv4")
 	const defaultTimeout = 5 * time.Second
@@ -83,13 +85,13 @@ func (s ServerSettings) Validate() (err error) {
 }
 
 var (
-	ErrDoHProvidersNotSet = errors.New("DoH providers are not set")
+	ErrUpstreamResolversNotSet = errors.New("upstream resolvers not set")
 )
 
 func (s ResolverSettings) Validate() (err error) {
-	if len(s.DoHProviders) == 0 {
+	if len(s.UpstreamResolvers) == 0 {
 		// just in case the user sets the slice to the empty non-nil slice
-		return fmt.Errorf("%w", ErrDoHProvidersNotSet)
+		return fmt.Errorf("%w", ErrUpstreamResolversNotSet)
 	}
 
 	err = validate.IsOneOf(s.IPVersion, "ipv4", "ipv6")
@@ -97,10 +99,10 @@ func (s ResolverSettings) Validate() (err error) {
 		return fmt.Errorf("IP version: %w", err)
 	}
 
-	for _, provider := range s.DoHProviders {
-		err = provider.ValidateForDoH(s.IPVersion == "ipv6")
+	for _, upstreamResolver := range s.UpstreamResolvers {
+		err = upstreamResolver.ValidateForDoH(s.IPVersion == "ipv6")
 		if err != nil {
-			return fmt.Errorf("DNS over HTTPS provider %s: %w", provider.Name, err)
+			return fmt.Errorf("upstream resolver %s: %w", upstreamResolver.Name, err)
 		}
 	}
 
@@ -125,10 +127,10 @@ func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
 func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoH resolver settings:")
 
-	DoHProvidersNode := node.Appendf("DNS over HTTPs providers:")
+	upstreamResolversNode := node.Appendf("Upstream resolvers:")
 	caser := cases.Title(language.English)
-	for _, provider := range s.DoHProviders {
-		DoHProvidersNode.Appendf(caser.String(provider.Name))
+	for _, provider := range s.UpstreamResolvers {
+		upstreamResolversNode.Appendf(caser.String(provider.Name))
 	}
 
 	node.Appendf("Connecting over %s", s.IPVersion)

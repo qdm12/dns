@@ -25,7 +25,7 @@ func Test_ServerSettings_String(t *testing.T) {
 			s: `DoT server settings:
 ├── Listening address: localhost:53
 └── DoT resolver settings:
-    ├── DNS over TLS providers:
+    ├── Upstream resolvers:
     ├── Query timeout: 0s
     └── Connecting over: ipv4`,
 		},
@@ -33,7 +33,7 @@ func Test_ServerSettings_String(t *testing.T) {
 			settings: ServerSettings{
 				ListeningAddress: ptrTo(":8000"),
 				Resolver: ResolverSettings{
-					DoTProviders: []provider.Provider{
+					UpstreamResolvers: []provider.Provider{
 						provider.Cloudflare(),
 					},
 					Timeout:   time.Second,
@@ -43,7 +43,7 @@ func Test_ServerSettings_String(t *testing.T) {
 			s: `DoT server settings:
 ├── Listening address: :8000
 └── DoT resolver settings:
-    ├── DNS over TLS providers:
+    ├── Upstream resolvers:
     |   └── Cloudflare
     ├── Query timeout: 1s
     └── Connecting over: ipv6`,

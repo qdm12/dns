@@ -12,13 +12,21 @@ import (
 )
 
 type DoH struct {
-	DoHProviders []string
-	IPVersion    string
-	Timeout      time.Duration
+	// UpstreamResolvers is a list of DNS over HTTPS upstream
+	// resolvers to use.
+	UpstreamResolvers []string
+	// IPVersion defines the only IP version to use to connect to
+	// upstream DNS over HTTPS servers. If left unset, it defaults
+	// to "ipv4".
+	IPVersion string
+	// Timeout is the maximum duration to wait for a response from
+	// upstream DNS over HTTPS servers. If left unset, it defaults
+	// to 1 second.
+	Timeout time.Duration
 }
 
 func (d *DoH) setDefaults() {
-	d.DoHProviders = gosettings.DefaultSlice(d.DoHProviders, []string{
+	d.UpstreamResolvers = gosettings.DefaultSlice(d.UpstreamResolvers, []string{
 		provider.Cloudflare().Name,
 		provider.Google().Name,
 	})
@@ -27,9 +35,9 @@ func (d *DoH) setDefaults() {
 }
 
 func (d *DoH) validate() (err error) {
-	err = checkProviderNames(d.DoHProviders)
+	err = checkUpstreamResolverNames(d.UpstreamResolvers)
 	if err != nil {
-		return fmt.Errorf("DoH provider: %w", err)
+		return fmt.Errorf("upstream resolvers: %w", err)
 	}
 
 	err = validate.IsOneOf(d.IPVersion, "ipv4", "ipv6")
@@ -53,7 +61,7 @@ func (d *DoH) String() string {
 func (d *DoH) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DNS over HTTPs:")
 
-	node.Appendf("DNS over HTTPs providers: %s", andStrings(d.DoHProviders))
+	node.Appendf("Upstream resolvers: %s", andStrings(d.UpstreamResolvers))
 	node.Appendf("Connecting over %s", d.IPVersion)
 	node.Appendf("Query timeout: %s", d.Timeout)
 
@@ -61,7 +69,7 @@ func (d *DoH) ToLinesNode() (node *gotree.Node) {
 }
 
 func (d *DoH) read(reader *reader.Reader) (err error) {
-	d.DoHProviders = reader.CSV("DOH_RESOLVERS")
+	d.UpstreamResolvers = reader.CSV("DOH_RESOLVERS")
 	d.IPVersion = reader.String("DOH_IP_VERSION")
 
 	d.Timeout, err = reader.Duration("DOH_TIMEOUT")

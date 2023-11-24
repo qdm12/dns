@@ -17,16 +17,16 @@ func dotServer(userSettings config.Settings,
 	server *dot.Server, err error) {
 	providers := provider.NewProviders()
 
-	DoTProviders, err := stringsToProviders(providers, userSettings.DoT.DoTProviders)
+	upstreamResolvers, err := stringsToUpstreamResolvers(providers, userSettings.DoT.UpstreamResolvers)
 	if err != nil {
-		return nil, fmt.Errorf("DNS over TLS providers: %w", err)
+		return nil, fmt.Errorf("upstream resolvers: %w", err)
 	}
 
 	resolverSettings := dot.ResolverSettings{
-		DoTProviders: DoTProviders,
-		IPVersion:    userSettings.DoT.IPVersion,
-		Warner:       logger,
-		Metrics:      metrics,
+		UpstreamResolvers: upstreamResolvers,
+		IPVersion:         userSettings.DoT.IPVersion,
+		Warner:            logger,
+		Metrics:           metrics,
 	}
 
 	settings := dot.ServerSettings{

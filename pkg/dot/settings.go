@@ -33,8 +33,13 @@ type ServerSettings struct {
 }
 
 type ResolverSettings struct {
-	DoTProviders []provider.Provider
-	Timeout      time.Duration
+	// UpstreamResolvers is a list of DNS over TLS upstream resolvers
+	// to use.
+	UpstreamResolvers []provider.Provider
+	// Timeout is the maximum duration to wait for a response from
+	// upstream DNS over TLS servers. If left unset, it defaults to
+	// 5 seconds.
+	Timeout time.Duration
 	// IPVersion defines the only IP version to use to connect to
 	// upstream DNS over TLS servers. If left unset, it defaults to
 	// "ipv4".
@@ -59,7 +64,7 @@ func (s *ServerSettings) SetDefaults() {
 }
 
 func (s *ResolverSettings) SetDefaults() {
-	s.DoTProviders = gosettings.DefaultSlice(s.DoTProviders,
+	s.UpstreamResolvers = gosettings.DefaultSlice(s.UpstreamResolvers,
 		[]provider.Provider{provider.Cloudflare()})
 	// No default DNS fallback server for the internal HTTP client
 	// to avoid leaking we are using a DoT server.
@@ -91,13 +96,13 @@ func (s ServerSettings) Validate() (err error) {
 }
 
 var (
-	ErrDoTProvidersNotSet = errors.New("DoT providers are not set")
+	ErrUpstreamResolversNotSet = errors.New("upstream resolvers not set")
 )
 
 func (s ResolverSettings) Validate() (err error) {
-	if len(s.DoTProviders) == 0 {
+	if len(s.UpstreamResolvers) == 0 {
 		// just in case the user sets the slice to the empty non-nil slice
-		return fmt.Errorf("%w", ErrDoTProvidersNotSet)
+		return fmt.Errorf("%w", ErrUpstreamResolversNotSet)
 	}
 
 	err = validate.IsOneOf(s.IPVersion, "ipv4", "ipv6")
@@ -105,10 +110,10 @@ func (s ResolverSettings) Validate() (err error) {
 		return fmt.Errorf("IP version: %w", err)
 	}
 
-	for _, provider := range s.DoTProviders {
-		err = provider.ValidateForDoT(s.IPVersion == "ipv6")
+	for _, upstreamResolver := range s.UpstreamResolvers {
+		err = upstreamResolver.ValidateForDoT(s.IPVersion == "ipv6")
 		if err != nil {
-			return fmt.Errorf("DNS over TLS provider %s: %w", provider.Name, err)
+			return fmt.Errorf("upstream resolver %s: %w", upstreamResolver.Name, err)
 		}
 	}
 
@@ -133,10 +138,10 @@ func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
 func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoT resolver settings:")
 
-	DoTProvidersNode := node.Appendf("DNS over TLS providers:")
+	upstreamResolversNode := node.Appendf("Upstream resolvers:")
 	caser := cases.Title(language.English)
-	for _, provider := range s.DoTProviders {
-		DoTProvidersNode.Appendf(caser.String(provider.Name))
+	for _, upstreamResolver := range s.UpstreamResolvers {
+		upstreamResolversNode.Appendf(caser.String(upstreamResolver.Name))
 	}
 
 	node.Appendf("Query timeout: %s", s.Timeout)

@@ -14,9 +14,9 @@ func newDoHDial(settings ResolverSettings) (dial server.Dial) {
 	// note: settings are already defaulted
 	metrics := settings.Metrics
 
-	dohServers := make([]provider.DoHServer, len(settings.DoHProviders))
-	for i, provider := range settings.DoHProviders {
-		dohServers[i] = provider.DoH
+	dohServers := make([]provider.DoHServer, len(settings.UpstreamResolvers))
+	for i, upstreamResolver := range settings.UpstreamResolvers {
+		dohServers[i] = upstreamResolver.DoH
 	}
 
 	httpClient := newHTTPClient(dohServers, settings.IPVersion)
