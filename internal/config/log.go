@@ -10,14 +10,19 @@ import (
 )
 
 type Log struct {
-	Level *log.Level
+	Level string
 }
 
 func (l *Log) setDefaults() {
-	l.Level = gosettings.DefaultPointer(l.Level, log.LevelInfo)
+	l.Level = gosettings.DefaultComparable(l.Level, "info")
 }
 
-func (l *Log) validate() error {
+func (l *Log) validate() (err error) {
+	_, err = log.ParseLevel(l.Level)
+	if err != nil {
+		return fmt.Errorf("log level: %w", err)
+	}
+
 	return nil
 }
 
@@ -31,17 +36,6 @@ func (l *Log) ToLinesNode() (node *gotree.Node) {
 	return node
 }
 
-func (l *Log) read(reader *reader.Reader) (err error) {
-	levelString := reader.String("LOG_LEVEL")
-	if levelString == "" {
-		return nil
-	}
-
-	levelValue, err := log.ParseLevel(levelString)
-	if err != nil {
-		return fmt.Errorf("parsing log level: %w", err)
-	}
-	l.Level = &levelValue
-
-	return nil
+func (l *Log) read(reader *reader.Reader) {
+	l.Level = reader.String("LOG_LEVEL")
 }

@@ -155,10 +155,7 @@ func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) {
 		return fmt.Errorf("DoT settings: %w", err)
 	}
 
-	err = s.Log.read(reader)
-	if err != nil {
-		return fmt.Errorf("log settings: %w", err)
-	}
+	s.Log.read(reader)
 
 	err = s.MiddlewareLog.read(reader)
 	if err != nil {
