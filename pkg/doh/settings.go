@@ -125,10 +125,10 @@ func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
 func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoH resolver settings:")
 
-	DoTProvidersNode := node.Appendf("DNS over HTTPs providers:")
+	DoHProvidersNode := node.Appendf("DNS over HTTPs providers:")
 	caser := cases.Title(language.English)
 	for _, provider := range s.DoHProviders {
-		DoTProvidersNode.Appendf(caser.String(provider.Name))
+		DoHProvidersNode.Appendf(caser.String(provider.Name))
 	}
 
 	node.Appendf("Connecting over %s", s.IPVersion)
