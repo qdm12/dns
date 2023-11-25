@@ -204,11 +204,11 @@ func dohServersToHardcodedMaps(dohServers []provider.DoHServer, ipVersion string
 		}
 		fqdn := dns.Fqdn(u.Hostname())
 
-		if ipVersion == "ipv4" {
-			ips := make([]netip.Addr, len(dohServer.IPv4))
-			copy(ips, dohServer.IPv4)
-			fqdnToIPv4[fqdn] = ips
-		} else {
+		ips := make([]netip.Addr, len(dohServer.IPv4))
+		copy(ips, dohServer.IPv4)
+		fqdnToIPv4[fqdn] = ips
+
+		if ipVersion == "ipv6" {
 			ips := make([]netip.Addr, len(dohServer.IPv6))
 			copy(ips, dohServer.IPv6)
 			fqdnToIPv6[fqdn] = ips

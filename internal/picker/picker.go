@@ -37,12 +37,23 @@ func (p *Picker) DoTServer(servers []provider.DoTServer) provider.DoTServer {
 	return servers[index]
 }
 
+// DotAddrPort returns a randomly picked IP address and port
+// from the given DoT server. If ipv6 is true, IPv6 addresses
+// are added to the pool of IP addresses to pick from, on top
+// of all IPv4 addresses.
+// Note IPv4 addresses are always in the pool of addresses,
+// because some providers only have IPv4 addresses, and IPv4
+// usually works on an IPv6 network, which is not true the other
+// way around.
 func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPort {
-	ipVersion := "ipv4"
-	serverIPs := server.IPv4
+	totalSize := len(server.IPv4)
 	if ipv6 {
-		ipVersion = "ipv6"
-		serverIPs = server.IPv6
+		totalSize += len(server.IPv6)
+	}
+	serverIPs := make([]netip.AddrPort, 0, totalSize)
+	serverIPs = append(serverIPs, server.IPv4...)
+	if ipv6 {
+		serverIPs = append(serverIPs, server.IPv6...)
 	}
 
 	addrPort := p.addrPort(serverIPs)
@@ -53,7 +64,11 @@ func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPor
 	// should have at least one IP address matching the
 	// IP version given. This is more of a programming
 	// safety.
-	panic(fmt.Sprintf("no valid " + ipVersion + " address found"))
+	ipVersions := "IPv4"
+	if ipv6 {
+		ipVersions += " or IPv6"
+	}
+	panic(fmt.Sprintf("no valid " + ipVersions + " address found"))
 }
 
 func (p *Picker) addrPort(addrPorts []netip.AddrPort) netip.AddrPort {

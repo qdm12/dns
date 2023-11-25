@@ -120,6 +120,9 @@ func Test_Providers_List(t *testing.T) {
 		assert.NoError(t, err, errMessage)
 
 		assert.NotEmpty(t, provider.DoH.URL, errMessage)
+		if len(provider.DoH.IPv4) == 0 && len(provider.DoH.IPv6) == 0 {
+			t.Errorf("provider %s: %s", provider.DoT.Name, ErrDoHIPNotSet)
+		}
 		err = checkAddresses(provider.DoH.IPv4)
 		assert.NoError(t, err, errMessage)
 		err = checkAddresses(provider.DoH.IPv6)

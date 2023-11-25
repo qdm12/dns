@@ -26,15 +26,13 @@ type DoHServer struct {
 
 var (
 	ErrProviderNameNotSet = errors.New("provider name not set")
-	ErrDNSIPv4NotSet      = errors.New("DNS plaintext server IPv4 address not set")
-	ErrDNSIPv6NotSet      = errors.New("DNS plaintext server IPv6 address not set")
-	ErrDoTIPv4NotSet      = errors.New("DoT server IPv4 address not set")
-	ErrDoTIPv6NotSet      = errors.New("DoT server IPv6 address not set")
+	ErrDoTIPv4NotSet      = errors.New("DoT server IPv4 addresses not set")
+	ErrDoTIPNotSet        = errors.New("DoT server IPv4 and IPv6 addresses not set")
 	ErrDoTNameNotSet      = errors.New("DoT server name not set")
 	ErrDoTPortNotSet      = errors.New("DoT server port not set")
 	ErrDoHURLNotSet       = errors.New("DoH URL not set")
 	ErrDoHIPv4NotSet      = errors.New("DoH server IPv4 addresses not set")
-	ErrDoHIPv6NotSet      = errors.New("DoH server IPv6 addresses not set")
+	ErrDoHIPNotSet        = errors.New("DoH server IP addresses not set")
 )
 
 func (p Provider) ValidateForDoT(ipv6 bool) (err error) {
@@ -43,8 +41,8 @@ func (p Provider) ValidateForDoT(ipv6 bool) (err error) {
 		return fmt.Errorf("%w", ErrProviderNameNotSet)
 	case !ipv6 && len(p.DoT.IPv4) == 0:
 		return fmt.Errorf("%w", ErrDoTIPv4NotSet)
-	case ipv6 && len(p.DoT.IPv6) == 0:
-		return fmt.Errorf("%w", ErrDoTIPv6NotSet)
+	case ipv6 && len(p.DoT.IPv4) == 0 && len(p.DoT.IPv6) == 0:
+		return fmt.Errorf("%w", ErrDoTIPNotSet)
 	case p.DoT.Name == "":
 		return fmt.Errorf("%w", ErrDoTNameNotSet)
 	}
@@ -68,10 +66,10 @@ func (p Provider) ValidateForDoH(ipv6 bool) (err error) {
 		return fmt.Errorf("%w", ErrProviderNameNotSet)
 	case p.DoH.URL == "":
 		return fmt.Errorf("%w", ErrDoHURLNotSet)
-	case !ipv6 && len(p.DoH.IPv4) == 0:
+	case !ipv6 && len(p.DoT.IPv4) == 0:
 		return fmt.Errorf("%w", ErrDoHIPv4NotSet)
-	case ipv6 && len(p.DoH.IPv6) == 0:
-		return fmt.Errorf("%w", ErrDoHIPv6NotSet)
+	case ipv6 && len(p.DoT.IPv4) == 0 && len(p.DoT.IPv6) == 0:
+		return fmt.Errorf("%w", ErrDoHIPNotSet)
 	}
 
 	err = checkAddresses(p.DoH.IPv4)
