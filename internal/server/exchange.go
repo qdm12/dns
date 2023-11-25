@@ -23,7 +23,7 @@ func NewExchange(name string, dial Dial, warner Warner) Exchange {
 		}
 		dnsConn := &dns.Conn{Conn: netConn}
 
-		response, _, err = client.ExchangeWithConn(request, dnsConn)
+		response, _, err = client.ExchangeWithConnContext(ctx, request, dnsConn)
 
 		if closeErr := dnsConn.Close(); closeErr != nil {
 			warner.Warn("cannot close " + name + " connection: " + closeErr.Error())
