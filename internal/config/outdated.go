@@ -10,7 +10,7 @@ import (
 func checkOutdatedEnv(reader *reader.Reader) (warnings []string) {
 	outdatedToMessage := map[string]string{
 		"PRIVATE_ADDRESS": "The environment variable PRIVATE_ADDRESS is no longer functional and needed, " +
-			"since rebinding protection is always enabled.",
+			"since rebinding protection is always enabled for non local names.",
 		"IPV4": "The environment variable IPV4 is no longer functional or needed, " +
 			"since IPv6 addresses are used automatically if IPv6 support is detected.",
 		"IPV6": "The environment variable IPV6 is no longer functional or needed, " +
