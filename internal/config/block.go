@@ -16,7 +16,6 @@ type Block struct {
 	BlockMalicious       *bool
 	BlockAds             *bool
 	BlockSurveillance    *bool
-	RebindingProtection  *bool
 	AllowedHosts         []string
 	AllowedIPs           []netip.Addr
 	AllowedIPPrefixes    []netip.Prefix
@@ -29,7 +28,6 @@ func (b *Block) setDefaults() {
 	b.BlockMalicious = gosettings.DefaultPointer(b.BlockMalicious, true)
 	b.BlockAds = gosettings.DefaultPointer(b.BlockAds, false)
 	b.BlockSurveillance = gosettings.DefaultPointer(b.BlockSurveillance, false)
-	b.RebindingProtection = gosettings.DefaultPointer(b.RebindingProtection, true)
 }
 
 var regexHostname = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
@@ -67,10 +65,6 @@ func (b *Block) ToLinesNode() (node *gotree.Node) { //nolint:cyclop
 	}
 
 	node.Appendf("Blocked categories: %s", strings.Join(blockedCategories, ", "))
-
-	if *b.RebindingProtection {
-		node.Appendf("Rebinding protection: enabled")
-	}
 
 	if len(b.AllowedHosts) > 0 {
 		node.Appendf("Hostnames unblocked: %d", len(b.AllowedHosts))
@@ -115,11 +109,6 @@ func (b *Block) read(reader *reader.Reader) (err error) {
 		return err
 	}
 
-	b.RebindingProtection, err = reader.BoolPtr("REBINDING_PROTECTION")
-	if err != nil {
-		return err
-	}
-
 	b.AllowedHosts = reader.CSV("ALLOWED_HOSTNAMES")
 	b.AddBlockedHosts = reader.CSV("BLOCK_HOSTNAMES")
 
@@ -137,11 +126,6 @@ func (b *Block) read(reader *reader.Reader) (err error) {
 		return err
 	}
 	b.AddBlockedIPPrefixes, err = reader.CSVNetipPrefixes("BLOCK_CIDRS")
-	if err != nil {
-		return err
-	}
-
-	b.RebindingProtection, err = reader.BoolPtr("REBINDING_PROTECTION")
 	if err != nil {
 		return err
 	}

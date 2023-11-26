@@ -141,7 +141,6 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 | `METRICS_TYPE` | `noop` | `noop` or `prometheus` |
 | `METRICS_PROMETHEUS_ADDRESS` | `:9090` | HTTP Prometheus server listening address |
 | `METRICS_PROMETHEUS_SUBSYSTEM` | `dns` | Prometheus metrics prefix/subsystem |
-| `REBINDING_PROTECTION` | `on` | `on` or `off`. Enabling will prevent the server from returning any private IP address to the client. |
 | `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `UPDATE_PERIOD` | `24h` | Period to update block lists and restart Unbound. Set to `0` to disable. |
 

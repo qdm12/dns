@@ -9,6 +9,8 @@ import (
 
 func checkOutdatedEnv(reader *reader.Reader) (warnings []string) {
 	outdatedToMessage := map[string]string{
+		"PRIVATE_ADDRESS": "The environment variable PRIVATE_ADDRESS is no longer functional and needed, " +
+			"since rebinding protection is always enabled.",
 		"IPV4": "The environment variable IPV4 is no longer functional or needed, " +
 			"since IPv6 addresses are used automatically if IPv6 support is detected.",
 		"IPV6": "The environment variable IPV6 is no longer functional or needed, " +
@@ -31,7 +33,6 @@ func checkOutdatedEnv(reader *reader.Reader) (warnings []string) {
 		"PROVIDER":            {"DOT_RESOLVERS", "DOH_RESOLVERS"},
 		"CACHING":             {"CACHE_TYPE"},
 		"UNBLOCK":             {"ALLOWED_HOSTNAMES"},
-		"PRIVATE_ADDRESS":     {"REBINDING_PROTECTION"},
 		"CHECK_UNBOUND":       {"CHECK_DNS"},
 		"VERBOSITY":           {"LOG_LEVEL"},
 		"VERBOSITY_DETAILS":   {"LOG_LEVEL", "MIDDLEWARE_LOG_ENABLED", "MIDDLEWARE_LOG_DIRECTORY", "MIDDLEWARE_LOG_REQUESTS", "MIDDLEWARE_LOG_RESPONSES"}, //nolint:lll

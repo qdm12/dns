@@ -34,13 +34,11 @@ func BuildBlockBuilder(userSettings config.Block,
 
 	settings.AddBlockedIPPrefixes = make([]netip.Prefix, len(userSettings.AddBlockedIPPrefixes))
 	copy(settings.AddBlockedIPPrefixes, userSettings.AddBlockedIPPrefixes)
-	if *userSettings.RebindingProtection {
-		privateIPPrefixes, err := getPrivateIPPrefixes()
-		if err != nil {
-			panic(err)
-		}
-		settings.AddBlockedIPPrefixes = append(settings.AddBlockedIPPrefixes, privateIPPrefixes...)
+	privateIPPrefixes, err := getPrivateIPPrefixes()
+	if err != nil {
+		panic(err)
 	}
+	settings.AddBlockedIPPrefixes = append(settings.AddBlockedIPPrefixes, privateIPPrefixes...)
 
 	return blockbuilder.New(settings)
 }

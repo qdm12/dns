@@ -41,7 +41,6 @@ data:
 
   CHECK_DNS: 'off'
   UPDATE_PERIOD: '0' # actually 24h, but there is bug currently
-  REBINDING_PROTECTION: 'on'
 ```
 
 The next manifest file is the `Service` definition, which is straight-forward as well. Make sure to provide a `ClusterIP` that is in your service CIDR range, i.e. an IP in the range of all services.
