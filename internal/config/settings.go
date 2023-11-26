@@ -31,6 +31,7 @@ type Settings struct {
 	Log              Log
 	MiddlewareLog    MiddlewareLog
 	Metrics          Metrics
+	LocalDNS         LocalDNS
 	CheckDNS         *bool
 	UpdatePeriod     *time.Duration
 }
@@ -74,6 +75,7 @@ func (s *Settings) Validate() (err error) {
 		"log":            s.Log.validate,
 		"middleware log": s.MiddlewareLog.validate,
 		"metrics":        s.Metrics.validate,
+		"local DNS":      s.LocalDNS.validate,
 	}
 	for name, validate := range nameToValidate {
 		err = validate()
@@ -115,6 +117,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(s.Log.ToLinesNode())
 	node.AppendNode(s.MiddlewareLog.ToLinesNode())
 	node.AppendNode(s.Metrics.ToLinesNode())
+	node.AppendNode(s.LocalDNS.ToLinesNode())
 	node.Appendf("Check DNS: %s", gosettings.BoolToYesNo(s.CheckDNS))
 
 	if *s.UpdatePeriod == 0 {
@@ -163,6 +166,11 @@ func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) {
 	}
 
 	s.Metrics.read(reader)
+
+	err = s.LocalDNS.read(reader)
+	if err != nil {
+		return fmt.Errorf("local DNS settings: %w", err)
+	}
 
 	s.CheckDNS, err = reader.BoolPtr("CHECK_DNS")
 	if err != nil {

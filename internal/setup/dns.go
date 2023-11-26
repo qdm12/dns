@@ -7,6 +7,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
+	"github.com/qdm12/dns/v2/pkg/middlewares/localdns"
 )
 
 type Service interface {
@@ -18,13 +19,60 @@ type Service interface {
 func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegistry) (
 	server Service, err error) {
-	var middlewares []Middleware
+	commonPrometheus := prometheus.Settings{
+		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,
+		Registry: promRegistry,
+	}
 
+	middlewares, err := setupMiddlewares(userSettings, cache,
+		filter, logger, commonPrometheus)
+	if err != nil {
+		return nil, fmt.Errorf("setting up middlewares: %w", err)
+	}
+
+	switch userSettings.Upstream {
+	case "dot":
+		dotMetrics, err := dotMetrics(userSettings.Metrics.Type, commonPrometheus)
+		if err != nil {
+			return nil, fmt.Errorf("DoT metrics: %w", err)
+		}
+
+		return dotServer(userSettings, ipv6Support, middlewares,
+			logger, dotMetrics)
+	case "doh":
+		dohMetrics, err := dohMetrics(userSettings.Metrics.Type, commonPrometheus)
+		if err != nil {
+			return nil, fmt.Errorf("DoH metrics: %w", err)
+		}
+
+		return dohServer(userSettings, ipv6Support, middlewares,
+			logger, dohMetrics)
+	default:
+		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))
+	}
+}
+
+func setupMiddlewares(userSettings config.Settings, cache Cache,
+	filter Filter, logger Logger, commonPrometheus prometheus.Settings) (
+	middlewares []Middleware, err error) {
 	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
 	if err != nil {
 		return nil, fmt.Errorf("creating cache middleware: %w", err)
 	}
 	middlewares = append(middlewares, cacheMiddleware)
+
+	if len(userSettings.LocalDNS.Resolvers) > 0 {
+		localDNSMiddleware, err := localdns.New(localdns.Settings{
+			Resolvers: userSettings.LocalDNS.Resolvers,
+			Logger:    logger,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("creating local DNS middleware: %w", err)
+		}
+		// Place after cache middleware, since we want to avoid caching for local
+		// hostnames that may change regularly.
+		middlewares = append(middlewares, localDNSMiddleware)
+	}
 
 	filterMiddleware, err := filtermiddleware.New(filtermiddleware.Settings{Filter: filter})
 	if err != nil {
@@ -34,14 +82,7 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 	// to catch filtered responses found from the cache.
 	middlewares = append(middlewares, filterMiddleware)
 
-	commonPrometheus := prometheus.Settings{
-		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,
-		Registry: promRegistry,
-	}
-
-	metricsType := userSettings.Metrics.Type
-
-	metricsMiddleware, err := middlewareMetrics(metricsType,
+	metricsMiddleware, err := middlewareMetrics(userSettings.Metrics.Type,
 		commonPrometheus)
 	if err != nil {
 		return nil, fmt.Errorf("middleware metrics: %w", err)
@@ -58,24 +99,5 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 	}
 	middlewares = append(middlewares, logMiddleware)
 
-	switch userSettings.Upstream {
-	case "dot":
-		dotMetrics, err := dotMetrics(metricsType, commonPrometheus)
-		if err != nil {
-			return nil, fmt.Errorf("DoT metrics: %w", err)
-		}
-
-		return dotServer(userSettings, ipv6Support, middlewares,
-			logger, dotMetrics)
-	case "doh":
-		dohMetrics, err := dohMetrics(metricsType, commonPrometheus)
-		if err != nil {
-			return nil, fmt.Errorf("DoH metrics: %w", err)
-		}
-
-		return dohServer(userSettings, ipv6Support, middlewares,
-			logger, dohMetrics)
-	default:
-		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))
-	}
+	return middlewares, nil
 }
