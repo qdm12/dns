@@ -50,7 +50,7 @@ func (b *Block) String() string {
 	return b.ToLinesNode().String()
 }
 
-func (b *Block) ToLinesNode() (node *gotree.Node) { //nolint:cyclop
+func (b *Block) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Filtering:")
 
 	var blockedCategories []string

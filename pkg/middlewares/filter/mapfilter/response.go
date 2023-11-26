@@ -44,6 +44,12 @@ func (m *Filter) isIPBlocked(ip net.IP) (blocked bool) {
 		return blocked
 	}
 
+	for _, ipPrefix := range m.privateIPPrefixes {
+		if ipPrefix.Contains(netIP) {
+			return true
+		}
+	}
+
 	for _, ipPrefix := range m.ipPrefixes {
 		if ipPrefix.Contains(netIP) {
 			return true

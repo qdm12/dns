@@ -1,11 +1,10 @@
-package setup
+package mapfilter
 
 import (
 	"net/netip"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_getPrivateIPPrefixes(t *testing.T) {
@@ -54,8 +53,7 @@ func Test_getPrivateIPPrefixes(t *testing.T) {
 		"::ffff:169.254.0.0/112", // 169.254.0.0/16
 	}
 
-	privateIPNets, err := getPrivateIPPrefixes()
-	require.NoError(t, err)
+	privateIPNets := getPrivateIPPrefixes()
 
 	assert.Equal(t, len(expectedPrivateIPNets), len(privateIPNets))
 	assert.Equal(t, len(expectedStrings), len(privateIPNets))

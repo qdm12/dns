@@ -7,11 +7,12 @@ import (
 )
 
 type Filter struct {
-	fqdnHostnames map[string]struct{}
-	ips           map[netip.Addr]struct{}
-	ipPrefixes    []netip.Prefix
-	metrics       Metrics
-	updateLock    sync.RWMutex
+	fqdnHostnames     map[string]struct{}
+	ips               map[netip.Addr]struct{}
+	ipPrefixes        []netip.Prefix
+	privateIPPrefixes []netip.Prefix
+	metrics           Metrics
+	updateLock        sync.RWMutex
 }
 
 func New(settings Settings) (filter *Filter, err error) {
@@ -23,7 +24,8 @@ func New(settings Settings) (filter *Filter, err error) {
 	}
 
 	filter = &Filter{
-		metrics: settings.Metrics,
+		privateIPPrefixes: getPrivateIPPrefixes(),
+		metrics:           settings.Metrics,
 	}
 
 	err = filter.Update(settings.Update)
