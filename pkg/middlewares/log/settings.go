@@ -1,7 +1,6 @@
 package log
 
 import (
-	"errors"
 	"reflect"
 	"strings"
 
@@ -19,13 +18,6 @@ type Settings struct {
 func (s *Settings) SetDefaults() {
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
 }
-
-var (
-	ErrFormatNotEmpty     = errors.New("format must be empty if custom formatter is set")
-	ErrFormatNotValid     = errors.New("format is not valid")
-	ErrLoggerTypeNotEmpty = errors.New("logger type must be empty if custom logger is set")
-	ErrLoggerTypeNotValid = errors.New("logger type is not valid")
-)
 
 func (s *Settings) Validate() (err error) {
 	return nil
