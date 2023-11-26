@@ -2,7 +2,6 @@ package doh
 
 import (
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
 type Middleware interface {
@@ -26,8 +25,4 @@ type Logger interface {
 
 type Warner interface {
 	Warn(s string)
-}
-
-type Picker interface {
-	DoHServer(servers []provider.DoHServer) provider.DoHServer
 }

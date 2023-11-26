@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"net"
 
+	"github.com/qdm12/dns/v2/internal/picker"
 	"github.com/qdm12/dns/v2/internal/server"
 	"github.com/qdm12/dns/v2/pkg/provider"
 )
@@ -22,7 +23,7 @@ func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 		Timeout: settings.Timeout,
 	}
 
-	picker := settings.Picker
+	picker := picker.New()
 	ipv6 := settings.IPVersion == "ipv6"
 
 	return func(ctx context.Context, _, _ string) (net.Conn, error) {
@@ -47,7 +48,7 @@ func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 	}
 }
 
-func pickNameAddress(picker Picker, servers []provider.DoTServer,
+func pickNameAddress(picker *picker.Picker, servers []provider.DoTServer,
 	ipv6 bool) (name, address string) {
 	server := picker.DoTServer(servers)
 	addrPort := picker.DoTAddrPort(server, ipv6)

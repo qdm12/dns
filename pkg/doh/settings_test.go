@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/picker"
 	metrics "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
 	log "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
@@ -16,14 +15,12 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 
 	metrics := metrics.New()
 	logger := log.New()
-	picker := picker.New()
 
 	s := ServerSettings{
 		Middlewares: []Middleware{},
 		Logger:      logger,
 		Resolver: ResolverSettings{
 			Metrics: metrics,
-			Picker:  picker,
 		},
 	}
 	s.SetDefaults()
@@ -41,7 +38,6 @@ func Test_ServerSettings_SetDefaults(t *testing.T) {
 			IPVersion:         "ipv4",
 			Timeout:           5 * time.Second,
 			Metrics:           metrics,
-			Picker:            picker,
 		},
 		ListeningAddress: ptrTo(":53"),
 	}

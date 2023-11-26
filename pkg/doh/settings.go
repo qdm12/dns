@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/qdm12/dns/v2/internal/picker"
 	metricsnoop "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
 	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
@@ -42,11 +41,6 @@ type ResolverSettings struct {
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics Metrics
-	// Picker is the picker to use for each upstream call to pick
-	// a server from a pool of servers. It must be thread safe.
-	// It defaults to a fast thread safe pseudo random picker
-	// with uniform distribution.
-	Picker Picker
 }
 
 func (s *ServerSettings) SetDefaults() {
@@ -62,7 +56,6 @@ func (s *ResolverSettings) SetDefaults() {
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
-	s.Picker = gosettings.DefaultComparable[Picker](s.Picker, picker.New())
 }
 
 var (
