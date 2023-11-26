@@ -1,7 +1,6 @@
 package localdns
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/netip"
@@ -12,11 +11,6 @@ import (
 )
 
 type Settings struct {
-	// Ctx is the context of the middleware, since this middleware
-	// may be performing network operations. If the context is
-	// canceled, the middleware DNS handler promptly returns.
-	// It defaults to context.Background() if left unset.
-	Ctx context.Context //nolint:containedctx
 	// Resolvers is the list of resolvers to use to resolve the
 	// local domain names. They are each tried after the other
 	// in order, until one returns an answer for the question.
@@ -28,7 +22,6 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Ctx = gosettings.DefaultComparable(s.Ctx, context.Background())
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
 }
 

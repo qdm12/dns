@@ -6,7 +6,9 @@ import (
 )
 
 type Middleware interface {
+	String() string
 	Wrap(next dns.Handler) dns.Handler
+	Stop() (err error)
 }
 
 type Metrics interface {

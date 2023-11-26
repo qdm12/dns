@@ -22,11 +22,19 @@ func New(settings Settings) (middleware *Middleware, err error) {
 	}, nil
 }
 
+func (m *Middleware) String() string {
+	return "filter"
+}
+
 func (m *Middleware) Wrap(next dns.Handler) dns.Handler { //nolint:ireturn
 	return &handler{
 		next:   next,
 		filter: m.filter,
 	}
+}
+
+func (m *Middleware) Stop() (err error) {
+	return nil
 }
 
 type handler struct {

@@ -60,8 +60,7 @@ func Test_handler(t *testing.T) {
 		_ = writer.WriteMsg(response)
 	})
 
-	handler := newHandler(context.Background(),
-		resolvers, logger, next)
+	handler := newHandler(resolvers, logger, next)
 
 	writer := NewMockResponseWriter(ctrl)
 
@@ -108,6 +107,8 @@ func Test_handler(t *testing.T) {
 	}
 	writer.EXPECT().WriteMsg(expectedFinalResponse).Return(nil)
 	handler.ServeDNS(writer, request)
+
+	handler.stop()
 
 	// Check local DNS servers did not crash
 	select {

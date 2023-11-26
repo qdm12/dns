@@ -139,6 +139,15 @@ func (s *Server) Stop() (err error) {
 
 	err = s.dnsServer.Shutdown()
 
+	for _, middleware := range s.settings.Middlewares {
+		err = middleware.Stop()
+		if err != nil {
+			warning := fmt.Sprintf("stopping middleware %s: %s",
+				middleware, err)
+			s.logger.Warn(warning)
+		}
+	}
+
 	s.done.Wait()
 
 	return err

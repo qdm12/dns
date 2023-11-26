@@ -1,7 +1,6 @@
 package localdns
 
 import (
-	"context"
 	"net/netip"
 	"testing"
 
@@ -28,7 +27,6 @@ func Test_New(t *testing.T) {
 		t.Parallel()
 
 		settings := Settings{
-			Ctx: context.Background(),
 			Resolvers: []netip.AddrPort{
 				netip.AddrPortFrom(netip.MustParseAddr("1.2.3.4"), 53),
 			},
@@ -51,5 +49,8 @@ func Test_New(t *testing.T) {
 		}}
 		writer := NewMockResponseWriter(nil)
 		handler.ServeDNS(writer, request)
+
+		err = middleware.Stop()
+		require.NoError(t, err)
 	})
 }

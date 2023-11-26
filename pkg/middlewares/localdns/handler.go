@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/miekg/dns"
@@ -14,19 +16,20 @@ import (
 
 type handler struct {
 	// Injected from middleware
-	ctx    context.Context //nolint:containedctx
 	logger Logger
 	next   dns.Handler
 
 	// Internal fields
 	localExchanges []server.Exchange
-	localResolvers []string // for error messages only
+	localResolvers []string        // for error messages only
+	ctx            context.Context //nolint:containedctx
+	cancel         context.CancelFunc
+	stopped        atomic.Bool
+	waitGroup      sync.WaitGroup
 }
 
-func newHandler(ctx context.Context,
-	resolvers []netip.AddrPort, logger Logger,
-	next dns.Handler,
-) *handler {
+func newHandler(resolvers []netip.AddrPort, logger Logger,
+	next dns.Handler) *handler {
 	dialer := &net.Dialer{
 		Timeout: time.Second,
 	}
@@ -45,8 +48,11 @@ func newHandler(ctx context.Context,
 			exchangeName, dial, logger)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	return &handler{
 		ctx:            ctx,
+		cancel:         cancel,
 		logger:         logger,
 		next:           next,
 		localExchanges: localExchanges,
@@ -59,6 +65,12 @@ func newHandler(ctx context.Context,
 // It redirects DNS requests containing a single local
 // name question to the local DNS servers specified.
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+	if h.stopped.Load() {
+		return
+	}
+	h.waitGroup.Add(1)
+	defer h.waitGroup.Done()
+
 	// This middleware only handles single question requests
 	// with a local name question. If there is no question or
 	// more than one question, we just pass the request through
@@ -95,4 +107,14 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	response.SetReply(r)
 	response.SetRcode(r, dns.RcodeNameError)
 	_ = w.WriteMsg(response)
+}
+
+func (h *handler) stop() {
+	previouslyStopped := h.stopped.Swap(true)
+	if previouslyStopped {
+		return
+	}
+
+	h.cancel()
+	h.waitGroup.Wait()
 }

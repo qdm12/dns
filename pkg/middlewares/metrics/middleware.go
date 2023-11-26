@@ -26,12 +26,20 @@ func New(settings Settings) (middleware *Middleware, err error) {
 	}, nil
 }
 
+func (m *Middleware) String() string {
+	return "metrics"
+}
+
 // Wrap wraps the DNS handler with the middleware.
 func (m *Middleware) Wrap(next dns.Handler) dns.Handler { //nolint:ireturn
 	return &handler{
 		next:    next,
 		metrics: m.metrics,
 	}
+}
+
+func (m *Middleware) Stop() (err error) {
+	return nil
 }
 
 type handler struct {
