@@ -46,6 +46,7 @@ func (s *Settings) SetDefaults() {
 	s.Log.setDefaults()
 	s.MiddlewareLog.setDefaults()
 	s.Metrics.setDefaults()
+	s.LocalDNS.setDefault()
 	s.CheckDNS = gosettings.DefaultPointer(s.CheckDNS, true)
 	const defaultUpdaterPeriod = 24 * time.Hour
 	s.UpdatePeriod = gosettings.DefaultPointer(s.UpdatePeriod, defaultUpdaterPeriod)

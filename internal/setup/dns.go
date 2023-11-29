@@ -61,9 +61,9 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 	}
 	middlewares = append(middlewares, cacheMiddleware)
 
-	if len(userSettings.LocalDNS.Resolvers) > 0 {
+	if *userSettings.LocalDNS.Enabled {
 		localDNSMiddleware, err := localdns.New(localdns.Settings{
-			Resolvers: userSettings.LocalDNS.Resolvers,
+			Resolvers: userSettings.LocalDNS.Resolvers, // possibly auto-detected
 			Logger:    logger,
 		})
 		if err != nil {

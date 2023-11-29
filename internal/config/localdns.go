@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net/netip"
 
+	"github.com/qdm12/dns/v2/pkg/nameserver"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gotree"
 )
 
 type LocalDNS struct {
+	Enabled   *bool
 	Resolvers []netip.AddrPort
 }
 
@@ -17,6 +20,12 @@ var (
 	ErrLocalResolverAddressNotValid = errors.New("local resolver address is not valid")
 	ErrLocalResolverPortIsZero      = errors.New("local resolver port is zero")
 )
+
+func (l *LocalDNS) setDefault() {
+	l.Enabled = gosettings.DefaultPointer(l.Enabled, true)
+	l.Resolvers = gosettings.DefaultSlice(l.Resolvers,
+		nameserver.GetDNSServers())
+}
 
 func (l *LocalDNS) validate() (err error) {
 	for _, resolver := range l.Resolvers {
@@ -38,7 +47,7 @@ func (l *LocalDNS) String() string {
 }
 
 func (l *LocalDNS) ToLinesNode() (node *gotree.Node) {
-	if len(l.Resolvers) == 0 {
+	if !*l.Enabled {
 		return gotree.New("Local DNS middleware: disabled")
 	}
 
@@ -52,6 +61,11 @@ func (l *LocalDNS) ToLinesNode() (node *gotree.Node) {
 }
 
 func (l *LocalDNS) read(reader *reader.Reader) (err error) {
+	l.Enabled, err = reader.BoolPtr("MIDDLEWARE_LOCALDNS_ENABLED")
+	if err != nil {
+		return err
+	}
+
 	l.Resolvers, err = reader.CSVNetipAddrPorts("MIDDLEWARE_LOCALDNS_RESOLVERS")
 	if err != nil {
 		return err
