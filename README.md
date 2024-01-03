@@ -73,7 +73,7 @@ Diagrams are shown for router and client-by-client configurations in the [**Conn
 1. Launch the container with
 
     ```sh
-    docker run -d -p 53:53/udp qmcgaw/dns
+    docker run -d -p 53:53/udp -p 53:53/tcp qmcgaw/dns
     ```
 
     You can also use [docker-compose.yml](https://github.com/qdm12/dns/blob/master/docker-compose.yml) with:

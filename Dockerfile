@@ -65,7 +65,7 @@ RUN apk --update --no-cache add libcap && \
     apk del libcap
 
 FROM scratch
-EXPOSE 53/udp
+EXPOSE 53/udp 53/tcp
 ENTRYPOINT ["/entrypoint"]
 HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD ["/entrypoint", "healthcheck"]
 USER 1000

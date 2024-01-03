@@ -16,5 +16,6 @@ services:
       - UPDATE_PERIOD=24h
     ports:
       - 53:53/udp
+      - 53:53/tcp
     network_mode: bridge
     restart: always
