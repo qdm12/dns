@@ -1,10 +1,12 @@
-# DNS over TLS upstream server Docker container
+# DNS over TLS or HTTPs forwarding resolver
 
-DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers with DNSSEC, DNS rebinding protection, built-in Docker healthcheck and fine grain IPs + hostnames blocking
+Resolver communicating with public DNS recursive servers over encrypted channels with TLS or HTTPs.
+It also does **caching**, **filtering**, **split-horizon DNS**, **IPv6**, **Prometheus metrucs**.
+It's fully coded in Go and is a single and cross platform binary program.
 
-**Announcement**: *The `:latest` image is now based on v2 which is a pure Go implementation for a DNS server connecting over DoT and DoH with a bunch of features.*
+**Announcement**: *I am currently working on a DNSSEC validator implementation to reach feature parity with the v1.x.x image using Unbound*
 
-**The `:latest` Docker image breaks compatibility with previous images based on v1.x.x versions**
+**The `:v2.0.0-beta` Docker image breaks compatibility with previous images based on v1.x.x versions**
 
 [![Title](https://github.com/qdm12/dns/raw/master/readme/title.png)](https://hub.docker.com/r/qmcgaw/dns)
 
@@ -37,80 +39,73 @@ DNS over TLS upstream server connected to DNS over TLS (IPv4 and IPv6) servers w
 
 ## Features
 
-- It can be connected to one or more of the following DNS-over-TLS/HTTPs providers:
-  - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
-  - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
+- It can be connected to one or more of the following public resolvers over both DNS over TLS and DNS over HTTPS:
   - [Cloudflare](https://developers.cloudflare.com/1.1.1.1/dns-over-tls/)
   - [Google](https://developers.google.com/speed/public-dns/docs/dns-over-tls)
   - [LibreDNS](https://libredns.gr)
-  - OpenDNS
+  - [OpenDNS](https://support.opendns.com/hc/en-us/articles/360038086532-Using-DNS-over-HTTPS-DoH-with-OpenDNS)
   - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
   - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
-- Split-horizon DNS (randomly picks one of the DoT/DoH providers specified for each request)
-- Block hostnames and IP addresses for 3 categories: malicious, surveillance and ads
-- Block custom hostnames and IP addresses using environment variables
-- **One line setup**
-- Runs without root
-- Small **12MB** Docker image (uncompressed, amd64)
-  - [Alpine 3.14](https://alpinelinux.org)
-  - [Files and lists built periodically](https://github.com/qdm12/updated/tree/master/files)
-  - Go static binary built from this source
-- Resolves using IPv4 and IPv6 when available
-- Auto updates block lists and cryptographic files every 24h and restarts Unbound (< 1 second downtime)
-- Compatible with amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and v6, ppc64le, s390x and riscv64 🎆
-- [Metrics](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
+  - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
+  - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
+- Random split-horizon DNS (an upstream resolver is picked at random for every request received)
+- Hostnames and IP addresses filtering 🛑
+  - for 3 categories: malicious, surveillance and ads
+  - auto-update [block lists](https://github.com/qdm12/files) periodically with minimal downtime
+  - Specify custom hostnames and IP addresses
 - DNS rebinding protection
+- [Prometheus Metrics](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
+- Container specific features 🐋
+  - Tiny **16MB** Docker image (uncompressed, amd64) based on the empty image [scratch](https://hub.docker.com/_/scratch)
+  - Cross CPU architecture support: amd64, i686 (32 bit), **ARM** 64 bit, ARM 32 bit v7 and v6, ppc64le, s390x and riscv64
+  - Running without root
 
 Diagrams are shown for router and client-by-client configurations in the [**Connect clients to it**](#connect-clients-to-it) section.
 
-### Roadmap
-
-1. DNSSEC validation
-2. Custom redirection from hostname to IP address
-
 ## Setup
 
-1. Launch the container with
+### Container setup
 
-    ```sh
-    docker run -d -p 53:53/udp -p 53:53/tcp qmcgaw/dns
-    ```
+```sh
+docker run -d -p 53:53/udp -p 53:53/tcp qmcgaw/dns:v2.0.0-beta
+```
 
-    You can also use [docker-compose.yml](https://github.com/qdm12/dns/blob/master/docker-compose.yml) with:
+You can also use [docker-compose.yml](https://github.com/qdm12/dns/blob/v2.0.0-beta/docker-compose.yml) with:
 
-    ```sh
-    docker-compose up -d
-    ```
+```sh
+docker-compose up -d
+```
 
-    More environment variables are described in the [environment variables](#environment-variables) section.
-
-    The image is also available at `ghcr.io/qdm12/dns`.
-1. See the [Connect clients to it](#connect-clients-to-it) section, you can also refer to the [Verify DNS connection](#verify-dns-connection) section if you want.
-
-〽️ [Metrics setup](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
+The image is also available as `ghcr.io/qdm12/dns:v2.0.0-beta`.
 
 If you run an old Docker version or Kernel, you might want to run the container as root with `--user="0"` (see [this issue](https://github.com/qdm12/dns/issues/79) for context).
 
-If you're running Kubernetes, there is a separate article on [how to set up K8s](https://github.com/qdm12/dns/blob/v2.0.0-beta/KUBERNETES.md).
+### Binary program setup
 
-## Docker tags 🐳
+🚧 **waiting for release v2.0.0**
 
-💁 [Migrate from v1.x.x to v2.x.x](#migrate)
+Download the prebuilt binary for your platform from the **Assets** section of the last release on the [releases page](https://github.com/qdm12/dns/releases).
 
-| Docker image | Github release |
-| --- | --- |
-| `qmcgaw/dns:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
-| `qmcgaw/dns:v2.0.0-beta` | [v2.0.0-beta](https://github.com/qdm12/dns/tree/v2.0.0-beta) |
-| `qmcgaw/dns:v1.5.1` | [v1.5.1](https://github.com/qdm12/dns/releases/tag/v1.5.1) |
-| `qmcgaw/dns:v1.4.1` | [v1.4.1](https://github.com/qdm12/dns/releases/tag/v1.4.1) |
-| `qmcgaw/dns:v1.2.1` | [v1.2.1](https://github.com/qdm12/dns/releases/tag/v1.2.1) |
-| `qmcgaw/dns:v1.1.1` | [v1.1.1](https://github.com/qdm12/dns/releases/tag/v1.1.1) |
-| `qmcgaw/cloudflare-dns-server:latest` | [Master branch](https://github.com/qdm12/dns/commits/master) |
-| `qmcgaw/cloudflare-dns-server:v1.0.0` | [v1.0.0](https://github.com/qdm12/dns/releases/tag/v1.0.0) |
+If you run on Linux or OSX, make sure to make it executable with `chmod +x dns`.
 
-💁 `qmcgaw/cloudflare-dns-server:latest` mirrors `qmcgaw/dns:latest`
+You can then run it by clicking on it or in your terminal with `./dns`.
 
-## Environment variables
+### Kubernetes setup
+
+See the [KUBERNETES.md document](https://github.com/qdm12/dns/blob/v2.0.0-beta/KUBERNETES.md).
+
+### Further setup
+
+- [Settings](#settings) ⚙️ - environment variables and/or flags.
+- [Connect clients to it](#connect-clients-to-it)
+- [Metrics setup](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics) 〽️
+- [Verify DNS connection](#verify-dns-connection)
+
+## Settings
+
+The following table lists all environment variables available.
+**For each variable exists a corresponding CLI flag** with the same name but in lowercase and with underscores replaced by dashes.
+For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI flag `--upstream-type`.
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
@@ -148,22 +143,26 @@ If you're running Kubernetes, there is a separate article on [how to set up K8s]
 
 ## Migrate
 
-The `v2` version of the image (starting with `v2.0.0`) is a DNS server connecting to authoritative nameservers over TLS or HTTPS, and completely written from scratch in Go.
+The `v2.x.x` version of the image (starting with `v2.0.0-beta`) is a complete rewrite from scratch in Go.
 
-There are several changes between the `v1` images and `v2`:
+There are several non-compatible changes between the `v1` and `v2` images:
 
-- The following environment variables are now deprecated: `LISTENINGPORT`, `PROVIDERS`, `PROVIDER`, `CACHING`, `IPV4`, `IPV6`, `UNBLOCK`, `PRIVATE_ADDRESS`, `CHECK_UNBOUND`, `VERBOSITY`, `VERBOSITY_DETAILS`, `VALIDATION_LOGLEVEL`. You will receive a warning log with how to replace it, if you set them when running the v2.x.x image (or `:latest`).
+- The following environment variables are now unused: `PRIVATE_ADDRESS`, `IPV4`, `IPV6`. The program logs an explanation if any of these is set when running a v2.x.x image.
+- The following environment variables are now replaced: `LISTENINGPORT`, `PROVIDERS`, `PROVIDER`, `CACHING`, `UNBLOCK`, `CHECK_UNBOUND`, `VERBOSITY`, `VERBOSITY_DETAILS`, `VALIDATION_LOGLEVEL`. The program logs an explanation if any of these is set when running a v2.x.x image.
 - You can no longer bind mount an Unbound configuration file
+- Caching is enabled by default (in memory LRU cache with up to 10,000 items)
 
 ## Golang API
 
-If you want to use the Go code I wrote, you can see tiny [examples](examples) of DoT and DoH resolvers and servers using the API developed.
+If you want to use the Go code, you can see tiny [examples](examples) of DoT and DoH resolvers and servers using the API developed. You can also implement your interfaces to pass as settings to existing constructors to further customize the behavior of the program.
+
+The Go API exposed to the public (`pkg/` directory) will stay **stable and compatible** for a long time and there is no reason so far to change it.
 
 ## Connect clients to it
 
 ### Option 1: Router (recommended)
 
-All machines connected to your router will use the 1.1.1.1 encrypted DNS by default
+All machines connected to your router will use the DNS server container by default.
 
 Configure your router to use the LAN IP address of your Docker host as its primary DNS address.
 
@@ -176,6 +175,7 @@ Configure your router to use the LAN IP address of your Docker host as its prima
 To ensure network clients cannot use another DNS, you might want to
 
 - Block the outbound UDP 53 port on your router firewall
+- Block the outbound TCP 53 port on your router firewall
 - Block the outbound TCP 853 port on your router firewall, **except from your Docker host**
 - If you have *Deep packet inspection* on your router, block DNS over HTTPs on port TCP 443
 
@@ -199,7 +199,7 @@ For *docker-compose.yml*:
 version: '3'
 services:
   test:
-    image: alpine:3.11
+    image: alpine
     network_mode: bridge
     dns:
       - 127.0.0.1
@@ -250,28 +250,12 @@ See [this](http://xslab.com/2013/08/how-to-change-dns-settings-on-android/)
 
 See [this](http://www.macinstruct.com/node/558)
 
-### Firewall considerations
-
-This container requires the following connections:
-
-- UDP 53 Inbound (only if used externally)
-- TCP 853 Outbound to 1.1.1.1 and 1.0.0.1
-
 ### Verify DNS connection
 
 1. Verify that you use Cloudflare DNS servers: [https://www.dnsleaktest.com](https://www.dnsleaktest.com) with the Standard or Extended test
 1. Verify that DNS SEC is enabled: [https://en.internet.nl/connection](https://en.internet.nl/connection)
 
 Note that [https://1.1.1.1/help](https://1.1.1.1/help) does not work as the container is not a client to Cloudflare servers but a forwarder intermediary. Hence [https://1.1.1.1/help](https://1.1.1.1/help) does not detect a direct connection to them.
-
-## Go API
-
-Some packages are exposed publicly through the [pkg](pkg) directory.
-
-- The current API is at v2.x.x and is meant to be (mostly) stable and should not introduce breaking changes.
-- The API at v1.x.x was (shame on me) unstable and there were many breaking changes between feature versions.
-
-For now, it is used by the [gluetun](https://github.com/qdm12/gluetun) project for its DNS over TLS usage.
 
 ## Development
 
