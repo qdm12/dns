@@ -77,6 +77,7 @@ ENV \
     DOH_TIMEOUT=3s \
     LISTENING_ADDRESS=":53" \
     LOG_LEVEL=info \
+    LOG_CALLER=hidden \
     MIDDLEWARE_LOG_ENABLED=off \
     MIDDLEWARE_LOG_DIRECTORY=/var/log/dns/ \
     MIDDLEWARE_LOG_REQUESTS=on \

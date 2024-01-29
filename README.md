@@ -124,6 +124,7 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
 | `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
+| `LOG_CALLER` | `hidden` | `hidden` or `short` |
 | `MIDDLEWARE_LOG_ENABLED` | `off` | `on` or `off` |
 | `MIDDLEWARE_LOG_DIRECTORY` | `/var/log/dns/` | Any valid file path |
 | `MIDDLEWARE_LOG_REQUESTS` | `off` | `on` or `off` to log DNS requests to the file path specified |

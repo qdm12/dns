@@ -118,11 +118,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 		return fmt.Errorf("invalid settings: %w", err)
 	}
 
-	logLevel, err := log.ParseLevel(settings.Log.Level)
-	if err != nil {
-		return fmt.Errorf("parsing log level: %w", err)
-	}
-	logger.Patch(log.SetLevel(logLevel))
+	logger.Patch(settings.Log.ToOptions()...)
 
 	logger.Info(settings.String())
 
