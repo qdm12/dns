@@ -31,7 +31,7 @@ func getLocalNameservers(filename string) (nameservers []netip.AddrPort) {
 			continue
 		}
 		fields := strings.Fields(line)
-		if fields[0] != "nameserver" {
+		if len(fields) == 0 || fields[0] != "nameserver" {
 			continue
 		}
 		for _, field := range fields[1:] {
