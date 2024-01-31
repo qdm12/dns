@@ -4,6 +4,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
+	"github.com/qdm12/log"
 )
 
 type Logger interface {
@@ -11,6 +12,10 @@ type Logger interface {
 	Info(s string)
 	Warn(s string)
 	Error(s string)
+}
+
+type LoggerConstructor interface {
+	New(options ...log.Option) *log.Logger
 }
 
 type Filter interface {

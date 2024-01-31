@@ -6,6 +6,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/pkg/blockbuilder"
+	"github.com/qdm12/log"
 )
 
 type Service interface {
@@ -19,6 +20,11 @@ type Logger interface {
 	Info(msg string)
 	Warn(msg string)
 	Error(msg string)
+	LoggerConstructor
+}
+
+type LoggerConstructor interface {
+	New(options ...log.Option) *log.Logger
 }
 
 type Cache interface {

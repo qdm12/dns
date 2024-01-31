@@ -8,6 +8,7 @@ import (
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 	"github.com/qdm12/dns/v2/pkg/middlewares/localdns"
+	"github.com/qdm12/log"
 )
 
 type Service interface {
@@ -17,21 +18,22 @@ type Service interface {
 }
 
 func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
-	cache Cache, filter Filter, logger Logger, promRegistry PrometheusRegistry) (
-	server Service, err error) {
+	cache Cache, filter Filter, loggerConstructor LoggerConstructor,
+	promRegistry PrometheusRegistry) (server Service, err error) {
 	commonPrometheus := prometheus.Settings{
 		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,
 		Registry: promRegistry,
 	}
 
 	middlewares, err := setupMiddlewares(userSettings, cache,
-		filter, logger, commonPrometheus)
+		filter, loggerConstructor, commonPrometheus)
 	if err != nil {
 		return nil, fmt.Errorf("setting up middlewares: %w", err)
 	}
 
 	switch userSettings.Upstream {
 	case "dot":
+		logger := loggerConstructor.New(log.SetComponent("DNS over TLS"))
 		dotMetrics, err := dotMetrics(userSettings.Metrics.Type, commonPrometheus)
 		if err != nil {
 			return nil, fmt.Errorf("DoT metrics: %w", err)
@@ -40,6 +42,7 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 		return dotServer(userSettings, ipv6Support, middlewares,
 			logger, dotMetrics)
 	case "doh":
+		logger := loggerConstructor.New(log.SetComponent("DNS over HTTPS"))
 		dohMetrics, err := dohMetrics(userSettings.Metrics.Type, commonPrometheus)
 		if err != nil {
 			return nil, fmt.Errorf("DoH metrics: %w", err)
@@ -53,7 +56,7 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 }
 
 func setupMiddlewares(userSettings config.Settings, cache Cache,
-	filter Filter, logger Logger, commonPrometheus prometheus.Settings) (
+	filter Filter, loggerConstructor log.ChildConstructor, commonPrometheus prometheus.Settings) (
 	middlewares []Middleware, err error) {
 	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
 	if err != nil {
@@ -64,7 +67,7 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 	if *userSettings.LocalDNS.Enabled {
 		localDNSMiddleware, err := localdns.New(localdns.Settings{
 			Resolvers: userSettings.LocalDNS.Resolvers, // possibly auto-detected
-			Logger:    logger,
+			Logger:    loggerConstructor.New(log.SetComponent("local redirector")),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("creating local DNS middleware: %w", err)
