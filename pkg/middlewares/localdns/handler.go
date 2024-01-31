@@ -87,7 +87,11 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	for i, localExchange := range h.localExchanges {
 		response, err := localExchange(h.ctx, r)
 		if err != nil {
-			h.logger.Debug(err.Error())
+			requestString := fmt.Sprintf("%s %s %s",
+				dns.ClassToString[r.Question[0].Qclass],
+				dns.TypeToString[r.Question[0].Qtype],
+				r.Question[0].Name)
+			h.logger.Debug("for " + requestString + ": " + err.Error())
 			continue
 		}
 

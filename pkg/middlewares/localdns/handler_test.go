@@ -183,12 +183,14 @@ func Test_handler_ServeDNS(t *testing.T) {
 		"local_name_exchange_error": {
 			request: &dns.Msg{
 				Question: []dns.Question{{
-					Name: "domain.local.",
+					Qclass: dns.ClassINET,
+					Qtype:  dns.TypeA,
+					Name:   "domain.local.",
 				}},
 			},
 			makeHandler: func(ctrl *gomock.Controller) *handler {
 				logger := NewMockLogger(ctrl)
-				logger.EXPECT().Debug("test error")
+				logger.EXPECT().Debug("for IN A domain.local.: test error")
 
 				localExchanges := []server.Exchange{
 					makeTestExchange(nil, errTest),
@@ -207,7 +209,9 @@ func Test_handler_ServeDNS(t *testing.T) {
 					Rcode:    dns.RcodeNameError,
 				},
 				Question: []dns.Question{{
-					Name: "domain.local.",
+					Qclass: dns.ClassINET,
+					Qtype:  dns.TypeA,
+					Name:   "domain.local.",
 				}},
 			},
 		},
@@ -284,7 +288,9 @@ func Test_handler_ServeDNS(t *testing.T) {
 		"local_name_success_after_failures": {
 			request: &dns.Msg{
 				Question: []dns.Question{{
-					Name: "domain.local.",
+					Qclass: dns.ClassINET,
+					Qtype:  dns.TypeA,
+					Name:   "domain.local.",
 				}},
 			},
 			makeHandler: func(ctrl *gomock.Controller) *handler {
@@ -307,7 +313,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}
 
 				logger := NewMockLogger(ctrl)
-				logger.EXPECT().Debug("test error")
+				logger.EXPECT().Debug("for IN A domain.local.: test error")
 				logger.EXPECT().Debug("response received for " +
 					"domain.local. from 10.0.0.2:53 has " +
 					"rcode REFUSED")
