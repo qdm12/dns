@@ -24,8 +24,15 @@ func IPv6(ctx context.Context, ipv6AddrPort netip.AddrPort) (
 		if ctxErr := ctx.Err(); ctxErr != nil {
 			return false, ctxErr
 		}
-		if strings.HasSuffix(err.Error(), "cannot assign requested address") {
-			return false, nil
+		errMessage := err.Error()
+		ipv6ErrorMessages := []string{
+			"connect: network is unreachable",
+			"cannot assign requested address",
+		}
+		for _, ipv6ErrorMessage := range ipv6ErrorMessages {
+			if strings.Contains(errMessage, ipv6ErrorMessage) {
+				return false, nil
+			}
 		}
 		return false, fmt.Errorf("unknown error: %w", err)
 	}
