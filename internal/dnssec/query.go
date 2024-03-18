@@ -130,7 +130,7 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 
 	// Used to check we have all signed RRSets or all
 	// unsigned RRSets.
-	unsignedRRsCount := 0
+	signedRRSetsCount := 0
 	for _, rr := range rrs {
 		header := rr.Header()
 		typeZoneKey := typeZoneKey{
@@ -155,7 +155,7 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 			}
 
 			if len(dnssecRRSets[i].rrSigs) == 0 {
-				unsignedRRsCount -= len(dnssecRRSets[i].rrSet)
+				signedRRSetsCount++
 			}
 			dnssecRRSets[i].rrSigs = append(dnssecRRSets[i].rrSigs, rrsig)
 			continue
@@ -169,19 +169,16 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 			typeZoneToIndex[typeZoneKey] = i
 		}
 		dnssecRRSets[i].rrSet = append(dnssecRRSets[i].rrSet, rr)
-		if len(dnssecRRSets[i].rrSigs) == 0 {
-			unsignedRRsCount++
-		}
 	}
 
 	// Verify all RRSets are either signed or unsigned.
-	switch unsignedRRsCount {
+	switch signedRRSetsCount {
 	case 0:
-	case len(rrs):
+	case len(dnssecRRSets):
 	default:
-		signedRRsCount := len(rrs) - unsignedRRsCount
-		return nil, fmt.Errorf("%w: %d signed RRs and %d unsigned RRs",
-			ErrRRSetSignedAndUnsigned, signedRRsCount, unsignedRRsCount)
+		unsignedRRSetsCount := len(dnssecRRSets) - signedRRSetsCount
+		return nil, fmt.Errorf("%w: %d signed and %d unsigned RRSets",
+			ErrRRSetSignedAndUnsigned, signedRRSetsCount, unsignedRRSetsCount)
 	}
 
 	// Verify built DNSSEC RRSets are well formed.
