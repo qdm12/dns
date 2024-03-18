@@ -36,6 +36,7 @@ type Settings struct {
 	LocalDNS         LocalDNS
 	Substituter      substituter.Settings
 	Health           Health
+	DNSSEC           DNSSEC
 	CheckDNS         *bool
 	UpdatePeriod     *time.Duration
 }
@@ -54,6 +55,7 @@ func (s *Settings) SetDefaults() {
 	s.LocalDNS.setDefault()
 	s.Substituter.SetDefaults()
 	s.Health.SetDefaults()
+	s.DNSSEC.setDefaults()
 	s.CheckDNS = gosettings.DefaultPointer(s.CheckDNS, true)
 	const defaultUpdaterPeriod = 24 * time.Hour
 	s.UpdatePeriod = gosettings.DefaultPointer(s.UpdatePeriod, defaultUpdaterPeriod)
@@ -84,6 +86,7 @@ func (s *Settings) Validate() (err error) {
 		"local DNS":      s.LocalDNS.validate,
 		"substituter":    s.Substituter.Validate,
 		"health":         s.Health.Validate,
+		"DNSSEC":         s.DNSSEC.validate,
 	}
 	for name, validate := range nameToValidate {
 		err = validate()
@@ -130,6 +133,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(s.LocalDNS.ToLinesNode())
 	node.AppendNode(s.Substituter.ToLinesNode())
 	node.AppendNode(s.Health.ToLinesNode())
+	node.AppendNode(s.DNSSEC.ToLinesNode())
 	node.Appendf("Check DNS: %s", gosettings.BoolToYesNo(s.CheckDNS))
 
 	if *s.UpdatePeriod == 0 {
@@ -195,6 +199,11 @@ func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) { //no
 	}
 
 	s.Health.Read(reader)
+
+	err = s.DNSSEC.read(reader)
+	if err != nil {
+		return fmt.Errorf("DNSSEC settings: %w", err)
+	}
 
 	s.CheckDNS, err = reader.BoolPtr("CHECK_DNS")
 	if err != nil {

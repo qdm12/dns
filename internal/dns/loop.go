@@ -24,6 +24,7 @@ type Loop struct {
 	blockBuilder       BlockBuilder
 	cache              Cache
 	prometheusRegistry PrometheusRegistry
+	dnssecEnabled      bool
 
 	dnsServer   Service
 	updateTimer *time.Timer
@@ -34,8 +35,9 @@ type Loop struct {
 
 func New(settings config.Settings, logger Logger,
 	blockBuilder BlockBuilder, cache Cache,
-	prometheusRegistry PrometheusRegistry,
-) (loop *Loop, err error) {
+	prometheusRegistry PrometheusRegistry, dnssecEnabled bool) (
+	loop *Loop, err error,
+) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {
@@ -48,6 +50,7 @@ func New(settings config.Settings, logger Logger,
 		blockBuilder:       blockBuilder,
 		cache:              cache,
 		prometheusRegistry: prometheusRegistry,
+		dnssecEnabled:      dnssecEnabled,
 	}, nil
 }
 
@@ -227,7 +230,7 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 	}
 
 	server, err := setup.DNS(l.settings, l.ipv6Support, l.cache,
-		filter, l.logger, l.prometheusRegistry)
+		filter, l.logger, l.prometheusRegistry, l.dnssecEnabled)
 	if err != nil {
 		return nil, err
 	}
