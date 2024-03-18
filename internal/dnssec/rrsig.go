@@ -30,7 +30,7 @@ func isRRSigForWildcard(rrSig *dns.RRSIG) bool {
 	if rrSig == nil {
 		return false
 	}
-	ownerLabelsCount := uint8(dns.CountLabel(rrSig.Header().Name))
+	ownerLabelsCount := uint8(dns.CountLabel(rrSig.Hdr.Name))
 	return rrSig.Labels < ownerLabelsCount
 }
 
@@ -58,43 +58,14 @@ func rrsigInitialChecks(rrsig *dns.RRSIG) (err error) {
 	return nil
 }
 
-// For wildcard considerations in positive responses, see:
-// - https://datatracker.ietf.org/doc/html/rfc2535#section-5.3
-// - https://datatracker.ietf.org/doc/html/rfc4035#section-5.3.4
-func verifyRRSetsRRSig(answerRRSets, authorityRRSets []dnssecRRSet,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
-	var wildcardOwners []string
+func verifyRRSetsRRSig(answerRRSets []dnssecRRSet, keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
 	for _, signedRRSet := range answerRRSets {
 		err = verifyRRSetRRSigs(signedRRSet.rrSet,
 			signedRRSet.rrSigs, keyTagToDNSKey)
 		if err != nil {
 			return err
 		}
-
-		for _, rrSig := range signedRRSet.rrSigs {
-			if isRRSigForWildcard(rrSig) {
-				wildcardOwners = append(wildcardOwners, rrSig.Hdr.Name)
-			}
-		}
 	}
-
-	if len(answerRRSets) > 0 && len(wildcardOwners) == 0 {
-		// No answer section RRSIG for a wildcard found.
-		return nil
-	}
-
-	// The authority section is verified only if:
-	// - there is no answer (NODATA or NXDOMAIN)
-	// - there is an answer and there is at least one wildcard owner
-	for _, signedRRSet := range authorityRRSets {
-		err = verifyRRSetRRSigs(signedRRSet.rrSet,
-			signedRRSet.rrSigs, keyTagToDNSKey)
-		if err != nil {
-			return err
-		}
-	}
-
-	// TODO check wildcard for positive responses
 
 	return nil
 }

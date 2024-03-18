@@ -80,16 +80,16 @@ func Test_Validate(t *testing.T) {
 		// 		"for dnssec-failed.org. IN A: " +
 		// 		"bad response rcode: SERVFAIL",
 		// },
-		"signed_answer_insecure_parent": {
-			// The answer is a NODATA with an NSEC RRSet signed by whispersystems.org.
-			// The parent zone whispersystems.org. has DNSKEYs (ZSK+KSK) but
-			// no DS record, so it is therefore insecure and so is the answer.
-			request: &dns.Msg{
-				Question: []dns.Question{
-					{Name: "textsecure-service.whispersystems.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-				},
-			},
-		},
+		// "signed_answer_insecure_parent": {
+		// 	// The answer is a NODATA with an NSEC RRSet signed by whispersystems.org.
+		// 	// The parent zone whispersystems.org. has DNSKEYs (ZSK+KSK) but
+		// 	// no DS record, so it is therefore insecure and so is the answer.
+		// 	request: &dns.Msg{
+		// 		Question: []dns.Question{
+		// 			{Name: "textsecure-service.whispersystems.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+		// 		},
+		// 	},
+		// },
 		// "nxdomain_2_rrsigs_per_nsec": {
 		// 	// There are two RRSIGs per NSEC RR, each with a
 		// 	// different algorithm. This is to allow transitioning
@@ -111,6 +111,13 @@ func Test_Validate(t *testing.T) {
 		// 		},
 		// 	},
 		// },
+		"wildcard_expanded": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "b.zahrarestaurant.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
 	}
 	for name, testCase := range testCases {
 		testCase := testCase

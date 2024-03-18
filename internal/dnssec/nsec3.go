@@ -19,21 +19,23 @@ func mustRRToNSEC3(rr dns.RR) (nsec3 *dns.NSEC3) {
 
 // extractNSEC3s returns the NSEC3 RRs found in the NSEC3
 // signed RRSet from the slice of signed RRSets. It also returns
-// wildcard as true if the NSEC3 RRSet RRSig is for a wildcard.
+// wildcard as true if one of the NSEC3 RRSets RRSigs is for a wildcard.
 func extractNSEC3s(rrSets []dnssecRRSet) (
 	rrs []dns.RR, wildcard bool) {
 	rrs = make([]dns.RR, 0, len(rrSets))
 	for _, rrSet := range rrSets {
-		if rrSet.qtype() == dns.TypeNSEC3 {
-			if !wildcard {
-				for _, rrSig := range rrSet.rrSigs {
-					if isRRSigForWildcard(rrSig) {
-						wildcard = true
-						break
-					}
+		if rrSet.qtype() != dns.TypeNSEC3 {
+			continue
+		}
+		rrs = append(rrs, rrSet.rrSet...)
+
+		if !wildcard {
+			for _, rrSig := range rrSet.rrSigs {
+				if isRRSigForWildcard(rrSig) {
+					wildcard = true
+					break
 				}
 			}
-			rrs = append(rrs, rrSet.rrSet...)
 		}
 	}
 	return rrs, wildcard
@@ -224,6 +226,8 @@ func nsec3ValidateWildcard(qname string, nsec3RRSet []dns.RR) (err error) {
 // The delegationName argument is the owner name of the NS RRSet in the
 // authority section of the response.
 // See https://datatracker.ietf.org/doc/html/rfc5155#section-8.9
+//
+//nolint:unused
 func nsec3ValidateReferralsToUnsignedSubzones(qname, delegationName string,
 	nsec3RRSet []dns.RR) (err error) {
 	matchingNSEC3 := nsec3FindMatching(qname, nsec3RRSet)
@@ -290,6 +294,8 @@ func nsec3ValidateReferralsToUnsignedSubzones(qname, delegationName string,
 //
 // See https://datatracker.ietf.org/doc/html/rfc5155#section-8.3
 // The implementation is based on the pseudo code from the RFC.
+//
+//nolint:cyclop
 func nsec3VerifyClosestEncloserProof(qname string, nsec3RRSet []dns.RR) (
 	closestEncloser string, err error) {
 	sname := qname
@@ -376,7 +382,7 @@ func getNextCloser(qname, closestEncloser string) (nextCloser string) {
 
 // nsec3RRSetHasMatchingWithoutTypes returns an error if:
 // - there is no NSEC3 matching matchName
-// - the NSEC3 matching matchName contains one of the notTypes
+// - the NSEC3 matching matchName contains one of the notTypes.
 func nsec3RRSetHasMatchingWithoutTypes(nsec3RRSet []dns.RR,
 	matchName string, notTypes ...uint16) (err error) {
 	matchingNSEC3 := nsec3FindMatching(matchName, nsec3RRSet)

@@ -13,7 +13,7 @@ var (
 
 func validateNxDomain(qname string, authoritySection []dnssecRRSet,
 	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
-	err = verifyRRSetsRRSig(nil, authoritySection, keyTagToDNSKey)
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}

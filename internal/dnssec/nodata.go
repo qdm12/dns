@@ -14,7 +14,7 @@ import (
 func validateNoData(qname string, qtype uint16,
 	authoritySection []dnssecRRSet,
 	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
-	err = verifyRRSetsRRSig(nil, authoritySection, keyTagToDNSKey)
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}
@@ -43,7 +43,7 @@ func validateNoData(qname string, qtype uint16,
 func validateNoDataDS(qname string,
 	authoritySection []dnssecRRSet,
 	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
-	err = verifyRRSetsRRSig(nil, authoritySection, keyTagToDNSKey)
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}

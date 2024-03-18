@@ -128,7 +128,10 @@ func nsecCoversZone(zone, nsecOwner, nsecNext string) (ok bool) {
 	for i := range nsecOwnerLabels {
 		zoneLabel := zoneLabels[len(zoneLabels)-1-i]
 		nsecOwnerLabel := nsecOwnerLabels[len(nsecOwnerLabels)-1-i]
-		if zoneLabel < nsecOwnerLabel {
+		if nsecOwnerLabel == "*" {
+			// wildcard NSEC owner containing zone
+			return true
+		} else if zoneLabel < nsecOwnerLabel {
 			return false
 		}
 	}
@@ -152,5 +155,4 @@ func nsecCoversZone(zone, nsecOwner, nsecNext string) (ok bool) {
 	// minLabelsCount labels, and zone != next, so zone is within
 	// the interval delimited by owner and next.
 	return true
-	// TODO wildcard handling?
 }

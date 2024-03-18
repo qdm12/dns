@@ -48,6 +48,24 @@ func Test_nsecCover(t *testing.T) {
 			nsecNext:  "c.example.com.",
 			ok:        true,
 		},
+		"wildcard_a": {
+			zone:      "a.example.com.",
+			nsecOwner: "*.example.com.",
+			nsecNext:  "example.com.",
+			ok:        true,
+		},
+		"wildcard_a.a": {
+			zone:      "a.a.example.com.",
+			nsecOwner: "*.example.com.",
+			nsecNext:  "example.com.",
+			ok:        true,
+		},
+		"wildcard_#": {
+			zone:      "#.example.com.",
+			nsecOwner: "*.example.com.",
+			nsecNext:  "example.com.",
+			ok:        true,
+		},
 	}
 
 	for name, testCase := range testCases {

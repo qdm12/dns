@@ -46,6 +46,12 @@ func validateWithChain(desiredZone string, qType uint16,
 		return fmt.Errorf("verifying the root anchor: %w", err)
 	}
 
+	wildcardName := extractWildcardExpansion(desiredResponse.answerRRSets)
+	if wildcardName != "" {
+		wildcardLabelsCount := dns.CountLabel(wildcardName)
+		chain = chain[:wildcardLabelsCount]
+	}
+
 	parentZoneInsecure := false
 	for i := 1; i < len(chain); i++ {
 		// Iterate in this order: "com.", "example.com.", "abc.example.com."
@@ -147,29 +153,44 @@ func validateWithChain(desiredZone string, qType uint16,
 
 	lastSecureKeyTagToDNSKey := makeKeyTagToDNSKey(lastSecureZoneData.dnsKeyResponse.onlyAnswerRRSet())
 	switch {
-	case desiredResponse.rcode == dns.RcodeNameError: // NXDOMAIN
+	case desiredResponse.isNXDomain():
 		err = validateNxDomain(desiredZone, desiredResponse.authorityRRSets,
 			lastSecureKeyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("validating negative NXDOMAIN response: %w", err)
 		}
-	case len(desiredResponse.answerRRSets) == 0: // NODATA
+		return nil
+	case desiredResponse.isNoData():
 		err = validateNoData(desiredZone, qType, desiredResponse.authorityRRSets,
 			lastSecureKeyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("validating negative NODATA response: %w", err)
 		}
+		return nil
 	default:
 		// Verify the desired RRSets with the DNSKEY of the desired
 		// zone matching the RRSIG key tag.
-		err = verifyRRSetsRRSig(desiredResponse.answerRRSets,
-			desiredResponse.authorityRRSets, lastSecureKeyTagToDNSKey)
+		err = verifyRRSetsRRSig(desiredResponse.answerRRSets, lastSecureKeyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("verifying RRSets with RRSigs: %w", err)
 		}
-	}
 
-	return nil
+		if wildcardName == "" { // no wildcard expansion
+			return nil
+		}
+
+		err = verifyRRSetsRRSig(desiredResponse.authorityRRSets, lastSecureKeyTagToDNSKey)
+		if err != nil {
+			return fmt.Errorf("verifying authority section RRSets with RRSigs: %w", err)
+		}
+
+		err = validateWildcardExpansion(desiredZone, desiredResponse.authorityRRSets)
+		if err != nil {
+			return fmt.Errorf("validating wildcard expansion: %w", err)
+		}
+
+		return nil
+	}
 }
 
 // verifyDSRRSet verifies the digest of each received DS
