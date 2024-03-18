@@ -119,5 +119,4 @@ LABEL \
 COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 
 # Downloads and install some files
-# TODO once DNSSEC is operational
 # RUN /entrypoint build
