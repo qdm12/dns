@@ -158,7 +158,8 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 		return fmt.Errorf("cache: %w", err)
 	}
 
-	dnsLoop, err := dns.New(settings, ipv6Support, dnsLogger, blockBuilder, cache, prometheusRegistry)
+	dnsLoop, err := dns.New(settings, ipv6Support, dnsLogger, blockBuilder, cache, prometheusRegistry,
+		*settings.DNSSEC.Enabled)
 	if err != nil {
 		return fmt.Errorf("creating DNS loop: %w", err)
 	}
