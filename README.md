@@ -1,10 +1,10 @@
-# DNS over TLS or HTTPs forwarding resolver
+# DNS over TLS or HTTPs forwarding security aware resolver
 
-Resolver communicating with public DNS recursive servers over encrypted channels with TLS or HTTPs.
-It also does **caching**, **filtering**, **split-horizon DNS**, **IPv6**, **Prometheus metrucs**.
+Security aware resolver communicating with public DNS recursive servers over encrypted channels with TLS or HTTPs.
+It also does **caching**, **filtering**, **split-horizon DNS**, **IPv6**, **DNSSEC** and **Prometheus metrucs**.
 It's fully coded in Go and is a single and cross platform binary program.
 
-**Announcement**: *I am currently working on a DNSSEC validator implementation to reach feature parity with the v1.x.x image using Unbound*
+**Announcement**: *DNSSEC validation is now implemented, finally reaching feature parity with the v1.x.x image using Unbound*
 
 **The `:v2.0.0-beta` Docker image breaks compatibility with previous images based on v1.x.x versions**
 
@@ -54,6 +54,7 @@ It's fully coded in Go and is a single and cross platform binary program.
   - auto-update [block lists](https://github.com/qdm12/files) periodically with minimal downtime
   - Specify custom hostnames and IP addresses
 - DNS rebinding protection
+- [DNSSEC validation](https://github.com/qdm12/dns/blob/v2.0.0-beta/internal/dnssec/readme.md) ✅
 - [Prometheus Metrics](https://github.com/qdm12/dns/blob/v2.0.0-beta/readme/metrics)
 - Container specific features 🐋
   - Tiny **16MB** Docker image (uncompressed, amd64) based on the empty image [scratch](https://hub.docker.com/_/scratch)
@@ -134,6 +135,7 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `LISTENING_ADDRESS` | `:53` | DNS server listening address |
 | `CACHE_TYPE` | `lru` | `lru` or `noop`. LRU caches DNS responses by least recently used |
 | `CACHE_LRU_MAX_ENTRIES` | `10000` | Number of elements to keep in the LRU cache. |
+| `DNSSEC_VALIDATION` | `on` | `on` or `off`. Enable or disable DNSSEC validation |
 | `METRICS_TYPE` | `noop` | `noop` or `prometheus` |
 | `METRICS_PROMETHEUS_ADDRESS` | `:9090` | HTTP Prometheus server listening address |
 | `METRICS_PROMETHEUS_SUBSYSTEM` | `dns` | Prometheus metrics prefix/subsystem |
