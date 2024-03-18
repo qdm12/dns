@@ -119,7 +119,7 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 	// For well formed DNSSEC DNS answers, there should be at most
 	// N/2 signed RRSets (grouped by qname-qtype-qclass) where N is
 	// the number of total answers.
-	maxRRSets := len(rrs) / 2 //nolint:gomnd
+	maxRRSets := len(rrs) // all unsigned RRs
 	dnssecRRSets = make([]dnssecRRSet, 0, maxRRSets)
 	type typeZoneKey struct {
 		rrType uint16
