@@ -9,6 +9,10 @@ issues:
         - dupl
         - goerr113
         - containedctx
+    - path: internal/dnssec/.*\.go
+      linters:
+        - gocognit
+        - cyclop
     - path: main\.go
       text: File is not `goimports`-ed
       linters:

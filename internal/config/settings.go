@@ -32,6 +32,7 @@ type Settings struct {
 	MiddlewareLog    MiddlewareLog
 	Metrics          Metrics
 	LocalDNS         LocalDNS
+	DNSSEC           DNSSEC
 	CheckDNS         *bool
 	UpdatePeriod     *time.Duration
 }
@@ -47,6 +48,7 @@ func (s *Settings) SetDefaults() {
 	s.MiddlewareLog.setDefaults()
 	s.Metrics.setDefaults()
 	s.LocalDNS.setDefault()
+	s.DNSSEC.setDefaults()
 	s.CheckDNS = gosettings.DefaultPointer(s.CheckDNS, true)
 	const defaultUpdaterPeriod = 24 * time.Hour
 	s.UpdatePeriod = gosettings.DefaultPointer(s.UpdatePeriod, defaultUpdaterPeriod)
@@ -77,6 +79,7 @@ func (s *Settings) Validate() (err error) {
 		"middleware log": s.MiddlewareLog.validate,
 		"metrics":        s.Metrics.validate,
 		"local DNS":      s.LocalDNS.validate,
+		"DNSSEC":         s.DNSSEC.validate,
 	}
 	for name, validate := range nameToValidate {
 		err = validate()
@@ -119,6 +122,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(s.MiddlewareLog.ToLinesNode())
 	node.AppendNode(s.Metrics.ToLinesNode())
 	node.AppendNode(s.LocalDNS.ToLinesNode())
+	node.AppendNode(s.DNSSEC.ToLinesNode())
 	node.Appendf("Check DNS: %s", gosettings.BoolToYesNo(s.CheckDNS))
 
 	if *s.UpdatePeriod == 0 {
@@ -130,6 +134,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	return node
 }
 
+//nolint:cyclop
 func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) {
 	warnings := checkOutdatedEnv(reader)
 	for _, warning := range warnings {
@@ -171,6 +176,11 @@ func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) {
 	err = s.LocalDNS.read(reader)
 	if err != nil {
 		return fmt.Errorf("local DNS settings: %w", err)
+	}
+
+	err = s.DNSSEC.read(reader)
+	if err != nil {
+		return fmt.Errorf("DNSSEC settings: %w", err)
 	}
 
 	s.CheckDNS, err = reader.BoolPtr("CHECK_DNS")

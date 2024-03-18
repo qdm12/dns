@@ -84,6 +84,7 @@ ENV \
     MIDDLEWARE_LOG_RESPONSES=off \
     MIDDLEWARE_LOCALDNS_ENABLED=on \
     MIDDLEWARE_LOCALDNS_RESOLVERS= \
+    DNSSEC_VALIDATION=on \
     CACHE_TYPE=lru \
     CACHE_LRU_MAX_ENTRIES=10000 \
     BLOCK_MALICIOUS=on \
@@ -116,5 +117,4 @@ LABEL \
 COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 
 # Downloads and install some files
-# TODO once DNSSEC is operational
 # RUN /entrypoint build
