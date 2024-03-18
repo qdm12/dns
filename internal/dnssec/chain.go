@@ -15,7 +15,8 @@ import (
 // first signed zone (index 0) is the root zone and the last signed
 // zone is the last signed zone, which can be the desired zone.
 func buildDelegationChain(handler dns.Handler, desiredZone string, qClass uint16) (
-	delegationChain []signedData, err error) {
+	delegationChain []signedData, err error,
+) {
 	zoneNames := desiredZoneToZoneNames(desiredZone)
 	delegationChain = make([]signedData, 0, len(zoneNames))
 
@@ -56,7 +57,8 @@ func desiredZoneToZoneNames(desiredZone string) (zoneNames []string) {
 // this information. It does not query the (non existent)
 // DS record for the root zone, which is the trust root anchor.
 func queryDelegation(handler dns.Handler, zone string, qClass uint16) (
-	data signedData, signed bool, err error) {
+	data signedData, signed bool, err error,
+) {
 	data.zone = zone
 	data.class = qClass
 
@@ -88,12 +90,11 @@ func queryDelegation(handler dns.Handler, zone string, qClass uint16) (
 	return data, true, nil
 }
 
-var (
-	ErrDSAndNSECAbsent = errors.New("zone has no DS record and no NSEC record")
-)
+var ErrDSAndNSECAbsent = errors.New("zone has no DS record and no NSEC record")
 
 func queryDS(handler dns.Handler, zone string, qClass uint16) (
-	response dnssecResponse, err error) {
+	response dnssecResponse, err error,
+) {
 	response, err = queryRRSets(handler, zone, qClass, dns.TypeDS)
 	switch {
 	case err != nil:
@@ -124,7 +125,8 @@ func queryDS(handler dns.Handler, zone string, qClass uint16) (
 // missing or is unsigned.
 // Note this returns all the DNSKey RRs, even non-zone ones.
 func queryDNSKeys(handler dns.Handler, qname string, qClass uint16) (
-	response dnssecResponse, err error) {
+	response dnssecResponse, err error,
+) {
 	// DNSKey RRSet(s) should be present so the NSEC/NSEC3 RRSet is ignored.
 	response, err = queryRRSets(handler, qname, qClass, dns.TypeDNSKEY)
 	switch {

@@ -26,11 +26,6 @@ func (d dnssecRRSet) qtype() uint16 {
 	return d.rrSet[0].Header().Rrtype
 }
 
-func (d dnssecRRSet) ownerAndType() string {
-	return d.rrSet[0].Header().Name + " " +
-		dns.TypeToString[d.rrSet[0].Header().Rrtype]
-}
-
 func dnssecRRSetsToRRs(rrSets []dnssecRRSet, ignoreTypes ...uint16) (rrs []dns.RR) {
 	if len(rrSets) == 0 {
 		return nil
@@ -67,6 +62,11 @@ func dnssecRRSetsToRRs(rrSets []dnssecRRSet, ignoreTypes ...uint16) (rrs []dns.R
 		}
 	}
 
+	if len(rrs) == 0 {
+		// All RRSets types were ignored
+		return nil
+	}
+
 	return rrs
 }
 
@@ -94,22 +94,4 @@ func dnssecRRSetsIsSingleOfType(rrSets []dnssecRRSet, qType uint16) (err error) 
 	}
 
 	return nil
-}
-
-func removeFromRRSet(rrSet []dns.RR, typesToRemove ...uint16) (filtered []dns.RR) {
-	if len(rrSet) == 0 {
-		return nil
-	}
-
-	filtered = make([]dns.RR, 0, len(rrSet))
-	for _, rr := range rrSet {
-		rrType := rr.Header().Rrtype
-		for _, rrTypeToRemove := range typesToRemove {
-			if rrType == rrTypeToRemove {
-				continue
-			}
-		}
-		filtered = append(filtered, rr)
-	}
-	return filtered
 }

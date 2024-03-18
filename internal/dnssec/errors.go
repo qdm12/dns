@@ -2,10 +2,8 @@ package dnssec
 
 import "errors"
 
-var (
-	// TODO review exported errors usage and all sentinel errors.
-	ErrBogus = errors.New("bogus response")
-)
+// TODO review exported errors usage and all sentinel errors.
+var ErrBogus = errors.New("bogus response")
 
 var _ error = (*joinedErrors)(nil)
 

@@ -44,13 +44,13 @@ func testSwitchStatement(key uint8) uint8 {
 // immutability nature, unlike 1.
 func Benchmark_globalMap_switch(b *testing.B) {
 	b.Run("global_map", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			_ = testGlobalMap[1]
 		}
 	})
 
 	b.Run("switch", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			_ = testSwitchStatement(1)
 		}
 	})

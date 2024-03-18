@@ -13,8 +13,9 @@ import (
 // validateNoDataDS for the qtype DS.
 func validateNoData(qname string, qtype uint16,
 	authoritySection []dnssecRRSet,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
-	err = verifyRRSetsRRSig(nil, authoritySection, keyTagToDNSKey)
+	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+) (err error) {
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}
@@ -42,8 +43,9 @@ func validateNoData(qname string, qtype uint16,
 
 func validateNoDataDS(qname string,
 	authoritySection []dnssecRRSet,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
-	err = verifyRRSetsRRSig(nil, authoritySection, keyTagToDNSKey)
+	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+) (err error) {
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}
@@ -71,7 +73,8 @@ func validateNoDataDS(qname string,
 
 // See https://datatracker.ietf.org/doc/html/rfc5155#section-8.6
 func verifyNoDataNsecxTypesDS(nsecVariant string,
-	nsecTypes []uint16) (err error) {
+	nsecTypes []uint16,
+) (err error) {
 	for _, nsecType := range nsecTypes {
 		switch nsecType {
 		case dns.TypeSOA:
