@@ -40,7 +40,8 @@ func nsecValidateNxDomain(qname string, nsecRRSet []dns.RR) (err error) {
 }
 
 func nsecValidateNoData(qname string, qType uint16,
-	nsecRRSet []dns.RR) (err error) {
+	nsecRRSet []dns.RR,
+) (err error) {
 	if qType == dns.TypeDS {
 		return nsecValidateNoDataDS(qname, nsecRRSet)
 	}
@@ -128,7 +129,10 @@ func nsecCoversZone(zone, nsecOwner, nsecNext string) (ok bool) {
 	for i := range nsecOwnerLabels {
 		zoneLabel := zoneLabels[len(zoneLabels)-1-i]
 		nsecOwnerLabel := nsecOwnerLabels[len(nsecOwnerLabels)-1-i]
-		if zoneLabel < nsecOwnerLabel {
+		if nsecOwnerLabel == "*" {
+			// wildcard NSEC owner containing zone
+			return true
+		} else if zoneLabel < nsecOwnerLabel {
 			return false
 		}
 	}
@@ -140,7 +144,7 @@ func nsecCoversZone(zone, nsecOwner, nsecNext string) (ok bool) {
 	}
 
 	minLabelsCount := min(len(zoneLabels), len(nsecNextLabels))
-	for i := 0; i < minLabelsCount; i++ {
+	for i := range minLabelsCount {
 		zoneLabel := zoneLabels[len(zoneLabels)-1-i]
 		nsecNextLabel := nsecNextLabels[len(nsecNextLabels)-1-i]
 		if zoneLabel > nsecNextLabel {
@@ -152,5 +156,4 @@ func nsecCoversZone(zone, nsecOwner, nsecNext string) (ok bool) {
 	// minLabelsCount labels, and zone != next, so zone is within
 	// the interval delimited by owner and next.
 	return true
-	// TODO wildcard handling?
 }

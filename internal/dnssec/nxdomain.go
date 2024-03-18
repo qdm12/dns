@@ -7,13 +7,12 @@ import (
 	"github.com/miekg/dns"
 )
 
-var (
-	ErrRRSigWildcardUnexpected = errors.New("RRSIG for a wildcard is unexpected")
-)
+var ErrRRSigWildcardUnexpected = errors.New("RRSIG for a wildcard is unexpected")
 
 func validateNxDomain(qname string, authoritySection []dnssecRRSet,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
-	err = verifyRRSetsRRSig(nil, authoritySection, keyTagToDNSKey)
+	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+) (err error) {
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}

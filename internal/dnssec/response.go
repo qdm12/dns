@@ -48,7 +48,7 @@ func (d dnssecResponse) onlyAnswerRRSigs() (rrSigs []*dns.RRSIG) {
 	return d.answerRRSets[0].rrSigs
 }
 
-func (d dnssecResponse) ToDNSMsg(request *dns.Msg) (response *dns.Msg) {
+func (d dnssecResponse) toDNSMsg(request *dns.Msg) (response *dns.Msg) {
 	response = new(dns.Msg)
 	response.SetRcode(request, d.rcode)
 	var ignoreTypes []uint16

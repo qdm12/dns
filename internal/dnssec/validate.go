@@ -14,7 +14,8 @@ import (
 // assuming a signature is valid, it walks through the slice of signed
 // zones checking the RRSIGs on the DNSKEY and DS resource record sets.
 func validateWithChain(desiredZone string, qType uint16,
-	desiredResponse dnssecResponse, chain []signedData) (err error) {
+	desiredResponse dnssecResponse, chain []signedData,
+) (err error) {
 	// Verify the root zone "."
 	rootZone := chain[0]
 
@@ -44,6 +45,12 @@ func validateWithChain(desiredZone string, qType uint16,
 	err = verifyDS(rootAnchor, rootZoneKeyTagToDNSKey)
 	if err != nil {
 		return fmt.Errorf("verifying the root anchor: %w", err)
+	}
+
+	wildcardName := extractWildcardExpansion(desiredResponse.answerRRSets)
+	if wildcardName != "" {
+		wildcardLabelsCount := dns.CountLabel(wildcardName)
+		chain = chain[:wildcardLabelsCount]
 	}
 
 	parentZoneInsecure := false
@@ -147,36 +154,52 @@ func validateWithChain(desiredZone string, qType uint16,
 
 	lastSecureKeyTagToDNSKey := makeKeyTagToDNSKey(lastSecureZoneData.dnsKeyResponse.onlyAnswerRRSet())
 	switch {
-	case desiredResponse.rcode == dns.RcodeNameError: // NXDOMAIN
+	case desiredResponse.isNXDomain():
 		err = validateNxDomain(desiredZone, desiredResponse.authorityRRSets,
 			lastSecureKeyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("validating negative NXDOMAIN response: %w", err)
 		}
-	case len(desiredResponse.answerRRSets) == 0: // NODATA
+		return nil
+	case desiredResponse.isNoData():
 		err = validateNoData(desiredZone, qType, desiredResponse.authorityRRSets,
 			lastSecureKeyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("validating negative NODATA response: %w", err)
 		}
+		return nil
 	default:
 		// Verify the desired RRSets with the DNSKEY of the desired
 		// zone matching the RRSIG key tag.
-		err = verifyRRSetsRRSig(desiredResponse.answerRRSets,
-			desiredResponse.authorityRRSets, lastSecureKeyTagToDNSKey)
+		err = verifyRRSetsRRSig(desiredResponse.answerRRSets, lastSecureKeyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("verifying RRSets with RRSigs: %w", err)
 		}
-	}
 
-	return nil
+		if wildcardName == "" { // no wildcard expansion
+			return nil
+		}
+
+		err = verifyRRSetsRRSig(desiredResponse.authorityRRSets, lastSecureKeyTagToDNSKey)
+		if err != nil {
+			return fmt.Errorf("verifying authority section RRSets with RRSigs: %w", err)
+		}
+
+		err = validateWildcardExpansion(desiredZone, desiredResponse.authorityRRSets)
+		if err != nil {
+			return fmt.Errorf("validating wildcard expansion: %w", err)
+		}
+
+		return nil
+	}
 }
 
 // verifyDSRRSet verifies the digest of each received DS
 // is equal to the digest of the calculated DS obtained
 // from the DNSKEY (KSK) matching the received DS key tag.
 func verifyDSRRSet(dsRRSet []dns.RR,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
+	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+) (err error) {
 	for _, rr := range dsRRSet {
 		ds := mustRRToDS(rr)
 		err = verifyDS(ds, keyTagToDNSKey)
@@ -194,7 +217,8 @@ var (
 )
 
 func verifyDS(receivedDS *dns.DS,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY) error {
+	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+) error {
 	// Note keyTagToDNSKey only contains ZSKs.
 	dnsKey, ok := keyTagToDNSKey[receivedDS.KeyTag]
 	if !ok {

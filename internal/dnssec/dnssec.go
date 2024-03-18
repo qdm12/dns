@@ -6,11 +6,10 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/local"
+	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
-var (
-	ErrQuestionsMultiple = errors.New("multiple questions")
-)
+var ErrQuestionsMultiple = errors.New("multiple questions")
 
 func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err error) {
 	switch len(request.Question) {
@@ -26,14 +25,17 @@ func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err err
 	desiredZone := request.Question[0].Name
 	qType := request.Question[0].Qtype
 	qClass := request.Question[0].Qclass
-	desiredResponse, err := queryRRSets(handler, desiredZone, qClass, qType)
-	if err != nil {
-		return nil, fmt.Errorf("running desired query: %w", err)
-	}
 
 	if local.IsFQDNLocal(desiredZone) {
 		// Do not perform DNSSEC validation for local zones
-		return desiredResponse.ToDNSMsg(request), nil
+		writer := stateful.NewWriter()
+		handler.ServeDNS(writer, request)
+		return writer.Response, nil
+	}
+
+	desiredResponse, err := queryRRSets(handler, desiredZone, qClass, qType)
+	if err != nil {
+		return nil, fmt.Errorf("running desired query: %w", err)
 	}
 
 	originalDesiredZone := desiredZone
@@ -55,5 +57,5 @@ func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err err
 			nameClassTypeToString(originalDesiredZone, qClass, qType), err)
 	}
 
-	return desiredResponse.ToDNSMsg(request), nil
+	return desiredResponse.toDNSMsg(request), nil
 }

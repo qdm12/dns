@@ -8,12 +8,11 @@ import (
 	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
-var (
-	ErrRcodeBad = errors.New("bad response rcode")
-)
+var ErrRcodeBad = errors.New("bad response rcode")
 
 func queryRRSets(handler dns.Handler, zone string,
-	qClass, qType uint16) (response dnssecResponse, err error) {
+	qClass, qType uint16,
+) (response dnssecResponse, err error) {
 	request := newEDNSRequest(zone, qClass, qType)
 
 	statefulWriter := stateful.NewWriter()
@@ -119,7 +118,7 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 	// For well formed DNSSEC DNS answers, there should be at most
 	// N/2 signed RRSets (grouped by qname-qtype-qclass) where N is
 	// the number of total answers.
-	maxRRSets := len(rrs) / 2 //nolint:gomnd
+	maxRRSets := len(rrs) / 2 //nolint:mnd
 	dnssecRRSets = make([]dnssecRRSet, 0, maxRRSets)
 	type typeZoneKey struct {
 		rrType uint16
