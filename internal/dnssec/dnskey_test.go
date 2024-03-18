@@ -32,7 +32,7 @@ func testSwitchStatement(key uint8) uint8 {
 	case 8:
 		return 8
 	default:
-		return 0 // TODO replace with panic
+		panic("invalid key")
 	}
 }
 
