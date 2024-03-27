@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/miekg/dns"
@@ -170,7 +171,12 @@ func rrSigCheckSignerName(rrSig *dns.RRSIG) (err error) {
 		// or the parent of the owner, for example for sigok.ippacket.stream.
 		// the A record RRSIG owner is sigok.rsa2048-sha256.ippacket.stream.
 		// and signer name is rsa2048-sha256.ippacket.stream.
-		validSignerNames = []string{rrSig.Hdr.Name, parentName(rrSig.Hdr.Name)}
+		validSignerNames = make([]string, 0, strings.Count(rrSig.Hdr.Name, "."))
+		current := rrSig.Hdr.Name
+		for current != "." {
+			validSignerNames = append(validSignerNames, current)
+			current = parentName(current)
+		}
 	}
 
 	if isOneOf(rrSig.SignerName, validSignerNames...) {

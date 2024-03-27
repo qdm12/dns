@@ -37,3 +37,16 @@ When this is unclear, there are a few specific rules used, for example:
 
 - [DNSViz](https://dnsviz.net/)
 - [DNSSEC Analyzer](https://dnssec-analyzer.verisignlabs.com)
+
+dns1.nextdns.io. IN A
+acme-v02.api.letsencrypt.org. IN AAAA
+acme-v02.api.letsencrypt.org. IN A
+
+<https://unbound.docs.nlnetlabs.nl/en/latest/topics/privacy/aggressive-nsec.html#>
+
+ The NSEC3 RR SHOULD have the same TTL value as the SOA minimum TTL
+   field.
+rename zone -> qname
+check rrsig labels field for wildcard needing NSEC for non empty response
+
+<https://datatracker.ietf.org/doc/html/rfc4035#section-5.3.1>
