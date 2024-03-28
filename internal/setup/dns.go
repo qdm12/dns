@@ -8,6 +8,7 @@ import (
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 	"github.com/qdm12/dns/v2/pkg/middlewares/localdns"
+	"github.com/qdm12/dns/v2/pkg/middlewares/substituter"
 	"github.com/qdm12/log"
 )
 
@@ -84,6 +85,14 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 	// Note the filter middleware must be wrapping the cache middleware
 	// to catch filtered responses found from the cache.
 	middlewares = append(middlewares, filterMiddleware)
+
+	substituterMiddleware, err := substituter.New(userSettings.Substituter)
+	if err != nil {
+		return nil, fmt.Errorf("creating substituter middleware: %w", err)
+	}
+	// Place after cache middleware, since we want to avoid caching for substitutions
+	// that may change suddenly.
+	middlewares = append(middlewares, substituterMiddleware)
 
 	metricsMiddleware, err := middlewareMetrics(userSettings.Metrics.Type,
 		commonPrometheus)

@@ -139,6 +139,7 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `METRICS_PROMETHEUS_SUBSYSTEM` | `dns` | Prometheus metrics prefix/subsystem |
 | `MIDDLEWARE_LOCALDNS_ENABLED` | `on` | Enable or disable the local DNS middleware |
 | `MIDDLEWARE_LOCALDNS_RESOLVERS` | Local DNS servers | Comma separated list of local DNS resolvers to use for local names DNS requests |
+| `MIDDLEWARE_SUBSTITUTER_SUBSTITUTIONS` | | JSON encoded list of substitutions. For example `[{"name":"github.com","ips":["1.2.3.4"]}]`. You can also specify the `type`, `class` and `ttl`, where they default respectively to `A`/`AAAA`, `IN` and `300`. |
 | `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `UPDATE_PERIOD` | `24h` | Period to update block lists and restart Unbound. Set to `0` to disable. |
 

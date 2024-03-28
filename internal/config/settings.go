@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/qdm12/dns/v2/pkg/middlewares/substituter"
 	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
@@ -32,6 +33,7 @@ type Settings struct {
 	MiddlewareLog    MiddlewareLog
 	Metrics          Metrics
 	LocalDNS         LocalDNS
+	Substituter      substituter.Settings
 	CheckDNS         *bool
 	UpdatePeriod     *time.Duration
 }
@@ -47,6 +49,7 @@ func (s *Settings) SetDefaults() {
 	s.MiddlewareLog.setDefaults()
 	s.Metrics.setDefaults()
 	s.LocalDNS.setDefault()
+	s.Substituter.SetDefaults()
 	s.CheckDNS = gosettings.DefaultPointer(s.CheckDNS, true)
 	const defaultUpdaterPeriod = 24 * time.Hour
 	s.UpdatePeriod = gosettings.DefaultPointer(s.UpdatePeriod, defaultUpdaterPeriod)
@@ -77,6 +80,7 @@ func (s *Settings) Validate() (err error) {
 		"middleware log": s.MiddlewareLog.validate,
 		"metrics":        s.Metrics.validate,
 		"local DNS":      s.LocalDNS.validate,
+		"substituter":    s.Substituter.Validate,
 	}
 	for name, validate := range nameToValidate {
 		err = validate()
@@ -119,6 +123,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.AppendNode(s.MiddlewareLog.ToLinesNode())
 	node.AppendNode(s.Metrics.ToLinesNode())
 	node.AppendNode(s.LocalDNS.ToLinesNode())
+	node.AppendNode(s.Substituter.ToLinesNode())
 	node.Appendf("Check DNS: %s", gosettings.BoolToYesNo(s.CheckDNS))
 
 	if *s.UpdatePeriod == 0 {
@@ -130,7 +135,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	return node
 }
 
-func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) {
+func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) { //nolint:cyclop
 	warnings := checkOutdatedEnv(reader)
 	for _, warning := range warnings {
 		warner.Warn(warning)
@@ -171,6 +176,11 @@ func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) {
 	err = s.LocalDNS.read(reader)
 	if err != nil {
 		return fmt.Errorf("local DNS settings: %w", err)
+	}
+
+	err = s.Substituter.Read(reader)
+	if err != nil {
+		return fmt.Errorf("substituter settings: %w", err)
 	}
 
 	s.CheckDNS, err = reader.BoolPtr("CHECK_DNS")
