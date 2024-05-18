@@ -65,8 +65,7 @@ func (s *Settings) Validate() (err error) {
 		return fmt.Errorf("upstream type: %w", err)
 	}
 
-	const privilegedAllowedPort = 53
-	err = validate.ListeningAddress(*s.ListeningAddress, os.Getuid(), privilegedAllowedPort)
+	err = validate.ListeningAddress(*s.ListeningAddress, os.Getuid())
 	if err != nil {
 		return fmt.Errorf("listening address: %w", err)
 	}

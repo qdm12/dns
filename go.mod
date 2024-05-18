@@ -9,7 +9,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/qdm12/goservices v0.1.0
-	github.com/qdm12/gosettings v0.4.0-rc5
+	github.com/qdm12/gosettings v0.4.1
 	github.com/qdm12/gosplash v0.1.0
 	github.com/qdm12/gotree v0.2.0
 	github.com/qdm12/log v0.1.0
@@ -38,4 +38,6 @@ require (
 	golang.org/x/tools v0.15.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	kernel.org/pub/linux/libs/security/libcap/cap v1.2.69 // indirect
+	kernel.org/pub/linux/libs/security/libcap/psx v1.2.69 // indirect
 )

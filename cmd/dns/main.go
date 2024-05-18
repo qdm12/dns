@@ -49,7 +49,9 @@ func main() {
 	logger := log.New()
 	settingsSources := []reader.Source{
 		flag.New(os.Args),
-		env.New(os.Environ()),
+		env.New(env.Settings{
+			Environ: os.Environ(),
+		}),
 	}
 	settingsReader := reader.New(reader.Settings{
 		Sources: settingsSources,
