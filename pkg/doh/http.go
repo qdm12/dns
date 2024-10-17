@@ -41,7 +41,7 @@ func newHTTPClientResolver(dohServers []provider.DoHServer,
 	return &net.Resolver{
 		PreferGo:     true,
 		StrictErrors: true,
-		Dial: func(ctx context.Context, _, _ string) (net.Conn, error) {
+		Dial: func(_ context.Context, _, _ string) (net.Conn, error) {
 			return &hardcodedConn{
 				fqdnToIPv4: fqdnToIPv4,
 				fqdnToIPv6: fqdnToIPv6,

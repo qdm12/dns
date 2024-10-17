@@ -1,7 +1,6 @@
 package picker
 
 import (
-	"fmt"
 	"math/rand"
 	"net/netip"
 
@@ -68,7 +67,7 @@ func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPor
 	if ipv6 {
 		ipVersions += " or IPv6"
 	}
-	panic(fmt.Sprintf("no valid " + ipVersions + " address found"))
+	panic("no valid " + ipVersions + " address found")
 }
 
 func (p *Picker) addrPort(addrPorts []netip.AddrPort) netip.AddrPort {

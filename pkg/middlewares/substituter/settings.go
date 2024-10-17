@@ -40,7 +40,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Substitute middleware settings:")
 	substitutionsNode := node.Appendf("Substitutions:")
 	for _, substitution := range s.Substitutions {
-		substitutionsNode.Appendf(substitution.String())
+		substitutionsNode.Append(substitution.String())
 	}
 	return node
 }

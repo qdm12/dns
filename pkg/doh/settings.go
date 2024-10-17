@@ -119,10 +119,10 @@ func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
 func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoH resolver settings:")
 
-	upstreamResolversNode := node.Appendf("Upstream resolvers:")
+	upstreamResolversNode := node.Append("Upstream resolvers:")
 	caser := cases.Title(language.English)
 	for _, provider := range s.UpstreamResolvers {
-		upstreamResolversNode.Appendf(caser.String(provider.Name))
+		upstreamResolversNode.Append(caser.String(provider.Name))
 	}
 
 	node.Appendf("Connecting over %s", s.IPVersion)

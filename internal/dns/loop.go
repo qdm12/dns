@@ -51,7 +51,7 @@ func (l *Loop) String() string {
 	return "dns loop"
 }
 
-func (l *Loop) Start(ctx context.Context) (
+func (l *Loop) Start(ctx context.Context) ( //nolint:contextcheck
 	runError <-chan error, err error) {
 	err = l.checkIPv6Support(ctx)
 	if err != nil {

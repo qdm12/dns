@@ -130,10 +130,10 @@ func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
 func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoT resolver settings:")
 
-	upstreamResolversNode := node.Appendf("Upstream resolvers:")
+	upstreamResolversNode := node.Append("Upstream resolvers:")
 	caser := cases.Title(language.English)
 	for _, upstreamResolver := range s.UpstreamResolvers {
-		upstreamResolversNode.Appendf(caser.String(upstreamResolver.Name))
+		upstreamResolversNode.Append(caser.String(upstreamResolver.Name))
 	}
 
 	node.Appendf("Query timeout: %s", s.Timeout)

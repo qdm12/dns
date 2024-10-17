@@ -33,7 +33,7 @@ func Test_New(t *testing.T) {
 	middleware, err := New(settings)
 	require.NoError(t, err)
 
-	next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {})
+	next := dns.HandlerFunc(func(_ dns.ResponseWriter, _ *dns.Msg) {})
 	handler := middleware.Wrap(next)
 
 	writer := NewMockResponseWriter(ctrl)

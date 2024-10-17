@@ -41,7 +41,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 					Question: []dns.Question{{Name: "test"}},
 				}
 
-				exchange := func(ctx context.Context, request *dns.Msg) (
+				exchange := func(_ context.Context, request *dns.Msg) (
 					response *dns.Msg, err error,
 				) {
 					assert.Equal(t, expectedRequest, request)
@@ -73,7 +73,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 				expectedRequest := &dns.Msg{
 					Question: []dns.Question{{Name: "test"}},
 				}
-				exchange := func(ctx context.Context, request *dns.Msg) (
+				exchange := func(_ context.Context, request *dns.Msg) (
 					response *dns.Msg, err error,
 				) {
 					assert.Equal(t, expectedRequest, request)
