@@ -8,8 +8,8 @@ import (
 
 type Provider struct {
 	Name string    `json:"name" yaml:"name"`
-	DoT  DoTServer `json:"dot" yaml:"dot"`
-	DoH  DoHServer `json:"doh" yaml:"doh"`
+	DoT  DoTServer `json:"dot"  yaml:"dot"`
+	DoH  DoHServer `json:"doh"  yaml:"doh"`
 }
 
 type DoTServer struct {
@@ -19,7 +19,7 @@ type DoTServer struct {
 }
 
 type DoHServer struct {
-	URL  string       `json:"url" yaml:"url"`
+	URL  string       `json:"url"  yaml:"url"`
 	IPv4 []netip.Addr `json:"ipv4" yaml:"ipv4"`
 	IPv6 []netip.Addr `json:"ipv6" yaml:"ipv6"`
 }

@@ -185,7 +185,6 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 		},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
