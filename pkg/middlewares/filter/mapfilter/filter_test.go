@@ -79,11 +79,13 @@ func Test_Filter_threadSafety(t *testing.T) {
 		{Name: "google.com."},
 	}}
 	response := &dns.Msg{
-		Answer: []dns.RR{&dns.A{
-			Hdr: dns.RR_Header{Rrtype: dns.TypeA},
-			A:   net.IP{2, 2, 2, 2},
+		Answer: []dns.RR{
+			&dns.A{
+				Hdr: dns.RR_Header{Rrtype: dns.TypeA},
+				A:   net.IP{2, 2, 2, 2},
+			},
 		},
-		}}
+	}
 
 	filter, err := New(settings)
 	require.NoError(t, err)

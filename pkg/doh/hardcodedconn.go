@@ -104,7 +104,8 @@ func (c *hardcodedConn) buildResponse(request *dns.Msg) (response *dns.Msg, err 
 
 func questionToHardcodedAnswers(question dns.Question,
 	fqdnToIPv4, fqdnToIPv6 map[string][]netip.Addr,
-	nameToIPFound map[string]bool) (answers []dns.RR, err error) {
+	nameToIPFound map[string]bool,
+) (answers []dns.RR, err error) {
 	_, exists := nameToIPFound[question.Name]
 	if !exists {
 		nameToIPFound[question.Name] = false
@@ -197,7 +198,8 @@ func (c *hardcodedConn) SetWriteDeadline(time.Time) error {
 }
 
 func dohServersToHardcodedMaps(dohServers []provider.DoHServer, ipVersion string) (
-	fqdnToIPv4, fqdnToIPv6 map[string][]netip.Addr) {
+	fqdnToIPv4, fqdnToIPv6 map[string][]netip.Addr,
+) {
 	fqdnToIPv4 = make(map[string][]netip.Addr, len(dohServers))
 	fqdnToIPv6 = make(map[string][]netip.Addr, len(dohServers))
 	for _, dohServer := range dohServers {

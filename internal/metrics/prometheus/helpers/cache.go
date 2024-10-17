@@ -54,14 +54,16 @@ func (m *metricCache) setGaugeVec(prefix, name string, gaugeVec *prometheus.Gaug
 }
 
 func getFromMetricCache[T any](prefix, name string, mutex *sync.Mutex, //nolint:ireturn
-	nameToCollector map[string]T) (collector T) {
+	nameToCollector map[string]T,
+) (collector T) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	return nameToCollector[prefix+"_"+name]
 }
 
 func setToMetricCache[T any](prefix, name string, mutex *sync.Mutex,
-	nameToCollector map[string]T, collector T) {
+	nameToCollector map[string]T, collector T,
+) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	nameToCollector[prefix+"_"+name] = collector

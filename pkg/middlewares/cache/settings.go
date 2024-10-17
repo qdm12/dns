@@ -9,9 +9,7 @@ type Settings struct {
 	Cache Cache
 }
 
-var (
-	ErrCacheMustBeSet = errors.New("cache must be set")
-)
+var ErrCacheMustBeSet = errors.New("cache must be set")
 
 func (s *Settings) Validate() (err error) {
 	if s.Cache == nil {

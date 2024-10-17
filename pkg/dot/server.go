@@ -153,9 +153,7 @@ func (s *Server) Stop() (err error) {
 	return err
 }
 
-var (
-	ErrServerNotRunning = errors.New("server not running")
-)
+var ErrServerNotRunning = errors.New("server not running")
 
 func (s *Server) ListeningAddress() (address net.Addr, err error) {
 	s.startStopMutex.Lock()

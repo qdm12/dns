@@ -31,7 +31,8 @@ type Loop struct {
 
 func New(settings config.Settings, logger Logger,
 	blockBuilder BlockBuilder, cache Cache,
-	prometheusRegistry PrometheusRegistry) (loop *Loop, err error) {
+	prometheusRegistry PrometheusRegistry,
+) (loop *Loop, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {
@@ -52,7 +53,8 @@ func (l *Loop) String() string {
 }
 
 func (l *Loop) Start(ctx context.Context) ( //nolint:contextcheck
-	runError <-chan error, err error) {
+	runError <-chan error, err error,
+) {
 	err = l.checkIPv6Support(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("checking IPv6 support: %w", err)
@@ -138,7 +140,8 @@ func (l *Loop) runFirst(ctx context.Context) (err error) {
 }
 
 func (l *Loop) runSubsequent(ctx context.Context,
-	ready chan<- struct{}) (err error) {
+	ready chan<- struct{},
+) (err error) {
 	const downloadBlockFiles = true
 	newDNSServer, err := l.setupAll(ctx, downloadBlockFiles)
 	if err != nil {
@@ -179,7 +182,8 @@ func (l *Loop) runSubsequent(ctx context.Context,
 }
 
 func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint:ireturn
-	dnsServer Service, err error) {
+	dnsServer Service, err error,
+) {
 	filterMetrics, err := setup.BuildFilterMetrics(l.settings.Metrics, l.prometheusRegistry)
 	if err != nil {
 		return nil, fmt.Errorf("setting up filter metrics: %w", err)

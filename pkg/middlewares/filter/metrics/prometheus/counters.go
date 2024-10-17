@@ -35,6 +35,7 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 func (c *counters) HostnamesFilteredInc(class, qType string) {
 	c.hostnamesFiltered.WithLabelValues(class, qType).Inc()
 }
+
 func (c *counters) IPsFilteredInc(rrtype string) {
 	c.ipsFiltered.WithLabelValues(rrtype).Inc()
 }

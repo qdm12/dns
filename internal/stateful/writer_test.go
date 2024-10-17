@@ -11,7 +11,7 @@ import (
 func Test_Writer(t *testing.T) {
 	t.Parallel()
 
-	var dummyResponse = &dns.Msg{Answer: []dns.RR{
+	dummyResponse := &dns.Msg{Answer: []dns.RR{
 		&dns.A{A: net.IP{1, 2, 3, 4}},
 	}}
 

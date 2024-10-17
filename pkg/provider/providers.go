@@ -39,9 +39,7 @@ func (p *Providers) List() (providers []Provider) {
 	return providers
 }
 
-var (
-	ErrParseProviderNameUnknown = errors.New("provider does not match any known providers")
-)
+var ErrParseProviderNameUnknown = errors.New("provider does not match any known providers")
 
 func (p *Providers) Get(name string) (provider Provider, err error) {
 	for _, provider = range p.providers {

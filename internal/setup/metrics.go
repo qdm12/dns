@@ -11,7 +11,8 @@ import (
 
 func middlewareMetrics(metricsType string,
 	commonPrometheus prometheus.Settings) (
-	middleware *metricsmiddleware.Middleware, err error) {
+	middleware *metricsmiddleware.Middleware, err error,
+) {
 	var metrics interface {
 		RequestsInc()
 		QuestionsInc(class, qType string)

@@ -30,9 +30,7 @@ func (d *DoT) setDefaults() {
 	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
 }
 
-var (
-	ErrTimeoutTooSmall = errors.New("timeout is too small")
-)
+var ErrTimeoutTooSmall = errors.New("timeout is too small")
 
 func (d *DoT) validate() (err error) {
 	err = checkUpstreamResolverNames(d.UpstreamResolvers)

@@ -9,7 +9,8 @@ import (
 )
 
 func New(settings config.Prometheus, gatherer Gatherer,
-	logger Logger) (server *httpserver.Server, err error) {
+	logger Logger,
+) (server *httpserver.Server, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {

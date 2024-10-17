@@ -28,7 +28,8 @@ type Service interface {
 
 func New(settings config.Metrics, //nolint:ireturn
 	parentLogger ParentLogger, prometheusGatherer PrometheusGatherer) (
-	service Service, err error) {
+	service Service, err error,
+) {
 	switch settings.Type {
 	case "noop":
 		return noop.New()

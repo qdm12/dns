@@ -23,9 +23,7 @@ func (s *Settings) SetDefaults() {
 	s.Registry = gosettings.DefaultComparable[Registry](s.Registry, prometheus.DefaultRegisterer)
 }
 
-var (
-	ErrPrefixContainsSpace = errors.New("prefix contains one or more spaces")
-)
+var ErrPrefixContainsSpace = errors.New("prefix contains one or more spaces")
 
 func (s Settings) Validate() (err error) {
 	if strings.Contains(s.Prefix, " ") {

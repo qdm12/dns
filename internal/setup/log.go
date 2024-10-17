@@ -19,14 +19,14 @@ func logMiddleware(userSettings config.MiddlewareLog) (middleware *log.Middlewar
 		return log.New(settings)
 	}
 
-	const dirPerm = os.FileMode(0744)
+	const dirPerm = os.FileMode(0o744)
 	err = os.MkdirAll(userSettings.DirPath, dirPerm)
 	if err != nil {
 		return nil, fmt.Errorf("creating log directory: %w", err)
 	}
 
 	// TODO rotate log files
-	const perm = os.FileMode(0644)
+	const perm = os.FileMode(0o644)
 	filePath := filepath.Join(userSettings.DirPath, "dns.log")
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, perm)
 	if err != nil {

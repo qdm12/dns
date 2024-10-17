@@ -19,6 +19,7 @@ type MatcherRequest struct {
 func (m *MatcherRequest) String() string {
 	return m.request.String() + " [ignoring .MsgHdr.Id]"
 }
+
 func (m *MatcherRequest) Matches(x interface{}) bool {
 	msg, ok := x.(*dns.Msg)
 	if !ok {

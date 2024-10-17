@@ -141,7 +141,8 @@ func (m *MatcherResponse) Matches(x interface{}) bool {
 
 func checkOnlyHasAnswers(response *dns.Msg,
 	onlyHasAnswerTypes map[uint16]struct{}) (
-	mismatchReason string) {
+	mismatchReason string,
+) {
 	answerTypesNotPresent := maps.Clone(onlyHasAnswerTypes)
 	for _, answer := range response.Answer {
 		answerType := answer.Header().Rrtype
@@ -167,7 +168,8 @@ func checkOnlyHasAnswers(response *dns.Msg,
 }
 
 func filterAnswers(response *dns.Msg,
-	ignoreAnswerTypes map[uint16]struct{}) {
+	ignoreAnswerTypes map[uint16]struct{},
+) {
 	filteredAnswers := make([]dns.RR, 0, len(response.Answer))
 	for _, answer := range response.Answer {
 		answerType := answer.Header().Rrtype
@@ -181,7 +183,8 @@ func filterAnswers(response *dns.Msg,
 }
 
 func checkAnswers(expected, received *dns.Msg) (
-	mismatchReason string) {
+	mismatchReason string,
+) {
 	if len(received.Answer) != len(expected.Answer) {
 		return fmt.Sprintf("answers count mismatch: "+
 			"expected %d, received %d",
@@ -204,7 +207,8 @@ func checkAnswers(expected, received *dns.Msg) (
 }
 
 func checkExtras(expected, received *dns.Msg) (
-	mismatchReason string) {
+	mismatchReason string,
+) {
 	if len(received.Extra) != len(expected.Extra) {
 		return fmt.Sprintf("extra count mismatch: "+
 			"expected %d, received %d",

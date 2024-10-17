@@ -29,7 +29,8 @@ type handler struct {
 }
 
 func newHandler(resolvers []netip.AddrPort, logger Logger,
-	next dns.Handler) *handler {
+	next dns.Handler,
+) *handler {
 	dialer := &net.Dialer{
 		Timeout: time.Second,
 	}

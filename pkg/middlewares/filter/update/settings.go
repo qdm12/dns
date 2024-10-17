@@ -25,9 +25,7 @@ func (s *Settings) SetDefaults() {}
 
 var fqdnHostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*\.$`) //nolint:lll
 
-var (
-	ErrFqdnHostnameNotValid = errors.New("fqdn hostname is not valid")
-)
+var ErrFqdnHostnameNotValid = errors.New("fqdn hostname is not valid")
 
 func (s Settings) Validate() (err error) {
 	err = validate.AllMatchRegex(s.FqdnHostnames, fqdnHostRegex)

@@ -1,8 +1,7 @@
 // Package noop defines a No-Op metric implementation for DoT.
 package noop
 
-type Metrics struct {
-}
+type Metrics struct{}
 
 func New() *Metrics {
 	return &Metrics{}

@@ -7,7 +7,8 @@ import (
 )
 
 func newDNSHandler(ctx context.Context, settings ServerSettings) (
-	handler *server.Handler) {
+	handler *server.Handler,
+) {
 	dial := newDoTDial(settings.Resolver)
 	exchange := server.NewExchange("DoT", dial, settings.Logger)
 	return server.New(ctx, exchange, settings.Logger)

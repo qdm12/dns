@@ -14,12 +14,11 @@ import (
 	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
-var (
-	ErrHTTPStatus = errors.New("bad HTTP status")
-)
+var ErrHTTPStatus = errors.New("bad HTTP status")
 
 func newHTTPClient(dohServers []provider.DoHServer, ipVersion string) (
-	client *http.Client) {
+	client *http.Client,
+) {
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
 
 	dialer := &net.Dialer{
@@ -34,7 +33,8 @@ func newHTTPClient(dohServers []provider.DoHServer, ipVersion string) (
 }
 
 func newHTTPClientResolver(dohServers []provider.DoHServer,
-	ipVersion string) *net.Resolver {
+	ipVersion string,
+) *net.Resolver {
 	// Compute mappings early and once for all dial calls
 	fqdnToIPv4, fqdnToIPv6 := dohServersToHardcodedMaps(dohServers, ipVersion)
 
@@ -51,7 +51,8 @@ func newHTTPClientResolver(dohServers []provider.DoHServer,
 }
 
 func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.Pool,
-	url string, wire []byte) (respWire []byte, err error) { //nolint:interfacer
+	url string, wire []byte,
+) (respWire []byte, err error) { //nolint:interfacer
 	buffer := bufferPool.Get().(*bytes.Buffer) //nolint:forcetypeassert
 	buffer.Reset()
 	defer bufferPool.Put(buffer)
@@ -70,7 +71,6 @@ func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.P
 	request.Header.Set("Accept", "application/dns-message")
 
 	response, err := client.Do(request)
-
 	if err != nil {
 		return nil, err
 	}

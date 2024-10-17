@@ -11,7 +11,8 @@ import (
 
 func BuildFilterMetrics(userSettings config.Metrics, //nolint:ireturn
 	registry PrometheusRegistry) (
-	metrics FilterMetrics, err error) {
+	metrics FilterMetrics, err error,
+) {
 	switch userSettings.Type {
 	case noopString:
 		return noopmetrics.New(), nil

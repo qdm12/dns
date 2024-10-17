@@ -55,9 +55,7 @@ func (s *Settings) SetDefaults() {
 	s.UpdatePeriod = gosettings.DefaultPointer(s.UpdatePeriod, defaultUpdaterPeriod)
 }
 
-var (
-	ErrUpdatePeriodTooShort = errors.New("update period is too short")
-)
+var ErrUpdatePeriodTooShort = errors.New("update period is too short")
 
 func (s *Settings) Validate() (err error) {
 	err = validate.IsOneOf(s.Upstream, "dot", "doh")

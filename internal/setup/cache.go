@@ -18,7 +18,8 @@ type Cache interface {
 }
 
 func BuildCache(userSettings config.Cache, //nolint:ireturn
-	metrics CacheMetrics) (cache Cache, err error) {
+	metrics CacheMetrics,
+) (cache Cache, err error) {
 	switch userSettings.Type {
 	case noop.CacheType:
 		return noop.New(noop.Settings{Metrics: metrics}), nil
@@ -34,7 +35,8 @@ func BuildCache(userSettings config.Cache, //nolint:ireturn
 
 func BuildCacheMetrics(userSettings config.Metrics, //nolint:ireturn
 	registry PrometheusRegistry) (
-	metrics CacheMetrics, err error) {
+	metrics CacheMetrics, err error,
+) {
 	switch userSettings.Type {
 	case noopString:
 		return noopmetrics.New(), nil

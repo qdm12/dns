@@ -9,7 +9,8 @@ type Infoer interface {
 }
 
 func NewServer(address string, logger Infoer, healthcheck func() error) (
-	server *httpserver.Server, err error) {
+	server *httpserver.Server, err error,
+) {
 	handler := newHandler(healthcheck)
 	settings := httpserver.Settings{
 		Name:    stringPtr("health"),
