@@ -49,7 +49,8 @@ func newDoTDial(settings ResolverSettings) (dial server.Dial) {
 }
 
 func pickNameAddress(picker *picker.Picker, servers []provider.DoTServer,
-	ipv6 bool) (name, address string) {
+	ipv6 bool,
+) (name, address string) {
 	server := picker.DoTServer(servers)
 	addrPort := picker.DoTAddrPort(server, ipv6)
 	return server.Name, addrPort.String()

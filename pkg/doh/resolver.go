@@ -7,7 +7,8 @@ import (
 
 // NewResolver creates a DNS over HTTPs resolver.
 func NewResolver(settings ResolverSettings) (
-	resolver *net.Resolver, err error) {
+	resolver *net.Resolver, err error,
+) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {

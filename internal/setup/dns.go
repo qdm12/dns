@@ -20,7 +20,8 @@ type Service interface {
 
 func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 	cache Cache, filter Filter, loggerConstructor LoggerConstructor,
-	promRegistry PrometheusRegistry) (server Service, err error) {
+	promRegistry PrometheusRegistry,
+) (server Service, err error) {
 	commonPrometheus := prometheus.Settings{
 		Prefix:   *userSettings.Metrics.Prometheus.Subsystem,
 		Registry: promRegistry,
@@ -58,7 +59,8 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 
 func setupMiddlewares(userSettings config.Settings, cache Cache,
 	filter Filter, loggerConstructor log.ChildConstructor, commonPrometheus prometheus.Settings) (
-	middlewares []Middleware, err error) {
+	middlewares []Middleware, err error,
+) {
 	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
 	if err != nil {
 		return nil, fmt.Errorf("creating cache middleware: %w", err)

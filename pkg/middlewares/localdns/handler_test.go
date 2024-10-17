@@ -19,7 +19,8 @@ func Test_handler(t *testing.T) {
 	logger := NewMockLogger(ctrl)
 
 	handlerA := dns.HandlerFunc(func(
-		writer dns.ResponseWriter, request *dns.Msg) {
+		writer dns.ResponseWriter, request *dns.Msg,
+	) {
 		response := new(dns.Msg)
 		response.SetRcode(request, dns.RcodeNameError)
 		err := writer.WriteMsg(response)
@@ -28,7 +29,8 @@ func Test_handler(t *testing.T) {
 	localAddressA, runErrorA := runLocalDNS(t, handlerA)
 
 	handlerB := dns.HandlerFunc(func(
-		writer dns.ResponseWriter, request *dns.Msg) {
+		writer dns.ResponseWriter, request *dns.Msg,
+	) {
 		response := new(dns.Msg)
 		response.SetReply(request)
 		response.Answer = []dns.RR{

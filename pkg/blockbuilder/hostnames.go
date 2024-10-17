@@ -15,7 +15,8 @@ const (
 func (b *Builder) buildHostnames(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
 	additionalBlockedHostnames, allowedHostnames []string) (
-	blockedHostnames []string, errs []error) {
+	blockedHostnames []string, errs []error,
+) {
 	urls := getHostnamesURLs(blockMalicious, blockAds, blockSurveillance)
 
 	uniqueResults, errs := getLists(ctx, b.client, urls)

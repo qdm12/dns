@@ -15,7 +15,8 @@ type Handler struct {
 }
 
 func New(ctx context.Context, exchange Exchange,
-	logger Logger) *Handler {
+	logger Logger,
+) *Handler {
 	return &Handler{
 		ctx:      ctx,
 		exchange: exchange,

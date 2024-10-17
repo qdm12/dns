@@ -14,7 +14,8 @@ import (
 
 func dotServer(userSettings config.Settings, ipv6Support bool,
 	middlewares []Middleware, logger Logger, metrics DoTMetrics) (
-	server *dot.Server, err error) {
+	server *dot.Server, err error,
+) {
 	providers := provider.NewProviders()
 
 	upstreamResolvers, err := stringsToUpstreamResolvers(providers, userSettings.DoT.UpstreamResolvers)
@@ -46,7 +47,8 @@ func dotServer(userSettings config.Settings, ipv6Support bool,
 
 func dotMetrics(metricsType string, //nolint:ireturn
 	commonPrometheus prometheus.Settings) (
-	metrics DoTMetrics, err error) {
+	metrics DoTMetrics, err error,
+) {
 	switch metricsType {
 	case noopString:
 		return noopmetrics.New(), nil

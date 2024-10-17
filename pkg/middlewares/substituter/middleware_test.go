@@ -83,15 +83,16 @@ func Test_handler_ServeDNS(t *testing.T) {
 		},
 	}
 	response := &dns.Msg{
-		Answer: []dns.RR{&dns.A{
-			Hdr: dns.RR_Header{
-				Name:   "github.com.",
-				Rrtype: dns.TypeA,
-				Class:  dns.ClassINET,
-				Ttl:    300,
+		Answer: []dns.RR{
+			&dns.A{
+				Hdr: dns.RR_Header{
+					Name:   "github.com.",
+					Rrtype: dns.TypeA,
+					Class:  dns.ClassINET,
+					Ttl:    300,
+				},
+				A: net.IP{1, 2, 3, 4},
 			},
-			A: net.IP{1, 2, 3, 4},
-		},
 		},
 	}
 	response.SetReply(request)

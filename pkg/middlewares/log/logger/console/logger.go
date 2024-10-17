@@ -39,7 +39,8 @@ func (l *Logger) Error(id uint16, errMessage string) {
 }
 
 func (l *Logger) Log(remoteAddr net.Addr,
-	request, response *dns.Msg) {
+	request, response *dns.Msg,
+) {
 	var message string
 	switch {
 	case !l.logRequest && !l.logResponse:

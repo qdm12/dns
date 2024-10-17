@@ -14,7 +14,8 @@ import (
 
 func dohServer(userSettings config.Settings, ipv6Support bool,
 	middlewares []Middleware, logger Logger, metrics DoHMetrics) (
-	server *doh.Server, err error) {
+	server *doh.Server, err error,
+) {
 	providers := provider.NewProviders()
 
 	upstreamResolvers, err := stringsToUpstreamResolvers(providers, userSettings.DoH.UpstreamResolvers)
@@ -45,7 +46,8 @@ func dohServer(userSettings config.Settings, ipv6Support bool,
 
 func dohMetrics(metricsType string, //nolint:ireturn
 	commonPrometheus prometheus.Settings) (
-	metrics DoHMetrics, err error) {
+	metrics DoHMetrics, err error,
+) {
 	switch metricsType {
 	case noopString:
 		return noopmetrics.New(), nil
@@ -74,7 +76,8 @@ func toDoHMiddlewares(middlewares []Middleware) (dohMiddlewres []doh.Middleware)
 }
 
 func stringsToUpstreamResolvers(providers *provider.Providers, providerNames []string) (
-	providersSlice []provider.Provider, err error) {
+	providersSlice []provider.Provider, err error,
+) {
 	providersSlice = make([]provider.Provider, len(providerNames))
 	for i, providerName := range providerNames {
 		providersSlice[i], err = providers.Get(providerName)

@@ -11,7 +11,8 @@ import (
 )
 
 func newDoHConn(ctx context.Context, client *http.Client,
-	bufferPool *sync.Pool, dohURL string) net.Conn {
+	bufferPool *sync.Pool, dohURL string,
+) net.Conn {
 	ctx, cancel := context.WithCancel(ctx)
 	const maxUDPSize = 4096
 	return &dohConn{

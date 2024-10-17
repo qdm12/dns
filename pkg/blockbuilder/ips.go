@@ -16,7 +16,8 @@ func (b *Builder) buildIPs(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
 	allowedIPs, additionalBlockedIPs []netip.Addr,
 	allowedIPPrefixes, additionalBlockedIPPrefixes []netip.Prefix) (
-	blockedIPs []netip.Addr, blockedIPPrefixes []netip.Prefix, errs []error) {
+	blockedIPs []netip.Addr, blockedIPPrefixes []netip.Prefix, errs []error,
+) {
 	urls := getIPsURLs(blockMalicious, blockAds, blockSurveillance)
 
 	uniqueResults, errs := getLists(ctx, b.client, urls)
@@ -56,7 +57,8 @@ func getIPsURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []string
 }
 
 func parseIPStrings(uniqueResults map[string]struct{}) (
-	blockedIPs []netip.Addr, blockedIPPrefixes []netip.Prefix) {
+	blockedIPs []netip.Addr, blockedIPPrefixes []netip.Prefix,
+) {
 	blockedIPs = make([]netip.Addr, 0, len(uniqueResults))
 	blockedIPPrefixes = make([]netip.Prefix, 0, len(uniqueResults))
 

@@ -13,7 +13,8 @@ type PrometheusCollector interface {
 }
 
 func Register(registry PrometheusRegistry,
-	collectors ...PrometheusCollector) (err error) {
+	collectors ...PrometheusCollector,
+) (err error) {
 	for _, collector := range collectors {
 		_ = registry.Unregister(collector)
 

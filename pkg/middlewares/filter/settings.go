@@ -9,9 +9,7 @@ type Settings struct {
 	Filter Filter
 }
 
-var (
-	ErrFilterMustBeSet = errors.New("filter must be set")
-)
+var ErrFilterMustBeSet = errors.New("filter must be set")
 
 func (s *Settings) Validate() (err error) {
 	if s.Filter == nil {

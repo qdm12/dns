@@ -97,7 +97,8 @@ type Logger interface {
 }
 
 func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cyclop
-	args []string, logger Logger, settingsReader *reader.Reader) error {
+	args []string, logger Logger, settingsReader *reader.Reader,
+) error {
 	if health.IsClientMode(args) {
 		// Running the program in a separate instance through the Docker
 		// built-in healthcheck, in an ephemeral fashion to query the

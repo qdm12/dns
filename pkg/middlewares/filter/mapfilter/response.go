@@ -41,7 +41,8 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 }
 
 func (m *Filter) isIPBlocked(ip net.IP,
-	nameIsLocal bool) (blocked bool) {
+	nameIsLocal bool,
+) (blocked bool) {
 	var netIP netip.Addr
 	if ip.To4() != nil {
 		netIP = netip.AddrFrom4([4]byte(ip.To4()))

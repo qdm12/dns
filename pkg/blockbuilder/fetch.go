@@ -6,7 +6,8 @@ import (
 )
 
 func getLists(ctx context.Context, client *http.Client, urls []string) (
-	uniqueResults map[string]struct{}, errs []error) {
+	uniqueResults map[string]struct{}, errs []error,
+) {
 	chResults := make(chan []string)
 	chError := make(chan error)
 	for _, url := range urls {
