@@ -1,16 +1,50 @@
 {
     "name": "dns-dev",
-    "dockerComposeFile": [
-        "docker-compose.yml"
+    // User defined settings
+    "containerEnv": {
+        "TZ": ""
+    },
+    // Fixed settings
+    "build": {
+        "dockerfile": "./Dockerfile"
+    },
+    "postCreateCommand": "~/.windows.sh && go mod download",
+    "capAdd": [
+        "NET_ADMIN", // Gluetun specific
+        "SYS_PTRACE" // for dlv Go debugging
     ],
-    "service": "vscode",
-    "runServices": [
-        "vscode"
+    "securityOpt": [
+        "seccomp=unconfined" // for dlv Go debugging
     ],
-    "shutdownAction": "stopCompose",
-    "postCreateCommand": "~/.windows.sh && go mod download && go mod tidy",
-    "workspaceFolder": "/workspace",
-    // "overrideCommand": "",
+    "mounts": [
+        // Zsh commands history persistence
+        {
+            "source": "${localEnv:HOME}/.zsh_history",
+            "target": "/root/.zsh_history",
+            "type": "bind"
+        },
+        // Git configuration file
+        {
+            "source": "${localEnv:HOME}/.gitconfig",
+            "target": "/root/.gitconfig",
+            "type": "bind"
+        },
+        // SSH directory for Linux, OSX and WSL
+        // On Linux and OSX, a symlink /mnt/ssh <-> ~/.ssh is
+        // created in the container. On Windows, files are copied
+        // from /mnt/ssh to ~/.ssh to fix permissions.
+        {
+            "source": "${localEnv:HOME}/.ssh",
+            "target": "/mnt/ssh",
+            "type": "bind"
+        },
+        // Docker socket to access the host Docker server
+        {
+            "source": "/var/run/docker.sock",
+            "target": "/var/run/docker.sock",
+            "type": "bind"
+        }
+    ],
     "customizations": {
         "vscode": {
             "extensions": [
@@ -31,12 +65,32 @@
             ],
             "settings": {
                 "files.eol": "\n",
+                "remote.extensionKind": {
+                    "ms-azuretools.vscode-docker": "workspace"
+                },
+                "go.useLanguageServer": true,
+                "[go]": {
+                    "editor.codeActionsOnSave": {
+                        "source.organizeImports": "explicit"
+                    }
+                },
+                "[go.mod]": {
+                    "editor.codeActionsOnSave": {
+                        "source.organizeImports": "explicit"
+                    }
+                },
+                "gopls": {
+                    "usePlaceholders": true,
+                    "staticcheck": true,
+                    "formatting.gofumpt": true
+                },
+                "go.lintTool": "golangci-lint",
+                "go.lintOnSave": "package",
                 "editor.formatOnSave": true,
                 "go.buildTags": "integration",
                 "go.toolsEnvVars": {
                     "CGO_ENABLED": "0"
                 },
-                "go.useLanguageServer": true,
                 "go.testEnvVars": {
                     "CGO_ENABLED": "1"
                 },
@@ -47,22 +101,7 @@
                 "go.testTimeout": "10s",
                 "go.coverOnSingleTest": true,
                 "go.coverOnSingleTestFile": true,
-                "go.coverOnTestPackage": true,
-                "go.lintTool": "golangci-lint",
-                "go.lintOnSave": "package",
-                "[go]": {
-                    "editor.codeActionsOnSave": {
-                        "source.organizeImports": true
-                    }
-                },
-                "gopls": {
-                    "usePlaceholders": false,
-                    "staticcheck": true,
-                    "vulncheck": "Imports"
-                },
-                "remote.extensionKind": {
-                    "ms-azuretools.vscode-docker": "workspace"
-                }
+                "go.coverOnTestPackage": true
             }
         }
     }
