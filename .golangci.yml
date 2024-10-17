@@ -6,27 +6,10 @@ issues:
   exclude-rules:
     - path: _test\.go
       linters:
-        - dupl
         - err113
-        - containedctx
-    - path: main\.go
-      text: File is not `goimports`-ed
-      linters:
-        - goimports
-    - path: main\.go
-      source: "go *"
-      text: Non-inherited new context, use function like `context.WithXXX` instead
-      linters:
-        - contextcheck
     - path: pkg/provider/.*\.go
       linters:
         - dupl
-    - text: "mnd: Magic number: 0644*"
-      linters:
-        - mnd
-    - linters:
-        - lll
-      source: "^//go:generate "
     - linters:
         - lll
       source: "^\\t+(defaultDNSIPv6AddrPort|defaultDoTIPv6AddrPort|netip.AddrFrom16)\\(.+\\),$"
