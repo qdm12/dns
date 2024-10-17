@@ -16,6 +16,10 @@ issues:
     - linters:
         - ireturn
       text: ".+returns interface \\(github\\.com\\/prometheus\\/client_golang\\/prometheus\\.[a-zA-Z]+\\)$"
+    - linters:
+        - nolintlint
+      path: pkg/middlewares/.+/middleware\.go
+      text: "directive `\\/\\/nolint:ireturn` is unused for linter \"ireturn\""
 
 linters:
   enable:
@@ -23,8 +27,10 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
+    - canonicalheader
     - containedctx
     - contextcheck
+    - copyloopvar
     - cyclop
     - decorder
     - dogsled
@@ -36,6 +42,7 @@ linters:
     - errname
     - errorlint
     - exhaustive
+    - fatcontext
     - forcetypeassert
     - gci
     - gocheckcompilerdirectives
@@ -52,13 +59,16 @@ linters:
     - gomoddirectives
     - goprintffuncname
     - gosec
+    - gosmopolitan
     - grouper
     - importas
     - interfacebloat
+    - intrange
     - ireturn
     - lll
     - maintidx
     - makezero
+    - mirror
     - misspell
     - mnd
     - musttag
@@ -77,6 +87,7 @@ linters:
     - revive
     - rowserrcheck
     - sqlclosecheck
+    - tagalign
     - tenv
     - thelper
     - tparallel
@@ -85,3 +96,4 @@ linters:
     - usestdlibvars
     - wastedassign
     - whitespace
+    - zerologlint

@@ -96,7 +96,7 @@ func Test_Filter_threadSafety(t *testing.T) {
 	const parallelism = 1000
 	startWg.Add(parallelism)
 	endWg.Add(parallelism)
-	for i := 0; i < parallelism; i++ {
+	for range parallelism {
 		go func() {
 			defer endWg.Done()
 			startWg.Done()
