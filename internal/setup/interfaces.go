@@ -40,13 +40,11 @@ type Middleware interface {
 
 type DoTMetrics interface {
 	DoTDialInc(provider, address, outcome string)
-	DNSDialInc(address, outcome string)
 }
 
 type DoHMetrics interface {
 	DoHDialInc(url string)
 	DoTDialInc(provider, address, outcome string)
-	DNSDialInc(address, outcome string)
 }
 
 type CacheMetrics interface { //nolint:interfacebloat

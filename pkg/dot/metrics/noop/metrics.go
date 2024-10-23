@@ -8,4 +8,3 @@ func New() *Metrics {
 }
 
 func (m *Metrics) DoTDialInc(string, string, string) {}
-func (m *Metrics) DNSDialInc(string, string)         {}
