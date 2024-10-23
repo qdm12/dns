@@ -21,19 +21,22 @@ func New() *Picker {
 }
 
 func (p *Picker) DoHServer(servers []provider.DoHServer) provider.DoHServer {
-	index := 0
-	if nServers := len(servers); nServers > 1 {
-		index = p.rand.Intn(nServers)
-	}
-	return servers[index]
+	return pickFromSlice(servers, p.rand)
 }
 
 func (p *Picker) DoTServer(servers []provider.DoTServer) provider.DoTServer {
-	index := 0
-	if nServers := len(servers); nServers > 1 {
-		index = p.rand.Intn(nServers)
+	return pickFromSlice(servers, p.rand)
+}
+
+func pickFromSlice[T any](slice []T, randSource *rand.Rand) (element T) { //nolint:ireturn
+	switch len(slice) {
+	case 0:
+		panic("slice to randomly pick from is empty")
+	case 1:
+		return slice[0]
+	default:
+		return slice[randSource.Intn(len(slice))]
 	}
-	return servers[index]
 }
 
 // DotAddrPort returns a randomly picked IP address and port
@@ -55,29 +58,5 @@ func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPor
 		serverIPs = append(serverIPs, server.IPv6...)
 	}
 
-	addrPort := p.addrPort(serverIPs)
-	if addrPort.IsValid() {
-		return addrPort
-	}
-	// this should never happen since every servers
-	// should have at least one IP address matching the
-	// IP version given. This is more of a programming
-	// safety.
-	ipVersions := "IPv4"
-	if ipv6 {
-		ipVersions += " or IPv6"
-	}
-	panic("no valid " + ipVersions + " address found")
-}
-
-func (p *Picker) addrPort(addrPorts []netip.AddrPort) netip.AddrPort {
-	switch len(addrPorts) {
-	case 0:
-		return netip.AddrPort{}
-	case 1:
-		return addrPorts[0]
-	default:
-		index := p.rand.Intn(len(addrPorts))
-		return addrPorts[index]
-	}
+	return pickFromSlice(serverIPs, p.rand)
 }
