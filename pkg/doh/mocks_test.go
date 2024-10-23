@@ -33,18 +33,6 @@ func (m *MockMetrics) EXPECT() *MockMetricsMockRecorder {
 	return m.recorder
 }
 
-// DNSDialInc mocks base method.
-func (m *MockMetrics) DNSDialInc(arg0, arg1 string) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DNSDialInc", arg0, arg1)
-}
-
-// DNSDialInc indicates an expected call of DNSDialInc.
-func (mr *MockMetricsMockRecorder) DNSDialInc(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DNSDialInc", reflect.TypeOf((*MockMetrics)(nil).DNSDialInc), arg0, arg1)
-}
-
 // DoHDialInc mocks base method.
 func (m *MockMetrics) DoHDialInc(arg0 string) {
 	m.ctrl.T.Helper()

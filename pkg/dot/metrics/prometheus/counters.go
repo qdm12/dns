@@ -8,7 +8,6 @@ import (
 
 type counters struct {
 	dotDial *prometheus.CounterVec
-	dnsDial *prometheus.CounterVec
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
@@ -16,11 +15,9 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 	c = &counters{
 		dotDial: helpers.NewCounterVec(prefix, "dns_over_tls_dials",
 			"DNS over TLS dials by provider, address and outcome", []string{"provider", "address", "outcome"}),
-		dnsDial: helpers.NewCounterVec(prefix, "dns_plaintext_fallback_dials",
-			"DNS dials by provider, address and outcome", []string{"address", "outcome"}),
 	}
 
-	err = helpers.Register(settings.Registry, c.dotDial, c.dnsDial)
+	err = helpers.Register(settings.Registry, c.dotDial)
 	if err != nil {
 		return nil, err
 	}
@@ -30,8 +27,4 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 
 func (c *counters) DoTDialInc(provider, address, outcome string) {
 	c.dotDial.WithLabelValues(provider, address, outcome).Inc()
-}
-
-func (c *counters) DNSDialInc(address, outcome string) {
-	c.dnsDial.WithLabelValues(address, outcome).Inc()
 }

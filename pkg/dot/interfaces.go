@@ -12,7 +12,6 @@ type Middleware interface {
 
 type Metrics interface {
 	DoTDialInc(provider, address, outcome string)
-	DNSDialInc(address, outcome string)
 }
 
 type Logger interface {
