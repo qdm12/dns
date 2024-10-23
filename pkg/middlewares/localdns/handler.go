@@ -42,8 +42,8 @@ func newHandler(resolvers []netip.AddrPort, logger Logger,
 		resolverAddress := resolver.String()
 		localResolvers[i] = resolverAddress
 		exchangeName := "local DNS " + resolverAddress
-		dial := func(ctx context.Context, _ string, _ string) (net.Conn, error) {
-			return dialer.DialContext(ctx, "udp", resolverAddress)
+		dial := func(ctx context.Context, network string, _ string) (net.Conn, error) {
+			return dialer.DialContext(ctx, network, resolverAddress)
 		}
 		localExchanges[i] = server.NewExchange(
 			exchangeName, dial, logger)
@@ -86,22 +86,42 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	for i, localExchange := range h.localExchanges {
-		response, err := localExchange(h.ctx, r)
+		response, err := localExchange(h.ctx, "udp", r)
 		if err != nil {
 			requestString := fmt.Sprintf("%s %s %s",
 				dns.ClassToString[r.Question[0].Qclass],
 				dns.TypeToString[r.Question[0].Qtype],
 				r.Question[0].Name)
-			h.logger.Debug("for " + requestString + ": " + err.Error())
+			h.logger.Debug("for " + requestString + " over udp: " + err.Error())
 			continue
 		}
 
 		if response.Rcode != dns.RcodeSuccess {
 			h.logger.Debug(fmt.Sprintf(
-				"response received for %s from %s has rcode %s",
+				"response received for %s from %s over udp has rcode %s",
 				r.Question[0].Name, h.localResolvers[i],
 				dns.RcodeToString[response.Rcode]))
 			continue
+		}
+
+		if response.Truncated {
+			response, err := localExchange(h.ctx, "tcp", r)
+			if err != nil {
+				requestString := fmt.Sprintf("%s %s %s",
+					dns.ClassToString[r.Question[0].Qclass],
+					dns.TypeToString[r.Question[0].Qtype],
+					r.Question[0].Name)
+				h.logger.Debug("for " + requestString + " over tcp: " + err.Error())
+				continue
+			}
+
+			if response.Rcode != dns.RcodeSuccess {
+				h.logger.Debug(fmt.Sprintf(
+					"response received for %s from %s over tcp has rcode %s",
+					r.Question[0].Name, h.localResolvers[i],
+					dns.RcodeToString[response.Rcode]))
+				continue
+			}
 		}
 
 		_ = w.WriteMsg(response)
