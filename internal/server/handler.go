@@ -25,7 +25,7 @@ func New(ctx context.Context, exchange Exchange,
 }
 
 func (h *Handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
-	response, err := h.exchange(h.ctx, r)
+	response, err := h.exchange(h.ctx, "", r)
 	if err != nil {
 		h.logger.Warn(err.Error())
 		_ = w.WriteMsg(new(dns.Msg).SetRcode(r, dns.RcodeServerFailure))

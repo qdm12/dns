@@ -85,7 +85,7 @@ func Test_handler(t *testing.T) {
 		}},
 	}
 	logger.EXPECT().Debug("response received for " +
-		"domain.local. from " + localAddressA + " has " +
+		"domain.local. from " + localAddressA + " over udp has " +
 		"rcode NXDOMAIN")
 	expectedFinalResponse := &dns.Msg{
 		MsgHdr: dns.MsgHdr{
@@ -137,7 +137,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 	})
 
 	makeTestExchange := func(response *dns.Msg, err error) server.Exchange {
-		return func(_ context.Context, _ *dns.Msg) (*dns.Msg, error) {
+		return func(_ context.Context, _ string, _ *dns.Msg) (*dns.Msg, error) {
 			return response, err
 		}
 	}
@@ -190,7 +190,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 			},
 			makeHandler: func(ctrl *gomock.Controller) *handler {
 				logger := NewMockLogger(ctrl)
-				logger.EXPECT().Debug("for IN A domain.local.: test error")
+				logger.EXPECT().Debug("for IN A domain.local. over udp: test error")
 
 				localExchanges := []server.Exchange{
 					makeTestExchange(nil, errTest),
@@ -224,7 +224,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 			makeHandler: func(ctrl *gomock.Controller) *handler {
 				logger := NewMockLogger(ctrl)
 				logger.EXPECT().Debug("response received for " +
-					"domain.local. from 10.0.0.1:53 has " +
+					"domain.local. from 10.0.0.1:53 over udp has " +
 					"rcode REFUSED")
 
 				localExchanges := []server.Exchange{
@@ -313,9 +313,9 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}
 
 				logger := NewMockLogger(ctrl)
-				logger.EXPECT().Debug("for IN A domain.local.: test error")
+				logger.EXPECT().Debug("for IN A domain.local. over udp: test error")
 				logger.EXPECT().Debug("response received for " +
-					"domain.local. from 10.0.0.2:53 has " +
+					"domain.local. from 10.0.0.2:53 over udp has " +
 					"rcode REFUSED")
 
 				return &handler{
