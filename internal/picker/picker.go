@@ -48,15 +48,13 @@ func pickFromSlice[T any](slice []T, randSource *rand.Rand) (element T) { //noli
 // usually works on an IPv6 network, which is not true the other
 // way around.
 func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPort {
-	totalSize := len(server.IPv4)
+	count := len(server.IPv4)
 	if ipv6 {
-		totalSize += len(server.IPv6)
+		count += len(server.IPv6)
 	}
-	serverIPs := make([]netip.AddrPort, 0, totalSize)
-	serverIPs = append(serverIPs, server.IPv4...)
-	if ipv6 {
-		serverIPs = append(serverIPs, server.IPv6...)
+	index := p.rand.Intn(count)
+	if index < len(server.IPv4) {
+		return server.IPv4[index]
 	}
-
-	return pickFromSlice(serverIPs, p.rand)
+	return server.IPv6[index-len(server.IPv4)]
 }
