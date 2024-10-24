@@ -5,6 +5,16 @@ import "net/netip"
 func Cloudflare() Provider {
 	return Provider{
 		Name: "Cloudflare",
+		Plain: PlainServer{
+			IPv4: []netip.AddrPort{
+				defaultPlainIPv4AddrPort([4]byte{1, 1, 1, 1}),
+				defaultPlainIPv4AddrPort([4]byte{1, 0, 0, 1}),
+			},
+			IPv6: []netip.AddrPort{
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x11, 0x11}),
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x01}),
+			},
+		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				// Note: these are the two only IPv4 addresses working with DNS over TLS

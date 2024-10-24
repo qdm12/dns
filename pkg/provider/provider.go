@@ -7,9 +7,10 @@ import (
 )
 
 type Provider struct {
-	Name string    `json:"name" yaml:"name"`
-	DoT  DoTServer `json:"dot"  yaml:"dot"`
-	DoH  DoHServer `json:"doh"  yaml:"doh"`
+	Name  string      `json:"name"  yaml:"name"`
+	DoT   DoTServer   `json:"dot"   yaml:"dot"`
+	DoH   DoHServer   `json:"doh"   yaml:"doh"`
+	Plain PlainServer `json:"plain" yaml:"plain"`
 }
 
 type DoTServer struct {
@@ -24,6 +25,11 @@ type DoHServer struct {
 	IPv6 []netip.Addr `json:"ipv6" yaml:"ipv6"`
 }
 
+type PlainServer struct {
+	IPv4 []netip.AddrPort `json:"ipv4" yaml:"ipv4"`
+	IPv6 []netip.AddrPort `json:"ipv6" yaml:"ipv6"`
+}
+
 var (
 	ErrProviderNameNotSet = errors.New("provider name not set")
 	ErrDoTIPv4NotSet      = errors.New("DoT server IPv4 addresses not set")
@@ -33,6 +39,8 @@ var (
 	ErrDoHURLNotSet       = errors.New("DoH URL not set")
 	ErrDoHIPv4NotSet      = errors.New("DoH server IPv4 addresses not set")
 	ErrDoHIPNotSet        = errors.New("DoH server IP addresses not set")
+	ErrPlainIPv4NotSet    = errors.New("plaintext server IPv4 addresses not set")
+	ErrPlainIPNotSet      = errors.New("plaintext server IP addresses not set")
 )
 
 func (p Provider) ValidateForDoT(ipv6 bool) (err error) {
@@ -78,6 +86,29 @@ func (p Provider) ValidateForDoH(ipv6 bool) (err error) {
 	}
 
 	err = checkAddresses(p.DoH.IPv6)
+	if err != nil {
+		return fmt.Errorf("IPv6 addresses: %w", err)
+	}
+
+	return nil
+}
+
+func (p Provider) ValidateForPlain(ipv6 bool) (err error) {
+	switch {
+	case p.Name == "":
+		return fmt.Errorf("%w", ErrProviderNameNotSet)
+	case !ipv6 && len(p.Plain.IPv4) == 0:
+		return fmt.Errorf("%w", ErrPlainIPv4NotSet)
+	case ipv6 && len(p.DoT.IPv4) == 0 && len(p.DoT.IPv6) == 0:
+		return fmt.Errorf("%w", ErrPlainIPNotSet)
+	}
+
+	err = checkAddrPorts(p.Plain.IPv4)
+	if err != nil {
+		return fmt.Errorf("IPv4 addresses: %w", err)
+	}
+
+	err = checkAddrPorts(p.Plain.IPv6)
 	if err != nil {
 		return fmt.Errorf("IPv6 addresses: %w", err)
 	}

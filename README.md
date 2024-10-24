@@ -109,11 +109,13 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 
 | Environment variable | Default | Description |
 | --- | --- | --- |
-| `UPSTREAM_TYPE` | `DoT` | Upstream DNS connection type: `DoT` for DNS over TLS or `DoH` for DNS over HTTPS |
+| `UPSTREAM_TYPE` | `DoT` | Upstream DNS connection type: `DoT` for DNS over TLS, `DoH` for DNS over HTTPS or `plain` for plaintext |
 | `DOT_RESOLVERS` | `cloudflare,google` | Comma separated list of DNS-over-TLS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
 | `DOH_RESOLVERS` | `cloudflare,google` | Comma separated list of DNS-over-HTTPS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
+| `PLAIN_RESOLVERS` | `cloudflare,google` | Comma separated list of DNS resolver providers from `cira family`, `cira private`, `cira protected`, `cleanbrowsing adult`, `cleanbrowsing family`, `cleanbrowsing security`, `cloudflare`, `cloudflare family`, `cloudflare security`, `google`, `libredns`, `quad9`, `quad9 secured`, `quad9 unsecured` and `quadrant` |
 | `DOT_TIMEOUT` | `3s` | DNS over TLS dial timeout |
 | `DOH_TIMEOUT` | `3s` | DNS over HTTPs exchange timeout |
+| `PLAIN_TIMEOUT` | `3s` | Plain DNS exchange timeout |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
 | `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |

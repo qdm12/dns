@@ -5,6 +5,16 @@ import "net/netip"
 func CloudflareFamily() Provider {
 	return Provider{
 		Name: "Cloudflare Family",
+		Plain: PlainServer{
+			IPv4: []netip.AddrPort{
+				defaultPlainIPv4AddrPort([4]byte{1, 1, 1, 3}),
+				defaultPlainIPv4AddrPort([4]byte{1, 0, 0, 3}),
+			},
+			IPv6: []netip.AddrPort{
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x11, 0x13}),
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x6, 0x47, 0x0, 0x47, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x03}),
+			},
+		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{1, 1, 1, 3}),

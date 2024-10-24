@@ -6,6 +6,11 @@ func Quadrant() Provider {
 	return Provider{
 		Name: "Quadrant",
 		// See https://quadrantsec.com/blog/quadrants-public-dns-resolver-tls-https-support
+		Plain: PlainServer{
+			IPv4: []netip.AddrPort{
+				defaultPlainIPv4AddrPort([4]byte{12, 159, 2, 159}),
+			},
+		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{12, 159, 2, 159}),

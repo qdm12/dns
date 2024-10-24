@@ -5,6 +5,16 @@ import "net/netip"
 func CleanBrowsingSecurity() Provider {
 	return Provider{
 		Name: "Cleanbrowsing Security",
+		Plain: PlainServer{
+			IPv4: []netip.AddrPort{
+				defaultPlainIPv4AddrPort([4]byte{185, 228, 168, 9}),
+				defaultPlainIPv4AddrPort([4]byte{185, 228, 169, 9}),
+			},
+			IPv6: []netip.AddrPort{
+				defaultPlainIPv6AddrPort([16]byte{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2}),
+				defaultPlainIPv6AddrPort([16]byte{0x2a, 0xd, 0x2a, 0x0, 0x0, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2}),
+			},
+		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{185, 228, 168, 9}),

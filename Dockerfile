@@ -73,8 +73,10 @@ ENV \
     UPSTREAM_TYPE=DoT \
     DOT_RESOLVERS=cloudflare,google \
     DOH_RESOLVERS=cloudflare,google \
+    PLAIN_RESOLVERS=cloudflare,google \
     DOT_TIMEOUT=3s \
     DOH_TIMEOUT=3s \
+    PLAIN_TIMEOUT=3s \
     LISTENING_ADDRESS=":53" \
     LOG_LEVEL=info \
     LOG_CALLER=hidden \
