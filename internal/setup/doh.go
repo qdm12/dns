@@ -9,12 +9,13 @@ import (
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/doh/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/provider"
+	"github.com/qdm12/dns/v2/pkg/server"
 	"github.com/qdm12/gosettings"
 )
 
 func dohServer(userSettings config.Settings, ipv6Support bool,
 	middlewares []Middleware, logger Logger, metrics DoHMetrics) (
-	server *doh.Server, err error,
+	dohServer *server.Server, err error,
 ) {
 	providers := provider.NewProviders()
 
@@ -28,20 +29,24 @@ func dohServer(userSettings config.Settings, ipv6Support bool,
 		ipVersion = "ipv6"
 	}
 
-	resolverSettings := doh.ResolverSettings{
+	dohSettings := doh.Settings{
 		UpstreamResolvers: upstreamResolvers,
+		Timeout:           userSettings.DoH.Timeout,
 		IPVersion:         ipVersion,
 		Metrics:           metrics,
 	}
-
-	settings := doh.ServerSettings{
-		Resolver:         resolverSettings,
-		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
-		Middlewares:      toDoHMiddlewares(middlewares),
-		Logger:           logger,
+	dohDialer, err := doh.New(dohSettings)
+	if err != nil {
+		return nil, fmt.Errorf("creating DoH dialer: %w", err)
 	}
 
-	return doh.NewServer(settings)
+	settings := server.Settings{
+		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
+		Dialer:           dohDialer,
+		Middlewares:      toServerMiddlewares(middlewares),
+		Logger:           logger,
+	}
+	return server.New(settings)
 }
 
 func dohMetrics(metricsType string, //nolint:ireturn
@@ -59,14 +64,6 @@ func dohMetrics(metricsType string, //nolint:ireturn
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", metricsType))
 	}
-}
-
-func toDoHMiddlewares(middlewares []Middleware) (dohMiddlewres []doh.Middleware) {
-	dohMiddlewres = make([]doh.Middleware, len(middlewares))
-	for i, middleware := range middlewares {
-		dohMiddlewres[i] = doh.Middleware(middleware)
-	}
-	return dohMiddlewres
 }
 
 func stringsToUpstreamResolvers(providers *provider.Providers, providerNames []string) (

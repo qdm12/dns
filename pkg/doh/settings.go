@@ -3,11 +3,9 @@ package doh
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	metricsnoop "github.com/qdm12/dns/v2/pkg/doh/metrics/noop"
-	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
@@ -16,67 +14,36 @@ import (
 	"golang.org/x/text/language"
 )
 
-type ServerSettings struct {
-	Resolver         ResolverSettings
-	ListeningAddress *string
-	// Middlewares is a list of middlewares to use.
-	// The first one is the first wrapper, and the last one
-	// is the last wrapper of the handlers in the chain.
-	Middlewares []Middleware
-	// Logger is the logger to log information.
-	// It defaults to a No-Op logger implementation.
-	Logger Logger
-}
-
-type ResolverSettings struct {
+type Settings struct {
 	// UpstreamResolvers is a list of DNS over TLS upstream resolvers
 	// to use.
 	UpstreamResolvers []provider.Provider
+	// Timeout is the maximum duration to wait for a response from
+	// upstream DNS over HTTPS servers. If left unset, it defaults to
+	// 5 seconds.
+	Timeout time.Duration
 	// IPVersion indicates whether to use IPv4 only or IPv6 only for
 	// DNS over HTTPS. The hardcoded resolver used by the DoH HTTP
 	// client will return only IP addresses matching the version set
 	// from all the providers. If left unset, it defaults to "ipv4".
 	IPVersion string
-	Timeout   time.Duration
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics Metrics
 }
 
-func (s *ServerSettings) SetDefaults() {
-	s.Resolver.SetDefaults()
-	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
-	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, lognoop.New())
-}
-
-func (s *ResolverSettings) SetDefaults() {
+func (s *Settings) SetDefaults() {
 	s.UpstreamResolvers = gosettings.DefaultSlice(s.UpstreamResolvers,
 		[]provider.Provider{provider.Cloudflare()})
-	s.IPVersion = gosettings.DefaultComparable(s.IPVersion, "ipv4")
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
+	s.IPVersion = gosettings.DefaultComparable(s.IPVersion, "ipv4")
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
-}
-
-var ErrListeningAddressNotValid = errors.New("listening address is not valid")
-
-func (s ServerSettings) Validate() (err error) {
-	err = s.Resolver.Validate()
-	if err != nil {
-		return fmt.Errorf("resolver settings: %w", err)
-	}
-
-	err = validate.ListeningAddress(*s.ListeningAddress, os.Getuid())
-	if err != nil {
-		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, *s.ListeningAddress)
-	}
-
-	return nil
 }
 
 var ErrUpstreamResolversNotSet = errors.New("upstream resolvers not set")
 
-func (s ResolverSettings) Validate() (err error) {
+func (s Settings) Validate() (err error) {
 	if len(s.UpstreamResolvers) == 0 {
 		// just in case the user sets the slice to the empty non-nil slice
 		return fmt.Errorf("%w", ErrUpstreamResolversNotSet)
@@ -97,22 +64,11 @@ func (s ResolverSettings) Validate() (err error) {
 	return nil
 }
 
-func (s *ServerSettings) String() string {
+func (s *Settings) String() string {
 	return s.ToLinesNode().String()
 }
 
-func (s *ResolverSettings) String() string {
-	return s.ToLinesNode().String()
-}
-
-func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
-	node = gotree.New("DoH server settings:")
-	node.Appendf("Listening address: %s", *s.ListeningAddress)
-	node.AppendNode(s.Resolver.ToLinesNode())
-	return node
-}
-
-func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoH resolver settings:")
 
 	upstreamResolversNode := node.Append("Upstream resolvers:")
@@ -121,8 +77,13 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 		upstreamResolversNode.Append(caser.String(provider.Name))
 	}
 
-	node.Appendf("Connecting over %s", s.IPVersion)
 	node.Appendf("Query timeout: %s", s.Timeout)
+
+	connectingOver := "ipv4"
+	if s.IPVersion == "ipv6" {
+		connectingOver += " and ipv6"
+	}
+	node.Appendf("Connecting over: %s", connectingOver)
 
 	return node
 }

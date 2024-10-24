@@ -10,50 +10,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_New(t *testing.T) {
+func Test_newHandler(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
 	logger := NewMockLogger(nil)
+	exchanger := NewMockexchangerIntf(nil)
 
-	handler := New(ctx, nil, logger)
+	h := newHandler(ctx, exchanger, logger)
 
-	expectedHandler := &Handler{
-		ctx:      ctx,
-		exchange: nil, // cannot compare functions
-		logger:   logger,
+	expectedHandler := &handler{
+		ctx:       ctx,
+		exchanger: exchanger,
+		warner:    logger,
 	}
-	assert.Equal(t, expectedHandler, handler)
+	assert.Equal(t, expectedHandler, h)
 }
 
 func Test_Handler_ServeDNS(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		makeHandler func(t *testing.T, ctrl *gomock.Controller) *Handler
+		makeHandler func(t *testing.T, ctrl *gomock.Controller) *handler
 		request     *dns.Msg
 		response    *dns.Msg
 	}{
 		"exchange_error": {
-			makeHandler: func(t *testing.T, ctrl *gomock.Controller) *Handler {
+			makeHandler: func(t *testing.T, ctrl *gomock.Controller) *handler {
 				t.Helper()
 				expectedRequest := &dns.Msg{
 					Question: []dns.Question{{Name: "test"}},
 				}
 
-				exchange := func(_ context.Context, _ string, request *dns.Msg) (
-					response *dns.Msg, err error,
-				) {
-					assert.Equal(t, expectedRequest, request)
-					return nil, errors.New("test error")
-				}
+				ctx := context.Background()
+
+				exchanger := NewMockexchangerIntf(ctrl)
+				exchanger.EXPECT().Exchange(ctx, "", expectedRequest).
+					Return(nil, errors.New("test error"))
 
 				logger := NewMockLogger(ctrl)
 				logger.EXPECT().Warn("test error")
 
-				return &Handler{
-					exchange: exchange,
-					logger:   logger,
+				return &handler{
+					ctx:       ctx,
+					exchanger: exchanger,
+					warner:    logger,
 				}
 			},
 			request: &dns.Msg{
@@ -68,20 +69,21 @@ func Test_Handler_ServeDNS(t *testing.T) {
 			},
 		},
 		"exchanged_response": {
-			makeHandler: func(t *testing.T, _ *gomock.Controller) *Handler {
+			makeHandler: func(t *testing.T, ctrl *gomock.Controller) *handler {
 				t.Helper()
 				expectedRequest := &dns.Msg{
 					Question: []dns.Question{{Name: "test"}},
 				}
-				exchange := func(_ context.Context, _ string, request *dns.Msg) (
-					response *dns.Msg, err error,
-				) {
-					assert.Equal(t, expectedRequest, request)
-					return &dns.Msg{Answer: []dns.RR{&dns.A{}}}, nil
-				}
 
-				return &Handler{
-					exchange: exchange,
+				ctx := context.Background()
+
+				exchanger := NewMockexchangerIntf(ctrl)
+				exchanger.EXPECT().Exchange(ctx, "", expectedRequest).
+					Return(&dns.Msg{Answer: []dns.RR{&dns.A{}}}, nil)
+
+				return &handler{
+					ctx:       ctx,
+					exchanger: exchanger,
 				}
 			},
 			request: &dns.Msg{

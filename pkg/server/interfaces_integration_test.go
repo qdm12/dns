@@ -1,9 +1,13 @@
-package doh
+package server
 
 import (
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 )
+
+type dotMetrics interface { //nolint:unused
+	DoTDialInc(provider, address, outcome string)
+}
 
 type middlewareMetrics interface { //nolint:unused
 	RequestsInc()

@@ -2,6 +2,10 @@ package server
 
 import "github.com/miekg/dns"
 
+func ptrTo[T any](value T) *T {
+	return &value
+}
+
 type testWriter struct {
 	dns.ResponseWriter
 	writeErrToReturn error

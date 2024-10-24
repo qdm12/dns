@@ -10,6 +10,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/doh"
 	cachemiddleware "github.com/qdm12/dns/v2/pkg/middlewares/cache"
 	"github.com/qdm12/dns/v2/pkg/middlewares/cache/lru"
+	"github.com/qdm12/dns/v2/pkg/server"
 )
 
 func main() {
@@ -17,6 +18,11 @@ func main() {
 	defer stop()
 
 	logger := new(Logger)
+
+	dohDialer, err := doh.New(doh.Settings{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	cache, err := lru.New(lru.Settings{})
 	if err != nil {
@@ -28,8 +34,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server, err := doh.NewServer(doh.ServerSettings{
-		Middlewares: []doh.Middleware{cacheMiddleware},
+	server, err := server.New(server.Settings{
+		Dialer:      dohDialer,
+		Middlewares: []server.Middleware{cacheMiddleware},
 		Logger:      logger,
 	})
 	if err != nil {

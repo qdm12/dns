@@ -1,4 +1,4 @@
-package dot
+package server
 
 import (
 	"context"
@@ -8,11 +8,12 @@ import (
 	"sync"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/exchanger"
 )
 
 type Server struct {
 	// Dependencies injected
-	settings ServerSettings
+	settings Settings
 	logger   Logger
 
 	// Internal state
@@ -27,7 +28,7 @@ type Server struct {
 	dnsServer dns.Server
 }
 
-func NewServer(settings ServerSettings) (server *Server, err error) {
+func New(settings Settings) (server *Server, err error) {
 	settings.SetDefaults()
 	err = settings.Validate()
 	if err != nil {
@@ -41,7 +42,7 @@ func NewServer(settings ServerSettings) (server *Server, err error) {
 }
 
 func (s *Server) String() string {
-	return "dns over tls server"
+	return "DNS server"
 }
 
 func (s *Server) Start() (runError <-chan error, startErr error) {
@@ -50,7 +51,7 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 
 	s.runningMutex.Lock()
 	if s.running {
-		panic("DoH server already running")
+		panic("server already running")
 	}
 	s.runningMutex.Unlock()
 
@@ -62,7 +63,8 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 	}()
 
 	var handler dns.Handler
-	handler = newDNSHandler(handlerCtx, s.settings)
+	exchanger := exchanger.New(s.settings.Dialer, s.logger)
+	handler = newHandler(handlerCtx, exchanger, s.logger)
 
 	for _, middleware := range s.settings.Middlewares {
 		handler = middleware.Wrap(handler)
@@ -101,7 +103,8 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 	s.done.Add(1)
 	go func() {
 		defer s.done.Done()
-		s.settings.Logger.Info("DNS server listening on " + s.dnsServer.PacketConn.LocalAddr().String())
+		s.settings.Logger.Info("DNS server listening on " +
+			s.dnsServer.PacketConn.LocalAddr().String())
 		ready.Done()
 		err := s.dnsServer.ActivateAndServe()
 		s.runningMutex.Lock()

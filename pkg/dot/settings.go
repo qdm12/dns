@@ -3,7 +3,6 @@ package dot
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	metricsnoop "github.com/qdm12/dns/v2/pkg/dot/metrics/noop"
@@ -16,22 +15,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-type ServerSettings struct {
-	Resolver         ResolverSettings
-	ListeningAddress *string
-	// Middlewares is a list of middlewares to use.
-	// The first one is the first wrapper, and the last one
-	// is the last wrapper of the handlers in the chain.
-	Middlewares []Middleware
-	// Logger is the logger to log information.
-	// It defaults to a No-Op logger implementation.
-	Logger Logger
-	// Metrics is the metrics interface to record metric data.
-	// It defaults to a No-Op metrics implementation.
-	// Metrics metrics.DialMetrics
-}
-
-type ResolverSettings struct {
+type Settings struct {
 	// UpstreamResolvers is a list of DNS over TLS upstream resolvers
 	// to use.
 	UpstreamResolvers []provider.Provider
@@ -51,17 +35,9 @@ type ResolverSettings struct {
 	Metrics Metrics
 }
 
-func (s *ServerSettings) SetDefaults() {
-	s.Resolver.SetDefaults()
-	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
-	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, lognoop.New())
-}
-
-func (s *ResolverSettings) SetDefaults() {
+func (s *Settings) SetDefaults() {
 	s.UpstreamResolvers = gosettings.DefaultSlice(s.UpstreamResolvers,
 		[]provider.Provider{provider.Cloudflare()})
-	// No default DNS fallback server for the internal HTTP client
-	// to avoid leaking we are using a DoT server.
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
 	s.IPVersion = gosettings.DefaultComparable(s.IPVersion, "ipv4")
@@ -69,25 +45,9 @@ func (s *ResolverSettings) SetDefaults() {
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
 }
 
-var ErrListeningAddressNotValid = errors.New("listening address is not valid")
-
-func (s ServerSettings) Validate() (err error) {
-	err = s.Resolver.Validate()
-	if err != nil {
-		return fmt.Errorf("resolver settings: %w", err)
-	}
-
-	err = validate.ListeningAddress(*s.ListeningAddress, os.Getuid())
-	if err != nil {
-		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, *s.ListeningAddress)
-	}
-
-	return nil
-}
-
 var ErrUpstreamResolversNotSet = errors.New("upstream resolvers not set")
 
-func (s ResolverSettings) Validate() (err error) {
+func (s Settings) Validate() (err error) {
 	if len(s.UpstreamResolvers) == 0 {
 		// just in case the user sets the slice to the empty non-nil slice
 		return fmt.Errorf("%w", ErrUpstreamResolversNotSet)
@@ -108,22 +68,11 @@ func (s ResolverSettings) Validate() (err error) {
 	return nil
 }
 
-func (s *ServerSettings) String() string {
+func (s *Settings) String() string {
 	return s.ToLinesNode().String()
 }
 
-func (s *ResolverSettings) String() string {
-	return s.ToLinesNode().String()
-}
-
-func (s *ServerSettings) ToLinesNode() (node *gotree.Node) {
-	node = gotree.New("DoT server settings:")
-	node.Appendf("Listening address: %s", *s.ListeningAddress)
-	node.AppendNode(s.Resolver.ToLinesNode())
-	return node
-}
-
-func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
+func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("DoT resolver settings:")
 
 	upstreamResolversNode := node.Append("Upstream resolvers:")
@@ -133,7 +82,12 @@ func (s *ResolverSettings) ToLinesNode() (node *gotree.Node) {
 	}
 
 	node.Appendf("Query timeout: %s", s.Timeout)
-	node.Appendf("Connecting over: %s", s.IPVersion)
+
+	connectingOver := "ipv4"
+	if s.IPVersion == "ipv6" {
+		connectingOver += " and ipv6"
+	}
+	node.Appendf("Connecting over: %s", connectingOver)
 
 	return node
 }
