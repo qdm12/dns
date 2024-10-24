@@ -5,6 +5,16 @@ import "net/netip"
 func CiraProtected() Provider {
 	return Provider{
 		Name: "CIRA Protected",
+		Plain: PlainServer{
+			IPv4: []netip.AddrPort{
+				defaultPlainIPv4AddrPort([4]byte{149, 112, 121, 20}),
+				defaultPlainIPv4AddrPort([4]byte{149, 112, 122, 20}),
+			},
+			IPv6: []netip.AddrPort{
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x20, 0x1, 0xa, 0x80, 0xbb, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x20}),
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x20, 0x1, 0xa, 0x80, 0xbc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x20}),
+			},
+		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{149, 112, 121, 20}),

@@ -10,9 +10,12 @@ issues:
     - path: pkg/provider/.*\.go
       linters:
         - dupl
+    - path: internal/config/.*\.go
+      linters:
+        - dupl
     - linters:
         - lll
-      source: "^\\t+(defaultDNSIPv6AddrPort|defaultDoTIPv6AddrPort|netip.AddrFrom16)\\(.+\\),$"
+      source: "^\\t+(defaultPlainIPv6AddrPort|defaultDoTIPv6AddrPort|netip.AddrFrom16)\\(.+\\),$"
     - linters:
         - ireturn
       text: ".+returns interface \\(github\\.com\\/prometheus\\/client_golang\\/prometheus\\.[a-zA-Z]+\\)$"
@@ -22,7 +25,7 @@ issues:
       text: "directive `\\/\\/nolint:ireturn` is unused for linter \"ireturn\""
     - linters:
         - goconst
-      path: pkg/do(t|h)/.+\.go
+      path: pkg/(plain|dot|doh)/.+\.go
       text: "string `ipv6` has 3 occurrences, make it a constant"
 
 linters:

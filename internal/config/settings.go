@@ -29,6 +29,7 @@ type Settings struct {
 	Cache            Cache
 	DoH              DoH
 	DoT              DoT
+	Plain            Plain
 	Log              Log
 	MiddlewareLog    MiddlewareLog
 	Metrics          Metrics
@@ -45,6 +46,7 @@ func (s *Settings) SetDefaults() {
 	s.Cache.setDefaults()
 	s.DoH.setDefaults()
 	s.DoT.setDefaults()
+	s.Plain.setDefaults()
 	s.Log.setDefaults()
 	s.MiddlewareLog.setDefaults()
 	s.Metrics.setDefaults()
@@ -58,7 +60,7 @@ func (s *Settings) SetDefaults() {
 var ErrUpdatePeriodTooShort = errors.New("update period is too short")
 
 func (s *Settings) Validate() (err error) {
-	err = validate.IsOneOf(s.Upstream, "dot", "doh")
+	err = validate.IsOneOf(s.Upstream, "dot", "doh", "plain")
 	if err != nil {
 		return fmt.Errorf("upstream type: %w", err)
 	}
@@ -73,6 +75,7 @@ func (s *Settings) Validate() (err error) {
 		"cache":          s.Cache.validate,
 		"DoH":            s.DoH.validate,
 		"DoT":            s.DoT.validate,
+		"plain":          s.Plain.validate,
 		"log":            s.Log.validate,
 		"middleware log": s.MiddlewareLog.validate,
 		"metrics":        s.Metrics.validate,
@@ -110,6 +113,8 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 		node.AppendNode(s.DoT.ToLinesNode())
 	case "doh":
 		node.AppendNode(s.DoH.ToLinesNode())
+	case "plain":
+		node.AppendNode(s.Plain.ToLinesNode())
 	default:
 		panic(fmt.Sprintf("unknown upstream type: %s", s.Upstream))
 	}
@@ -159,6 +164,11 @@ func (s *Settings) Read(reader *reader.Reader, warner Warner) (err error) { //no
 	err = s.DoT.read(reader)
 	if err != nil {
 		return fmt.Errorf("DoT settings: %w", err)
+	}
+
+	err = s.Plain.read(reader)
+	if err != nil {
+		return fmt.Errorf("plain settings: %w", err)
 	}
 
 	s.Log.read(reader)

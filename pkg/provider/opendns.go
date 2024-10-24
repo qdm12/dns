@@ -5,6 +5,16 @@ import "net/netip"
 func OpenDNS() Provider {
 	return Provider{
 		Name: "OpenDNS",
+		Plain: PlainServer{
+			IPv4: []netip.AddrPort{
+				defaultPlainIPv4AddrPort([4]byte{208, 67, 222, 222}),
+				defaultPlainIPv4AddrPort([4]byte{208, 67, 220, 220}),
+			},
+			IPv6: []netip.AddrPort{
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x20, 0x1, 0x19, 0x0, 0x35, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x35}),
+				defaultPlainIPv6AddrPort([16]byte{0x26, 0x20, 0x1, 0x19, 0x0, 0x53, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x53}),
+			},
+		},
 		DoT: DoTServer{
 			IPv4: []netip.AddrPort{
 				defaultDoTIPv4AddrPort([4]byte{208, 67, 222, 222}),

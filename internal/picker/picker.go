@@ -28,6 +28,10 @@ func (p *Picker) DoTServer(servers []provider.DoTServer) provider.DoTServer {
 	return pickFromSlice(servers, p.rand)
 }
 
+func (p *Picker) PlainServer(servers []provider.PlainServer) provider.PlainServer {
+	return pickFromSlice(servers, p.rand)
+}
+
 func pickFromSlice[T any](slice []T, randSource *rand.Rand) (element T) { //nolint:ireturn
 	switch len(slice) {
 	case 0:
@@ -48,13 +52,31 @@ func pickFromSlice[T any](slice []T, randSource *rand.Rand) (element T) { //noli
 // usually works on an IPv6 network, which is not true the other
 // way around.
 func (p *Picker) DoTAddrPort(server provider.DoTServer, ipv6 bool) netip.AddrPort {
-	count := len(server.IPv4)
+	return pickFromIPs(server.IPv4, server.IPv6, ipv6, p.rand)
+}
+
+// PlainAddrPort returns a randomly picked IP address and port
+// from the given plain server. If ipv6 is true, IPv6 addresses
+// are added to the pool of IP addresses to pick from, on top
+// of all IPv4 addresses.
+// Note IPv4 addresses are always in the pool of addresses,
+// because some providers only have IPv4 addresses, and IPv4
+// usually works on an IPv6 network, which is not true the other
+// way around.
+func (p *Picker) PlainAddrPort(server provider.PlainServer, ipv6 bool) netip.AddrPort {
+	return pickFromIPs(server.IPv4, server.IPv6, ipv6, p.rand)
+}
+
+func pickFromIPs(ipv4AddrPort, ipv6AddrPort []netip.AddrPort,
+	ipv6 bool, rand *rand.Rand,
+) netip.AddrPort {
+	count := len(ipv4AddrPort)
 	if ipv6 {
-		count += len(server.IPv6)
+		count += len(ipv6AddrPort)
 	}
-	index := p.rand.Intn(count)
-	if index < len(server.IPv4) {
-		return server.IPv4[index]
+	index := rand.Intn(count)
+	if index < len(ipv4AddrPort) {
+		return ipv4AddrPort[index]
 	}
-	return server.IPv6[index-len(server.IPv4)]
+	return ipv6AddrPort[index-len(ipv4AddrPort)]
 }

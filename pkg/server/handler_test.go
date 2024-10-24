@@ -45,7 +45,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 				ctx := context.Background()
 
 				exchanger := NewMockexchangerIntf(ctrl)
-				exchanger.EXPECT().Exchange(ctx, "", expectedRequest).
+				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
 					Return(nil, errors.New("test error"))
 
 				logger := NewMockLogger(ctrl)
@@ -78,7 +78,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 				ctx := context.Background()
 
 				exchanger := NewMockexchangerIntf(ctrl)
-				exchanger.EXPECT().Exchange(ctx, "", expectedRequest).
+				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
 					Return(&dns.Msg{Answer: []dns.RR{&dns.A{}}}, nil)
 
 				return &handler{
