@@ -30,7 +30,8 @@ func Test_Server(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	runError, startErr := server.Start()
+	ctx := context.Background()
+	runError, startErr := server.Start(ctx)
 	require.NoError(t, startErr)
 
 	listeningAddress, err := server.ListeningAddress()
@@ -46,7 +47,7 @@ func Test_Server(t *testing.T) {
 	}
 
 	const hostname = "google.com" // we use google.com as github.com doesn't have an IPv6 :(
-	ips, err := resolver.LookupIPAddr(context.Background(), hostname)
+	ips, err := resolver.LookupIPAddr(ctx, hostname)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, ips)
@@ -259,7 +260,8 @@ func Test_Server_Mocks(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	runError, startErr := server.Start()
+	ctx := context.Background()
+	runError, startErr := server.Start(ctx)
 	require.NoError(t, startErr)
 
 	listeningAddress, err := server.ListeningAddress()
@@ -275,7 +277,7 @@ func Test_Server_Mocks(t *testing.T) {
 	}
 
 	const hostname = "google.com"
-	ips, err := resolver.LookupIPAddr(context.Background(), hostname)
+	ips, err := resolver.LookupIPAddr(ctx, hostname)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, ips)
 	t.Log(ips)

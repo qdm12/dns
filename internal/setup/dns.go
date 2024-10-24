@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/qdm12/dns/v2/internal/config"
@@ -14,7 +15,7 @@ import (
 
 type Service interface {
 	String() string
-	Start() (runError <-chan error, startErr error)
+	Start(ctx context.Context) (runError <-chan error, startErr error)
 	Stop() (err error)
 }
 

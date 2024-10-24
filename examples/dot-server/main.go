@@ -43,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	runError, err := server.Start()
+	runError, err := server.Start(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -45,7 +45,7 @@ func (s *Server) String() string {
 	return "DNS server"
 }
 
-func (s *Server) Start() (runError <-chan error, startErr error) {
+func (s *Server) Start(_ context.Context) (runError <-chan error, startErr error) {
 	s.startStopMutex.Lock()
 	defer s.startStopMutex.Unlock()
 
@@ -64,7 +64,7 @@ func (s *Server) Start() (runError <-chan error, startErr error) {
 
 	var handler dns.Handler
 	exchanger := exchanger.New(s.settings.Dialer, s.logger)
-	handler = newHandler(handlerCtx, exchanger, s.logger)
+	handler = newHandler(handlerCtx, exchanger, s.logger) //nolint:contextcheck
 
 	for _, middleware := range s.settings.Middlewares {
 		handler = middleware.Wrap(handler)

@@ -11,7 +11,7 @@ import (
 
 type Service interface {
 	String() string
-	Start() (runError <-chan error, startErr error)
+	Start(ctx context.Context) (runError <-chan error, startErr error)
 	Stop() error
 }
 
