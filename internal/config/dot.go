@@ -27,7 +27,8 @@ func (d *DoT) setDefaults() {
 		provider.Google().Name,
 	})
 
-	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
+	const defaultTimeout = 3 * time.Second
+	d.Timeout = gosettings.DefaultComparable(d.Timeout, defaultTimeout)
 }
 
 var ErrTimeoutTooSmall = errors.New("timeout is too small")

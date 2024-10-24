@@ -25,7 +25,8 @@ func (d *DoH) setDefaults() {
 		provider.Cloudflare().Name,
 		provider.Google().Name,
 	})
-	d.Timeout = gosettings.DefaultComparable(d.Timeout, time.Second)
+	const defaultTimeout = 3 * time.Second
+	d.Timeout = gosettings.DefaultComparable(d.Timeout, defaultTimeout)
 }
 
 func (d *DoH) validate() (err error) {

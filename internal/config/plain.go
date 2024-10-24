@@ -25,7 +25,8 @@ func (p *Plain) setDefaults() {
 		provider.Google().Name,
 	})
 
-	p.Timeout = gosettings.DefaultComparable(p.Timeout, time.Second)
+	const defaultTimeout = 3 * time.Second
+	p.Timeout = gosettings.DefaultComparable(p.Timeout, defaultTimeout)
 }
 
 func (p *Plain) validate() (err error) {
