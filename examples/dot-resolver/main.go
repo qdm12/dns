@@ -3,15 +3,21 @@ package main
 import (
 	"context"
 	"log"
+	"net"
 
 	"github.com/qdm12/dns/v2/pkg/dot"
 )
 
 func main() {
 	ctx := context.Background()
-	resolver, err := dot.NewResolver(dot.ResolverSettings{})
+	dohDialer, err := dot.New(dot.Settings{})
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial:     dohDialer.Dial,
 	}
 
 	ips, err := resolver.LookupIPAddr(ctx, "github.com")

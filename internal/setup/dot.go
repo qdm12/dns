@@ -9,12 +9,13 @@ import (
 	prometheusmetrics "github.com/qdm12/dns/v2/pkg/dot/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
 	"github.com/qdm12/dns/v2/pkg/provider"
+	"github.com/qdm12/dns/v2/pkg/server"
 	"github.com/qdm12/gosettings"
 )
 
 func dotServer(userSettings config.Settings, ipv6Support bool,
 	middlewares []Middleware, logger Logger, metrics DoTMetrics) (
-	server *dot.Server, err error,
+	dotServer *server.Server, err error,
 ) {
 	providers := provider.NewProviders()
 
@@ -28,21 +29,24 @@ func dotServer(userSettings config.Settings, ipv6Support bool,
 		ipVersion = "ipv6"
 	}
 
-	resolverSettings := dot.ResolverSettings{
+	dialerSettings := dot.Settings{
 		UpstreamResolvers: upstreamResolvers,
 		IPVersion:         ipVersion,
 		Warner:            logger,
 		Metrics:           metrics,
 	}
-
-	settings := dot.ServerSettings{
-		Resolver:         resolverSettings,
-		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
-		Middlewares:      toDoTMiddlewares(middlewares),
-		Logger:           logger,
+	dialer, err := dot.New(dialerSettings)
+	if err != nil {
+		return nil, fmt.Errorf("creating DoT dialer: %w", err)
 	}
 
-	return dot.NewServer(settings)
+	serverSettings := server.Settings{
+		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
+		Dialer:           dialer,
+		Middlewares:      toServerMiddlewares(middlewares),
+		Logger:           logger,
+	}
+	return server.New(serverSettings)
 }
 
 func dotMetrics(metricsType string, //nolint:ireturn
@@ -60,12 +64,4 @@ func dotMetrics(metricsType string, //nolint:ireturn
 	default:
 		panic(fmt.Sprintf("unknown metrics type: %s", metricsType))
 	}
-}
-
-func toDoTMiddlewares(middlewares []Middleware) (dohMiddlewres []dot.Middleware) {
-	dohMiddlewres = make([]dot.Middleware, len(middlewares))
-	for i, middleware := range middlewares {
-		dohMiddlewres[i] = dot.Middleware(middleware)
-	}
-	return dohMiddlewres
 }

@@ -8,7 +8,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/internal/server"
 	"github.com/stretchr/testify/require"
 )
 
@@ -136,10 +135,14 @@ func Test_handler_ServeDNS(t *testing.T) {
 		_ = writer.WriteMsg(nextResponse)
 	})
 
-	makeTestExchange := func(response *dns.Msg, err error) server.Exchange {
-		return func(_ context.Context, _ string, _ *dns.Msg) (*dns.Msg, error) {
-			return response, err
-		}
+	makeTestExchanger := func(ctrl *gomock.Controller,
+		ctx context.Context, response *dns.Msg, err error,
+	) *MockexchangerIntf {
+		exchanger := NewMockexchangerIntf(ctrl)
+		exchanger.EXPECT().Exchange(ctx, "udp",
+			gomock.AssignableToTypeOf(&dns.Msg{})).
+			Return(response, err)
+		return exchanger
 	}
 
 	testCases := map[string]struct {
@@ -192,11 +195,14 @@ func Test_handler_ServeDNS(t *testing.T) {
 				logger := NewMockLogger(ctrl)
 				logger.EXPECT().Debug("for IN A domain.local. over udp: test error")
 
-				localExchanges := []server.Exchange{
-					makeTestExchange(nil, errTest),
+				ctx := context.Background()
+
+				localExchanges := []exchangerIntf{
+					makeTestExchanger(ctrl, ctx, nil, errTest),
 				}
 
 				return &handler{
+					ctx:            ctx,
 					logger:         logger,
 					next:           next,
 					localExchanges: localExchanges,
@@ -227,8 +233,10 @@ func Test_handler_ServeDNS(t *testing.T) {
 					"domain.local. from 10.0.0.1:53 over udp has " +
 					"rcode REFUSED")
 
-				localExchanges := []server.Exchange{
-					makeTestExchange(&dns.Msg{
+				ctx := context.Background()
+
+				localExchanges := []exchangerIntf{
+					makeTestExchanger(ctrl, ctx, &dns.Msg{
 						MsgHdr: dns.MsgHdr{
 							Rcode: dns.RcodeRefused,
 						},
@@ -236,6 +244,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}
 
 				return &handler{
+					ctx:            ctx,
 					logger:         logger,
 					next:           next,
 					localExchanges: localExchanges,
@@ -258,9 +267,11 @@ func Test_handler_ServeDNS(t *testing.T) {
 					Name: "domain.local.",
 				}},
 			},
-			makeHandler: func(_ *gomock.Controller) *handler {
-				localExchanges := []server.Exchange{
-					makeTestExchange(&dns.Msg{
+			makeHandler: func(ctrl *gomock.Controller) *handler {
+				ctx := context.Background()
+
+				localExchanges := []exchangerIntf{
+					makeTestExchanger(ctrl, ctx, &dns.Msg{
 						MsgHdr: dns.MsgHdr{
 							Rcode: dns.RcodeSuccess,
 						},
@@ -271,6 +282,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}
 
 				return &handler{
+					ctx:            ctx,
 					next:           next,
 					localExchanges: localExchanges,
 					localResolvers: []string{"10.0.0.1:53"},
@@ -294,14 +306,16 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}},
 			},
 			makeHandler: func(ctrl *gomock.Controller) *handler {
-				localExchanges := []server.Exchange{
-					makeTestExchange(nil, errTest), // exchange error
-					makeTestExchange(&dns.Msg{
+				ctx := context.Background()
+
+				localExchanges := []exchangerIntf{
+					makeTestExchanger(ctrl, ctx, nil, errTest), // exchange error
+					makeTestExchanger(ctrl, ctx, &dns.Msg{
 						MsgHdr: dns.MsgHdr{
 							Rcode: dns.RcodeRefused,
 						},
 					}, nil), // rcode not success
-					makeTestExchange(&dns.Msg{
+					makeTestExchanger(ctrl, ctx, &dns.Msg{
 						MsgHdr: dns.MsgHdr{
 							Rcode: dns.RcodeSuccess,
 						},
@@ -309,7 +323,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 							&dns.TXT{Txt: []string{"handled_by_local"}},
 						},
 					}, nil), // success
-					makeTestExchange(nil, errTest), // unused
+					NewMockexchangerIntf(ctrl), // unused
 				}
 
 				logger := NewMockLogger(ctrl)
@@ -319,6 +333,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 					"rcode REFUSED")
 
 				return &handler{
+					ctx:            ctx,
 					logger:         logger,
 					next:           next,
 					localExchanges: localExchanges,

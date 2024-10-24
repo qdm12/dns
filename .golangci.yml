@@ -20,6 +20,10 @@ issues:
         - nolintlint
       path: pkg/middlewares/.+/middleware\.go
       text: "directive `\\/\\/nolint:ireturn` is unused for linter \"ireturn\""
+    - linters:
+        - goconst
+      path: pkg/do(t|h)/.+\.go
+      text: "string `ipv6` has 3 occurrences, make it a constant"
 
 linters:
   enable:

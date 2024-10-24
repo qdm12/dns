@@ -8,45 +8,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_ServerSettings_String(t *testing.T) {
+func Test_Settings_String(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		settings ServerSettings
+		settings Settings
 		s        string
 	}{
-		"empty settings": {
-			settings: ServerSettings{
-				ListeningAddress: ptrTo("localhost:53"),
-				Resolver: ResolverSettings{
-					IPVersion: "ipv4",
-				},
+		"empty_settings": {
+			settings: Settings{
+				IPVersion: "ipv4",
 			},
-			s: `DoT server settings:
-├── Listening address: localhost:53
-└── DoT resolver settings:
-    ├── Upstream resolvers:
-    ├── Query timeout: 0s
-    └── Connecting over: ipv4`,
+			s: `DoT resolver settings:
+├── Upstream resolvers:
+├── Query timeout: 0s
+└── Connecting over: ipv4`,
 		},
-		"non empty settings": {
-			settings: ServerSettings{
-				ListeningAddress: ptrTo(":8000"),
-				Resolver: ResolverSettings{
-					UpstreamResolvers: []provider.Provider{
-						provider.Cloudflare(),
-					},
-					Timeout:   time.Second,
-					IPVersion: "ipv6",
+		"non_empty_settings": {
+			settings: Settings{
+				UpstreamResolvers: []provider.Provider{
+					provider.Cloudflare(),
 				},
+				Timeout:   time.Second,
+				IPVersion: "ipv6",
 			},
-			s: `DoT server settings:
-├── Listening address: :8000
-└── DoT resolver settings:
-    ├── Upstream resolvers:
-    |   └── Cloudflare
-    ├── Query timeout: 1s
-    └── Connecting over: ipv6`,
+			s: `DoT resolver settings:
+├── Upstream resolvers:
+|   └── Cloudflare
+├── Query timeout: 1s
+└── Connecting over: ipv4 and ipv6`,
 		},
 	}
 

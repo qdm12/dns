@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/exchanger"
 	"github.com/qdm12/dns/v2/internal/local"
-	"github.com/qdm12/dns/v2/internal/server"
 )
 
 type handler struct {
@@ -20,7 +20,7 @@ type handler struct {
 	next   dns.Handler
 
 	// Internal fields
-	localExchanges []server.Exchange
+	localExchanges []exchangerIntf
 	localResolvers []string        // for error messages only
 	ctx            context.Context //nolint:containedctx
 	cancel         context.CancelFunc
@@ -31,22 +31,21 @@ type handler struct {
 func newHandler(resolvers []netip.AddrPort, logger Logger,
 	next dns.Handler,
 ) *handler {
-	dialer := &net.Dialer{
+	netDialer := &net.Dialer{
 		Timeout: time.Second,
 	}
-	localExchanges := make([]server.Exchange, len(resolvers))
+	localExchangers := make([]exchangerIntf, len(resolvers))
 	localResolvers := make([]string, len(resolvers))
 	for i, resolver := range resolvers {
 		// WARNING: make sure to pin resolver.String()
 		// to a variable for the dial function below!
 		resolverAddress := resolver.String()
 		localResolvers[i] = resolverAddress
-		exchangeName := "local DNS " + resolverAddress
-		dial := func(ctx context.Context, network string, _ string) (net.Conn, error) {
-			return dialer.DialContext(ctx, network, resolverAddress)
+		dialer := &dialer{
+			netDialer:       netDialer,
+			resolverAddress: resolverAddress,
 		}
-		localExchanges[i] = server.NewExchange(
-			exchangeName, dial, logger)
+		localExchangers[i] = exchanger.New(dialer, logger)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -56,9 +55,22 @@ func newHandler(resolvers []netip.AddrPort, logger Logger,
 		cancel:         cancel,
 		logger:         logger,
 		next:           next,
-		localExchanges: localExchanges,
+		localExchanges: localExchangers,
 		localResolvers: localResolvers,
 	}
+}
+
+type dialer struct {
+	netDialer       *net.Dialer
+	resolverAddress string
+}
+
+func (d *dialer) Dial(ctx context.Context, network, _ string) (net.Conn, error) {
+	return d.netDialer.DialContext(ctx, network, d.resolverAddress)
+}
+
+func (d *dialer) String() string {
+	return "local DNS " + d.resolverAddress
 }
 
 // ServeDNS implements the dns.Handler interface for the
@@ -86,7 +98,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	for i, localExchange := range h.localExchanges {
-		response, err := localExchange(h.ctx, "udp", r)
+		response, err := localExchange.Exchange(h.ctx, "udp", r)
 		if err != nil {
 			requestString := fmt.Sprintf("%s %s %s",
 				dns.ClassToString[r.Question[0].Qclass],
@@ -105,7 +117,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		}
 
 		if response.Truncated {
-			response, err := localExchange(h.ctx, "tcp", r)
+			response, err := localExchange.Exchange(h.ctx, "tcp", r)
 			if err != nil {
 				requestString := fmt.Sprintf("%s %s %s",
 					dns.ClassToString[r.Question[0].Qclass],
