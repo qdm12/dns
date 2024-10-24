@@ -45,18 +45,6 @@ func (mr *MockMetricsMockRecorder) DoHDialInc(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoHDialInc", reflect.TypeOf((*MockMetrics)(nil).DoHDialInc), arg0)
 }
 
-// DoTDialInc mocks base method.
-func (m *MockMetrics) DoTDialInc(arg0, arg1, arg2 string) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoTDialInc", arg0, arg1, arg2)
-}
-
-// DoTDialInc indicates an expected call of DoTDialInc.
-func (mr *MockMetricsMockRecorder) DoTDialInc(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoTDialInc", reflect.TypeOf((*MockMetrics)(nil).DoTDialInc), arg0, arg1, arg2)
-}
-
 // MockLogger is a mock of Logger interface.
 type MockLogger struct {
 	ctrl     *gomock.Controller

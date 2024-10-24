@@ -52,14 +52,8 @@ func dohMetrics(metricsType string, //nolint:ireturn
 	case noopString:
 		return noopmetrics.New(), nil
 	case prometheusString:
-		dotDialMetrics, err := dotMetrics(metricsType, commonPrometheus)
-		if err != nil {
-			return nil, fmt.Errorf("DoT metrics: %w", err)
-		}
-
 		prometheusSettings := prometheusmetrics.Settings{
-			Prometheus:     commonPrometheus,
-			DoTDialMetrics: dotDialMetrics,
+			Prometheus: commonPrometheus,
 		}
 		return prometheusmetrics.New(prometheusSettings)
 	default:

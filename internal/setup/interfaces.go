@@ -44,7 +44,6 @@ type DoTMetrics interface {
 
 type DoHMetrics interface {
 	DoHDialInc(url string)
-	DoTDialInc(provider, address, outcome string)
 }
 
 type CacheMetrics interface { //nolint:interfacebloat
