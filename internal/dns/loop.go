@@ -121,7 +121,7 @@ func (l *Loop) runFirst(ctx context.Context) (err error) {
 	}
 
 	l.logger.Info("starting DNS server")
-	_, err = l.dnsServer.Start()
+	_, err = l.dnsServer.Start(ctx)
 	if err != nil {
 		return fmt.Errorf("starting dns server: %w", err)
 	}
@@ -155,7 +155,7 @@ func (l *Loop) runSubsequent(ctx context.Context,
 	l.dnsServer = newDNSServer
 
 	l.logger.Info("starting DNS server")
-	serverRunError, startErr := l.dnsServer.Start()
+	serverRunError, startErr := l.dnsServer.Start(ctx)
 	if startErr != nil {
 		return fmt.Errorf("starting dns server: %w", startErr)
 	}
