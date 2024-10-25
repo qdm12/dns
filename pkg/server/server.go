@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
+	"net/netip"
 	"sync"
 
 	"github.com/miekg/dns"
@@ -23,7 +23,7 @@ type Server struct {
 	runningMutex   sync.Mutex
 	startStopMutex sync.Mutex // prevents concurrent calls to Start and Stop.
 	subServers     goservices.Service
-	listeningAddr  net.Addr
+	listeningAddr  netip.AddrPort
 }
 
 func New(settings Settings) (server *Server, err error) {
@@ -73,7 +73,7 @@ func (s *Server) Start(ctx context.Context) (runError <-chan error, startErr err
 	if err != nil {
 		return nil, fmt.Errorf("setting up listeners: %w", err)
 	}
-	s.listeningAddr = udpListener.LocalAddr()
+	s.listeningAddr = netip.MustParseAddrPort(udpListener.LocalAddr().String())
 
 	s.subServers, err = goservices.NewGroup(goservices.GroupSettings{
 		Name: "DNS servers",
@@ -138,12 +138,12 @@ var (
 	ErrListeningUDPTCPDiffer = errors.New("udp and tcp listening addresses differ")
 )
 
-func (s *Server) ListeningAddress() (address net.Addr, err error) {
+func (s *Server) ListeningAddress() (address netip.AddrPort, err error) {
 	s.startStopMutex.Lock()
 	defer s.startStopMutex.Unlock()
 
 	if !s.running {
-		return nil, fmt.Errorf("%w", ErrServerNotRunning)
+		return netip.AddrPort{}, fmt.Errorf("%w", ErrServerNotRunning)
 	}
 
 	return s.listeningAddr, nil
