@@ -209,7 +209,7 @@ func initialDisplay(buildInfo models.BuildInformation) {
 		Emails:       []string{"quentin.mcgaw@gmail.com"},
 		Version:      buildInfo.Version,
 		Commit:       buildInfo.Commit,
-		BuildDate:    buildInfo.Created,
+		Created:      buildInfo.Created,
 		Announcement: "Check out qmcgaw/dns:v2.0.0-beta",
 		AnnounceExp:  announcementExp,
 		// Sponsor information
