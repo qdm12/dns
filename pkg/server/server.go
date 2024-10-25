@@ -9,6 +9,7 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/exchanger"
+	"github.com/qdm12/goservices"
 )
 
 type Server struct {
@@ -17,15 +18,12 @@ type Server struct {
 	logger   Logger
 
 	// Internal state
+	handlerCancel  context.CancelFunc
 	running        bool
 	runningMutex   sync.Mutex
 	startStopMutex sync.Mutex // prevents concurrent calls to Start and Stop.
-
-	// Fields set in the Start method call,
-	// and shared so the Stop method can access them.
-	stop      chan struct{}
-	done      *sync.WaitGroup
-	dnsServer dns.Server
+	subServers     goservices.Service
+	listeningAddr  net.Addr
 }
 
 func New(settings Settings) (server *Server, err error) {
@@ -45,7 +43,7 @@ func (s *Server) String() string {
 	return "DNS server"
 }
 
-func (s *Server) Start(_ context.Context) (runError <-chan error, startErr error) {
+func (s *Server) Start(ctx context.Context) (runError <-chan error, startErr error) {
 	s.startStopMutex.Lock()
 	defer s.startStopMutex.Unlock()
 
@@ -61,6 +59,7 @@ func (s *Server) Start(_ context.Context) (runError <-chan error, startErr error
 			handlerCancel()
 		}
 	}()
+	s.handlerCancel = handlerCancel
 
 	var handler dns.Handler
 	exchanger := exchanger.New(s.settings.Dialer, s.logger)
@@ -70,55 +69,35 @@ func (s *Server) Start(_ context.Context) (runError <-chan error, startErr error
 		handler = middleware.Wrap(handler)
 	}
 
-	s.stop = make(chan struct{})
-	s.done = new(sync.WaitGroup)
-
-	listeningAddress, err := net.ResolveUDPAddr("udp", *s.settings.ListeningAddress)
+	udpListener, tcpListener, err := setupListeners(ctx, *s.settings.ListeningAddress)
 	if err != nil {
-		return nil, fmt.Errorf("resolving listening address: %w", err)
+		return nil, fmt.Errorf("setting up listeners: %w", err)
 	}
+	s.listeningAddr = udpListener.LocalAddr()
 
-	udpListener, err := net.ListenUDP("udp", listeningAddress)
+	s.subServers, err = goservices.NewGroup(goservices.GroupSettings{
+		Name: "DNS servers",
+		Services: []goservices.Service{
+			newSubServer(&dns.Server{
+				PacketConn: udpListener,
+				Handler:    handler,
+			}),
+			newSubServer(&dns.Server{
+				Listener: tcpListener,
+				Handler:  handler,
+			}),
+		},
+	})
 	if err != nil {
-		return nil, fmt.Errorf("creating UDP listener: %w", err)
+		return nil, fmt.Errorf("creating sub servers group: %w", err)
 	}
 
-	s.dnsServer = dns.Server{
-		PacketConn: udpListener,
-		Handler:    handler,
+	runErrorCh, err := s.subServers.Start(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("starting sub servers: %w", err)
 	}
 
-	var ready sync.WaitGroup
-	ready.Add(1)
-	s.done.Add(1)
-	go func() { // cancel the handler context on a stop signal
-		defer s.done.Done()
-		ready.Done()
-		<-s.stop
-		handlerCancel()
-	}()
-
-	runErrorCh := make(chan error)
-	ready.Add(1)
-	s.done.Add(1)
-	go func() {
-		defer s.done.Done()
-		s.settings.Logger.Info("DNS server listening on " +
-			s.dnsServer.PacketConn.LocalAddr().String())
-		ready.Done()
-		err := s.dnsServer.ActivateAndServe()
-		s.runningMutex.Lock()
-		s.running = false
-		s.runningMutex.Unlock()
-
-		select {
-		case <-s.stop: // discard error
-		case runErrorCh <- err:
-			close(runErrorCh)
-		}
-	}()
-
-	ready.Wait()
+	s.logger.Info("DNS server listening on " + s.listeningAddr.String())
 
 	s.runningMutex.Lock()
 	s.running = true
@@ -138,25 +117,26 @@ func (s *Server) Stop() (err error) {
 		return nil
 	}
 
-	close(s.stop)
+	s.handlerCancel()
 
-	err = s.dnsServer.Shutdown()
+	err = s.subServers.Stop()
 
 	for _, middleware := range s.settings.Middlewares {
-		err = middleware.Stop()
-		if err != nil {
+		middlewareErr := middleware.Stop()
+		if middlewareErr != nil {
 			warning := fmt.Sprintf("stopping middleware %s: %s",
-				middleware, err)
+				middleware, middlewareErr)
 			s.logger.Warn(warning)
 		}
 	}
 
-	s.done.Wait()
-
 	return err
 }
 
-var ErrServerNotRunning = errors.New("server not running")
+var (
+	ErrServerNotRunning      = errors.New("server not running")
+	ErrListeningUDPTCPDiffer = errors.New("udp and tcp listening addresses differ")
+)
 
 func (s *Server) ListeningAddress() (address net.Addr, err error) {
 	s.startStopMutex.Lock()
@@ -166,5 +146,5 @@ func (s *Server) ListeningAddress() (address net.Addr, err error) {
 		return nil, fmt.Errorf("%w", ErrServerNotRunning)
 	}
 
-	return s.dnsServer.PacketConn.LocalAddr(), nil
+	return s.listeningAddr, nil
 }
