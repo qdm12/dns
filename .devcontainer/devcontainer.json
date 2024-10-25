@@ -80,7 +80,7 @@
                     }
                 },
                 "gopls": {
-                    "usePlaceholders": true,
+                    "usePlaceholders": false,
                     "staticcheck": true,
                     "formatting.gofumpt": true
                 },
