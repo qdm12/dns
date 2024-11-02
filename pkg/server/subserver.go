@@ -118,11 +118,7 @@ func (s *subServer) Stop() (err error) {
 	s.state = goservices.StateStopping
 	s.stateMutex.Unlock()
 
-	const shutdownTimeout = 200 * time.Millisecond
-	shutdownCtx, shutdownCancel := context.WithTimeout(
-		context.Background(), shutdownTimeout)
-	defer shutdownCancel()
-	err = s.server.ShutdownContext(shutdownCtx)
+	err = s.server.Shutdown()
 	s.state = goservices.StateStopped
 
 	return err
