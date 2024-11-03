@@ -14,7 +14,6 @@ type Dialer struct {
 	servers   []provider.PlainServer
 	ipv6      bool
 	netDialer *net.Dialer
-	warner    Warner
 	metrics   Metrics
 }
 
@@ -37,7 +36,6 @@ func New(settings Settings) (dial *Dialer, err error) {
 		netDialer: &net.Dialer{
 			Timeout: settings.Timeout,
 		},
-		warner:  settings.Warner,
 		metrics: settings.Metrics,
 	}, nil
 }
@@ -53,7 +51,6 @@ func (d *Dialer) Dial(ctx context.Context, network, _ string) (
 
 	udpConn, err := d.netDialer.DialContext(ctx, network, serverAddress)
 	if err != nil {
-		d.warner.Warn(err.Error())
 		d.metrics.PlainDialInc(serverAddress, "error")
 		return nil, err
 	}
