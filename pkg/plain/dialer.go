@@ -41,7 +41,7 @@ func New(settings Settings) (dial *Dialer, err error) {
 }
 
 func (d *Dialer) String() string {
-	return "dns over plaintext"
+	return "plaintext"
 }
 
 func (d *Dialer) Dial(ctx context.Context, network, _ string) (

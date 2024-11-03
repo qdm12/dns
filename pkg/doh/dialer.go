@@ -47,7 +47,7 @@ func New(settings Settings) (dial *Dialer, err error) {
 }
 
 func (d *Dialer) String() string {
-	return "dns over https"
+	return "https"
 }
 
 func (d *Dialer) Dial(ctx context.Context, _, _ string) (
