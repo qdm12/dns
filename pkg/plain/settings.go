@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	metricsnoop "github.com/qdm12/dns/v2/pkg/plain/metrics/noop"
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/qdm12/gosettings"
@@ -27,9 +26,6 @@ type Settings struct {
 	// upstream DNS servers. If left unset, it defaults to
 	// "ipv4".
 	IPVersion string
-	// Warner is the warning logger to log dial errors.
-	// It defaults to a No-Op warner implementation.
-	Warner Warner
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics Metrics
@@ -41,7 +37,6 @@ func (s *Settings) SetDefaults() {
 	const defaultTimeout = 5 * time.Second
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
 	s.IPVersion = gosettings.DefaultComparable(s.IPVersion, "ipv4")
-	s.Warner = gosettings.DefaultComparable[Warner](s.Warner, lognoop.New())
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
 }
 

@@ -32,7 +32,6 @@ func dotServer(userSettings config.Settings, ipv6Support bool,
 	dialerSettings := dot.Settings{
 		UpstreamResolvers: upstreamResolvers,
 		IPVersion:         ipVersion,
-		Warner:            logger,
 		Metrics:           metrics,
 	}
 	dialer, err := dot.New(dialerSettings)

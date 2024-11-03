@@ -15,7 +15,6 @@ type Dialer struct {
 	servers   []provider.DoTServer
 	ipv6      bool
 	netDialer *net.Dialer
-	warner    Warner
 	metrics   Metrics
 }
 
@@ -38,7 +37,6 @@ func New(settings Settings) (dial *Dialer, err error) {
 		netDialer: &net.Dialer{
 			Timeout: settings.Timeout,
 		},
-		warner:  settings.Warner,
 		metrics: settings.Metrics,
 	}, nil
 }
@@ -55,7 +53,6 @@ func (d *Dialer) Dial(ctx context.Context, _, _ string) (
 
 	conn, err = d.netDialer.DialContext(ctx, "tcp", serverAddress)
 	if err != nil {
-		d.warner.Warn(err.Error())
 		d.metrics.DoTDialInc(serverName, serverAddress, "error")
 		return nil, err
 	}
