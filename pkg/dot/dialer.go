@@ -51,20 +51,20 @@ func (d *Dialer) Dial(ctx context.Context, _, _ string) (
 	serverName, serverAddress := pickNameAddress(d.picker,
 		d.servers, d.ipv6)
 
-	conn, err = d.netDialer.DialContext(ctx, "tcp", serverAddress)
+	tlsDialer := tls.Dialer{
+		NetDialer: d.netDialer,
+		Config: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+			ServerName: serverName,
+		},
+	}
+	conn, err = tlsDialer.DialContext(ctx, "tcp", serverAddress)
 	if err != nil {
 		d.metrics.DoTDialInc(serverName, serverAddress, "error")
 		return nil, err
 	}
-
 	d.metrics.DoTDialInc(serverName, serverAddress, "success")
-
-	tlsConf := &tls.Config{
-		MinVersion: tls.VersionTLS12,
-		ServerName: serverName,
-	}
-	// TODO handshake? See tls.DialWithDialer
-	return tls.Client(conn, tlsConf), nil
+	return conn, nil
 }
 
 func pickNameAddress(picker *picker.Picker, servers []provider.DoTServer,
