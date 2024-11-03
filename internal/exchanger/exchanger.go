@@ -26,7 +26,8 @@ func (e *Exchanger) Exchange(ctx context.Context, network string, request *dns.M
 ) {
 	netConn, err := e.dialer.Dial(ctx, network, "")
 	if err != nil {
-		return nil, fmt.Errorf("dialing %s server: %w", e.dialer, err)
+		return nil, fmt.Errorf("dialing %s server for request %s: %w",
+			e.dialer, extractRequestQuestion(request), err)
 	}
 	dnsConn := &dns.Conn{Conn: netConn}
 
@@ -38,8 +39,19 @@ func (e *Exchanger) Exchange(ctx context.Context, network string, request *dns.M
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("exchanging over %s connection: %w", e.dialer, err)
+		return nil, fmt.Errorf("exchanging over %s connection for request %s: %w",
+			e.dialer, extractRequestQuestion(request), err)
 	}
 
 	return response, nil
+}
+
+func extractRequestQuestion(request *dns.Msg) (s string) {
+	if len(request.Question) == 0 {
+		return "<no question>"
+	}
+	question := request.Question[0]
+	return dns.ClassToString[question.Qclass] + " " +
+		dns.TypeToString[question.Qtype] + " " +
+		question.Name
 }
