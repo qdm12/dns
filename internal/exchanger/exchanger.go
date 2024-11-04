@@ -3,6 +3,7 @@ package exchanger
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/miekg/dns"
 )
@@ -31,7 +32,7 @@ func (e *Exchanger) Exchange(ctx context.Context, network string, request *dns.M
 	}
 	dnsConn := &dns.Conn{Conn: netConn}
 
-	response, _, err = e.client.ExchangeWithConnContext(ctx, request, dnsConn)
+	response, roundTripDuration, err := e.client.ExchangeWithConnContext(ctx, request, dnsConn)
 
 	closeErr := dnsConn.Close()
 	if closeErr != nil {
@@ -39,8 +40,9 @@ func (e *Exchanger) Exchange(ctx context.Context, network string, request *dns.M
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("exchanging over %s connection for request %s: %w",
-			e.dialer, extractRequestQuestion(request), err)
+		roundTripMilliseconds := roundTripDuration.Round(time.Millisecond).Milliseconds()
+		return nil, fmt.Errorf("exchanging over %s connection (%dms) for request %s: %w",
+			e.dialer, roundTripMilliseconds, extractRequestQuestion(request), err)
 	}
 
 	return response, nil
