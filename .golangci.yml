@@ -7,7 +7,7 @@ issues:
     - path: _test\.go
       linters:
         - dupl
-        - goerr113
+        - err113
         - containedctx
     - path: main\.go
       text: File is not `goimports`-ed
@@ -23,7 +23,7 @@ issues:
         - dupl
     - text: "mnd: Magic number: 0644*"
       linters:
-        - gomnd
+        - mnd
     - linters:
         - lll
       source: "^//go:generate "
@@ -48,12 +48,11 @@ linters:
     - dupl
     - dupword
     - durationcheck
+    - err113
     - errchkjson
     - errname
     - errorlint
-    - execinquery
     - exhaustive
-    - exportloopref
     - forcetypeassert
     - gci
     - gocheckcompilerdirectives
@@ -64,10 +63,8 @@ linters:
     - gocritic
     - gocyclo
     - godot
-    - goerr113
     - goheader
     - goimports
-    - gomnd
     - gomoddirectives
     - goprintffuncname
     - gosec
@@ -79,6 +76,7 @@ linters:
     - maintidx
     - makezero
     - misspell
+    - mnd
     - musttag
     - nakedret
     - nestif
@@ -103,8 +101,3 @@ linters:
     - usestdlibvars
     - wastedassign
     - whitespace
-
-run:
-  skip-dirs:
-    - .devcontainer
-    - .github

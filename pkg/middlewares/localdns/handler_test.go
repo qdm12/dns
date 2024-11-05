@@ -50,8 +50,7 @@ func Test_handler(t *testing.T) {
 		netip.MustParseAddrPort(localAddressA),
 		netip.MustParseAddrPort(localAddressB),
 	}
-	next := dns.HandlerFunc(func(
-		writer dns.ResponseWriter, request *dns.Msg) {
+	next := dns.HandlerFunc(func(writer dns.ResponseWriter, _ *dns.Msg) {
 		response := &dns.Msg{
 			Answer: []dns.RR{
 				&dns.TXT{Txt: []string{"handled_by_next"}},
@@ -131,13 +130,12 @@ func Test_handler_ServeDNS(t *testing.T) {
 		},
 	}
 
-	next := dns.HandlerFunc(func(writer dns.ResponseWriter,
-		request *dns.Msg) {
+	next := dns.HandlerFunc(func(writer dns.ResponseWriter, _ *dns.Msg) {
 		_ = writer.WriteMsg(nextResponse)
 	})
 
 	makeTestExchange := func(response *dns.Msg, err error) server.Exchange {
-		return func(ctx context.Context, request *dns.Msg) (*dns.Msg, error) {
+		return func(_ context.Context, _ *dns.Msg) (*dns.Msg, error) {
 			return response, err
 		}
 	}
@@ -149,7 +147,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 	}{
 		"no_question": {
 			request: &dns.Msg{},
-			makeHandler: func(ctrl *gomock.Controller) *handler {
+			makeHandler: func(_ *gomock.Controller) *handler {
 				return &handler{
 					next: next,
 				}
@@ -160,7 +158,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 			request: &dns.Msg{
 				Question: []dns.Question{{}, {}},
 			},
-			makeHandler: func(ctrl *gomock.Controller) *handler {
+			makeHandler: func(_ *gomock.Controller) *handler {
 				return &handler{
 					next: next,
 				}
@@ -173,7 +171,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 					Name: "domain.com.",
 				}},
 			},
-			makeHandler: func(ctrl *gomock.Controller) *handler {
+			makeHandler: func(_ *gomock.Controller) *handler {
 				return &handler{
 					next: next,
 				}
@@ -258,7 +256,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 					Name: "domain.local.",
 				}},
 			},
-			makeHandler: func(ctrl *gomock.Controller) *handler {
+			makeHandler: func(_ *gomock.Controller) *handler {
 				localExchanges := []server.Exchange{
 					makeTestExchange(&dns.Msg{
 						MsgHdr: dns.MsgHdr{

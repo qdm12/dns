@@ -53,9 +53,14 @@ func (c *hardcodedConn) Write(b []byte) (n int, err error) {
 	if err != nil {
 		return 0, fmt.Errorf("packing response: %w", err)
 	}
+	const maxPackedResponseLength = 65535
+	if len(packedResponse) > maxPackedResponseLength {
+		panic("packed response is bigger than 65535 bytes")
+	}
+	packedLength := uint16(len(packedResponse)) //nolint:gosec
 
 	c.dataForClient = make([]byte, lengthPrefixSize, lengthPrefixSize+len(packedResponse))
-	binary.BigEndian.PutUint16(c.dataForClient, uint16(len(packedResponse)))
+	binary.BigEndian.PutUint16(c.dataForClient, packedLength)
 	c.dataForClient = append(c.dataForClient, packedResponse...)
 
 	return len(b), nil

@@ -27,7 +27,7 @@ func Test_New(t *testing.T) {
 	}
 	assert.Equal(t, expectedMiddleware, middleware)
 
-	next := dns.HandlerFunc(func(rw dns.ResponseWriter, m *dns.Msg) {})
+	next := dns.HandlerFunc(func(_ dns.ResponseWriter, _ *dns.Msg) {})
 	handler := middleware.Wrap(next)
 
 	request := &dns.Msg{Question: []dns.Question{

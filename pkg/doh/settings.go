@@ -58,9 +58,7 @@ func (s *ResolverSettings) SetDefaults() {
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
 }
 
-var (
-	ErrListeningAddressNotValid = errors.New("listening address is not valid")
-)
+var ErrListeningAddressNotValid = errors.New("listening address is not valid")
 
 func (s ServerSettings) Validate() (err error) {
 	err = s.Resolver.Validate()
@@ -76,9 +74,7 @@ func (s ServerSettings) Validate() (err error) {
 	return nil
 }
 
-var (
-	ErrUpstreamResolversNotSet = errors.New("upstream resolvers not set")
-)
+var ErrUpstreamResolversNotSet = errors.New("upstream resolvers not set")
 
 func (s ResolverSettings) Validate() (err error) {
 	if len(s.UpstreamResolvers) == 0 {

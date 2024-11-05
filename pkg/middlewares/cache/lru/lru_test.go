@@ -28,7 +28,7 @@ func Test_lru_e2e(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 
-	nowUnix := uint32(time.Now().Unix())
+	nowUnix := uint32(time.Now().Unix()) //nolint:gosec
 	expUnix := nowUnix + 1000
 
 	const maxEntries = 2
