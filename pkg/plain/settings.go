@@ -70,10 +70,10 @@ func (s *Settings) String() string {
 func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Plain resolver settings:")
 
-	upstreamResolversNode := node.Append("Upstream resolvers:")
+	upstreamResolversNode := node.Appendf("Upstream resolvers:")
 	caser := cases.Title(language.English)
 	for _, upstreamResolver := range s.UpstreamResolvers {
-		upstreamResolversNode.Append(caser.String(upstreamResolver.Name))
+		upstreamResolversNode.Appendf(caser.String(upstreamResolver.Name))
 	}
 
 	node.Appendf("Query timeout: %s", s.Timeout)

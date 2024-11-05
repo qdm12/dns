@@ -60,9 +60,9 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node.Appendf("Upstream resolver connection type: %s", s.Dialer)
 
 	if len(s.Middlewares) > 0 {
-		middlewares := node.Append("Middlewares:")
+		middlewares := node.Appendf("Middlewares:")
 		for _, middleware := range s.Middlewares {
-			middlewares.Append(middleware.String())
+			middlewares.Appendf(middleware.String())
 		}
 	}
 
