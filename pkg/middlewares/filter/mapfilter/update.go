@@ -24,7 +24,7 @@ func (m *Filter) Update(settings update.Settings) (err error) {
 
 	m.metrics.SetBlockedHostnames(len(m.fqdnHostnames))
 	m.metrics.SetBlockedIPs(len(m.ips))
-	m.metrics.SetBlockedIPPrefixes(len(m.ips))
+	m.metrics.SetBlockedIPPrefixes(len(m.ipPrefixes))
 
 	return nil
 }
