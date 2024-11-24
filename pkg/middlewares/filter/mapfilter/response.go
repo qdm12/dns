@@ -45,13 +45,19 @@ func (m *Filter) isIPBlocked(ip net.IP,
 ) (blocked bool) {
 	var netIP netip.Addr
 	if ip.To4() != nil {
-		netIP = netip.AddrFrom4([4]byte(ip.To4()))
+		ipBytes := [4]byte(ip.To4())
+		_, blocked := m.ipv4[ipBytes]
+		if blocked {
+			return true
+		}
+		netIP = netip.AddrFrom4(ipBytes)
 	} else {
-		netIP = netip.AddrFrom16([16]byte(ip.To16()))
-	}
-
-	if _, blocked := m.ips[netIP]; blocked {
-		return blocked
+		ipBytes := [16]byte(ip.To16())
+		_, blocked := m.ipv6[ipBytes]
+		if blocked {
+			return true
+		}
+		netIP = netip.AddrFrom16(ipBytes)
 	}
 
 	// Only run the rebinding protection and non-local
