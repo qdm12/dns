@@ -27,11 +27,11 @@ func (m *MatcherRequest) Matches(x interface{}) bool {
 	}
 
 	expected := m.request.Copy()
-	expected.MsgHdr.Id = 0
+	expected.Id = 0
 	expectedPacked, _ := expected.Pack()
 
 	received := msg.Copy()
-	received.MsgHdr.Id = 0
+	received.Id = 0
 	receivedPacked, _ := received.Pack()
 
 	return bytes.Equal(expectedPacked, receivedPacked)

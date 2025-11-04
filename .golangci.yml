@@ -1,34 +1,43 @@
-linters-settings:
-  misspell:
-    locale: US
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - err113
-    - path: pkg/provider/.*\.go
-      linters:
-        - dupl
-    - path: internal/config/.*\.go
-      linters:
-        - dupl
-    - linters:
-        - lll
-      source: "^\\t+(defaultPlainIPv6AddrPort|defaultDoTIPv6AddrPort|netip.AddrFrom16)\\(.+\\),$"
-    - linters:
-        - ireturn
-      text: ".+returns interface \\(github\\.com\\/prometheus\\/client_golang\\/prometheus\\.[a-zA-Z]+\\)$"
-    - linters:
-        - nolintlint
-      path: pkg/middlewares/.+/middleware\.go
-      text: "directive `\\/\\/nolint:ireturn` is unused for linter \"ireturn\""
-    - linters:
-        - goconst
-      path: pkg/(plain|dot|doh)/.+\.go
-      text: "string `ipv6` has 3 occurrences, make it a constant"
-
+version: "2"
 linters:
+  settings:
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - err113
+        path: _test\.go
+      - linters:
+          - dupl
+        path: pkg/provider/.*\.go
+      - linters:
+          - dupl
+        path: internal/config/.*\.go
+      - linters:
+          - lll
+        source: ^\t+(defaultPlainIPv6AddrPort|defaultDoTIPv6AddrPort|netip.AddrFrom16)\(.+\),$
+      - linters:
+          - ireturn
+        text: .+returns interface \(github\.com\/prometheus\/client_golang\/prometheus\.[a-zA-Z]+\)$
+      - linters:
+          - nolintlint
+        path: pkg/middlewares/.+/middleware\.go
+        text: directive `\/\/nolint:ireturn` is unused for linter "ireturn"
+      - linters:
+          - goconst
+        path: pkg/(plain|dot|doh)/.+\.go
+        text: string `ipv6` has 3 occurrences, make it a constant
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
   enable:
     - asasalint
     - asciicheck
@@ -51,7 +60,6 @@ linters:
     - exhaustive
     - fatcontext
     - forcetypeassert
-    - gci
     - gocheckcompilerdirectives
     - gochecknoglobals
     - gochecknoinits
@@ -60,9 +68,7 @@ linters:
     - gocritic
     - gocyclo
     - godot
-    - gofumpt
     - goheader
-    - goimports
     - gomoddirectives
     - goprintffuncname
     - gosec
@@ -95,7 +101,6 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - tagalign
-    - tenv
     - thelper
     - tparallel
     - unconvert
@@ -104,3 +109,14 @@ linters:
     - wastedassign
     - whitespace
     - zerologlint
+formatters:
+  enable:
+    - gci
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

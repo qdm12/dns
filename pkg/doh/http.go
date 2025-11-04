@@ -52,7 +52,7 @@ func newHTTPClientResolver(dohServers []provider.DoHServer,
 
 func dohHTTPRequest(ctx context.Context, client *http.Client, bufferPool *sync.Pool,
 	url string, wire []byte,
-) (respWire []byte, err error) { //nolint:interfacer
+) (respWire []byte, err error) {
 	buffer := bufferPool.Get().(*bytes.Buffer) //nolint:forcetypeassert
 	buffer.Reset()
 	defer bufferPool.Put(buffer)

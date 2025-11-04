@@ -192,8 +192,8 @@ func checkAnswers(expected, received *dns.Msg) (
 	}
 
 	// Clear randomly set fields
-	received.MsgHdr.Id = 0
-	expected.MsgHdr.Id = 0
+	received.Id = 0
+	expected.Id = 0
 
 	for i := range received.Answer {
 		if !answersAreEqual(expected.Answer[i], received.Answer[i]) {
