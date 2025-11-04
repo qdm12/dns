@@ -2,6 +2,7 @@ package blockbuilder
 
 import (
 	"context"
+	"regexp"
 	"strings"
 )
 
@@ -11,6 +12,8 @@ const (
 	maliciousBlockListHostnamesURL    = "https://raw.githubusercontent.com/qdm12/files/master/malicious-hostnames.updated"
 	surveillanceBlockListHostnamesURL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-hostnames.updated"
 )
+
+var hostnameRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
 
 func (b *Builder) buildHostnames(ctx context.Context,
 	blockMalicious, blockAds, blockSurveillance bool,
@@ -39,6 +42,9 @@ func (b *Builder) buildHostnames(ctx context.Context,
 
 	blockedHostnames = make([]string, 0, len(uniqueResults))
 	for result := range uniqueResults {
+		if !hostnameRegex.MatchString(result) {
+			continue
+		}
 		blockedHostnames = append(blockedHostnames, result)
 	}
 
