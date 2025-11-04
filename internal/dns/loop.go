@@ -88,7 +88,12 @@ func (l *Loop) Start(ctx context.Context) ( //nolint:contextcheck
 			}
 		}
 	}()
-	<-ready
+
+	select {
+	case <-ready:
+	case err = <-runErrorBidirectional:
+		return nil, fmt.Errorf("starting subsequent run: %w", err)
+	}
 	ready = nil
 
 	return runError, nil
