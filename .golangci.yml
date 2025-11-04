@@ -32,8 +32,8 @@ linters:
         text: directive `\/\/nolint:ireturn` is unused for linter "ireturn"
       - linters:
           - goconst
-        path: pkg/(plain|dot|doh)/.+\.go
-        text: string `ipv6` has 3 occurrences, make it a constant
+        path: (pkg/(plain|dot|doh)|internal/setup)/.+\.go
+        text: string `ipv(6|4)` has [1-9] occurrences, make it a constant
     paths:
       - third_party$
       - builtin$

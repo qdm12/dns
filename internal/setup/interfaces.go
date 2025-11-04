@@ -46,6 +46,10 @@ type DoHMetrics interface {
 	DoHDialInc(url string)
 }
 
+type PlainMetrics interface {
+	PlainDialInc(address, outcome string)
+}
+
 type CacheMetrics interface { //nolint:interfacebloat
 	SetCacheType(cacheType string)
 	CacheInsertInc()

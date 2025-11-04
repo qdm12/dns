@@ -53,6 +53,14 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 
 		return dohServer(userSettings, ipv6Support, middlewares,
 			logger, dohMetrics)
+	case "plain":
+		logger := loggerConstructor.New(log.SetComponent("plaintext DNS"))
+		plainMetrics, err := plainMetrics(userSettings.Metrics.Type, commonPrometheus)
+		if err != nil {
+			return nil, fmt.Errorf("plain DNS metrics: %w", err)
+		}
+		return plainServer(userSettings, ipv6Support, middlewares,
+			logger, plainMetrics)
 	default:
 		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))
 	}

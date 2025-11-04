@@ -17,7 +17,7 @@ import (
 // and to live patch the program from external sources.
 type Settings struct {
 	// Upstream is the DNS upstream connection type
-	// and can be either 'dot' or 'doh'.
+	// and can be either 'dot', 'doh' or 'plain'.
 	// It defaults to 'dot' if left uset.
 	Upstream string
 	// ListeningAddress is the DNS server listening address.
