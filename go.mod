@@ -8,12 +8,12 @@ require (
 	github.com/miekg/dns v1.1.62
 	github.com/prometheus/client_golang v1.20.5
 	github.com/prometheus/client_model v0.6.1
-	github.com/qdm12/goservices v0.1.0
+	github.com/qdm12/goservices v0.1.1-0.20251104135713-6bee97bd4978
 	github.com/qdm12/gosettings v0.4.3
 	github.com/qdm12/gosplash v0.2.0
 	github.com/qdm12/gotree v0.3.0
 	github.com/qdm12/log v0.1.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	golang.org/x/net v0.30.0
 	golang.org/x/text v0.19.0
