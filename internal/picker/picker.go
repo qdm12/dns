@@ -32,7 +32,8 @@ func (p *Picker) PlainServer(servers []provider.PlainServer) provider.PlainServe
 	return pickFromSlice(servers, p.rand)
 }
 
-func pickFromSlice[T any](slice []T, randSource *rand.Rand) (element T) { //nolint:ireturn
+//nolint:ireturn
+func pickFromSlice[T any](slice []T, randSource *rand.Rand) (element T) {
 	switch len(slice) {
 	case 0:
 		panic("slice to randomly pick from is empty")
@@ -43,7 +44,7 @@ func pickFromSlice[T any](slice []T, randSource *rand.Rand) (element T) { //noli
 	}
 }
 
-// DotAddrPort returns a randomly picked IP address and port
+// DoTAddrPort returns a randomly picked IP address and port
 // from the given DoT server. If ipv6 is true, IPv6 addresses
 // are added to the pool of IP addresses to pick from, on top
 // of all IPv4 addresses.

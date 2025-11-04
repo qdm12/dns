@@ -251,6 +251,7 @@ func Test_Server_Mocks(t *testing.T) {
 	dialer, err := dot.New(dot.Settings{
 		Metrics: dotMetrics,
 	})
+	require.NoError(t, err)
 
 	server, err := New(Settings{
 		ListeningAddress: ptrTo(""),
