@@ -15,6 +15,7 @@ func IsFQDNLocal(fqdn string) bool {
 	}
 
 	domainName := fqdn[:len(fqdn)-1] // remove the trailing dot
+	domainName = strings.ToLower(domainName)
 	hasDot := false
 	for _, c := range domainName {
 		if c == '.' {

@@ -37,6 +37,9 @@ func Test_IsFQDNLocal(t *testing.T) {
 		"dyndns_privately_managed": {
 			fqdn: "x.dyndns.org.",
 		},
+		"mixed_case": {
+			fqdn: "weBsItE.Eu.oRG.",
+		},
 	}
 
 	for name, testCase := range testCases {
