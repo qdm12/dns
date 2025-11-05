@@ -12,16 +12,16 @@ import (
 )
 
 type SettingsSystemDNS struct {
-	// IP is the IP address to use for the DNS.
-	// It defaults to 127.0.0.1 if nil.
-	IP netip.Addr
+	// IPs is the IP addresses to use for the DNS.
+	// It defaults to [127.0.0.1] if nil.
+	IPs []netip.Addr
 	// ResolvPath is the path to the resolv configuration file.
 	// It defaults to /etc/resolv.conf.
 	ResolvPath string
 }
 
 func (s *SettingsSystemDNS) SetDefaults() {
-	s.IP = gosettings.DefaultValidator(s.IP, netip.AddrFrom4([4]byte{127, 0, 0, 1}))
+	s.IPs = gosettings.DefaultSlice(s.IPs, []netip.Addr{netip.AddrFrom4([4]byte{127, 0, 0, 1})})
 	s.ResolvPath = gosettings.DefaultComparable(s.ResolvPath, "/etc/resolv.conf")
 }
 
@@ -47,17 +47,17 @@ func UseDNSSystemWide(settings SettingsSystemDNS) (err error) {
 	stat, err := os.Stat(settings.ResolvPath)
 	switch {
 	case errors.Is(err, os.ErrNotExist):
-		return createResolvFile(settings.ResolvPath, settings.IP)
+		return createResolvFile(settings.ResolvPath, settings.IPs)
 	case err != nil:
 		return fmt.Errorf("stating resolv path: %w", err)
 	case stat.IsDir():
 		return fmt.Errorf("%w: %s", ErrResolvPathIsDirectory, settings.ResolvPath)
 	}
 
-	return patchResolvFile(settings.ResolvPath, settings.IP)
+	return patchResolvFile(settings.ResolvPath, settings.IPs)
 }
 
-func createResolvFile(resolvPath string, ip netip.Addr) (err error) {
+func createResolvFile(resolvPath string, ips []netip.Addr) (err error) {
 	parentDirectory := filepath.Dir(resolvPath)
 	const defaultPerms os.FileMode = 0o755
 	err = os.MkdirAll(parentDirectory, defaultPerms)
@@ -66,7 +66,10 @@ func createResolvFile(resolvPath string, ip netip.Addr) (err error) {
 	}
 
 	const filePermissions os.FileMode = 0o600
-	data := []byte("nameserver " + ip.String() + "\n")
+	var data []byte
+	for _, ip := range ips {
+		data = append(data, []byte("nameserver "+ip.String()+"\n")...)
+	}
 	err = os.WriteFile(resolvPath, data, filePermissions)
 	if err != nil {
 		return fmt.Errorf("creating resolv file: %w", err)
@@ -74,15 +77,17 @@ func createResolvFile(resolvPath string, ip netip.Addr) (err error) {
 	return nil
 }
 
-func patchResolvFile(resolvPath string, ip netip.Addr) (err error) {
+func patchResolvFile(resolvPath string, ips []netip.Addr) (err error) {
 	data, err := os.ReadFile(resolvPath)
 	if err != nil {
 		return fmt.Errorf("reading file: %w", err)
 	}
 
 	lines := strings.Split(string(data), "\n")
-	patchedLines := make([]string, 0, len(lines)+1)
-	patchedLines = append(patchedLines, "nameserver "+ip.String())
+	patchedLines := make([]string, 0, len(lines)+len(ips))
+	for _, ip := range ips {
+		patchedLines = append(patchedLines, "nameserver "+ip.String())
+	}
 	for _, line := range lines {
 		if !strings.HasPrefix(line, "nameserver ") {
 			patchedLines = append(patchedLines, line)

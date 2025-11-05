@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"strings"
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/config"
@@ -12,6 +13,7 @@ import (
 	"github.com/qdm12/dns/v2/internal/support"
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/mapfilter"
+	"github.com/qdm12/dns/v2/pkg/nameserver"
 )
 
 type Loop struct {
@@ -27,6 +29,7 @@ type Loop struct {
 	runCancel   context.CancelFunc
 	runDone     chan struct{}
 	ipv6Support bool
+	originalDNS []netip.AddrPort
 }
 
 func New(settings config.Settings, logger Logger,
@@ -75,6 +78,7 @@ func (l *Loop) Start(ctx context.Context) ( //nolint:contextcheck
 
 	go func() {
 		defer close(l.runDone)
+		defer l.restoreOriginalDNS()
 		for runCtx.Err() == nil {
 			err := l.runSubsequent(runCtx, ready)
 			switch {
@@ -129,6 +133,11 @@ func (l *Loop) runFirst(ctx context.Context) (err error) {
 	_, err = l.dnsServer.Start(ctx)
 	if err != nil {
 		return fmt.Errorf("starting dns server: %w", err)
+	}
+
+	err = l.useDNSServerInternally()
+	if err != nil {
+		return fmt.Errorf("using DNS server internally: %w", err)
 	}
 
 	if *l.settings.CheckDNS {
@@ -224,6 +233,44 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 	}
 
 	return server, nil
+}
+
+func (l *Loop) useDNSServerInternally() error {
+	listeningAddr, err := l.dnsServer.ListeningAddress()
+	if err != nil {
+		return fmt.Errorf("getting DNS server listening address: %w", err)
+	}
+	internalDNSSettings := nameserver.SettingsInternalDNS{
+		AddrPort: netip.AddrPortFrom(netip.AddrFrom4([4]byte{127, 0, 0, 1}), listeningAddr.Port()),
+	}
+	l.logger.Info("using DNS address " + internalDNSSettings.AddrPort.String() + " internally")
+	l.originalDNS = nameserver.GetDNSServers()
+	nameserver.UseDNSInternally(internalDNSSettings)
+	err = nameserver.UseDNSSystemWide(nameserver.SettingsSystemDNS{}) // cannot set the port for Unix systems
+	if err != nil {
+		return fmt.Errorf("setting system DNS: %w", err)
+	}
+	return nil
+}
+
+func (l *Loop) restoreOriginalDNS() {
+	if len(l.originalDNS) == 0 {
+		return
+	}
+	originalIPs := make([]netip.Addr, 0, len(l.originalDNS))
+	ipStrings := make([]string, 0, len(l.originalDNS))
+	for _, addrPort := range l.originalDNS {
+		originalIPs = append(originalIPs, addrPort.Addr())
+		ipStrings = append(ipStrings, addrPort.Addr().String())
+	}
+	l.logger.Info("restoring original system DNS servers to " + strings.Join(ipStrings, ", "))
+	settings := nameserver.SettingsSystemDNS{
+		IPs: originalIPs,
+	}
+	err := nameserver.UseDNSSystemWide(settings)
+	if err != nil {
+		l.logger.Error("restoring original system DNS servers: " + err.Error())
+	}
 }
 
 func (l *Loop) wait(ctx context.Context, serverRunError <-chan error) (err error) {

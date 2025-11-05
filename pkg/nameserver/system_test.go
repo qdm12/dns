@@ -21,7 +21,7 @@ func Test_UseDNSSystemWide(t *testing.T) {
 
 		settings := SettingsSystemDNS{
 			ResolvPath: resolvConfPath,
-			IP:         netip.AddrFrom4([4]byte{1, 1, 1, 1}),
+			IPs:        []netip.Addr{netip.AddrFrom4([4]byte{1, 1, 1, 1})},
 		}
 
 		err := UseDNSSystemWide(settings)
@@ -45,7 +45,7 @@ func Test_UseDNSSystemWide(t *testing.T) {
 
 		settings := SettingsSystemDNS{
 			ResolvPath: resolvConfPath,
-			IP:         netip.AddrFrom4([4]byte{1, 1, 1, 1}),
+			IPs:        []netip.Addr{netip.AddrFrom4([4]byte{1, 1, 1, 1})},
 		}
 
 		err = UseDNSSystemWide(settings)

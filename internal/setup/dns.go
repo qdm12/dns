@@ -3,6 +3,7 @@ package setup
 import (
 	"context"
 	"fmt"
+	"net/netip"
 
 	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/pkg/metrics/prometheus"
@@ -17,6 +18,7 @@ type Service interface {
 	String() string
 	Start(ctx context.Context) (runError <-chan error, startErr error)
 	Stop() (err error)
+	ListeningAddress() (netip.AddrPort, error)
 }
 
 func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn

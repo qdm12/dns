@@ -27,7 +27,7 @@ func getLocalNameservers(filename string) (nameservers []netip.AddrPort) {
 
 	lines := strings.Split(string(data), "\n")
 	for _, line := range lines {
-		if line == "" {
+		if line == "" || line[0] == '#' {
 			continue
 		}
 		fields := strings.Fields(line)
@@ -36,7 +36,7 @@ func getLocalNameservers(filename string) (nameservers []netip.AddrPort) {
 		}
 		for _, field := range fields[1:] {
 			ip, err := netip.ParseAddr(field)
-			if err != nil || !ip.IsPrivate() {
+			if err != nil {
 				continue
 			}
 			nameservers = append(nameservers,

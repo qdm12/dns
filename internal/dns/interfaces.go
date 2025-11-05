@@ -2,6 +2,7 @@ package dns
 
 import (
 	"context"
+	"net/netip"
 
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
@@ -13,6 +14,7 @@ type Service interface {
 	String() string
 	Start(ctx context.Context) (runError <-chan error, startErr error)
 	Stop() error
+	ListeningAddress() (netip.AddrPort, error)
 }
 
 type Logger interface {

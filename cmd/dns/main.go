@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/netip"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,7 +18,6 @@ import (
 	"github.com/qdm12/dns/v2/internal/metrics"
 	"github.com/qdm12/dns/v2/internal/models"
 	"github.com/qdm12/dns/v2/internal/setup"
-	"github.com/qdm12/dns/v2/pkg/nameserver"
 	"github.com/qdm12/goservices"
 	"github.com/qdm12/goservices/hooks"
 	"github.com/qdm12/gosettings/reader"
@@ -124,12 +122,6 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	logger.Patch(settings.Log.ToOptions()...)
 
 	logger.Info(settings.String())
-
-	internalDNSSettings := nameserver.SettingsInternalDNS{
-		IP: netip.AddrFrom4([4]byte{127, 0, 0, 1}),
-	}
-	logger.Info("using DNS address " + internalDNSSettings.IP.String() + " internally")
-	nameserver.UseDNSInternally(internalDNSSettings) // use the DoT/DoH server
 
 	// Setup health server
 	const healthServerAddr = "127.0.0.1:9999"
