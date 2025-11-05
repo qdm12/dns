@@ -34,7 +34,7 @@ func GetDNSServers() (nameservers []netip.AddrPort) {
 		dnsServerAddress := adapterAddress.firstDnsServerAddress
 		for dnsServerAddress != nil {
 			ip, ok := sockAddressToIP(dnsServerAddress.address.rawSockAddrAny)
-			if !ok || ipIsSiteLocalAnycast(ip) || !ip.IsPrivate() {
+			if !ok || ipIsSiteLocalAnycast(ip) {
 				// fec0/10 IPv6 addresses are site local anycast DNS
 				// addresses Microsoft sets by default if no other
 				// IPv6 DNS address is set. Site local anycast is
