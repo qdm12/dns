@@ -58,10 +58,7 @@ func (l *Loop) String() string {
 func (l *Loop) Start(ctx context.Context) ( //nolint:contextcheck
 	runError <-chan error, err error,
 ) {
-	err = l.checkIPv6Support(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("checking IPv6 support: %w", err)
-	}
+	l.ipv6Support = checkIPv6Support(ctx, l.logger)
 
 	err = l.runFirst(ctx)
 	if err != nil {
@@ -109,17 +106,17 @@ func (l *Loop) Stop() (err error) {
 	return l.dnsServer.Stop()
 }
 
-func (l *Loop) checkIPv6Support(ctx context.Context) (err error) {
-	l.ipv6Support, err = support.IPv6(ctx)
+func checkIPv6Support(ctx context.Context, logger Logger) (ok bool) {
+	ipv6Support, err := support.IPv6(ctx)
 	if err != nil {
-		return err
+		logger.Warn("IPv6 support cannot be determined: " + err.Error())
 	}
-	if l.ipv6Support {
-		l.logger.Info("IPv6 is supported, communicating with upstream resolvers only over IPv6")
+	if ipv6Support {
+		logger.Info("IPv6 is supported, communicating with upstream resolvers only over IPv6")
 	} else {
-		l.logger.Info("IPv6 is not supported, communicating with upstream resolvers only over IPv4")
+		logger.Info("IPv6 is not supported, communicating with upstream resolvers only over IPv4")
 	}
-	return nil
+	return ipv6Support
 }
 
 func (l *Loop) runFirst(ctx context.Context) (err error) {
