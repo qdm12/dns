@@ -11,7 +11,7 @@ func (m *Filter) FilterRequest(request *dns.Msg) (blocked bool) {
 	defer m.updateLock.RUnlock()
 
 	for _, question := range request.Question {
-		fqdnHostname := question.Name
+		fqdnHostname := strings.ToLower(question.Name)
 		labels := dns.SplitDomainName(fqdnHostname)
 
 		// Check from least specific to most specific if it is blocked.

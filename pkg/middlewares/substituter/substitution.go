@@ -102,7 +102,7 @@ func (s Substitution) String() string {
 
 func (s *Substitution) toQuestion() dns.Question {
 	return dns.Question{
-		Name:   dns.Fqdn(s.Name),
+		Name:   dns.Fqdn(strings.ToLower(s.Name)),
 		Qtype:  dns.StringToType[strings.ToUpper(s.Type)],
 		Qclass: dns.StringToClass[strings.ToUpper(s.Class)],
 	}
@@ -110,7 +110,7 @@ func (s *Substitution) toQuestion() dns.Question {
 
 func (s *Substitution) toRRs() (rrs []dns.RR) {
 	header := dns.RR_Header{
-		Name:   dns.Fqdn(s.Name),
+		Name:   dns.Fqdn(strings.ToLower(s.Name)),
 		Rrtype: dns.StringToType[strings.ToUpper(s.Type)],
 		Class:  dns.StringToClass[strings.ToUpper(s.Class)],
 		Ttl:    s.TTL,

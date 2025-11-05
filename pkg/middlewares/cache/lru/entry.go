@@ -2,6 +2,7 @@ package lru
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/miekg/dns"
 )
@@ -14,7 +15,7 @@ type entry struct {
 
 func makeKey(request *dns.Msg) (key string) {
 	question := request.Question[0]
-	key = question.Name + "|" + fmt.Sprint(question.Qtype) + "|" + fmt.Sprint(question.Qclass)
+	key = strings.ToLower(question.Name) + "|" + fmt.Sprint(question.Qtype) + "|" + fmt.Sprint(question.Qclass)
 	return key
 }
 

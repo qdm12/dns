@@ -3,6 +3,7 @@ package exchanger
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/miekg/dns"
@@ -55,5 +56,5 @@ func extractRequestQuestion(request *dns.Msg) (s string) {
 	question := request.Question[0]
 	return dns.ClassToString[question.Qclass] + " " +
 		dns.TypeToString[question.Qtype] + " " +
-		question.Name
+		strings.ToLower(question.Name)
 }

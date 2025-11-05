@@ -2,6 +2,7 @@ package substituter
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/miekg/dns"
 )
@@ -72,7 +73,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 func makeKey(question dns.Question) (key questionKey) {
 	return questionKey{
-		Name:   question.Name,
+		Name:   strings.ToLower(question.Name),
 		Qtype:  question.Qtype,
 		Qclass: question.Qclass,
 	}

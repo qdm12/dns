@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -96,6 +97,8 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		h.next.ServeDNS(w, r)
 		return
 	}
+
+	r.Question[0].Name = strings.ToLower(r.Question[0].Name)
 
 	for i, localExchange := range h.localExchanges {
 		response, err := localExchange.Exchange(h.ctx, "udp", r)

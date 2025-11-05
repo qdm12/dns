@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/netip"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/miekg/dns"
@@ -106,6 +107,7 @@ func questionToHardcodedAnswers(question dns.Question,
 	fqdnToIPv4, fqdnToIPv6 map[string][]netip.Addr,
 	nameToIPFound map[string]bool,
 ) (answers []dns.RR, err error) {
+	question.Name = strings.ToLower(question.Name)
 	_, exists := nameToIPFound[question.Name]
 	if !exists {
 		nameToIPFound[question.Name] = false
