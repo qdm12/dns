@@ -78,6 +78,14 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 	}
 	middlewares = append(middlewares, cacheMiddleware)
 
+	filterMiddleware, err := filtermiddleware.New(filtermiddleware.Settings{Filter: filter})
+	if err != nil {
+		return nil, fmt.Errorf("creating filter middleware: %w", err)
+	}
+	// Note the filter middleware must be wrapping the cache middleware
+	// to catch filtered responses found from the cache.
+	middlewares = append(middlewares, filterMiddleware)
+
 	if *userSettings.LocalDNS.Enabled {
 		localDNSMiddleware, err := localdns.New(localdns.Settings{
 			Resolvers: userSettings.LocalDNS.Resolvers, // possibly auto-detected
@@ -90,14 +98,6 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 		// hostnames that may change regularly.
 		middlewares = append(middlewares, localDNSMiddleware)
 	}
-
-	filterMiddleware, err := filtermiddleware.New(filtermiddleware.Settings{Filter: filter})
-	if err != nil {
-		return nil, fmt.Errorf("creating filter middleware: %w", err)
-	}
-	// Note the filter middleware must be wrapping the cache middleware
-	// to catch filtered responses found from the cache.
-	middlewares = append(middlewares, filterMiddleware)
 
 	substituterMiddleware, err := substituter.New(userSettings.Substituter)
 	if err != nil {
