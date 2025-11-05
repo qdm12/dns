@@ -110,7 +110,7 @@ func (l *Loop) Stop() (err error) {
 }
 
 func (l *Loop) checkIPv6Support(ctx context.Context) (err error) {
-	l.ipv6Support, err = support.IPv6(ctx, netip.MustParseAddrPort("[2606:4700:4700::1111]:443"))
+	l.ipv6Support, err = support.IPv6(ctx)
 	if err != nil {
 		return err
 	}
