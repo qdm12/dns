@@ -21,7 +21,8 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	s.Resolvers = gosettings.DefaultSlice(s.Resolvers, nameserver.GetPrivateDNSServers())
+	privateNameservers, _ := nameserver.GetPrivateDNSServers()
+	s.Resolvers = gosettings.DefaultSlice(s.Resolvers, privateNameservers)
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
 }
 

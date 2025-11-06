@@ -23,8 +23,8 @@ var (
 
 func (l *LocalDNS) setDefault() {
 	l.Enabled = gosettings.DefaultPointer(l.Enabled, true)
-	l.Resolvers = gosettings.DefaultSlice(l.Resolvers,
-		nameserver.GetPrivateDNSServers())
+	privateNameservers, _ := nameserver.GetPrivateDNSServers()
+	l.Resolvers = gosettings.DefaultSlice(l.Resolvers, privateNameservers)
 }
 
 func (l *LocalDNS) validate() (err error) {

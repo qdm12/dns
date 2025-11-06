@@ -8,10 +8,11 @@ import (
 	"unsafe"
 )
 
-func GetDNSServers() (nameservers []netip.AddrPort) {
+// GetDNSServers retrieves the DNS server address IP from Windows Syscalls.
+func GetDNSServers() (nameservers []netip.AddrPort, err error) {
 	adapterAddresses, err := getAdapterAddresses()
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("getting adapter addresses: %w", err)
 	}
 
 	for _, adapterAddress := range adapterAddresses {
@@ -45,7 +46,7 @@ func GetDNSServers() (nameservers []netip.AddrPort) {
 		}
 	}
 
-	return nameservers
+	return nameservers, nil
 }
 
 var errBufferOverflowUnexpected = errors.New("unexpected buffer overflowed because buffer was large enough")
