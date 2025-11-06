@@ -14,15 +14,9 @@ func GetDNSServers() (nameservers []netip.AddrPort) {
 }
 
 func getLocalNameservers(filename string) (nameservers []netip.AddrPort) {
-	const defaultNameserverPort = 53
-	defaultLocalNameservers := []netip.AddrPort{
-		netip.AddrPortFrom(netip.AddrFrom4([4]byte{127, 0, 0, 1}), defaultNameserverPort),
-		netip.AddrPortFrom(netip.AddrFrom16([16]byte{0, 0, 0, 0, 0, 0, 0, 1}), defaultNameserverPort),
-	}
-
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		return defaultLocalNameservers
+		return nil
 	}
 
 	lines := strings.Split(string(data), "\n")
@@ -39,13 +33,12 @@ func getLocalNameservers(filename string) (nameservers []netip.AddrPort) {
 			if err != nil {
 				continue
 			}
+
+			const defaultNameserverPort = 53
 			nameservers = append(nameservers,
 				netip.AddrPortFrom(ip, defaultNameserverPort))
 		}
 	}
 
-	if len(nameservers) == 0 {
-		return defaultLocalNameservers
-	}
 	return nameservers
 }

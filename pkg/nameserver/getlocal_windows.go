@@ -9,15 +9,9 @@ import (
 )
 
 func GetDNSServers() (nameservers []netip.AddrPort) {
-	const defaultDNSPort = 53
-	defaultLocalNameservers := []netip.AddrPort{
-		netip.AddrPortFrom(netip.AddrFrom4([4]byte{127, 0, 0, 1}), defaultDNSPort),
-		netip.AddrPortFrom(netip.AddrFrom16([16]byte{0, 0, 0, 0, 0, 0, 0, 1}), defaultDNSPort),
-	}
-
 	adapterAddresses, err := getAdapterAddresses()
 	if err != nil {
-		return defaultLocalNameservers
+		return nil
 	}
 
 	for _, adapterAddress := range adapterAddresses {
@@ -44,15 +38,13 @@ func GetDNSServers() (nameservers []netip.AddrPort) {
 				continue
 			}
 
+			const defaultDNSPort = 53
 			nameserver := netip.AddrPortFrom(ip, defaultDNSPort)
 			nameservers = append(nameservers, nameserver)
 			dnsServerAddress = dnsServerAddress.next
 		}
 	}
 
-	if len(nameservers) == 0 {
-		return defaultLocalNameservers
-	}
 	return nameservers
 }
 
