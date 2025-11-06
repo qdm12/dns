@@ -9,7 +9,7 @@ import (
 )
 
 // GetDNSServers retrieves the DNS server address IP from Windows Syscalls.
-func GetDNSServers() (nameservers []netip.AddrPort, err error) {
+func GetDNSServers() (nameservers []netip.Addr, err error) {
 	adapterAddresses, err := getAdapterAddresses()
 	if err != nil {
 		return nil, fmt.Errorf("getting adapter addresses: %w", err)
@@ -39,9 +39,7 @@ func GetDNSServers() (nameservers []netip.AddrPort, err error) {
 				continue
 			}
 
-			const defaultDNSPort = 53
-			nameserver := netip.AddrPortFrom(ip, defaultDNSPort)
-			nameservers = append(nameservers, nameserver)
+			nameservers = append(nameservers, ip)
 			dnsServerAddress = dnsServerAddress.next
 		}
 	}

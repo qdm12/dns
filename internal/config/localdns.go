@@ -24,7 +24,16 @@ var (
 func (l *LocalDNS) setDefault() {
 	l.Enabled = gosettings.DefaultPointer(l.Enabled, true)
 	privateNameservers, _ := nameserver.GetPrivateDNSServers()
-	l.Resolvers = gosettings.DefaultSlice(l.Resolvers, privateNameservers)
+	l.Resolvers = gosettings.DefaultSlice(l.Resolvers, addrsToAddr53(privateNameservers))
+}
+
+func addrsToAddr53(addrs []netip.Addr) (addrPorts []netip.AddrPort) {
+	addrPorts = make([]netip.AddrPort, len(addrs))
+	const dnsPort = 53
+	for i := range addrs {
+		addrPorts[i] = netip.AddrPortFrom(addrs[i], dnsPort)
+	}
+	return addrPorts
 }
 
 func (l *LocalDNS) validate() (err error) {

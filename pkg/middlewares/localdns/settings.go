@@ -22,8 +22,17 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	privateNameservers, _ := nameserver.GetPrivateDNSServers()
-	s.Resolvers = gosettings.DefaultSlice(s.Resolvers, privateNameservers)
+	s.Resolvers = gosettings.DefaultSlice(s.Resolvers, addrsToAddr53(privateNameservers))
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
+}
+
+func addrsToAddr53(addrs []netip.Addr) (addrPorts []netip.AddrPort) {
+	addrPorts = make([]netip.AddrPort, len(addrs))
+	const dnsPort = 53
+	for i := range addrs {
+		addrPorts[i] = netip.AddrPortFrom(addrs[i], dnsPort)
+	}
+	return addrPorts
 }
 
 func (s *Settings) Validate() (err error) {

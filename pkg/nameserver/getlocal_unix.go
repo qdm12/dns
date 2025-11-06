@@ -11,12 +11,12 @@ import (
 
 // GetDNSServers retrieves the nameserver IP addresses from /etc/resolv.conf on Unix-like systems.
 // If an error is encountered, it does still return nameservers correctly found together with the error.
-func GetDNSServers() (nameservers []netip.AddrPort, err error) {
+func GetDNSServers() (nameservers []netip.Addr, err error) {
 	const filename = "/etc/resolv.conf"
 	return getLocalNameservers(filename)
 }
 
-func getLocalNameservers(filename string) (nameservers []netip.AddrPort, err error) {
+func getLocalNameservers(filename string) (nameservers []netip.Addr, err error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("reading file: %w", err)
@@ -38,8 +38,7 @@ func getLocalNameservers(filename string) (nameservers []netip.AddrPort, err err
 				errs = append(errs, fmt.Errorf("parsing nameserver address: %w", err))
 				continue
 			}
-			const defaultNameserverPort = 53
-			nameservers = append(nameservers, netip.AddrPortFrom(ip, defaultNameserverPort))
+			nameservers = append(nameservers, ip)
 		}
 	}
 
