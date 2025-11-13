@@ -102,7 +102,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 		// built-in healthcheck, in an ephemeral fashion to query the
 		// long running instance of the program about its status
 		client := health.NewClient()
-		return client.Query(ctx)
+		return client.Query(ctx, settingsReader)
 	}
 
 	initialDisplay(buildInfo)
@@ -124,7 +124,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	logger.Info(settings.String())
 
 	// Setup health server
-	const healthServerAddr = "127.0.0.1:9999"
+	healthServerAddr := settings.Health.ServerAddress
 	healthServerLogger := logger.New(log.SetComponent("health server"))
 	healthServer, err := health.NewServer(healthServerAddr, healthServerLogger, health.IsHealthy) //nolint:contextcheck
 	if err != nil {
