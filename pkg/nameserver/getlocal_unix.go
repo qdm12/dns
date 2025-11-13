@@ -63,5 +63,5 @@ func joinErrs(errs []error) error {
 	for i := range errs {
 		args[i] = errs[i]
 	}
-	return fmt.Errorf(format, args...)
+	return fmt.Errorf(format, args...) //nolint:err113
 }

@@ -26,25 +26,8 @@ func (h Health) Validate() (err error) {
 	return nil
 }
 
-func (h *Health) copy() (copied Health) {
-	return Health{
-		ServerAddress: h.ServerAddress,
-	}
-}
-
-// OverrideWith overrides fields of the receiver
-// settings object with any field set in the other
-// settings.
-func (h *Health) OverrideWith(other Health) {
-	h.ServerAddress = gosettings.OverrideWithComparable(h.ServerAddress, other.ServerAddress)
-}
-
 func (h *Health) SetDefaults() {
 	h.ServerAddress = gosettings.DefaultComparable(h.ServerAddress, "127.0.0.1:9999")
-}
-
-func (h Health) String() string {
-	return h.ToLinesNode().String()
 }
 
 func (h Health) ToLinesNode() (node *gotree.Node) {
