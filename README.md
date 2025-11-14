@@ -125,6 +125,7 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `ALLOWED_CIDRS` | | comma separated list of IP networks (CIDRs) to leave unblocked |
 | `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
 | `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
+| `REBINDING_PROTECTION_EXEMPT_HOSTNAMES` | | comma separated list of hostnames to exempt from DNS rebinding protection |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
 | `LOG_CALLER` | `hidden` | `hidden` or `short` |
 | `MIDDLEWARE_LOG_ENABLED` | `off` | `on` or `off` |

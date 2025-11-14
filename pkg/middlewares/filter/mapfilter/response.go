@@ -15,8 +15,10 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 	// Note the response contains the first question of
 	// the request.
 	nameIsLocal := false
+	nameCanBeRebinded := false
 	if len(response.Question) == 1 {
 		nameIsLocal = local.IsFQDNLocal(response.Question[0].Name)
+		_, nameCanBeRebinded = m.allowRebindNames[response.Question[0].Name]
 	}
 
 	for _, rr := range response.Answer {
@@ -25,10 +27,10 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 		switch rrType {
 		case dns.TypeA:
 			record := rr.(*dns.A) //nolint:forcetypeassert
-			blocked = m.isIPBlocked(record.A, nameIsLocal)
+			blocked = m.isIPBlocked(record.A, nameIsLocal, nameCanBeRebinded)
 		case dns.TypeAAAA:
 			record := rr.(*dns.AAAA) //nolint:forcetypeassert
-			blocked = m.isIPBlocked(record.AAAA, nameIsLocal)
+			blocked = m.isIPBlocked(record.AAAA, nameIsLocal, nameCanBeRebinded)
 		}
 
 		if blocked {
@@ -41,7 +43,7 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 }
 
 func (m *Filter) isIPBlocked(ip net.IP,
-	nameIsLocal bool,
+	nameIsLocal, nameCanBeRebinded bool,
 ) (blocked bool) {
 	var netIP netip.Addr
 	if ip.To4() != nil {
@@ -60,9 +62,9 @@ func (m *Filter) isIPBlocked(ip net.IP,
 		netIP = netip.AddrFrom16(ipBytes)
 	}
 
-	// Only run the rebinding protection and non-local
-	// question names.
-	if !nameIsLocal {
+	// Only run the rebinding protection on non-local question names
+	// which are also not exempt from rebinding protection.
+	if !nameIsLocal && !nameCanBeRebinded {
 		for _, ipPrefix := range m.privateIPPrefixes {
 			if ipPrefix.Contains(netIP) {
 				return true

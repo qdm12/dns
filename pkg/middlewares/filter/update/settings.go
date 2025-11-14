@@ -19,6 +19,9 @@ type Settings struct {
 	IPs []netip.Addr
 	// IPPrefixes is a list of IP prefixes to filter out.
 	IPPrefixes []netip.Prefix
+	// FqdnExemptFromRebindingProtection is a list of
+	// fully qualified domain names that are exempt from rebinding protection.
+	FqdnExemptFromRebindingProtection []string
 }
 
 func (s *Settings) SetDefaults() {}
@@ -33,6 +36,11 @@ func (s Settings) Validate() (err error) {
 		return fmt.Errorf("FQDN hostnames: %w", err)
 	}
 
+	err = validate.AllMatchRegex(s.FqdnExemptFromRebindingProtection, fqdnHostRegex)
+	if err != nil {
+		return fmt.Errorf("FQDNs exempt from rebinding protection: %w", err)
+	}
+
 	return nil
 }
 
@@ -42,6 +50,15 @@ func (s *Settings) BlockHostnames(hostnames []string) {
 	s.FqdnHostnames = make([]string, len(hostnames))
 	for i := range hostnames {
 		s.FqdnHostnames[i] = dns.Fqdn(hostnames[i])
+	}
+}
+
+// SetRebindingProtectionExempt transforms the slice of hostnames given to
+// FQDNs and sets these to the settings.
+func (s *Settings) SetRebindingProtectionExempt(hostnames []string) {
+	s.FqdnExemptFromRebindingProtection = make([]string, len(hostnames))
+	for i := range hostnames {
+		s.FqdnExemptFromRebindingProtection[i] = dns.Fqdn(hostnames[i])
 	}
 }
 
@@ -67,6 +84,13 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 
 	if len(s.FqdnHostnames) > 0 {
 		node.Appendf("Hostnames blocked: %d", len(s.FqdnHostnames))
+	}
+
+	if len(s.FqdnExemptFromRebindingProtection) > 0 {
+		subNode := node.Appendf("Hostnames exempt from rebinding protection:")
+		for _, fqdn := range s.FqdnExemptFromRebindingProtection {
+			subNode.Appendf("%s", fqdn)
+		}
 	}
 
 	return node

@@ -92,3 +92,15 @@ func (mr *MockMetricsMockRecorder) SetBlockedIPs(arg0 interface{}) *gomock.Call 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetBlockedIPs", reflect.TypeOf((*MockMetrics)(nil).SetBlockedIPs), arg0)
 }
+
+// SetFqdnExemptFromRebindingProtection mocks base method.
+func (m *MockMetrics) SetFqdnExemptFromRebindingProtection(arg0 int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetFqdnExemptFromRebindingProtection", arg0)
+}
+
+// SetFqdnExemptFromRebindingProtection indicates an expected call of SetFqdnExemptFromRebindingProtection.
+func (mr *MockMetricsMockRecorder) SetFqdnExemptFromRebindingProtection(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFqdnExemptFromRebindingProtection", reflect.TypeOf((*MockMetrics)(nil).SetFqdnExemptFromRebindingProtection), arg0)
+}

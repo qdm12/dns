@@ -22,6 +22,9 @@ type Block struct {
 	AddBlockedHosts      []string
 	AddBlockedIPs        []netip.Addr
 	AddBlockedIPPrefixes []netip.Prefix
+	// RebindingProtectionExemptHostnames is a list of hostnames
+	// that are exempt from rebinding protection.
+	RebindingProtectionExemptHostnames []string
 }
 
 func (b *Block) setDefaults() {
@@ -43,6 +46,11 @@ func (b *Block) validate() (err error) {
 		return fmt.Errorf("additional blocked hosts: %w", err)
 	}
 
+	err = validate.AllMatchRegex(b.RebindingProtectionExemptHostnames, regexHostname)
+	if err != nil {
+		return fmt.Errorf("rebinding protection exempt hostnames: %w", err)
+	}
+
 	return nil
 }
 
@@ -50,6 +58,7 @@ func (b *Block) String() string {
 	return b.ToLinesNode().String()
 }
 
+//nolint:cyclop
 func (b *Block) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Filtering:")
 
@@ -88,6 +97,13 @@ func (b *Block) ToLinesNode() (node *gotree.Node) {
 
 	if len(b.AddBlockedIPPrefixes) > 0 {
 		node.Appendf("Additional IP networks blocked: %d", len(b.AddBlockedIPPrefixes))
+	}
+
+	if len(b.RebindingProtectionExemptHostnames) > 0 {
+		subNode := node.Appendf("Rebinding protection exempt hostnames:")
+		for _, name := range b.RebindingProtectionExemptHostnames {
+			subNode.Appendf("%s", name)
+		}
 	}
 
 	return node
@@ -129,6 +145,8 @@ func (b *Block) read(reader *reader.Reader) (err error) {
 	if err != nil {
 		return err
 	}
+
+	b.RebindingProtectionExemptHostnames = reader.CSV("REBINDING_PROTECTION_EXEMPT_HOSTNAMES")
 
 	return nil
 }

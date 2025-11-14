@@ -12,6 +12,7 @@ type Filter struct {
 	ipv6              map[[16]byte]struct{}
 	ipPrefixes        []netip.Prefix
 	privateIPPrefixes []netip.Prefix
+	allowRebindNames  map[string]struct{}
 	metrics           Metrics
 	updateLock        sync.RWMutex
 }
