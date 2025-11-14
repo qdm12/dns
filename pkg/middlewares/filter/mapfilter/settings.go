@@ -18,12 +18,20 @@ type Settings struct {
 	// Metrics is the metric interface and defaults
 	// to a no-op implementation if left unset.
 	Metrics Metrics
+	// Logger logs all filtered requests and responses and why
+	// they were filtered. It defaults to a no-op logger.
+	Logger Logger
 }
 
 func (s *Settings) SetDefaults() {
 	s.Update.SetDefaults()
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, noop.New())
+	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, &noopLogger{})
 }
+
+type noopLogger struct{}
+
+func (l noopLogger) Log(_ string) {}
 
 func (s Settings) Validate() (err error) {
 	err = s.Update.Validate()
@@ -53,6 +61,16 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 		metricsType = strings.TrimPrefix(metricsType, "*")
 	}
 	node.Appendf("Metrics type: %s", metricsType)
+
+	var loggerType string
+	switch s.Logger.(type) {
+	case *noopLogger:
+		loggerType = "No-Op"
+	default:
+		loggerType = reflect.TypeOf(s.Logger).String()
+		loggerType = strings.TrimPrefix(loggerType, "*")
+	}
+	node.Appendf("Logger type: %s", loggerType)
 
 	return node
 }

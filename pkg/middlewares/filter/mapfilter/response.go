@@ -24,17 +24,19 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 	for _, rr := range response.Answer {
 		// only filter A and AAAA responses for now
 		rrType := rr.Header().Rrtype
+		var blockedReason string
 		switch rrType {
 		case dns.TypeA:
 			record := rr.(*dns.A) //nolint:forcetypeassert
-			blocked = m.isIPBlocked(record.A, nameIsLocal, nameCanBeRebinded)
+			blockedReason = m.isIPBlocked(record.A, nameIsLocal, nameCanBeRebinded)
 		case dns.TypeAAAA:
 			record := rr.(*dns.AAAA) //nolint:forcetypeassert
-			blocked = m.isIPBlocked(record.AAAA, nameIsLocal, nameCanBeRebinded)
+			blockedReason = m.isIPBlocked(record.AAAA, nameIsLocal, nameCanBeRebinded)
 		}
 
-		if blocked {
+		if blockedReason != "" {
 			m.metrics.IPsFilteredInc(dns.TypeToString[rrType])
+			m.logger.Log("response blocked for " + rr.Header().Name + " because " + blockedReason)
 			return true
 		}
 	}
@@ -44,20 +46,20 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 
 func (m *Filter) isIPBlocked(ip net.IP,
 	nameIsLocal, nameCanBeRebinded bool,
-) (blocked bool) {
+) (blockedReason string) {
 	var netIP netip.Addr
 	if ip.To4() != nil {
 		ipBytes := [4]byte(ip.To4())
 		_, blocked := m.ipv4[ipBytes]
 		if blocked {
-			return true
+			return ip.String() + " is a blocked IPv4 address"
 		}
 		netIP = netip.AddrFrom4(ipBytes)
 	} else {
 		ipBytes := [16]byte(ip.To16())
 		_, blocked := m.ipv6[ipBytes]
 		if blocked {
-			return true
+			return ip.String() + " is a blocked IPv6 address"
 		}
 		netIP = netip.AddrFrom16(ipBytes)
 	}
@@ -67,15 +69,15 @@ func (m *Filter) isIPBlocked(ip net.IP,
 	if !nameIsLocal && !nameCanBeRebinded {
 		for _, ipPrefix := range m.privateIPPrefixes {
 			if ipPrefix.Contains(netIP) {
-				return true
+				return netIP.String() + " is private and the question name is not local nor exempt from rebinding protection"
 			}
 		}
 	}
 
 	for _, ipPrefix := range m.ipPrefixes {
 		if ipPrefix.Contains(netIP) {
-			return true
+			return netIP.String() + " belongs to the blocked IP prefix " + ipPrefix.String()
 		}
 	}
-	return false
+	return ""
 }

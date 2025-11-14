@@ -32,3 +32,17 @@ func BuildFilterMetrics(userSettings config.Metrics, //nolint:ireturn
 		panic(fmt.Sprintf("unknown metrics type: %s", userSettings.Type))
 	}
 }
+
+type FilterLogger struct {
+	logger Logger
+}
+
+func (f *FilterLogger) Log(s string) {
+	f.logger.Info(s)
+}
+
+func BuildFilterLogger(logger Logger) *FilterLogger {
+	return &FilterLogger{
+		logger: logger,
+	}
+}

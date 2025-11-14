@@ -1,6 +1,8 @@
 package mapfilter
 
 import (
+	"fmt"
+
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 )
 
@@ -41,6 +43,9 @@ func (m *Filter) Update(settings update.Settings) (err error) {
 	m.metrics.SetBlockedIPs(len(m.ipv4) + len(m.ipv6))
 	m.metrics.SetBlockedIPPrefixes(len(m.ipPrefixes))
 	m.metrics.SetFqdnExemptFromRebindingProtection(len(m.allowRebindNames))
+
+	m.logger.Log(fmt.Sprintf("filter updated: %d hostnames, %d IPs, %d IP prefixes blocked",
+		len(m.fqdnHostnames), len(m.ipv4)+len(m.ipv6), len(m.ipPrefixes)))
 
 	return nil
 }

@@ -28,6 +28,8 @@ func (m *Filter) FilterRequest(request *dns.Msg) (blocked bool) {
 			class := dns.ClassToString[question.Qclass]
 			qType := dns.TypeToString[question.Qtype]
 			m.metrics.HostnamesFilteredInc(class, qType)
+			m.logger.Log("request blocked for hostname " + fqdnHostname +
+				" matching blocked hostname " + fqdnParent)
 			return blocked
 		}
 	}

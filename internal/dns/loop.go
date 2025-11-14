@@ -13,6 +13,7 @@ import (
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/mapfilter"
 	"github.com/qdm12/dns/v2/pkg/nameserver"
+	"github.com/qdm12/log"
 )
 
 type Loop struct {
@@ -197,8 +198,11 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 		return nil, fmt.Errorf("setting up filter metrics: %w", err)
 	}
 
+	logger := setup.BuildFilterLogger(l.logger.New(log.SetComponent("filter")))
+
 	filterSettings := mapfilter.Settings{
 		Metrics: filterMetrics,
+		Logger:  logger,
 	}
 
 	if downloadBlockFiles {

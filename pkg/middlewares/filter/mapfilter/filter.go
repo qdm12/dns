@@ -14,6 +14,7 @@ type Filter struct {
 	privateIPPrefixes []netip.Prefix
 	allowRebindNames  map[string]struct{}
 	metrics           Metrics
+	logger            Logger
 	updateLock        sync.RWMutex
 }
 
@@ -28,6 +29,7 @@ func New(settings Settings) (filter *Filter, err error) {
 	filter = &Filter{
 		privateIPPrefixes: getPrivateIPPrefixes(),
 		metrics:           settings.Metrics,
+		logger:            settings.Logger,
 	}
 
 	err = filter.Update(settings.Update)

@@ -8,3 +8,7 @@ type Metrics interface {
 	HostnamesFilteredInc(qClass, qType string)
 	IPsFilteredInc(rrtype string)
 }
+
+type Logger interface {
+	Log(s string)
+}

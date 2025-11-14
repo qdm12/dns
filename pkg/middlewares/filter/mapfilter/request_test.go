@@ -50,11 +50,14 @@ func Test_FilterRequest(t *testing.T) {
 			makeFilter: func(ctrl *gomock.Controller) *Filter {
 				metrics := NewMockMetrics(ctrl)
 				metrics.EXPECT().HostnamesFilteredInc("IN", "A")
+				logger := NewMockLogger(ctrl)
+				logger.EXPECT().Log("request blocked for hostname host.domain.com. matching blocked hostname host.domain.com.")
 				return &Filter{
 					fqdnHostnames: map[string]struct{}{
 						"host.domain.com.": {},
 					},
 					metrics: metrics,
+					logger:  logger,
 				}
 			},
 			request: &dns.Msg{
@@ -68,11 +71,14 @@ func Test_FilterRequest(t *testing.T) {
 			makeFilter: func(ctrl *gomock.Controller) *Filter {
 				metrics := NewMockMetrics(ctrl)
 				metrics.EXPECT().HostnamesFilteredInc("IN", "A")
+				logger := NewMockLogger(ctrl)
+				logger.EXPECT().Log("request blocked for hostname host.domain.com. matching blocked hostname domain.com.")
 				return &Filter{
 					fqdnHostnames: map[string]struct{}{
 						"domain.com.": {},
 					},
 					metrics: metrics,
+					logger:  logger,
 				}
 			},
 			request: &dns.Msg{
@@ -86,11 +92,14 @@ func Test_FilterRequest(t *testing.T) {
 			makeFilter: func(ctrl *gomock.Controller) *Filter {
 				metrics := NewMockMetrics(ctrl)
 				metrics.EXPECT().HostnamesFilteredInc("IN", "A")
+				logger := NewMockLogger(ctrl)
+				logger.EXPECT().Log("request blocked for hostname xyz.host.domain.com. matching blocked hostname domain.com.")
 				return &Filter{
 					fqdnHostnames: map[string]struct{}{
 						"domain.com.": {},
 					},
 					metrics: metrics,
+					logger:  logger,
 				}
 			},
 			request: &dns.Msg{
