@@ -258,6 +258,7 @@ func Test_Server_Mocks(t *testing.T) {
 		Dialer:           dialer,
 		Middlewares:      []Middleware{metricsMiddleware, cacheMiddleware, filterMiddleware},
 		Logger:           logger,
+		TimeoutWarn:      ptrTo(true),
 	})
 	require.NoError(t, err)
 

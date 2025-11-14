@@ -16,13 +16,15 @@ func Test_newHandler(t *testing.T) {
 	ctx := context.Background()
 	logger := NewMockLogger(nil)
 	exchanger := NewMockexchangerIntf(nil)
+	const timeoutWarn = true
 
-	h := newHandler(ctx, exchanger, logger)
+	h := newHandler(ctx, exchanger, logger, timeoutWarn)
 
 	expectedHandler := &handler{
-		ctx:       ctx,
-		exchanger: exchanger,
-		warner:    logger,
+		ctx:         ctx,
+		exchanger:   exchanger,
+		logger:      logger,
+		timeoutWarn: timeoutWarn,
 	}
 	assert.Equal(t, expectedHandler, h)
 }
@@ -54,7 +56,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 				return &handler{
 					ctx:       ctx,
 					exchanger: exchanger,
-					warner:    logger,
+					logger:    logger,
 				}
 			},
 			request: &dns.Msg{

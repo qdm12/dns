@@ -29,17 +29,20 @@ func Test_Settings_String(t *testing.T) {
 			},
 			s: `Server settings:
 ├── Listening address: localhost:53
-└── Upstream resolver connection type: test`,
+├── Upstream resolver connection type: test
+└── Log timeout at the warning level: `,
 		},
 		"non_empty_settings": {
 			settings: Settings{
 				ListeningAddress: ptrTo(":8000"),
 				Dialer:           dialer,
 				Middlewares:      []Middleware{middleware},
+				TimeoutWarn:      ptrTo(false),
 			},
 			s: `Server settings:
 ├── Listening address: :8000
 ├── Upstream resolver connection type: test
+├── Log timeout at the warning level: no
 └── Middlewares:
     └── test`,
 		},

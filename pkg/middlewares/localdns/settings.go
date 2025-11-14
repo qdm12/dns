@@ -18,12 +18,16 @@ type Settings struct {
 	// Logger is the logger to use.
 	// It defaults to a No-op implementation.
 	Logger Logger
+	// TimeoutWarn indicates whether to log timeout errors at the
+	// warning level or at the debug level. It defaults to false.
+	TimeoutWarn *bool
 }
 
 func (s *Settings) SetDefaults() {
 	privateNameservers, _ := nameserver.GetPrivateDNSServers()
 	s.Resolvers = gosettings.DefaultSlice(s.Resolvers, addrsToAddr53(privateNameservers))
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
+	s.TimeoutWarn = gosettings.DefaultPointer(s.TimeoutWarn, false)
 }
 
 func addrsToAddr53(addrs []netip.Addr) (addrPorts []netip.AddrPort) {
@@ -46,11 +50,12 @@ func (s *Settings) String() string {
 func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Local forwarding middleware settings:")
 
-	resolversNode := gotree.New("Local resolvers:")
+	node.Appendf("Log timeout errors at the warning level: %s", gosettings.BoolToYesNo(s.TimeoutWarn))
+
+	resolversNode := node.Appendf("Local resolvers:")
 	for _, resolver := range s.Resolvers {
 		resolversNode.Appendf("%s", resolver)
 	}
-	node.AppendNode(resolversNode)
 
 	return node
 }

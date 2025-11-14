@@ -17,8 +17,9 @@ import (
 
 type handler struct {
 	// Injected from middleware
-	logger Logger
-	next   dns.Handler
+	logger      Logger
+	next        dns.Handler
+	timeoutWarn bool
 
 	// Internal fields
 	localExchanges []exchangerIntf
@@ -30,7 +31,7 @@ type handler struct {
 }
 
 func newHandler(resolvers []netip.AddrPort, logger Logger,
-	next dns.Handler,
+	next dns.Handler, timeoutWarn bool,
 ) *handler {
 	netDialer := &net.Dialer{
 		Timeout: time.Second,
@@ -56,6 +57,7 @@ func newHandler(resolvers []netip.AddrPort, logger Logger,
 		cancel:         cancel,
 		logger:         logger,
 		next:           next,
+		timeoutWarn:    timeoutWarn,
 		localExchanges: localExchangers,
 		localResolvers: localResolvers,
 	}
@@ -103,7 +105,8 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	for i, localExchange := range h.localExchanges {
 		response, err := localExchange.Exchange(h.ctx, "udp", r)
 		if err != nil {
-			h.logger.Debug("exchanging over udp: " + err.Error())
+			err = fmt.Errorf("exchanging over udp: %w", err)
+			h.logErr(err)
 			continue
 		}
 
@@ -118,7 +121,8 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		if response.Truncated {
 			response, err := localExchange.Exchange(h.ctx, "tcp", r)
 			if err != nil {
-				h.logger.Debug("exchanging over tcp: " + err.Error())
+				err = fmt.Errorf("exchanging over tcp: %w", err)
+				h.logErr(err)
 				continue
 			}
 
@@ -149,4 +153,12 @@ func (h *handler) stop() {
 
 	h.cancel()
 	h.waitGroup.Wait()
+}
+
+func (h *handler) logErr(err error) {
+	if !h.timeoutWarn && strings.HasSuffix(err.Error(), ": i/o timeout") {
+		h.logger.Debug(err.Error())
+		return
+	}
+	h.logger.Warn(err.Error())
 }

@@ -71,7 +71,7 @@ func (s *Server) Start(ctx context.Context) (runError <-chan error, startErr err
 
 	var handler dns.Handler
 	exchanger := exchanger.New(s.settings.Dialer, s.logger)
-	handler = newHandler(handlerCtx, exchanger, s.logger) //nolint:contextcheck
+	handler = newHandler(handlerCtx, exchanger, s.logger, *s.settings.TimeoutWarn) //nolint:contextcheck
 
 	for _, middleware := range s.settings.Middlewares {
 		handler = middleware.Wrap(handler)

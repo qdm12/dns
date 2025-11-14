@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func ptrTo[T any](v T) *T { return &v }
+
 func Test_Settings_String(t *testing.T) {
 	t.Parallel()
 
@@ -20,8 +22,10 @@ func Test_Settings_String(t *testing.T) {
 					netip.MustParseAddrPort("1.2.3.4:53"),
 					netip.MustParseAddrPort("9.2.3.4:53"),
 				},
+				TimeoutWarn: ptrTo(true),
 			},
 			s: `Local forwarding middleware settings:
+├── Log timeout errors at the warning level: yes
 └── Local resolvers:
     ├── 1.2.3.4:53
     └── 9.2.3.4:53`,

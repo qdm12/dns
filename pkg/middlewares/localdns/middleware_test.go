@@ -16,7 +16,8 @@ func Test_New(t *testing.T) {
 		Resolvers: []netip.AddrPort{
 			netip.AddrPortFrom(netip.MustParseAddr("1.2.3.4"), 53),
 		},
-		Logger: NewMockLogger(nil),
+		Logger:      NewMockLogger(nil),
+		TimeoutWarn: ptrTo(true),
 	}
 
 	middleware, err := New(settings)

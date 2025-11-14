@@ -33,7 +33,7 @@ func (m *Middleware) String() string {
 // Wrap wraps the DNS handler with the middleware.
 func (m *Middleware) Wrap(next dns.Handler) dns.Handler { //nolint:ireturn
 	handler := newHandler(m.settings.Resolvers,
-		m.settings.Logger, next)
+		m.settings.Logger, next, *m.settings.TimeoutWarn)
 	m.handlers = append(m.handlers, handler)
 	return handler
 }

@@ -25,11 +25,15 @@ type Settings struct {
 	// Logger is the logger to log information.
 	// It defaults to a No-Op logger implementation.
 	Logger Logger
+	// TimeoutWarn indicates whether to log timeout errors at the
+	// warning level or at the debug level. It defaults to false.
+	TimeoutWarn *bool
 }
 
 func (s *Settings) SetDefaults() {
 	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, lognoop.New())
+	s.TimeoutWarn = gosettings.DefaultPointer(s.TimeoutWarn, false)
 }
 
 var (
@@ -58,6 +62,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Server settings:")
 	node.Appendf("Listening address: %s", *s.ListeningAddress)
 	node.Appendf("Upstream resolver connection type: %s", s.Dialer)
+	node.Appendf("Log timeout at the warning level: %s", gosettings.BoolToYesNo(s.TimeoutWarn))
 
 	if len(s.Middlewares) > 0 {
 		middlewares := node.Append("Middlewares:")

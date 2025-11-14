@@ -60,7 +60,8 @@ func Test_handler(t *testing.T) {
 		_ = writer.WriteMsg(response)
 	})
 
-	handler := newHandler(resolvers, logger, next)
+	const timeoutWarn = false
+	handler := newHandler(resolvers, logger, next, timeoutWarn)
 
 	writer := NewMockResponseWriter(ctrl)
 
@@ -193,7 +194,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 			},
 			makeHandler: func(ctrl *gomock.Controller) *handler {
 				logger := NewMockLogger(ctrl)
-				logger.EXPECT().Debug("exchanging over udp: test error")
+				logger.EXPECT().Warn("exchanging over udp: test error")
 
 				ctx := context.Background()
 
@@ -327,7 +328,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}
 
 				logger := NewMockLogger(ctrl)
-				logger.EXPECT().Debug("exchanging over udp: test error")
+				logger.EXPECT().Warn("exchanging over udp: test error")
 				logger.EXPECT().Debug("response received for " +
 					"domain.local. from 10.0.0.2:53 over udp has " +
 					"rcode REFUSED")
