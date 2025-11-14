@@ -103,11 +103,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	for i, localExchange := range h.localExchanges {
 		response, err := localExchange.Exchange(h.ctx, "udp", r)
 		if err != nil {
-			requestString := fmt.Sprintf("%s %s %s",
-				dns.ClassToString[r.Question[0].Qclass],
-				dns.TypeToString[r.Question[0].Qtype],
-				r.Question[0].Name)
-			h.logger.Debug("for " + requestString + " over udp: " + err.Error())
+			h.logger.Debug("exchanging over udp: " + err.Error())
 			continue
 		}
 
@@ -122,11 +118,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		if response.Truncated {
 			response, err := localExchange.Exchange(h.ctx, "tcp", r)
 			if err != nil {
-				requestString := fmt.Sprintf("%s %s %s",
-					dns.ClassToString[r.Question[0].Qclass],
-					dns.TypeToString[r.Question[0].Qtype],
-					r.Question[0].Name)
-				h.logger.Debug("for " + requestString + " over tcp: " + err.Error())
+				h.logger.Debug("exchanging over tcp: " + err.Error())
 				continue
 			}
 
