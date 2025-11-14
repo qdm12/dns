@@ -84,9 +84,6 @@ func Test_handler(t *testing.T) {
 			Name: "domain.local.", Qtype: dns.TypeTXT,
 		}},
 	}
-	logger.EXPECT().Debug("response received for " +
-		"domain.local. from " + localAddressA + " over udp has " +
-		"rcode NXDOMAIN")
 	expectedFinalResponse := &dns.Msg{
 		MsgHdr: dns.MsgHdr{
 			Response: true,

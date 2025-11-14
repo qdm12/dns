@@ -2,6 +2,7 @@ package localdns
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -103,38 +104,18 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	r.Question[0].Name = strings.ToLower(r.Question[0].Name)
 
 	for i, localExchange := range h.localExchanges {
-		response, err := localExchange.Exchange(h.ctx, "udp", r)
+		response, err := h.tryExchange(localExchange, h.localResolvers[i], r)
 		if err != nil {
-			err = fmt.Errorf("exchanging over udp: %w", err)
-			h.logErr(err)
+			if errors.Is(err, errRcodeNotSuccess) {
+				continue // try next resolver
+			}
+			if h.timeoutWarn || !strings.HasSuffix(err.Error(), ": i/o timeout") {
+				h.logger.Warn(err.Error())
+			} else {
+				h.logger.Debug(err.Error())
+			}
 			continue
 		}
-
-		if response.Rcode != dns.RcodeSuccess {
-			h.logger.Debug(fmt.Sprintf(
-				"response received for %s from %s over udp has rcode %s",
-				r.Question[0].Name, h.localResolvers[i],
-				dns.RcodeToString[response.Rcode]))
-			continue
-		}
-
-		if response.Truncated {
-			response, err := localExchange.Exchange(h.ctx, "tcp", r)
-			if err != nil {
-				err = fmt.Errorf("exchanging over tcp: %w", err)
-				h.logErr(err)
-				continue
-			}
-
-			if response.Rcode != dns.RcodeSuccess {
-				h.logger.Debug(fmt.Sprintf(
-					"response received for %s from %s over tcp has rcode %s",
-					r.Question[0].Name, h.localResolvers[i],
-					dns.RcodeToString[response.Rcode]))
-				continue
-			}
-		}
-
 		_ = w.WriteMsg(response)
 		return
 	}
@@ -145,6 +126,46 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	_ = w.WriteMsg(response)
 }
 
+var errRcodeNotSuccess = errors.New("rcode is not success")
+
+func (h *handler) tryExchange(exchange exchangerIntf, resolverName string, r *dns.Msg) (
+	response *dns.Msg, err error,
+) {
+	response, err = exchange.Exchange(h.ctx, "udp", r)
+	if err != nil {
+		return nil, fmt.Errorf("exchanging over udp: %w", err)
+	}
+
+	if response.Rcode != dns.RcodeSuccess {
+		if response.Rcode != dns.RcodeNameError {
+			// Do not debug log success responses or name error responses since these happen
+			// often, notably due to /etc/resolv.conf search domains.
+			h.logger.Debug(fmt.Sprintf(
+				"response received for %s from %s over udp has rcode %s",
+				r.Question[0].Name, resolverName,
+				dns.RcodeToString[response.Rcode]))
+		}
+		return nil, fmt.Errorf("%w", errRcodeNotSuccess)
+	}
+
+	if response.Truncated {
+		response, err := exchange.Exchange(h.ctx, "tcp", r)
+		if err != nil {
+			return nil, fmt.Errorf("exchanging over tcp: %w", err)
+		}
+
+		if response.Rcode != dns.RcodeSuccess {
+			h.logger.Debug(fmt.Sprintf(
+				"response received for %s from %s over tcp has rcode %s",
+				r.Question[0].Name, resolverName,
+				dns.RcodeToString[response.Rcode]))
+			return nil, fmt.Errorf("%w", errRcodeNotSuccess)
+		}
+	}
+
+	return response, nil
+}
+
 func (h *handler) stop() {
 	previouslyStopped := h.stopped.Swap(true)
 	if previouslyStopped {
@@ -153,12 +174,4 @@ func (h *handler) stop() {
 
 	h.cancel()
 	h.waitGroup.Wait()
-}
-
-func (h *handler) logErr(err error) {
-	if !h.timeoutWarn && strings.HasSuffix(err.Error(), ": i/o timeout") {
-		h.logger.Debug(err.Error())
-		return
-	}
-	h.logger.Warn(err.Error())
 }
