@@ -36,9 +36,7 @@ func IsFQDNLocal(fqdn string) bool {
 		".internal",
 		".corp",
 		".home",
-		".network",
 		".intranet",
-		".site",
 	}
 	for _, commonLocalTLD := range commonLocalTLDs {
 		if strings.HasSuffix(domainName, commonLocalTLD) {

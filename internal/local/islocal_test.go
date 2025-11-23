@@ -40,6 +40,9 @@ func Test_IsFQDNLocal(t *testing.T) {
 		"mixed_case": {
 			fqdn: "weBsItE.Eu.oRG.",
 		},
+		"network_tld": {
+			fqdn: "orpheus.network.",
+		},
 	}
 
 	for name, testCase := range testCases {
