@@ -29,6 +29,7 @@ func IPv6(ctx context.Context) (ipv6Supported bool, err error) {
 			ipv6ErrorMessages := []string{
 				"connect: network is unreachable",
 				"cannot assign requested address",
+				"socket operation was attempted to an unreachable network", // windows
 			}
 			for _, ipv6ErrorMessage := range ipv6ErrorMessages {
 				if strings.Contains(errMessage, ipv6ErrorMessage) {
