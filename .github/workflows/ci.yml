@@ -63,6 +63,12 @@ jobs:
           -v "$(pwd)/coverage.txt:/tmp/gobuild/coverage.txt" \
           test-container
 
+      - name: Run fuzz tests in test container
+        run: |
+          docker run --rm \
+          --entrypoint "go test -fuzz=Fuzz_Pool_compact -fuzztime 10s ./internal/pool" \
+          test-container
+
       - name: Build final image
         run: docker build -t final-image .
 

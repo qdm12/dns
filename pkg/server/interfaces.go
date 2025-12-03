@@ -12,6 +12,19 @@ type Dialer interface {
 	// String returns the connection type the dialer will use, for example
 	// "dns over tls".
 	String() string
+	// ReusableConnsSupported returns true if the dialer supports reusing connections.
+	ReusableConnsSupported() bool
+	// Addresses returns the list of all addresses/URLs of the upstream servers
+	// known by this dialer.
+	Addresses() []string
+}
+
+type PoolMetrics interface {
+	ConnsAdd(address string, n int)
+	LiveConnsAdd(address string, n int)
+	InUseConnsAdd(address string, n int)
+	RenewRequestsInc(address string)
+	RenewalsInc(address string)
 }
 
 type Middleware interface {

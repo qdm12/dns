@@ -4,18 +4,21 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"hash/maphash"
+	"maps"
+	"math/rand/v2"
 	"net"
-
-	"github.com/qdm12/dns/v2/internal/picker"
-	"github.com/qdm12/dns/v2/pkg/provider"
+	"net/netip"
+	"slices"
 )
 
 type Dialer struct {
-	picker    *picker.Picker
-	servers   []provider.DoTServer
-	ipv6      bool
-	netDialer *net.Dialer
-	metrics   Metrics
+	addressToServerName map[string]string
+	addrPorts           []netip.AddrPort
+	ipv6                bool
+	netDialer           *net.Dialer
+	metrics             Metrics
+	randGen             *rand.Rand
 }
 
 func New(settings Settings) (dial *Dialer, err error) {
@@ -25,19 +28,30 @@ func New(settings Settings) (dial *Dialer, err error) {
 		return nil, fmt.Errorf("validating settings: %w", err)
 	}
 
-	servers := make([]provider.DoTServer, len(settings.UpstreamResolvers))
-	for i, upstreamResolver := range settings.UpstreamResolvers {
-		servers[i] = upstreamResolver.DoT
+	addressToServerName := make(map[string]string, len(settings.UpstreamResolvers))
+	addrPorts := make([]netip.AddrPort, 0, len(settings.UpstreamResolvers))
+	for _, upstreamResolver := range settings.UpstreamResolvers {
+		for _, addrPort := range upstreamResolver.DoT.IPv4 {
+			addressToServerName[addrPort.String()] = upstreamResolver.DoT.Name
+			addrPorts = append(addrPorts, addrPort)
+		}
+		if settings.IPVersion == "ipv6" {
+			for _, addrPort := range upstreamResolver.DoT.IPv6 {
+				addressToServerName[addrPort.String()] = upstreamResolver.DoT.Name
+				addrPorts = append(addrPorts, addrPort)
+			}
+		}
 	}
 
 	return &Dialer{
-		picker:  picker.New(),
-		servers: servers,
-		ipv6:    settings.IPVersion == "ipv6",
+		addressToServerName: addressToServerName,
+		addrPorts:           addrPorts,
+		ipv6:                settings.IPVersion == "ipv6",
 		netDialer: &net.Dialer{
 			Timeout: settings.Timeout,
 		},
 		metrics: settings.Metrics,
+		randGen: rand.New(&mapHashSource{}), //nolint:gosec
 	}, nil
 }
 
@@ -45,11 +59,22 @@ func (d *Dialer) String() string {
 	return "tls"
 }
 
-func (d *Dialer) Dial(ctx context.Context, _, _ string) (
+// ReusableConnsSupported returns true to indicate that connections created
+// by this dialer can be reused.
+func (d *Dialer) ReusableConnsSupported() bool {
+	return true
+}
+
+func (d *Dialer) Addresses() []string {
+	addresses := slices.Collect(maps.Keys(d.addressToServerName))
+	slices.Sort(addresses)
+	return addresses
+}
+
+func (d *Dialer) Dial(ctx context.Context, _, address string) (
 	conn net.Conn, err error,
 ) {
-	serverName, serverAddress := pickNameAddress(d.picker,
-		d.servers, d.ipv6)
+	serverName, serverAddress := d.pickNameAddress(address)
 
 	conn, err = d.netDialer.DialContext(ctx, "tcp", serverAddress)
 	if err != nil {
@@ -73,10 +98,20 @@ func (d *Dialer) Dial(ctx context.Context, _, _ string) (
 	return tlsConn, nil
 }
 
-func pickNameAddress(picker *picker.Picker, servers []provider.DoTServer,
-	ipv6 bool,
-) (name, address string) {
-	server := picker.DoTServer(servers)
-	addrPort := picker.DoTAddrPort(server, ipv6)
-	return server.Name, addrPort.String()
+func (d *Dialer) pickNameAddress(dialAddr string) (name, address string) {
+	serverName, ok := d.addressToServerName[dialAddr]
+	if ok {
+		return serverName, dialAddr
+	}
+	// when used as the dialer for a Go resolver, the address is the DNS system IP address
+	// so pick a server address at random.
+	address = d.addrPorts[d.randGen.IntN(len(d.addrPorts))].String()
+	name = d.addressToServerName[address]
+	return name, address
+}
+
+type mapHashSource struct{}
+
+func (s *mapHashSource) Uint64() uint64 {
+	return new(maphash.Hash).Sum64()
 }

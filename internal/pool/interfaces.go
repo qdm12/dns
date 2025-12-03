@@ -1,4 +1,4 @@
-package exchanger
+package pool
 
 import (
 	"context"
@@ -6,13 +6,8 @@ import (
 )
 
 type Dialer interface {
-	String() string
-	// ReusableConnsSupported returns true if the dialer supports reusing connections.
-	ReusableConnsSupported() bool
-	// Addresses returns the list of all addresses/URLs of the upstream servers
-	// known by this dialer.
+	// Addresses returns the list of addresses or URLs the dialer can dial to.
 	Addresses() []string
-
 	// Dial dials a network connection to the given network and address/url.
 	// Note the network is typically "tcp" or "udp", and can be used or ignored.
 	// For example, the DoT dialer always dials "tcp" connections, so it ignores
@@ -26,11 +21,7 @@ type Dialer interface {
 	Dial(ctx context.Context, network, addrOrURL string) (conn net.Conn, err error)
 }
 
-type Warner interface {
-	Warn(s string)
-}
-
-type PoolMetrics interface {
+type Metrics interface {
 	ConnsAdd(address string, n int)
 	LiveConnsAdd(address string, n int)
 	InUseConnsAdd(address string, n int)

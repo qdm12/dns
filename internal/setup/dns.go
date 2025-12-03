@@ -11,6 +11,7 @@ import (
 	filtermiddleware "github.com/qdm12/dns/v2/pkg/middlewares/filter"
 	"github.com/qdm12/dns/v2/pkg/middlewares/localdns"
 	"github.com/qdm12/dns/v2/pkg/middlewares/substituter"
+	"github.com/qdm12/dns/v2/pkg/server"
 	"github.com/qdm12/log"
 )
 
@@ -38,31 +39,14 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 
 	switch userSettings.Upstream {
 	case "dot":
-		logger := loggerConstructor.New(log.SetComponent("DNS over TLS"))
-		dotMetrics, err := dotMetrics(userSettings.Metrics.Type, commonPrometheus)
-		if err != nil {
-			return nil, fmt.Errorf("DoT metrics: %w", err)
-		}
-
-		return dotServer(userSettings, ipv6Support, middlewares,
-			logger, dotMetrics)
+		return setupDoT(userSettings, ipv6Support, middlewares,
+			loggerConstructor, commonPrometheus)
 	case "doh":
-		logger := loggerConstructor.New(log.SetComponent("DNS over HTTPS"))
-		dohMetrics, err := dohMetrics(userSettings.Metrics.Type, commonPrometheus)
-		if err != nil {
-			return nil, fmt.Errorf("DoH metrics: %w", err)
-		}
-
-		return dohServer(userSettings, ipv6Support, middlewares,
-			logger, dohMetrics)
+		return setupDoH(userSettings, ipv6Support, middlewares,
+			loggerConstructor, commonPrometheus)
 	case "plain":
-		logger := loggerConstructor.New(log.SetComponent("plaintext DNS"))
-		plainMetrics, err := plainMetrics(userSettings.Metrics.Type, commonPrometheus)
-		if err != nil {
-			return nil, fmt.Errorf("plain DNS metrics: %w", err)
-		}
-		return plainServer(userSettings, ipv6Support, middlewares,
-			logger, plainMetrics)
+		return setupPlain(userSettings, ipv6Support, middlewares,
+			loggerConstructor, commonPrometheus)
 	default:
 		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))
 	}
@@ -125,4 +109,53 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 	middlewares = append(middlewares, logMiddleware)
 
 	return middlewares, nil
+}
+
+func setupDoT(userSettings config.Settings, ipv6Support bool,
+	middlewares []Middleware, loggerConstructor LoggerConstructor,
+	commonPrometheus prometheus.Settings,
+) (server *server.Server, err error) {
+	logger := loggerConstructor.New(log.SetComponent("DNS over TLS"))
+	dotMetrics, err := dotMetrics(userSettings.Metrics.Type, commonPrometheus)
+	if err != nil {
+		return nil, fmt.Errorf("DoT metrics: %w", err)
+	}
+	poolMetrics, err := poolMetrics(userSettings.Metrics.Type, commonPrometheus)
+	if err != nil {
+		return nil, fmt.Errorf("pool metrics: %w", err)
+	}
+
+	return dotServer(userSettings, ipv6Support, middlewares,
+		logger, dotMetrics, poolMetrics)
+}
+
+func setupDoH(userSettings config.Settings, ipv6Support bool,
+	middlewares []Middleware, loggerConstructor LoggerConstructor,
+	commonPrometheus prometheus.Settings,
+) (server *server.Server, err error) {
+	logger := loggerConstructor.New(log.SetComponent("DNS over HTTPS"))
+	dohMetrics, err := dohMetrics(userSettings.Metrics.Type, commonPrometheus)
+	if err != nil {
+		return nil, fmt.Errorf("DoH metrics: %w", err)
+	}
+	poolMetrics, err := poolMetrics(userSettings.Metrics.Type, commonPrometheus)
+	if err != nil {
+		return nil, fmt.Errorf("pool metrics: %w", err)
+	}
+
+	return dohServer(userSettings, ipv6Support, middlewares,
+		logger, dohMetrics, poolMetrics)
+}
+
+func setupPlain(userSettings config.Settings, ipv6Support bool,
+	middlewares []Middleware, loggerConstructor LoggerConstructor,
+	commonPrometheus prometheus.Settings,
+) (server *server.Server, err error) {
+	logger := loggerConstructor.New(log.SetComponent("plaintext DNS"))
+	plainMetrics, err := plainMetrics(userSettings.Metrics.Type, commonPrometheus)
+	if err != nil {
+		return nil, fmt.Errorf("plain DNS metrics: %w", err)
+	}
+	return plainServer(userSettings, ipv6Support, middlewares,
+		logger, plainMetrics)
 }

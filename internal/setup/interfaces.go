@@ -51,6 +51,14 @@ type PlainMetrics interface {
 	PlainDialInc(address, outcome string)
 }
 
+type PoolMetrics interface {
+	ConnsAdd(address string, n int)
+	LiveConnsAdd(address string, n int)
+	InUseConnsAdd(address string, n int)
+	RenewRequestsInc(address string)
+	RenewalsInc(address string)
+}
+
 type CacheMetrics interface { //nolint:interfacebloat
 	SetCacheType(cacheType string)
 	CacheInsertInc()

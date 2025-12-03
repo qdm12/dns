@@ -1,4 +1,4 @@
-package setup //nolint:dupl
+package setup
 
 import (
 	"fmt"
@@ -42,6 +42,7 @@ func plainServer(userSettings config.Settings, ipv6Support bool,
 	serverSettings := server.Settings{
 		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
 		Dialer:           dialer,
+		PoolMetrics:      nil, // no pool for plain dialer
 		Middlewares:      toServerMiddlewares(middlewares),
 		Logger:           logger,
 	}

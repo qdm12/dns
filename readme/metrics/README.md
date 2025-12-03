@@ -72,3 +72,8 @@ The list of all metrics available is as follows:
 | `answers_sent` | `class`, `type` | | Answers contained in responses sent by the server |
 | `responses_sent` | Counter | | Responses sent out by the server |
 | `requests_inflight` | Gauge | | Requests in flight in the server |
+| `pool_renew_requests` | Counter | `address` | Pool connection renew requests by address. This is generally triggered following a connection error |
+| `pool_connection_renewals` | Counter | `address` | Pool connection renewals by address. This can be caused either by a connection error or internally when a connection is assumed expired |
+| `pool_connections` | Gauge | `address` | Total connections in the pool, both live and dead, by address |
+| `pool_live_connections` | Gauge | `address` | Live connections in the pool by address |
+| `pool_in_use_connections` | Gauge | `address` | In use connections in the pool by address |

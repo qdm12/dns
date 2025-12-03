@@ -185,14 +185,14 @@ func Test_Server_Mocks(t *testing.T) {
 			Response:           expectedResponseA,
 			OnlyHasAnswerTypes: []uint16{dns.TypeA},
 			IgnoreAnswerTypes:  []uint16{dns.TypeA},
-		})).MinTimes(1)
+		}))
 	cache.EXPECT().Add(
 		mockhelp.NewMatcherRequest(expectedRequestAAAA),
 		mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
 			Response:           expectedResponseAAAA,
 			OnlyHasAnswerTypes: []uint16{dns.TypeAAAA},
 			IgnoreAnswerTypes:  []uint16{dns.TypeAAAA},
-		})).MinTimes(1)
+		}))
 	cacheMiddleware, err := cachemiddleware.New(cachemiddleware.Settings{Cache: cache})
 	require.NoError(t, err)
 
@@ -209,14 +209,14 @@ func Test_Server_Mocks(t *testing.T) {
 			OnlyHasAnswerTypes: []uint16{dns.TypeA},
 			IgnoreAnswerTypes:  []uint16{dns.TypeA},
 		})).
-		Return(false).MinTimes(1)
+		Return(false)
 	filter.EXPECT().
 		FilterResponse(mockhelp.NewMatcherResponse(mockhelp.MatcherResponseSettings{
 			Response:           expectedResponseAAAA,
 			OnlyHasAnswerTypes: []uint16{dns.TypeAAAA},
 			IgnoreAnswerTypes:  []uint16{dns.TypeAAAA},
 		})).
-		Return(false).MinTimes(1)
+		Return(false)
 	filterMiddleware, err := filtermiddleware.New(filtermiddleware.Settings{Filter: filter})
 	require.NoError(t, err)
 
@@ -224,10 +224,8 @@ func Test_Server_Mocks(t *testing.T) {
 	logger.EXPECT().Info(mockhelp.NewMatcherRegex("DNS server listening on .*:[1-9][0-9]{0,4}"))
 
 	dotMetrics := NewMockdotMetrics(ctrl)
-	dotMetrics.EXPECT().
-		DoTDialInc("cloudflare-dns.com",
-			mockhelp.NewMatcherOneOf("1.1.1.1:853", "1.0.0.1:853"), "success").
-		Times(2)
+	dotMetrics.EXPECT().DoTDialInc("cloudflare-dns.com", "1.1.1.1:853", "success")
+	dotMetrics.EXPECT().DoTDialInc("cloudflare-dns.com", "1.0.0.1:853", "success")
 
 	// middleware metrics
 	metrics := NewMockmiddlewareMetrics(ctrl)
@@ -253,9 +251,20 @@ func Test_Server_Mocks(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	poolMetrics := NewMockPoolMetrics(ctrl)
+	poolMetrics.EXPECT().ConnsAdd("1.1.1.1:853", 1)
+	poolMetrics.EXPECT().ConnsAdd("1.0.0.1:853", 1)
+	poolMetrics.EXPECT().LiveConnsAdd("1.1.1.1:853", 1)
+	poolMetrics.EXPECT().LiveConnsAdd("1.0.0.1:853", 1)
+	poolMetrics.EXPECT().InUseConnsAdd("1.1.1.1:853", 1)
+	poolMetrics.EXPECT().InUseConnsAdd("1.1.1.1:853", -1)
+	poolMetrics.EXPECT().InUseConnsAdd("1.0.0.1:853", 1)
+	poolMetrics.EXPECT().InUseConnsAdd("1.0.0.1:853", -1)
+
 	server, err := New(Settings{
 		ListeningAddress: ptrTo(""),
 		Dialer:           dialer,
+		PoolMetrics:      poolMetrics,
 		Middlewares:      []Middleware{metricsMiddleware, cacheMiddleware, filterMiddleware},
 		Logger:           logger,
 		TimeoutWarn:      ptrTo(true),

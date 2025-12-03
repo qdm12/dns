@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
+	"github.com/qdm12/dns/v2/internal/pool/metrics/noop"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,6 +37,7 @@ func Test_Settings_String(t *testing.T) {
 			settings: Settings{
 				ListeningAddress: ptrTo(":8000"),
 				Dialer:           dialer,
+				PoolMetrics:      noop.New(),
 				Middlewares:      []Middleware{middleware},
 				TimeoutWarn:      ptrTo(false),
 			},

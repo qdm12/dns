@@ -48,7 +48,8 @@ func newHandler(resolvers []netip.AddrPort, logger Logger,
 			netDialer:       netDialer,
 			resolverAddress: resolverAddress,
 		}
-		localExchangers[i] = exchanger.New(dialer, logger)
+		poolMetrics := (exchanger.PoolMetrics)(nil) // pool is not used
+		localExchangers[i] = exchanger.New(dialer, poolMetrics, logger)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -75,6 +76,14 @@ func (d *dialer) Dial(ctx context.Context, network, _ string) (net.Conn, error) 
 
 func (d *dialer) String() string {
 	return "local DNS " + d.resolverAddress
+}
+
+func (d *dialer) ReusableConnsSupported() bool {
+	return false
+}
+
+func (d *dialer) Addresses() []string {
+	return []string{d.resolverAddress}
 }
 
 // ServeDNS implements the dns.Handler interface for the

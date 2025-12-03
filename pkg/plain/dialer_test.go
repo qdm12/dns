@@ -1,41 +1,56 @@
 package plain
 
 import (
+	"math/rand/v2"
+	"net/netip"
 	"testing"
 
-	"github.com/qdm12/dns/v2/internal/picker"
-	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_pickAddress(t *testing.T) {
+func Test_Dialer_pickAddress(t *testing.T) {
 	t.Parallel()
 
-	picker := picker.New()
-	servers := []provider.PlainServer{
-		provider.Cloudflare().Plain,
-		provider.Google().Plain,
+	testCases := map[string]struct {
+		dialer   Dialer
+		dialAddr string
+		expected string
+	}{
+		"address_found": {
+			dialer: Dialer{
+				addrStrings: map[string]struct{}{
+					"1.1.1.1:53": {},
+				},
+			},
+			dialAddr: "1.1.1.1:53",
+			expected: "1.1.1.1:53",
+		},
+		"address_not_found": {
+			dialer: Dialer{
+				addrStrings: map[string]struct{}{
+					"1.1.1.1:53": {},
+					"1.0.0.1:53": {},
+					"8.8.8.8:53": {},
+				},
+				addrPorts: []netip.AddrPort{
+					netip.AddrPortFrom(netip.MustParseAddr("1.1.1.1"), 53),
+					netip.AddrPortFrom(netip.MustParseAddr("1.0.0.1"), 53),
+					netip.AddrPortFrom(netip.MustParseAddr("8.8.8.8"), 53),
+				},
+				randGen: rand.New(rand.NewPCG(1, 1)), //nolint:gosec
+			},
+			dialAddr: "10.0.0.1:53",
+			expected: "8.8.8.8:53",
+		},
 	}
-	const ipv6 = true
 
-	address := pickAddress(picker, servers, ipv6)
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 
-	found := false
-	for _, server := range servers {
-		ips := server.IPv4
-		if ipv6 {
-			ips = append(ips, server.IPv6...)
-		}
-		for _, addrPort := range ips {
-			if addrPort.String() == address {
-				found = true
-				break
-			}
-		}
-		if found {
-			break
-		}
+			dialer := testCase.dialer
+			address := dialer.pickAddress(testCase.dialAddr)
+			assert.Equal(t, testCase.expected, address)
+		})
 	}
-
-	assert.True(t, found)
 }
