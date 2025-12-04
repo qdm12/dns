@@ -16,8 +16,8 @@ func Test_Pool_Renew(t *testing.T) {
 	t.Run("not_a_poolConn", func(t *testing.T) {
 		t.Parallel()
 		pool := &Pool{}
-		conn := &net.TCPConn{}
-		assert.PanicsWithValue(t, "cannot renew non-pool connection *net.TCPConn", func() {
+		conn := &noopConn{}
+		assert.PanicsWithValue(t, "cannot renew non-pool connection *pool.noopConn", func() {
 			_, _ = pool.Renew(context.Background(), "tcp", conn)
 		})
 	})
@@ -28,35 +28,52 @@ func Test_Pool_Renew(t *testing.T) {
 		dialer := &testDialer{port: 0}
 		ctrl := gomock.NewController(t)
 		metrics := NewMockMetrics(ctrl)
-		metrics.EXPECT().RenewRequestsInc("127.0.0.1:0")
-		metrics.EXPECT().LiveConnsAdd("127.0.0.1:0", -1)
-		metrics.EXPECT().RenewalsInc("127.0.0.1:0")
-		pool := New(dialer, metrics)
+		address := dialer.Addresses()[0]
+		metrics.EXPECT().DeadConnsInc(address)
+		metrics.EXPECT().NewConnsInc(address, outcomeError)
+		metrics.EXPECT().RenewedConnsInc(address, "connection error", outcomeError)
+		pool := &Pool{
+			dialer:         dialer,
+			metrics:        metrics,
+			oneConnPerAddr: true,
+			addrConns: []addressConns{{
+				address: address,
+				conns:   []poolConn{{}},
+			}},
+		}
+		expectedPool := &Pool{
+			dialer:         dialer,
+			oneConnPerAddr: true,
+			addrConns: []addressConns{{
+				address: address,
+				conns: []poolConn{{
+					Conn: &noopConn{},
+					dead: true,
+				}},
+			}},
+		}
+
 		const network = "tcp"
-		conn := (net.Conn)(poolConn{
-			Conn:      &net.TCPConn{},
-			addrIndex: 0,
-			connIndex: 0,
+		netConn := (net.Conn)(poolConn{
+			Conn: &noopConn{},
 		})
-		conn, err := pool.Renew(context.Background(), network, conn)
+		netConn, err := pool.Renew(context.Background(), network, netConn)
 		require.Error(t, err)
 		assert.Equal(t, "dial tcp 127.0.0.1:0: connect: connection refused", err.Error())
-		assert.Nil(t, conn)
+		assert.Nil(t, netConn)
+		clearPoolFieldsForComparison(pool)
+		assert.Equal(t, expectedPool, pool)
 	})
 
 	t.Run("renew_dead_connection", func(t *testing.T) {
 		t.Parallel()
 
 		dialer, runErr := startLocalTCPServer(t)
+		address := dialer.Addresses()[0]
 		ctrl := gomock.NewController(t)
 		metrics := NewMockMetrics(ctrl)
-		addresses := dialer.Addresses()
-		// Renew call metrics
-		metrics.EXPECT().RenewRequestsInc(addresses[0])
-		metrics.EXPECT().LiveConnsAdd(addresses[0], -1)
-		// renew call metrics
-		metrics.EXPECT().RenewalsInc(addresses[0])
-		metrics.EXPECT().LiveConnsAdd(addresses[0], 1)
+		metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
+		metrics.EXPECT().RenewedConnsInc(address, "connection error", outcomeSuccess)
 		deadConn := poolConn{
 			Conn: &noopConn{},
 			dead: true,
@@ -65,9 +82,18 @@ func Test_Pool_Renew(t *testing.T) {
 			dialer:         dialer,
 			metrics:        metrics,
 			oneConnPerAddr: true,
-			addrConns: []addressConns{
-				{address: addresses[0], conns: []poolConn{deadConn}},
-			},
+			addrConns: []addressConns{{
+				address: address,
+				conns:   []poolConn{deadConn},
+			}},
+		}
+		expectedPool := &Pool{
+			dialer:         dialer,
+			oneConnPerAddr: true,
+			addrConns: []addressConns{{
+				address: address,
+				conns:   []poolConn{{}},
+			}},
 		}
 		ctx := context.Background()
 		const network = "tcp"
@@ -76,9 +102,13 @@ func Test_Pool_Renew(t *testing.T) {
 		require.NoError(t, err)
 		checkConnWorks(t, renewedConn)
 		renewedPoolConn := renewedConn.(poolConn) //nolint:forcetypeassert
-		renewedPoolConn.Conn = nil                // remove Conn from comparison
+		// remove Conn from comparison
+		renewedPoolConn.Conn = nil
+		pool.addrConns[renewedPoolConn.addrIndex].conns[renewedPoolConn.connIndex].Conn = nil
 		expectedPoolConn := poolConn{}
 		assert.Equal(t, expectedPoolConn, renewedPoolConn)
+		clearPoolFieldsForComparison(pool)
+		assert.Equal(t, expectedPool, pool)
 
 		select {
 		case err := <-runErr:
@@ -95,12 +125,8 @@ func Test_Pool_Renew(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		metrics := NewMockMetrics(ctrl)
 		addresses := dialer.Addresses()
-		// Renew call metrics
-		metrics.EXPECT().RenewRequestsInc(addresses[0])
-		metrics.EXPECT().LiveConnsAdd(addresses[0], -1)
-		// renew call metrics
-		metrics.EXPECT().RenewalsInc(addresses[0])
-		metrics.EXPECT().LiveConnsAdd(addresses[0], 1)
+		metrics.EXPECT().NewConnsInc(addresses[0], outcomeSuccess)
+		metrics.EXPECT().RenewedConnsInc(addresses[0], "connection error", outcomeSuccess)
 		netConn, err := dialer.Dial(context.Background(), "tcp", addresses[0])
 		require.NoError(t, err)
 		liveConn := poolConn{

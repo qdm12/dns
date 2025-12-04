@@ -26,6 +26,11 @@ type addressConns struct {
 
 const maxIdleDuration = time.Minute
 
+const (
+	outcomeSuccess = "success"
+	outcomeError   = "error"
+)
+
 // New creates a new connection pool which uses the dialer
 // to create new connections, and reports metrics using the
 // metrics argument.

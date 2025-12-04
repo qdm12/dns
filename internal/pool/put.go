@@ -27,7 +27,7 @@ func (p *Pool) Put(conn net.Conn) {
 	p.cleanup(poolConn.addrIndex)
 
 	address := p.addressFromConn(poolConn)
-	p.metrics.InUseConnsAdd(address, -1)
+	p.metrics.PutConnsInc(address, "live")
 }
 
 func (p *Pool) PutDead(conn net.Conn) {
@@ -44,12 +44,11 @@ func (p *Pool) PutDead(conn net.Conn) {
 	defer p.mutex.Unlock()
 
 	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
+	address := p.addressFromConn(poolConn)
+	p.metrics.PutConnsInc(address, "dead")
+	p.metrics.DeadConnsInc(address)
 
 	p.cleanup(poolConn.addrIndex)
-
-	address := p.addressFromConn(poolConn)
-	p.metrics.InUseConnsAdd(address, -1)
-	p.metrics.LiveConnsAdd(address, -1)
 }
 
 // cleanup cleans up connections for the given address index.
@@ -64,7 +63,7 @@ func (p *Pool) cleanup(addrIndex int) {
 	conns, removed := p.compact(conns)
 
 	address := p.addrConns[addrIndex].address
-	p.metrics.ConnsAdd(address, -removed)
+	p.metrics.RemovedConnsAdd(address, removed)
 	p.addrConns[addrIndex].conns = conns
 }
 
@@ -79,7 +78,7 @@ func (p *Pool) cleanup(addrIndex int) {
 // The complexity is O(n) because each item is visited by readIndex and
 // potentially visited by writeIndex at most once.
 // The space complexity is O(1) as it operates entirely in-place using swaps.
-func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed int) {
+func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed uint) {
 	// writeIndex tracks the next available slot for a movable/alive connection.
 	writeIndex := 0
 
@@ -128,5 +127,6 @@ func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed int) {
 		}
 	}
 
-	return conns[:finalLength], len(conns) - finalLength
+	removed = uint(len(conns) - finalLength) //nolint:gosec
+	return conns[:finalLength], removed
 }

@@ -14,32 +14,41 @@ func (p *Pool) Renew(ctx context.Context, network string, conn net.Conn) (newCon
 	if !ok {
 		panic(fmt.Sprintf("cannot renew non-pool connection %T", conn))
 	}
-	address := p.addressFromConn(poolConn)
-	p.metrics.RenewRequestsInc(address)
-	p.metrics.LiveConnsAdd(address, -1)
-	// note: no need to lock earlier
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
-	poolConn, err = p.renew(ctx, poolConn, network)
+	const reason = "connection error"
+	poolConn, err = p.renew(ctx, poolConn, network, reason)
 	if err != nil {
 		return nil, err
 	}
-	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
 	return poolConn, nil
 }
 
-func (p *Pool) renew(ctx context.Context, conn poolConn, network string) (newConn poolConn, err error) {
+// renew creates a new connection to replace the given one in the pool.
+// It assumes the pool mutex is already held.
+func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string) (
+	newConn poolConn, err error,
+) {
 	_ = conn.Close() // ignore error since it may already be closed.
 	address := p.addressFromConn(conn)
-	p.metrics.RenewalsInc(address)
 	netConn, err := p.dialer.Dial(ctx, network, address)
 	if err != nil {
 		// The pool will retry renewing the connection on another Get call.
-		return poolConn{}, err
+		conn.inUse = false
+		conn.dead = true
+		p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+		p.metrics.DeadConnsInc(address)
+		p.metrics.NewConnsInc(address, outcomeError)
+		p.metrics.RenewedConnsInc(address, reason, outcomeError)
+		// Note: return the original conn marked as dead since it contains
+		// the address index which is used for metrics.
+		return conn, err
 	}
 	conn.Conn = netConn
 	conn.dead = false
 	// note the connection is already marked as "in use"
-	p.metrics.LiveConnsAdd(address, 1)
+	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+	p.metrics.NewConnsInc(address, outcomeSuccess)
+	p.metrics.RenewedConnsInc(address, reason, outcomeSuccess)
 	return conn, nil
 }

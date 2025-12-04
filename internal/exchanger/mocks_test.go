@@ -33,64 +33,76 @@ func (m *MockPoolMetrics) EXPECT() *MockPoolMetricsMockRecorder {
 	return m.recorder
 }
 
-// ConnsAdd mocks base method.
-func (m *MockPoolMetrics) ConnsAdd(arg0 string, arg1 int) {
+// DeadConnsInc mocks base method.
+func (m *MockPoolMetrics) DeadConnsInc(arg0 string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ConnsAdd", arg0, arg1)
+	m.ctrl.Call(m, "DeadConnsInc", arg0)
 }
 
-// ConnsAdd indicates an expected call of ConnsAdd.
-func (mr *MockPoolMetricsMockRecorder) ConnsAdd(arg0, arg1 interface{}) *gomock.Call {
+// DeadConnsInc indicates an expected call of DeadConnsInc.
+func (mr *MockPoolMetricsMockRecorder) DeadConnsInc(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnsAdd", reflect.TypeOf((*MockPoolMetrics)(nil).ConnsAdd), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeadConnsInc", reflect.TypeOf((*MockPoolMetrics)(nil).DeadConnsInc), arg0)
 }
 
-// InUseConnsAdd mocks base method.
-func (m *MockPoolMetrics) InUseConnsAdd(arg0 string, arg1 int) {
+// GetConnsInc mocks base method.
+func (m *MockPoolMetrics) GetConnsInc(arg0, arg1 string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "InUseConnsAdd", arg0, arg1)
+	m.ctrl.Call(m, "GetConnsInc", arg0, arg1)
 }
 
-// InUseConnsAdd indicates an expected call of InUseConnsAdd.
-func (mr *MockPoolMetricsMockRecorder) InUseConnsAdd(arg0, arg1 interface{}) *gomock.Call {
+// GetConnsInc indicates an expected call of GetConnsInc.
+func (mr *MockPoolMetricsMockRecorder) GetConnsInc(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InUseConnsAdd", reflect.TypeOf((*MockPoolMetrics)(nil).InUseConnsAdd), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConnsInc", reflect.TypeOf((*MockPoolMetrics)(nil).GetConnsInc), arg0, arg1)
 }
 
-// LiveConnsAdd mocks base method.
-func (m *MockPoolMetrics) LiveConnsAdd(arg0 string, arg1 int) {
+// NewConnsInc mocks base method.
+func (m *MockPoolMetrics) NewConnsInc(arg0, arg1 string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "LiveConnsAdd", arg0, arg1)
+	m.ctrl.Call(m, "NewConnsInc", arg0, arg1)
 }
 
-// LiveConnsAdd indicates an expected call of LiveConnsAdd.
-func (mr *MockPoolMetricsMockRecorder) LiveConnsAdd(arg0, arg1 interface{}) *gomock.Call {
+// NewConnsInc indicates an expected call of NewConnsInc.
+func (mr *MockPoolMetricsMockRecorder) NewConnsInc(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LiveConnsAdd", reflect.TypeOf((*MockPoolMetrics)(nil).LiveConnsAdd), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnsInc", reflect.TypeOf((*MockPoolMetrics)(nil).NewConnsInc), arg0, arg1)
 }
 
-// RenewRequestsInc mocks base method.
-func (m *MockPoolMetrics) RenewRequestsInc(arg0 string) {
+// PutConnsInc mocks base method.
+func (m *MockPoolMetrics) PutConnsInc(arg0, arg1 string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RenewRequestsInc", arg0)
+	m.ctrl.Call(m, "PutConnsInc", arg0, arg1)
 }
 
-// RenewRequestsInc indicates an expected call of RenewRequestsInc.
-func (mr *MockPoolMetricsMockRecorder) RenewRequestsInc(arg0 interface{}) *gomock.Call {
+// PutConnsInc indicates an expected call of PutConnsInc.
+func (mr *MockPoolMetricsMockRecorder) PutConnsInc(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewRequestsInc", reflect.TypeOf((*MockPoolMetrics)(nil).RenewRequestsInc), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutConnsInc", reflect.TypeOf((*MockPoolMetrics)(nil).PutConnsInc), arg0, arg1)
 }
 
-// RenewalsInc mocks base method.
-func (m *MockPoolMetrics) RenewalsInc(arg0 string) {
+// RemovedConnsAdd mocks base method.
+func (m *MockPoolMetrics) RemovedConnsAdd(arg0 string, arg1 uint) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RenewalsInc", arg0)
+	m.ctrl.Call(m, "RemovedConnsAdd", arg0, arg1)
 }
 
-// RenewalsInc indicates an expected call of RenewalsInc.
-func (mr *MockPoolMetricsMockRecorder) RenewalsInc(arg0 interface{}) *gomock.Call {
+// RemovedConnsAdd indicates an expected call of RemovedConnsAdd.
+func (mr *MockPoolMetricsMockRecorder) RemovedConnsAdd(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewalsInc", reflect.TypeOf((*MockPoolMetrics)(nil).RenewalsInc), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemovedConnsAdd", reflect.TypeOf((*MockPoolMetrics)(nil).RemovedConnsAdd), arg0, arg1)
+}
+
+// RenewedConnsInc mocks base method.
+func (m *MockPoolMetrics) RenewedConnsInc(arg0, arg1, arg2 string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RenewedConnsInc", arg0, arg1, arg2)
+}
+
+// RenewedConnsInc indicates an expected call of RenewedConnsInc.
+func (mr *MockPoolMetricsMockRecorder) RenewedConnsInc(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewedConnsInc", reflect.TypeOf((*MockPoolMetrics)(nil).RenewedConnsInc), arg0, arg1, arg2)
 }
 
 // MockWarner is a mock of Warner interface.

@@ -123,3 +123,8 @@ func setFieldsForAddrConns(addrConns []addressConns) {
 		}
 	}
 }
+
+func clearPoolFieldsForComparison(p *Pool) {
+	p.timeNow = nil
+	p.metrics = nil
+}

@@ -24,9 +24,13 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 		expectedPool *Pool
 	}{
 		"error_on_first_connection_of_address": {
-			makePool: func(*gomock.Controller) *Pool {
+			makePool: func(ctrl *gomock.Controller) *Pool {
+				metrics := NewMockMetrics(ctrl)
+				metrics.EXPECT().NewConnsInc("127.0.0.1:0", outcomeError)
+				metrics.EXPECT().GetConnsInc("127.0.0.1:0", outcomeError)
 				return &Pool{
-					dialer: dialer,
+					dialer:  dialer,
+					metrics: metrics,
 					addrConns: []addressConns{
 						{address: "127.0.0.1:0", conns: []poolConn{}},
 					},
@@ -43,9 +47,8 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 		"new_connection_for_address_without_connection": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().ConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().LiveConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().InUseConnsAdd(dialer.Addresses()[0], 1)
+				metrics.EXPECT().NewConnsInc(dialer.Addresses()[0], outcomeSuccess)
+				metrics.EXPECT().GetConnsInc(dialer.Addresses()[0], outcomeSuccess)
 				return &Pool{
 					dialer:  dialer,
 					metrics: metrics,
@@ -79,9 +82,8 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 		"all_connections_are_in_use": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().ConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().LiveConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().InUseConnsAdd(dialer.Addresses()[0], 1)
+				metrics.EXPECT().NewConnsInc(dialer.Addresses()[0], outcomeSuccess)
+				metrics.EXPECT().GetConnsInc(dialer.Addresses()[0], outcomeSuccess)
 				return &Pool{
 					dialer:         dialer,
 					metrics:        metrics,
@@ -117,9 +119,13 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 			},
 		},
 		"error_on_new_and_all_connections_are_in_use": {
-			makePool: func(*gomock.Controller) *Pool {
+			makePool: func(ctrl *gomock.Controller) *Pool {
+				metrics := NewMockMetrics(ctrl)
+				metrics.EXPECT().NewConnsInc("127.0.0.1:0", outcomeError)
+				metrics.EXPECT().GetConnsInc("127.0.0.1:0", outcomeError)
 				return &Pool{
 					dialer:         dialer,
+					metrics:        metrics,
 					oneConnPerAddr: true,
 					addrConns: []addressConns{
 						{address: "previously_used_address", conns: []poolConn{{inUse: true}}},
@@ -140,7 +146,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 		"found_live_connection": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().InUseConnsAdd(dialer.Addresses()[0], 1)
+				metrics.EXPECT().GetConnsInc(dialer.Addresses()[0], outcomeSuccess)
 
 				liveNetConn, err := dialer.Dial(context.Background(), "tcp", dialer.Addresses()[0])
 				require.NoError(t, err)
@@ -187,7 +193,10 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 		"found_dead_connection_renew_error": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().RenewalsInc("127.0.0.1:0")
+				metrics.EXPECT().NewConnsInc("127.0.0.1:0", outcomeError)
+				metrics.EXPECT().RenewedConnsInc("127.0.0.1:0", "marked dead", outcomeError)
+				metrics.EXPECT().DeadConnsInc("127.0.0.1:0")
+				metrics.EXPECT().GetConnsInc("127.0.0.1:0", outcomeError)
 
 				return &Pool{
 					dialer:         dialer,
@@ -223,9 +232,10 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 		"found_dead_connection_renew_success": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().RenewalsInc(dialer.Addresses()[0])
-				metrics.EXPECT().LiveConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().InUseConnsAdd(dialer.Addresses()[0], 1)
+				address := dialer.Addresses()[0]
+				metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
+				metrics.EXPECT().RenewedConnsInc(address, "marked dead", outcomeSuccess)
+				metrics.EXPECT().GetConnsInc(address, outcomeSuccess)
 
 				return &Pool{
 					dialer:         dialer,
@@ -286,8 +296,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				pool.addrConns[poolConn.addrIndex].conns[poolConn.connIndex].Conn = nil
 			}
 			assert.Equal(t, testCase.conn, conn)
-			pool.metrics = nil // ignore metrics comparison
-			pool.timeNow = nil // ignore timeNow comparison
+			clearPoolFieldsForComparison(pool)
 			assert.Equal(t, testCase.expectedPool, pool)
 		})
 	}
@@ -430,13 +439,17 @@ func Test_Pool_newConn(t *testing.T) {
 	testCases := map[string]struct {
 		makePool     func(ctrl *gomock.Controller) *Pool
 		conn         poolConn
+		addrIndex    int
 		errMessage   string
 		expectedPool *Pool
 	}{
 		"dial_error": {
-			makePool: func(*gomock.Controller) *Pool {
+			makePool: func(ctrl *gomock.Controller) *Pool {
+				metrics := NewMockMetrics(ctrl)
+				metrics.EXPECT().NewConnsInc("127.0.0.1:0", outcomeError)
 				return &Pool{
-					dialer: dialer,
+					dialer:  dialer,
+					metrics: metrics,
 					addrConns: []addressConns{
 						{address: "127.0.0.1:0"},
 					},
@@ -453,8 +466,7 @@ func Test_Pool_newConn(t *testing.T) {
 		"new_conn_for_next_address_without_conn": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().ConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().LiveConnsAdd(dialer.Addresses()[0], 1)
+				metrics.EXPECT().NewConnsInc(dialer.Addresses()[0], outcomeSuccess)
 				return &Pool{
 					dialer:  dialer,
 					metrics: metrics,
@@ -471,6 +483,7 @@ func Test_Pool_newConn(t *testing.T) {
 				connIndex: 0,
 				inUse:     true,
 			},
+			addrIndex: 2,
 			expectedPool: &Pool{
 				dialer:            dialer,
 				lastUsedAddrIndex: 2,
@@ -489,8 +502,7 @@ func Test_Pool_newConn(t *testing.T) {
 		"new_conn_for_current_address": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().ConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().LiveConnsAdd(dialer.Addresses()[0], 1)
+				metrics.EXPECT().NewConnsInc(dialer.Addresses()[0], outcomeSuccess)
 				return &Pool{
 					dialer:         dialer,
 					metrics:        metrics,
@@ -506,6 +518,7 @@ func Test_Pool_newConn(t *testing.T) {
 				connIndex: 1,
 				inUse:     true,
 			},
+			addrIndex: 1,
 			expectedPool: &Pool{
 				dialer:            dialer,
 				lastUsedAddrIndex: 1,
@@ -523,8 +536,7 @@ func Test_Pool_newConn(t *testing.T) {
 		"new_conn_for_next_address": {
 			makePool: func(ctrl *gomock.Controller) *Pool {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().ConnsAdd(dialer.Addresses()[0], 1)
-				metrics.EXPECT().LiveConnsAdd(dialer.Addresses()[0], 1)
+				metrics.EXPECT().NewConnsInc(dialer.Addresses()[0], outcomeSuccess)
 				return &Pool{
 					dialer:         dialer,
 					metrics:        metrics,
@@ -542,6 +554,7 @@ func Test_Pool_newConn(t *testing.T) {
 				connIndex: 1,
 				inUse:     true,
 			},
+			addrIndex: 2,
 			expectedPool: &Pool{
 				dialer:            dialer,
 				lastUsedAddrIndex: 2,
@@ -569,7 +582,7 @@ func Test_Pool_newConn(t *testing.T) {
 
 			ctx := context.Background()
 			const network = "tcp"
-			conn, err := pool.newConn(ctx, network)
+			conn, addrIndex, err := pool.newConn(ctx, network)
 
 			if testCase.errMessage != "" {
 				assert.EqualError(t, err, testCase.errMessage)
@@ -580,7 +593,8 @@ func Test_Pool_newConn(t *testing.T) {
 				pool.addrConns[conn.addrIndex].conns[conn.connIndex].Conn = nil
 			}
 			assert.Equal(t, testCase.conn, conn)
-			pool.metrics = nil // ignore metrics comparison
+			assert.Equal(t, testCase.addrIndex, addrIndex)
+			clearPoolFieldsForComparison(pool)
 			assert.Equal(t, testCase.expectedPool, pool)
 		})
 	}

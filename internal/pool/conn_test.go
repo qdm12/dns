@@ -76,7 +76,7 @@ func Test_Pool_isConnDead(t *testing.T) {
 			dead: true,
 			makeMetrics: func(ctrl *gomock.Controller) *MockMetrics {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().LiveConnsAdd("127.0.0.1:853", -1)
+				metrics.EXPECT().DeadConnsInc("127.0.0.1:853")
 				return metrics
 			},
 		},
@@ -93,14 +93,13 @@ func Test_Pool_isConnDead(t *testing.T) {
 			if testCase.makeMetrics != nil {
 				ctrl := gomock.NewController(t)
 				pool.metrics = testCase.makeMetrics(ctrl)
-				testCase.expectedPool.metrics = pool.metrics
 			}
 			conn := testCase.conn
 
 			dead := pool.isConnDead(conn)
 
 			assert.Equal(t, testCase.dead, dead)
-			pool.timeNow = nil
+			clearPoolFieldsForComparison(pool)
 			assert.Equal(t, testCase.expectedPool, pool)
 		})
 	}

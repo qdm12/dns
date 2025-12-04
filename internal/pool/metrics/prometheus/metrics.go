@@ -6,7 +6,6 @@ import (
 
 type Metrics struct {
 	*counters
-	*gauges
 }
 
 func New(settings Settings) (metrics *Metrics, err error) {
@@ -22,11 +21,6 @@ func New(settings Settings) (metrics *Metrics, err error) {
 	metrics.counters, err = newCounters(settings.Prometheus)
 	if err != nil {
 		return nil, fmt.Errorf("creating counters: %w", err)
-	}
-
-	metrics.gauges, err = newGauges(settings.Prometheus)
-	if err != nil {
-		return nil, fmt.Errorf("creating gauges: %w", err)
 	}
 
 	return metrics, nil

@@ -7,23 +7,34 @@ import (
 )
 
 type counters struct {
-	renewRequests *prometheus.CounterVec
-	renewals      *prometheus.CounterVec
+	newConns     *prometheus.CounterVec
+	renewedConns *prometheus.CounterVec
+	deadConns    *prometheus.CounterVec
+	removedConns *prometheus.CounterVec
+	getConns     *prometheus.CounterVec
+	putConns     *prometheus.CounterVec
 }
 
 func newCounters(settings prom.Settings) (c *counters, err error) {
 	prefix := settings.Prefix
 	c = &counters{
-		renewRequests: helpers.NewCounterVec(prefix, "pool_renew_requests",
-			"Pool Connection renew requests by address. "+
-				"This is generally triggered following a connection error.", []string{"address"}),
-		renewals: helpers.NewCounterVec(prefix, "pool_connection_renewals",
-			"Pool connection renewals by address. "+
-				"This can be caused either by a connection error or "+
-				"internally when a connection is assumed expired.", []string{"address"}),
+		newConns: helpers.NewCounterVec(prefix, "pool_new_connections",
+			"Pool new connections by address and outcome.", []string{"address", "outcome"}),
+		renewedConns: helpers.NewCounterVec(prefix, "pool_renewed_connections",
+			"Pool renewed connections by address, reason and outcome.", []string{"address", "reason", "outcome"}),
+		deadConns: helpers.NewCounterVec(prefix, "pool_dead_connections",
+			"Pool dead connections by address.", []string{"address"}),
+		removedConns: helpers.NewCounterVec(prefix, "pool_removed_connections",
+			"Pool removed connections by address.", []string{"address"}),
+		getConns: helpers.NewCounterVec(prefix, "pool_get_connection",
+			"Pool get connection calls by address and outcome.", []string{"address", "outcome"}),
+		putConns: helpers.NewCounterVec(prefix, "pool_put_connection",
+			"Pool put connection calls by address and connection state, live or dead.",
+			[]string{"address", "state"}),
 	}
 
-	err = helpers.Register(settings.Registry, c.renewRequests, c.renewals)
+	err = helpers.Register(settings.Registry, c.newConns, c.renewedConns,
+		c.deadConns, c.removedConns, c.getConns, c.putConns)
 	if err != nil {
 		return nil, err
 	}
@@ -31,10 +42,26 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 	return c, nil
 }
 
-func (c *counters) RenewRequestsInc(address string) {
-	c.renewRequests.WithLabelValues(address).Inc()
+func (c *counters) NewConnsInc(address, outcome string) {
+	c.newConns.WithLabelValues(address, outcome).Inc()
 }
 
-func (c *counters) RenewalsInc(address string) {
-	c.renewals.WithLabelValues(address).Inc()
+func (c *counters) RenewedConnsInc(address, reason, outcome string) {
+	c.renewedConns.WithLabelValues(address, reason, outcome).Inc()
+}
+
+func (c *counters) DeadConnsInc(address string) {
+	c.deadConns.WithLabelValues(address).Inc()
+}
+
+func (c *counters) RemovedConnsAdd(address string, removed uint) {
+	c.removedConns.WithLabelValues(address).Add(float64(removed))
+}
+
+func (c *counters) GetConnsInc(address, outcome string) {
+	c.getConns.WithLabelValues(address, outcome).Inc()
+}
+
+func (c *counters) PutConnsInc(address, state string) {
+	c.putConns.WithLabelValues(address, state).Inc()
 }

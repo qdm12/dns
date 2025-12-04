@@ -72,8 +72,9 @@ The list of all metrics available is as follows:
 | `answers_sent` | `class`, `type` | | Answers contained in responses sent by the server |
 | `responses_sent` | Counter | | Responses sent out by the server |
 | `requests_inflight` | Gauge | | Requests in flight in the server |
-| `pool_renew_requests` | Counter | `address` | Pool connection renew requests by address. This is generally triggered following a connection error |
-| `pool_connection_renewals` | Counter | `address` | Pool connection renewals by address. This can be caused either by a connection error or internally when a connection is assumed expired |
-| `pool_connections` | Gauge | `address` | Total connections in the pool, both live and dead, by address |
-| `pool_live_connections` | Gauge | `address` | Live connections in the pool by address |
-| `pool_in_use_connections` | Gauge | `address` | In use connections in the pool by address |
+| `pool_new_connections` | Counter | `address` , `outcome` | Pool new connections by address and outcome |
+| `pool_renewed_connections` | Counter | `address`, `reason`, `outcome` | Pool renewed connections by address, reason and outcome |
+| `pool_dead_connections` | Counter | `address` | Pool dead connections by address |
+| `pool_removed_connections` | Counter | `address` | Pool removed connections by address |
+| `pool_get_connection` | Counter | `address`, `outcome` | Pool get connection calls by address and outcome |
+| `pool_put_connection` | Counter | `address`, `state` | Pool put connection calls by address and connection state, live or dead |

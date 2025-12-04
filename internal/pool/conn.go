@@ -28,7 +28,7 @@ func (p *Pool) isConnDead(conn poolConn) bool {
 	_ = conn.Close() // ignore error since it may already be closed.
 	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
 	address := p.addrConns[conn.addrIndex].address
-	p.metrics.LiveConnsAdd(address, -1)
+	p.metrics.DeadConnsInc(address)
 	return true
 }
 

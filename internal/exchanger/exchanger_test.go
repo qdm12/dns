@@ -46,6 +46,8 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 				dialer, _, runError := startLocalTCPDNS(t, nil)
 				ctrl := gomock.NewController(t)
 				poolMetrics := NewMockPoolMetrics(ctrl)
+				poolMetrics.EXPECT().NewConnsInc(localhostString, "error")
+				poolMetrics.EXPECT().GetConnsInc(localhostString, "error")
 				exchanger := New(dialer, poolMetrics, nil)
 				return exchanger, runError
 			},
@@ -79,16 +81,13 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 				ctrl := gomock.NewController(t)
 				poolMetrics := NewMockPoolMetrics(ctrl)
 				// pool Get call for first connection
-				poolMetrics.EXPECT().ConnsAdd(localhostString, 1)
-				poolMetrics.EXPECT().LiveConnsAdd(localhostString, 1)
-				poolMetrics.EXPECT().InUseConnsAdd(localhostString, 1)
+				poolMetrics.EXPECT().NewConnsInc(localhostString, "success")
+				poolMetrics.EXPECT().GetConnsInc(localhostString, "success")
 				// pool Renew call after connection closed by server
-				poolMetrics.EXPECT().RenewRequestsInc(localhostString)
-				poolMetrics.EXPECT().LiveConnsAdd(localhostString, -1)
-				poolMetrics.EXPECT().RenewalsInc(localhostString)
-				poolMetrics.EXPECT().LiveConnsAdd(localhostString, 1)
+				poolMetrics.EXPECT().RenewedConnsInc(localhostString, "connection error", "success")
+				poolMetrics.EXPECT().NewConnsInc(localhostString, "success")
 				// pool Put call after successful second exchange
-				poolMetrics.EXPECT().InUseConnsAdd(localhostString, -1)
+				poolMetrics.EXPECT().PutConnsInc(localhostString, "live")
 
 				exchanger := New(dialer, poolMetrics, nil)
 				return exchanger, runError
@@ -103,6 +102,8 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 				stopServer()
 				ctrl := gomock.NewController(t)
 				poolMetrics := NewMockPoolMetrics(ctrl)
+				poolMetrics.EXPECT().NewConnsInc(localhostString, "error")
+				poolMetrics.EXPECT().GetConnsInc(localhostString, "error")
 				exchanger := New(dialer, poolMetrics, nil)
 				return exchanger, runError
 			},
@@ -127,11 +128,10 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 				ctrl := gomock.NewController(t)
 				poolMetrics := NewMockPoolMetrics(ctrl)
 				// pool Get call for first connection
-				poolMetrics.EXPECT().ConnsAdd(localhostString, 1)
-				poolMetrics.EXPECT().LiveConnsAdd(localhostString, 1)
-				poolMetrics.EXPECT().InUseConnsAdd(localhostString, 1)
+				poolMetrics.EXPECT().NewConnsInc(localhostString, "success")
+				poolMetrics.EXPECT().GetConnsInc(localhostString, "success")
 				// pool Put call after successful exchange
-				poolMetrics.EXPECT().InUseConnsAdd(localhostString, -1)
+				poolMetrics.EXPECT().PutConnsInc(localhostString, "live")
 
 				exchanger := New(dialer, poolMetrics, nil)
 				return exchanger, runError

@@ -35,10 +35,10 @@ func Test_Pool_Put(t *testing.T) {
 		address := dialer.Addresses()[0] // 127.0.0.1:853
 
 		// Put call metrics
-		metrics.EXPECT().InUseConnsAdd(address, -1)
+		metrics.EXPECT().PutConnsInc(address, "live")
 		// cleanup metrics
-		metrics.EXPECT().LiveConnsAdd(address, -1)
-		metrics.EXPECT().ConnsAdd(address, -2)
+		metrics.EXPECT().DeadConnsInc(address)
+		metrics.EXPECT().RemovedConnsAdd(address, uint(2))
 
 		pool := New(dialer, metrics)
 		pool.timeNow = func() time.Time { return now }
@@ -95,12 +95,12 @@ func Test_Pool_PutDead(t *testing.T) {
 		}
 		address := dialer.Addresses()[0] // 127.0.0.1:853
 
-		// Put call metrics
-		metrics.EXPECT().InUseConnsAdd(address, -1)
-		metrics.EXPECT().LiveConnsAdd(address, -1)
+		// PutDead call metrics
+		metrics.EXPECT().PutConnsInc(address, "dead")
+		metrics.EXPECT().DeadConnsInc(address) // connection put as dead
 		// cleanup metrics
-		metrics.EXPECT().LiveConnsAdd(address, -1)
-		metrics.EXPECT().ConnsAdd(address, -3)
+		metrics.EXPECT().DeadConnsInc(address) // another expired
+		metrics.EXPECT().RemovedConnsAdd(address, uint(3))
 
 		pool := New(dialer, metrics)
 		pool.timeNow = func() time.Time { return now }
@@ -192,8 +192,8 @@ func Test_Pool_cleanup(t *testing.T) {
 			}},
 			makeMetrics: func(ctrl *gomock.Controller) *MockMetrics {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().LiveConnsAdd("127.0.0.1:853", gomock.Any()).AnyTimes()
-				metrics.EXPECT().ConnsAdd("127.0.0.1:853", gomock.Any()).AnyTimes()
+				metrics.EXPECT().DeadConnsInc("127.0.0.1:853").Times(2)
+				metrics.EXPECT().RemovedConnsAdd("127.0.0.1:853", uint(4))
 				return metrics
 			},
 		},
@@ -258,12 +258,14 @@ func Fuzz_Pool_compact(f *testing.F) {
 // - in use connections are kept as is.
 // - live not in use connections are kept, although they can be moved.
 // - min(dead connections,connections-after-last-in-use) is removed from the end.
-func validateCompaction(t *testing.T, from, to []poolConn, removed int) {
+func validateCompaction(t *testing.T, from, to []poolConn, removed uint) {
 	t.Helper()
 
-	if removed != len(from)-len(to) {
+	diff := uint(max(0, len(from)-len(to))) //nolint:gosec
+
+	if removed != diff {
 		t.Errorf("removed count %d does not match length difference %d",
-			removed, len(from)-len(to))
+			removed, diff)
 	}
 
 	toIDs := make(map[int64]struct{}, len(to))
