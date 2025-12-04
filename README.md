@@ -12,9 +12,6 @@ It's fully coded in Go and is a single and cross platform binary program.
 
 [![Build status](https://github.com/qdm12/dns/actions/workflows/build.yml/badge.svg)](https://github.com/qdm12/dns/actions/workflows/build.yml)
 
-[![dockeri.co](https://dockeri.co/image/qmcgaw/dns)](https://hub.docker.com/r/qmcgaw/dns)
-[![dockeri.co](https://dockeri.co/image/qmcgaw/cloudflare-dns-server)](https://hub.docker.com/r/qmcgaw/cloudflare-dns-server)
-
 ![Last release](https://img.shields.io/github/release/qdm12/dns?label=Last%20release)
 ![Last Docker tag](https://img.shields.io/docker/v/qmcgaw/dns?sort=semver&label=Last%20Docker%20tag)
 [![Last release size](https://img.shields.io/docker/image-size/qmcgaw/dns?sort=semver&label=Last%20released%20image)](https://hub.docker.com/r/qmcgaw/dns/tags?page=1&ordering=last_updated)
@@ -34,7 +31,7 @@ It's fully coded in Go and is a single and cross platform binary program.
 ![GitHub repo size](https://img.shields.io/github/repo-size/qdm12/dns)
 ![Go version](https://img.shields.io/github/go-mod/go-version/qdm12/dns)
 
-[![MIT](https://img.shields.io/github/license/qdm12/dns)](https://github.com/qdm12/dns/master/LICENSE)
+[![MIT](https://img.shields.io/github/license/qdm12/dns)](https://github.com/qdm12/dns/tree/master/LICENSE)
 ![Visitors count](https://visitor-badge.laobi.icu/badge?page_id=dns.readme)
 
 ## Features
@@ -45,9 +42,9 @@ It's fully coded in Go and is a single and cross platform binary program.
   - [LibreDNS](https://libredns.gr)
   - [OpenDNS](https://support.opendns.com/hc/en-us/articles/360038086532-Using-DNS-over-HTTPS-DoH-with-OpenDNS)
   - [Quad9](https://www.quad9.net/faq/#Does_Quad9_support_DNS_over_TLS)
-  - [Quadrant](https://quadrantsec.com/about/blog/quadrants_public_dns_resolver_with_tls_https_support/)
-  - [CleanBrowsing](https://cleanbrowsing.org/guides/dnsovertls)
-  - [CIRA Canadian Shield](https://www.cira.ca/cybersecurity-services/canadian-shield)
+  - [Quadrant](https://www.quadrantsec.com/post/public-dns-resolver-with-tls-https-support)
+  - [CleanBrowsing](https://cleanbrowsing.org/help/docs/dnsovertls/)
+  - [CIRA Canadian Shield](https://www.cira.ca/en/canadian-shield/)
 - Random split-horizon DNS (an upstream resolver is picked at random for every request received)
 - Hostnames and IP addresses filtering 🛑
   - for 3 categories: malicious, surveillance and ads
@@ -241,7 +238,7 @@ If everything is fine, you should see the following message:
 
 #### Mac OS
 
-Follow the instructions at [https://support.apple.com/kb/PH25577](https://support.apple.com/kb/PH25577)
+Follow the instructions at [https://support.apple.com/guide/mac-help/change-dns-settings-on-mac-mh14127/mac](https://support.apple.com/guide/mac-help/change-dns-settings-on-mac-mh14127/mac)
 
 #### Linux
 
