@@ -193,6 +193,7 @@ func Test_Pool_cleanup(t *testing.T) {
 			makeMetrics: func(ctrl *gomock.Controller) *MockMetrics {
 				metrics := NewMockMetrics(ctrl)
 				metrics.EXPECT().DeadConnInc("127.0.0.1:853").Times(2)
+				metrics.EXPECT().RemovedConnsAdd("127.0.0.1:853", uint(4))
 				return metrics
 			},
 		},
