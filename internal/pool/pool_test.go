@@ -3,6 +3,7 @@ package pool
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -10,7 +11,8 @@ func Test_New(t *testing.T) {
 	t.Parallel()
 
 	testDialer := &testDialer{port: 8053}
-	testMetrics := &MockMetrics{}
+	ctrl := gomock.NewController(t)
+	testMetrics := NewMockMetrics(ctrl)
 
 	expectedPool := &Pool{
 		dialer:          testDialer,

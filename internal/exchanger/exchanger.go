@@ -63,20 +63,15 @@ func (e *Exchanger) exchangeWithPool(ctx context.Context, network string, reques
 			e.dialer, extractRequestQuestion(request), err)
 	}
 
-	defer func() {
-		if err != nil {
-			e.pool.PutDead(netConn)
-		} else {
-			e.pool.Put(netConn)
-		}
-	}()
-
 	dnsConn := &dns.Conn{Conn: netConn}
 	response, roundTripDuration, err := e.client.ExchangeWithConnContext(ctx, request, dnsConn)
 	if err == nil {
+		e.pool.Put(netConn)
 		return response, nil
 	}
+
 	if !isClosedConnErr(err) {
+		e.pool.PutDead(netConn)
 		roundTripMilliseconds := roundTripDuration.Round(time.Millisecond).Milliseconds()
 		return nil, fmt.Errorf("exchanging over %s connection (%dms) for request %s: %w",
 			e.dialer, roundTripMilliseconds, extractRequestQuestion(request), err)
@@ -92,11 +87,13 @@ func (e *Exchanger) exchangeWithPool(ctx context.Context, network string, reques
 	dnsConn = &dns.Conn{Conn: netConn}
 	response, roundTripDuration, err = e.client.ExchangeWithConnContext(ctx, request, dnsConn)
 	if err != nil {
+		e.pool.PutDead(netConn)
 		roundTripMilliseconds := roundTripDuration.Round(time.Millisecond).Milliseconds()
 		return nil, fmt.Errorf("exchanging over %s connection (%dms) for request %s: %w",
 			e.dialer, roundTripMilliseconds, extractRequestQuestion(request), err)
 	}
 
+	e.pool.Put(netConn)
 	return response, nil
 }
 

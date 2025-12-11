@@ -7,7 +7,6 @@ import (
 	"io"
 	"net"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,7 +28,7 @@ func (d *testDialer) Dial(ctx context.Context, network, address string,
 	return dialer.DialContext(ctx, network, address)
 }
 
-func startLocalTCPServer(t *testing.T) (
+func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 	dialer *testDialer, runError <-chan error,
 ) {
 	t.Helper()
@@ -53,7 +52,12 @@ func startLocalTCPServer(t *testing.T) (
 				runErrorCh <- fmt.Errorf("accepting connection: %w", err)
 				return
 			}
-			go handleConnection(conn, runErrorCh)
+			go func() {
+				err := handleConn(conn)
+				if err != nil {
+					runErrorCh <- err
+				}
+			}()
 		}
 	}()
 
@@ -73,27 +77,32 @@ func startLocalTCPServer(t *testing.T) (
 	return &testDialer{port: port}, runError
 }
 
-func handleConnection(conn net.Conn, runErrorCh chan<- error) {
-	defer conn.Close()
-	const timeout = time.Minute
-	err := conn.SetDeadline(time.Now().Add(timeout))
-	if err != nil {
-		runErrorCh <- fmt.Errorf("setting deadline: %w", err)
-		return
-	}
-	_, err = io.Copy(conn, conn)
-	if err != nil {
-		runErrorCh <- fmt.Errorf("copying: %w", err)
-		return
+// 2 bytes for uint16 + 8 bytes for uint64.
+const testMessageLength = 2 + 8
+
+// handleConnCopy echoes back the 4 bytes of data received.
+func handleConnCopy(conn net.Conn) error {
+	buffer := make([]byte, testMessageLength)
+	for {
+		_, err := io.CopyBuffer(conn, conn, buffer)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			return fmt.Errorf("copying: %w", err)
+		}
 	}
 }
 
-// checkConnWorks checks the connection works with the echo server with behavior
-// defined in [handleConnection]. It also closes the connection when done.
-func checkConnWorks(t *testing.T, conn net.Conn) {
+// checkConnCopies checks the connection works with the echo server with behavior
+// defined in [handleConnCopy]. It also closes the connection when done.
+func checkConnCopies(t *testing.T, conn net.Conn) {
 	t.Helper()
 	require.NotNil(t, conn)
-	message := []byte("hello")
+	message := make([]byte, testMessageLength)
+	for i := range message {
+		message[i] = byte(i)
+	}
 	_, err := conn.Write(message)
 	require.NoError(t, err)
 

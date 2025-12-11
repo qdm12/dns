@@ -15,6 +15,9 @@ type poolConn struct {
 	dead bool
 }
 
+// isConnDead returns whether the connection is dead.
+// It updates the connection state in the pool if it is dead,
+// as well as metrics.
 func (p *Pool) isConnDead(conn poolConn) bool {
 	switch {
 	case conn.dead:
@@ -28,7 +31,7 @@ func (p *Pool) isConnDead(conn poolConn) bool {
 	_ = conn.Close() // ignore error since it may already be closed.
 	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
 	address := p.addrConns[conn.addrIndex].address
-	p.metrics.DeadConnsInc(address)
+	p.metrics.DeadConnInc(address)
 	return true
 }
 

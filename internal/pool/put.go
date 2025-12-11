@@ -8,8 +8,8 @@ import (
 
 // Put puts back a working connection to the pool.
 // If the connection is no longer working, use either [pool.Renew] to replace
-// the connection or use [pool.PutDead] if you don't want to renew it.
-// This function cleans up dead connections from the pool, if possible.
+// the connection or use [pool.PutDead] if you don't want to renew it,
+// to indicate to the pool it is dead.
 func (p *Pool) Put(conn net.Conn) {
 	poolConn, ok := conn.(poolConn)
 	if !ok {
@@ -24,35 +24,57 @@ func (p *Pool) Put(conn net.Conn) {
 
 	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
 
-	p.cleanup(poolConn.addrIndex)
+	removed := p.cleanup(poolConn.addrIndex)
 
 	address := p.addressFromConn(poolConn)
-	p.metrics.PutConnsInc(address, "live")
+	p.metrics.PutConnInc(address, "live")
+	if removed > 0 {
+		p.metrics.RemovedConnsAdd(address, removed)
+	}
 }
 
+// PutDead must be called instead of [Pool.Put] to put back a dead connection
+// to the pool, EXCEPT in the following two cases:
+//   - after a failed call to [Pool.Get], in which case the connection is nil
+//   - after a failed call to [Pool.Renew], in which case the connection is already
+//     marked as dead
 func (p *Pool) PutDead(conn net.Conn) {
+	if conn == nil {
+		// Just in case the caller calls this function after a failed [Pool.Get]
+		return
+	}
+
 	poolConn, ok := conn.(poolConn)
 	if !ok {
 		panic(fmt.Sprintf("cannot put back dead non-pool connection %T", conn))
 	}
 
+	isAlreadyDead := p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex].dead
+	if isAlreadyDead {
+		// Just in case the caller calls this function after a failed [Pool.Renew]
+		return
+	}
+
 	poolConn.inUse = false
-	poolConn.dead = true
+	poolConn.dead = true // do not update metrics in [Pool.cleanup]
 	poolConn.lastUsed = time.Now()
 
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
 	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
-	address := p.addressFromConn(poolConn)
-	p.metrics.PutConnsInc(address, "dead")
-	p.metrics.DeadConnsInc(address)
+	removed := p.cleanup(poolConn.addrIndex)
 
-	p.cleanup(poolConn.addrIndex)
+	address := p.addressFromConn(poolConn)
+	p.metrics.PutConnInc(address, "dead")
+	p.metrics.DeadConnInc(address)
+	if removed > 0 {
+		p.metrics.RemovedConnsAdd(address, removed)
+	}
 }
 
 // cleanup cleans up connections for the given address index.
-func (p *Pool) cleanup(addrIndex int) {
+func (p *Pool) cleanup(addrIndex int) (removed uint) {
 	conns := p.addrConns[addrIndex].conns
 	if len(conns) == 1 {
 		// In case we return a single dead connection, keep it, the next call to
@@ -60,11 +82,9 @@ func (p *Pool) cleanup(addrIndex int) {
 		return
 	}
 
-	conns, removed := p.compact(conns)
-
-	address := p.addrConns[addrIndex].address
-	p.metrics.RemovedConnsAdd(address, removed)
+	conns, removed = p.compact(conns)
 	p.addrConns[addrIndex].conns = conns
+	return removed
 }
 
 // compact aims to reduce the connections slice length by removing

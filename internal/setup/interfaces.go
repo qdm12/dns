@@ -52,12 +52,13 @@ type PlainMetrics interface {
 }
 
 type PoolMetrics interface {
-	NewConnsInc(address, outcome string)
-	RenewedConnsInc(address, reason, outcome string)
-	DeadConnsInc(address string)
+	LiveConnInc(address string)
+	DeadConnInc(address string)
 	RemovedConnsAdd(address string, removed uint)
-	GetConnsInc(address, outcome string)
-	PutConnsInc(address, state string)
+	GetConnInc(address, outcome string)
+	PutConnInc(address, state string)
+	NewConnsInc(address, outcome string)
+	RenewConnInc(address, reason, outcome string)
 }
 
 type CacheMetrics interface { //nolint:interfacebloat

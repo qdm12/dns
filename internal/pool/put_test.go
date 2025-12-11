@@ -34,10 +34,10 @@ func Test_Pool_Put(t *testing.T) {
 		}
 		address := dialer.Addresses()[0] // 127.0.0.1:853
 
-		// Put call metrics
-		metrics.EXPECT().PutConnsInc(address, "live")
-		// cleanup metrics
-		metrics.EXPECT().DeadConnsInc(address)
+		// [Pool.cleanup] metrics
+		metrics.EXPECT().DeadConnInc(address)
+		// [Pool.Put] call metrics
+		metrics.EXPECT().PutConnInc(address, "live")
 		metrics.EXPECT().RemovedConnsAdd(address, uint(2))
 
 		pool := New(dialer, metrics)
@@ -95,12 +95,12 @@ func Test_Pool_PutDead(t *testing.T) {
 		}
 		address := dialer.Addresses()[0] // 127.0.0.1:853
 
-		// PutDead call metrics
-		metrics.EXPECT().PutConnsInc(address, "dead")
-		metrics.EXPECT().DeadConnsInc(address) // connection put as dead
-		// cleanup metrics
-		metrics.EXPECT().DeadConnsInc(address) // another expired
+		// [Pool.cleanup] metrics (one connection expired internally)
+		metrics.EXPECT().DeadConnInc(address)
+		// [Pool.PutDead] call metrics
+		metrics.EXPECT().PutConnInc(address, "dead")
 		metrics.EXPECT().RemovedConnsAdd(address, uint(3))
+		metrics.EXPECT().DeadConnInc(address)
 
 		pool := New(dialer, metrics)
 		pool.timeNow = func() time.Time { return now }
@@ -192,8 +192,7 @@ func Test_Pool_cleanup(t *testing.T) {
 			}},
 			makeMetrics: func(ctrl *gomock.Controller) *MockMetrics {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().DeadConnsInc("127.0.0.1:853").Times(2)
-				metrics.EXPECT().RemovedConnsAdd("127.0.0.1:853", uint(4))
+				metrics.EXPECT().DeadConnInc("127.0.0.1:853").Times(2)
 				return metrics
 			},
 		},

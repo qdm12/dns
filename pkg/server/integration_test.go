@@ -252,12 +252,14 @@ func Test_Server_Mocks(t *testing.T) {
 	require.NoError(t, err)
 
 	poolMetrics := NewMockPoolMetrics(ctrl)
-	poolMetrics.EXPECT().GetConnsInc("1.1.1.1:853", "success")
+	poolMetrics.EXPECT().LiveConnInc("1.1.1.1:853")
+	poolMetrics.EXPECT().GetConnInc("1.1.1.1:853", "success")
 	poolMetrics.EXPECT().NewConnsInc("1.1.1.1:853", "success")
-	poolMetrics.EXPECT().GetConnsInc("1.0.0.1:853", "success")
+	poolMetrics.EXPECT().LiveConnInc("1.0.0.1:853")
+	poolMetrics.EXPECT().GetConnInc("1.0.0.1:853", "success")
 	poolMetrics.EXPECT().NewConnsInc("1.0.0.1:853", "success")
-	poolMetrics.EXPECT().PutConnsInc("1.1.1.1:853", "live")
-	poolMetrics.EXPECT().PutConnsInc("1.0.0.1:853", "live")
+	poolMetrics.EXPECT().PutConnInc("1.1.1.1:853", "live")
+	poolMetrics.EXPECT().PutConnInc("1.0.0.1:853", "live")
 
 	server, err := New(Settings{
 		ListeningAddress: ptrTo(""),

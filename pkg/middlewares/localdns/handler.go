@@ -14,6 +14,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/exchanger"
 	"github.com/qdm12/dns/v2/internal/local"
+	nooppoolmetrics "github.com/qdm12/dns/v2/internal/pool/metrics/noop"
 )
 
 type handler struct {
@@ -48,7 +49,7 @@ func newHandler(resolvers []netip.AddrPort, logger Logger,
 			netDialer:       netDialer,
 			resolverAddress: resolverAddress,
 		}
-		poolMetrics := (exchanger.PoolMetrics)(nil) // pool is not used
+		poolMetrics := nooppoolmetrics.New()
 		localExchangers[i] = exchanger.New(dialer, poolMetrics, logger)
 	}
 

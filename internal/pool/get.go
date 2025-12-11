@@ -11,18 +11,26 @@ func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err e
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
+	var address string
+	defer func() {
+		outcome := outcomeSuccess
+		if err != nil {
+			outcome = outcomeError
+		}
+		p.metrics.GetConnInc(address, outcome)
+	}()
+
 	if !p.oneConnPerAddr {
 		// Not all addresses have one connection yet, so we need
 		// to create a new connection for any address without one.
 		// This is a form of lazy loading for creating one connection
 		// per address.
 		conn, addrIndex, err := p.newConn(ctx, network)
+		address = p.addrConns[addrIndex].address
 		if err != nil {
-			p.metrics.GetConnsInc(p.addrConns[addrIndex].address, outcomeError)
 			return nil, fmt.Errorf("creating connection: %w", err)
 		}
 		p.setIfAllAddrsHaveOneConn()
-		p.metrics.GetConnsInc(p.addrConns[addrIndex].address, outcomeSuccess)
 		return conn, nil
 	}
 
@@ -31,13 +39,10 @@ func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err e
 		// All addresses have one connection, but all connections
 		// are in use, so we need to create an additional connection.
 		conn, addrIndex, err := p.newConn(ctx, network)
-		address := p.addrConns[addrIndex].address
+		address = p.addrConns[addrIndex].address
 		if err != nil {
-			p.metrics.GetConnsInc(address, outcomeError)
 			return nil, fmt.Errorf("creating connection: %w", err)
 		}
-
-		p.metrics.GetConnsInc(address, outcomeSuccess)
 		return conn, nil
 	}
 
@@ -45,18 +50,16 @@ func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err e
 	// to avoid always trying the same address, in case it becomes inaccessible.
 	p.lastUsedAddrIndex = conn.addrIndex
 	conn.inUse = true
-	address := p.addressFromConn(conn)
+	address = p.addressFromConn(conn)
 	if live {
 		p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
-		p.metrics.GetConnsInc(address, outcomeSuccess)
 		return conn, nil
 	}
 	conn, err = p.renew(ctx, conn, network, "marked dead")
 	if err != nil {
-		p.metrics.GetConnsInc(address, outcomeError)
 		return nil, fmt.Errorf("renewing dead connection: %w", err)
 	}
-	p.metrics.GetConnsInc(address, outcomeSuccess)
+	p.metrics.LiveConnInc(address)
 	return conn, nil
 }
 
@@ -115,9 +118,18 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 	index := p.findAddressForNewConn()
 	addrConns := p.addrConns[index]
 	address := addrConns.address
+
+	defer func() {
+		if err != nil {
+			p.metrics.NewConnsInc(address, outcomeError)
+		} else {
+			p.metrics.NewConnsInc(address, outcomeSuccess)
+			p.metrics.LiveConnInc(address)
+		}
+	}()
+
 	netConn, err := p.dialer.Dial(ctx, network, address)
 	if err != nil {
-		p.metrics.NewConnsInc(address, outcomeError)
 		return poolConn{}, index, err
 	}
 	conn = poolConn{
@@ -129,7 +141,6 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 	addrConns.conns = append(addrConns.conns, conn)
 	p.addrConns[index] = addrConns
 	p.lastUsedAddrIndex = conn.addrIndex
-	p.metrics.NewConnsInc(address, outcomeSuccess)
 	return conn, index, nil
 }
 

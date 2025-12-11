@@ -72,9 +72,10 @@ The list of all metrics available is as follows:
 | `answers_sent` | `class`, `type` | | Answers contained in responses sent by the server |
 | `responses_sent` | Counter | | Responses sent out by the server |
 | `requests_inflight` | Gauge | | Requests in flight in the server |
-| `pool_new_connections` | Counter | `address` , `outcome` | Pool new connections by address and outcome |
-| `pool_renewed_connections` | Counter | `address`, `reason`, `outcome` | Pool renewed connections by address, reason and outcome |
-| `pool_dead_connections` | Counter | `address` | Pool dead connections by address |
-| `pool_removed_connections` | Counter | `address` | Pool removed connections by address |
-| `pool_get_connection` | Counter | `address`, `outcome` | Pool get connection calls by address and outcome |
-| `pool_put_connection` | Counter | `address`, `state` | Pool put connection calls by address and connection state, live or dead |
+| `pool_live_connections` | Counter | `address` | Connection pool live connections created by address. The current number of live connections in the pool can be found using `pool_live_connections - pool_dead_connections`  |
+| `pool_dead_connections` | Counter | `address` | Connection pool dead connections detected by address. The current number of live connections in the pool can be found using `pool_dead_connections - pool_removed_connections - pool_renew_connection{reason="marked dead"}` |
+| `pool_removed_connections` | Counter | `address` | Connection pool removed connections by address |
+| `pool_get_connection` | Counter | `address`, `outcome` | Connection pool get connection operations by address and outcome |
+| `pool_put_connection` | Counter | `address`, `state` | Connection pool put connection operations by address and connection state, live or dead |
+| `pool_new_connection` | Counter | `address` , `outcome` | Connection pool new connection operations by address and outcome |
+| `pool_renew_connection` | Counter | `address`, `reason`, `outcome` | Connection pool renew operations by address, reason and outcome |

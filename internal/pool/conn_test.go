@@ -76,7 +76,7 @@ func Test_Pool_isConnDead(t *testing.T) {
 			dead: true,
 			makeMetrics: func(ctrl *gomock.Controller) *MockMetrics {
 				metrics := NewMockMetrics(ctrl)
-				metrics.EXPECT().DeadConnsInc("127.0.0.1:853")
+				metrics.EXPECT().DeadConnInc("127.0.0.1:853")
 				return metrics
 			},
 		},
