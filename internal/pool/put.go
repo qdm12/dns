@@ -42,6 +42,9 @@ func (p *Pool) PutDead(conn net.Conn) {
 		panic(fmt.Sprintf("cannot put back dead non-pool connection %T", conn))
 	}
 
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	isMarkedDead := p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex].dead
 	if isMarkedDead {
 		// Just in case the caller calls this function after a failed [Pool.Renew]
@@ -51,9 +54,6 @@ func (p *Pool) PutDead(conn net.Conn) {
 	poolConn.inUse = false
 	poolConn.dead = true // do not update metrics in [Pool.cleanup]
 	poolConn.lastUsed = time.Now()
-
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
 
 	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
 	p.cleanup(poolConn.addrIndex)
