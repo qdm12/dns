@@ -2,6 +2,7 @@ package pool
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"net"
 	"testing"
 	"time"
@@ -219,6 +220,41 @@ func Test_Pool_cleanup(t *testing.T) {
 			pool.cleanup(testCase.addrIndex)
 			assert.Equal(t, testCase.expectedAddrConns, pool.addrConns)
 		})
+	}
+}
+
+func Benchmark_Pool_compact(b *testing.B) {
+	now := time.Unix(1000, 0)
+	pool := &Pool{
+		timeNow:         func() time.Time { return now },
+		maxIdleDuration: 1,
+	}
+
+	const length = 100
+	originalConns := make([]poolConn, length)
+	randSource := rand.NewChaCha8([32]byte{})
+	prng := rand.New(randSource) //nolint:gosec
+	for i := range originalConns {
+		originalConns[i] = poolConn{
+			inUse: prng.IntN(2) == 0,
+		}
+		if !originalConns[i].inUse {
+			originalConns[i].dead = prng.IntN(2) == 0
+			if !originalConns[i].dead {
+				originalConns[i].lastUsed = now
+			}
+		}
+	}
+	conns := make([]poolConn, length)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for b.Loop() {
+		b.StopTimer()
+		copy(conns, originalConns)
+		b.StartTimer()
+		_, _ = pool.compact(conns)
 	}
 }
 

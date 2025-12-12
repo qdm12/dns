@@ -101,12 +101,7 @@ func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed uint) {
 
 	for readIndex, conn := range conns {
 		switch {
-		case p.isConnDead(conn):
-			// Skip this connection.
-			// writeIndex stays pointing to it, ready to be overwritten/swapped
-			// with the next alive unused connection.
-			continue
-		case conn.inUse:
+		case conn.inUse: // cannot be dead
 			// The connection is in use and cannot be moved.
 			// Ensure the compaction frontier writeIndex skips it ONLY if it
 			// is blocking the frontier.
@@ -114,26 +109,22 @@ func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed uint) {
 				writeIndex++
 			}
 			continue
-		}
-
-		// Handle the movable alive and unused connection: compact it to writeIndex.
-
-		// Move the writeIndex forward until it points to a movable connection
-		for writeIndex < readIndex && conns[writeIndex].inUse {
-			writeIndex++
-		}
-
-		if writeIndex == readIndex {
+		case p.isConnDead(conn):
+			// writeIndex stays pointing to it, ready to be overwritten/swapped
+			// with the next alive unused connection.
+			continue
+		case writeIndex == readIndex:
 			// The connection is at the correct position at the frontier, so advance the frontier.
 			writeIndex++
 			continue
 		}
+
 		// Swap the alive unused connection pointed by readIdx with the dead connection
 		// pointed by writeIdx.
 		conns[readIndex], conns[writeIndex] = conns[writeIndex], conns[readIndex]
 		conns[readIndex].connIndex = readIndex
 		conns[writeIndex].connIndex = writeIndex
-		writeIndex++ // advance the compaction frontier
+		writeIndex++
 	}
 
 	finalLength := 0
