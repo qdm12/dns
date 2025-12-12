@@ -32,15 +32,11 @@ func (p *Pool) Put(conn net.Conn) {
 
 // PutDead must be called instead of [Pool.Put] to put back a dead connection
 // to the pool, EXCEPT in the following two cases:
-//   - after a failed call to [Pool.Get], in which case the connection is nil
+//   - after a failed call to [Pool.Get], in which case the connection is nil and
+//     this would panic.
 //   - after a failed call to [Pool.Renew], in which case the connection is already
 //     marked as dead
 func (p *Pool) PutDead(conn net.Conn) {
-	if conn == nil {
-		// Just in case the caller calls this function after a failed [Pool.Get]
-		return
-	}
-
 	poolConn, ok := conn.(poolConn)
 	if !ok {
 		panic(fmt.Sprintf("cannot put back dead non-pool connection %T", conn))

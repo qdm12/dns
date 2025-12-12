@@ -10,23 +10,36 @@ import (
 func Test_New(t *testing.T) {
 	t.Parallel()
 
-	testDialer := &testDialer{port: 8053}
-	ctrl := gomock.NewController(t)
-	testMetrics := NewMockMetrics(ctrl)
+	t.Run("no_address", func(t *testing.T) {
+		t.Parallel()
+		ctrl := gomock.NewController(t)
+		dialer := NewMockDialer(ctrl)
+		dialer.EXPECT().Addresses().Return([]string{})
+		assert.PanicsWithValue(t, "cannot create pool with zero addresses",
+			func() { New(dialer, nil) })
+	})
 
-	expectedPool := &Pool{
-		dialer:          testDialer,
-		metrics:         testMetrics,
-		addrConns:       []addressConns{{address: "127.0.0.1:8053", conns: []poolConn{}}},
-		maxIdleDuration: maxIdleDuration,
-	}
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 
-	pool := New(testDialer, testMetrics)
+		testDialer := &testDialer{port: 8053}
+		ctrl := gomock.NewController(t)
+		testMetrics := NewMockMetrics(ctrl)
 
-	assert.NotNil(t, pool.timeNow)
-	pool.timeNow = nil
+		expectedPool := &Pool{
+			dialer:          testDialer,
+			metrics:         testMetrics,
+			addrConns:       []addressConns{{address: "127.0.0.1:8053", conns: []poolConn{}}},
+			maxIdleDuration: maxIdleDuration,
+		}
 
-	assert.Equal(t, expectedPool, pool)
+		pool := New(testDialer, testMetrics)
+
+		assert.NotNil(t, pool.timeNow)
+		pool.timeNow = nil
+
+		assert.Equal(t, expectedPool, pool)
+	})
 }
 
 func Test_Pool_setIfAllAddrsHaveOneConn(t *testing.T) {

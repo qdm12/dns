@@ -86,6 +86,23 @@ func Test_Pool_PutDead(t *testing.T) {
 		})
 	})
 
+	t.Run("conn_marked_dead", func(t *testing.T) {
+		t.Parallel()
+		pool := &Pool{
+			addrConns: []addressConns{
+				{conns: []poolConn{{dead: true}}},
+			},
+		}
+		expectedPool := &Pool{
+			addrConns: []addressConns{
+				{conns: []poolConn{{dead: true}}},
+			},
+		}
+		conn := poolConn{}
+		pool.PutDead(conn)
+		assert.Equal(t, expectedPool, pool)
+	})
+
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
