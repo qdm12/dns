@@ -72,7 +72,7 @@ The list of all metrics available is as follows:
 | `answers_sent` | `class`, `type` | | Answers contained in responses sent by the server |
 | `responses_sent` | Counter | | Responses sent out by the server |
 | `requests_inflight` | Gauge | | Requests in flight in the server |
-| `pool_live_connections` | Counter | `address` | Connection pool live connections created by address. The current number of live connections in the pool can be found using `pool_live_connections - pool_dead_connections`  |
+| `pool_live_connections` | Counter | `address` | Connection pool live connections created by address. The current number of live connections in the pool can be found using `pool_live_connections - pool_dead_connections` |
 | `pool_dead_connections` | Counter | `address` | Connection pool dead connections detected by address. The current number of live connections in the pool can be found using `pool_dead_connections - pool_removed_connections - pool_renew_connection{reason="marked dead"}` |
 | `pool_removed_connections` | Counter | `address` | Connection pool removed connections by address |
 | `pool_get_connection` | Counter | `address`, `outcome` | Connection pool get connection operations by address and outcome |
