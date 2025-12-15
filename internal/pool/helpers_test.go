@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
