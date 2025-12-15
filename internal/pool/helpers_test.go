@@ -58,7 +58,7 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 				return
 			}
 			handleConnWg.Add(1)
-			go func() {
+			handleConnWg.Go(func() {
 				defer handleConnWg.Done()
 				connsInFlightMutex.Lock()
 				connsInFlight[conn.RemoteAddr().String()] = conn
@@ -70,7 +70,7 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 					case runErrorCh <- err:
 					}
 				}
-			}()
+			})
 		}
 	}()
 
