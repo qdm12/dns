@@ -33,7 +33,7 @@ func Test_Pool_Renew(t *testing.T) {
 		metrics.EXPECT().DeadConnInc(address)
 		// [Pool.renew] metric calls
 		metrics.EXPECT().NewConnsInc(address, outcomeError)
-		metrics.EXPECT().RenewConnInc(address, "connection error", outcomeError)
+		metrics.EXPECT().RenewConnInc(address, renewReasonConnError, outcomeError)
 		pool := &Pool{
 			dialer:         dialer,
 			metrics:        metrics,
@@ -76,7 +76,7 @@ func Test_Pool_Renew(t *testing.T) {
 		metrics := NewMockMetrics(ctrl)
 		// [Pool.renew] metric calls
 		metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
-		metrics.EXPECT().RenewConnInc(address, "connection error", outcomeSuccess)
+		metrics.EXPECT().RenewConnInc(address, renewReasonConnError, outcomeSuccess)
 		deadConn := poolConn{
 			Conn: &noopConn{},
 			dead: true,
@@ -130,7 +130,7 @@ func Test_Pool_Renew(t *testing.T) {
 		address := dialer.Addresses()[0]
 		// [Pool.renew] metric calls
 		metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
-		metrics.EXPECT().RenewConnInc(address, "connection error", outcomeSuccess)
+		metrics.EXPECT().RenewConnInc(address, renewReasonConnError, outcomeSuccess)
 		netConn, err := dialer.Dial(context.Background(), "tcp", address)
 		require.NoError(t, err)
 		liveConn := poolConn{

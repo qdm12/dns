@@ -6,6 +6,11 @@ import (
 	"net"
 )
 
+const (
+	renewReasonMarkedDead = "marked dead"
+	renewReasonConnError  = "connection error"
+)
+
 // Renew creates a new connection to replace the given one in the pool.
 // It should be used when the caller detects that the given connection is dead,
 // for example after receiving a io.EOF error.
@@ -19,8 +24,7 @@ func (p *Pool) Renew(ctx context.Context, network string, conn net.Conn) (newCon
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	address := p.addressFromConn(poolConn)
-	const reason = "connection error"
-	poolConn, err = p.renew(ctx, poolConn, network, reason)
+	poolConn, err = p.renew(ctx, poolConn, network, renewReasonConnError)
 	if err != nil {
 		p.metrics.DeadConnInc(address)
 		return nil, err

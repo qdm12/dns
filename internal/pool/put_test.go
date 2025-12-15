@@ -38,7 +38,7 @@ func Test_Pool_Put(t *testing.T) {
 		// [Pool.cleanup] metrics
 		metrics.EXPECT().DeadConnInc(address)
 		// [Pool.Put] call metrics
-		metrics.EXPECT().PutConnInc(address, "live")
+		metrics.EXPECT().PutConnInc(address, connStateLive)
 		metrics.EXPECT().RemovedConnsAdd(address, uint(2))
 
 		pool := New(dialer, metrics)

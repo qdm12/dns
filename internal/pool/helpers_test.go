@@ -37,11 +37,15 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 
 	runErrorCh := make(chan error)
 	runError = runErrorCh
-	done := make(chan struct{})
+	listenerDone := make(chan struct{})
+	var handleConnWg sync.WaitGroup
+
+	connsInFlight := make(map[string]net.Conn)
+	var connsInFlightMutex sync.Mutex
 
 	ready := make(chan struct{})
 	go func() {
-		defer close(done)
+		defer close(listenerDone)
 		close(ready)
 		for {
 			conn, err := listener.Accept()
@@ -52,10 +56,18 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 				runErrorCh <- fmt.Errorf("accepting connection: %w", err)
 				return
 			}
+			handleConnWg.Add(1)
 			go func() {
+				defer handleConnWg.Done()
+				connsInFlightMutex.Lock()
+				connsInFlight[conn.RemoteAddr().String()] = conn
+				connsInFlightMutex.Unlock()
 				err := handleConn(conn)
 				if err != nil {
-					runErrorCh <- err
+					select {
+					case <-listenerDone: // server stopped
+					case runErrorCh <- err:
+					}
 				}
 			}()
 		}
@@ -63,7 +75,13 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 
 	stop := func() {
 		_ = listener.Close()
-		<-done
+		<-listenerDone
+		connsInFlightMutex.Lock()
+		for _, conn := range connsInFlight {
+			_ = conn.Close()
+		}
+		connsInFlightMutex.Unlock()
+		handleConnWg.Wait()
 	}
 	t.Cleanup(stop)
 
@@ -77,12 +95,10 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 	return &testDialer{port: port}, runError
 }
 
-// 2 bytes for uint16 + 8 bytes for uint64.
-const testMessageLength = 2 + 8
-
 // handleConnCopy echoes back the 4 bytes of data received.
 func handleConnCopy(conn net.Conn) error {
-	buffer := make([]byte, testMessageLength)
+	const length = 4
+	buffer := make([]byte, length)
 	for {
 		_, err := io.CopyBuffer(conn, conn, buffer)
 		if err != nil {
@@ -99,7 +115,8 @@ func handleConnCopy(conn net.Conn) error {
 func checkConnCopies(t *testing.T, conn net.Conn) {
 	t.Helper()
 	require.NotNil(t, conn)
-	message := make([]byte, testMessageLength)
+	const length = 4
+	message := make([]byte, length)
 	for i := range message {
 		message[i] = byte(i)
 	}

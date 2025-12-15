@@ -205,7 +205,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				metrics := NewMockMetrics(ctrl)
 				// [Pool.renew] metric calls
 				metrics.EXPECT().NewConnsInc("127.0.0.1:0", outcomeError)
-				metrics.EXPECT().RenewConnInc("127.0.0.1:0", "marked dead", outcomeError)
+				metrics.EXPECT().RenewConnInc("127.0.0.1:0", renewReasonMarkedDead, outcomeError)
 				// [Pool.Get] metric calls
 				metrics.EXPECT().GetConnInc("127.0.0.1:0", outcomeError)
 
@@ -246,7 +246,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				address := dialer.Addresses()[0]
 				// [Pool.renew] metric calls
 				metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
-				metrics.EXPECT().RenewConnInc(address, "marked dead", outcomeSuccess)
+				metrics.EXPECT().RenewConnInc(address, renewReasonMarkedDead, outcomeSuccess)
 				// [Pool.Get] metric calls
 				metrics.EXPECT().LiveConnInc(address)
 				metrics.EXPECT().GetConnInc(address, outcomeSuccess)

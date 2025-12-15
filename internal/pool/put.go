@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	connStateLive = "live"
+	connStateDead = "dead"
+)
+
 // Put puts back a working connection to the pool.
 // If the connection is no longer working, use either [pool.Renew] to replace
 // the connection or use [pool.PutDead] if you don't want to renew it,
@@ -27,7 +32,7 @@ func (p *Pool) Put(conn net.Conn) {
 	p.cleanup(poolConn.addrIndex)
 
 	address := p.addressFromConn(poolConn)
-	p.metrics.PutConnInc(address, "live")
+	p.metrics.PutConnInc(address, connStateLive)
 }
 
 // PutDead must be called instead of [Pool.Put] to put back a dead connection
@@ -59,7 +64,7 @@ func (p *Pool) PutDead(conn net.Conn) {
 	p.cleanup(poolConn.addrIndex)
 
 	address := p.addressFromConn(poolConn)
-	p.metrics.PutConnInc(address, "dead")
+	p.metrics.PutConnInc(address, connStateDead)
 	p.metrics.DeadConnInc(address)
 }
 

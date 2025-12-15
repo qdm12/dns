@@ -33,7 +33,7 @@ type Metrics interface {
 	// dead connections are either removed from the pool or renewed.
 	// You can obtain the current number of dead connections by calculating:
 	// dead_current_conns = dead_conn_counter - removed_conn_counter
-	// - renew_connection_counter{reason="marked dead"}
+	// - renew_connection_counter{reason="[renewReasonMarkedDead]"}
 	DeadConnInc(address string)
 	// RemovedConnsAdd adds the given number of removed connections from the pool.
 	// This is only called when connections are removed from the pool in [pool.Put]
@@ -46,7 +46,7 @@ type Metrics interface {
 	GetConnInc(address, outcome string)
 	// PutConnInc increments the number of connections put back to the pool.
 	// The state argument indicates the state of the connection being put back,
-	// "live" (using [pool.Put]) or "dead" (using [pool.PutDead]).
+	// "[connStateLive]" (using [pool.Put]) or "[connStateDead]" (using [pool.PutDead]).
 	PutConnInc(address, state string)
 	// NewConnsInc increments the number of new connections created in the pool,
 	// even if this is a renewal of a connection slot.
