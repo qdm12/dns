@@ -63,7 +63,7 @@ func (d *Dialer) String() string {
 // ReusableConnsSupported returns true to indicate that connections created
 // by this dialer can be reused.
 func (d *Dialer) ReusableConnsSupported() bool {
-	return true
+	return false
 }
 
 func (d *Dialer) Addresses() []string {
