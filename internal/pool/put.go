@@ -12,8 +12,8 @@ const (
 )
 
 // Put puts back a working connection to the pool.
-// If the connection is no longer working, use either [pool.Renew] to replace
-// the connection or use [pool.PutDead] if you don't want to renew it,
+// If the connection is no longer working, use either [Pool.Renew] to replace
+// the connection or use [Pool.PutDead] if you don't want to renew it,
 // to indicate to the pool it is dead.
 func (p *Pool) Put(conn net.Conn) {
 	poolConn, ok := conn.(poolConn)
