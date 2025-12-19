@@ -88,6 +88,7 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 				poolMetrics.EXPECT().RenewConnInc(localhostString, "connection error", "success")
 				poolMetrics.EXPECT().NewConnsInc(localhostString, "success")
 				// pool Put call after successful second exchange
+				poolMetrics.EXPECT().RecordUseTime(localhostString, gomock.Any())
 				poolMetrics.EXPECT().PutConnInc(localhostString, "live")
 
 				exchanger := New(dialer, poolMetrics, nil)
@@ -133,6 +134,7 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 				poolMetrics.EXPECT().GetConnInc(localhostString, "success")
 				poolMetrics.EXPECT().LiveConnInc(localhostString)
 				// pool Put call after successful exchange
+				poolMetrics.EXPECT().RecordUseTime(localhostString, gomock.Any())
 				poolMetrics.EXPECT().PutConnInc(localhostString, "live")
 
 				exchanger := New(dialer, poolMetrics, nil)

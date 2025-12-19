@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/miekg/dns"
 )
@@ -27,6 +28,7 @@ type PoolMetrics interface {
 	PutConnInc(address, state string)
 	NewConnsInc(address, outcome string)
 	RenewConnInc(address, reason, outcome string)
+	RecordUseTime(address string, duration time.Duration)
 }
 
 type Middleware interface {

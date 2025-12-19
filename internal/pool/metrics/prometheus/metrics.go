@@ -6,6 +6,7 @@ import (
 
 type Metrics struct {
 	*counters
+	*histograms
 }
 
 func New(settings Settings) (metrics *Metrics, err error) {
@@ -21,6 +22,11 @@ func New(settings Settings) (metrics *Metrics, err error) {
 	metrics.counters, err = newCounters(settings.Prometheus)
 	if err != nil {
 		return nil, fmt.Errorf("creating counters: %w", err)
+	}
+
+	metrics.histograms, err = newHistograms(settings.Prometheus)
+	if err != nil {
+		return nil, fmt.Errorf("creating histograms: %w", err)
 	}
 
 	return metrics, nil

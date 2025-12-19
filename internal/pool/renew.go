@@ -57,6 +57,7 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 	}
 	conn.Conn = netConn
 	conn.dead = false
+	conn.lastUsed = p.timeNow()
 	// note the connection is already marked as "in use"
 	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
 	return conn, nil

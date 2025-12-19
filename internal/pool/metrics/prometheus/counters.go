@@ -45,30 +45,30 @@ func newCounters(settings prom.Settings) (c *counters, err error) {
 	return c, nil
 }
 
-func (c *counters) LiveConnInc(address string) {
-	c.liveConns.WithLabelValues(address).Inc()
+func (h *counters) LiveConnInc(address string) {
+	h.liveConns.WithLabelValues(address).Inc()
 }
 
-func (c *counters) DeadConnInc(address string) {
-	c.deadConns.WithLabelValues(address).Inc()
+func (h *counters) DeadConnInc(address string) {
+	h.deadConns.WithLabelValues(address).Inc()
 }
 
-func (c *counters) RemovedConnsAdd(address string, removed uint) {
-	c.removedConns.WithLabelValues(address).Add(float64(removed))
+func (h *counters) RemovedConnsAdd(address string, removed uint) {
+	h.removedConns.WithLabelValues(address).Add(float64(removed))
 }
 
-func (c *counters) GetConnInc(address, outcome string) {
-	c.getConns.WithLabelValues(address, outcome).Inc()
+func (h *counters) GetConnInc(address, outcome string) {
+	h.getConns.WithLabelValues(address, outcome).Inc()
 }
 
-func (c *counters) PutConnInc(address, state string) {
-	c.putConns.WithLabelValues(address, state).Inc()
+func (h *counters) PutConnInc(address, state string) {
+	h.putConns.WithLabelValues(address, state).Inc()
 }
 
-func (c *counters) NewConnsInc(address, outcome string) {
-	c.newConns.WithLabelValues(address, outcome).Inc()
+func (h *counters) NewConnsInc(address, outcome string) {
+	h.newConns.WithLabelValues(address, outcome).Inc()
 }
 
-func (c *counters) RenewConnInc(address, reason, outcome string) {
-	c.renewedConns.WithLabelValues(address, reason, outcome).Inc()
+func (h *counters) RenewConnInc(address, reason, outcome string) {
+	h.renewedConns.WithLabelValues(address, reason, outcome).Inc()
 }

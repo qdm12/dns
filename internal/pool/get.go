@@ -52,6 +52,7 @@ func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err e
 	conn.inUse = true
 	address = p.addressFromConn(conn)
 	if live {
+		conn.lastUsed = p.timeNow()
 		p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
 		return conn, nil
 	}
@@ -137,6 +138,7 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 		addrIndex: index,
 		connIndex: len(addrConns.conns),
 		inUse:     true, // about to be returned and used
+		lastUsed:  p.timeNow(),
 	}
 	addrConns.conns = append(addrConns.conns, conn)
 	p.addrConns[index] = addrConns

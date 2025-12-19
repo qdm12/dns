@@ -3,6 +3,7 @@ package exchanger
 import (
 	"context"
 	"net"
+	"time"
 )
 
 type Dialer interface {
@@ -38,4 +39,5 @@ type PoolMetrics interface {
 	PutConnInc(address, state string)
 	NewConnsInc(address, outcome string)
 	RenewConnInc(address, reason, outcome string)
+	RecordUseTime(address string, duration time.Duration)
 }

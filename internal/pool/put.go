@@ -21,7 +21,12 @@ func (p *Pool) Put(conn net.Conn) {
 		panic(fmt.Sprintf("cannot put back non-pool connection %T", conn))
 	}
 
-	poolConn.lastUsed = p.timeNow()
+	now := p.timeNow()
+	inUseDuration := now.Sub(poolConn.lastUsed)
+	address := p.addressFromConn(poolConn)
+	p.metrics.RecordUseTime(address, inUseDuration)
+
+	poolConn.lastUsed = now
 	poolConn.inUse = false
 
 	p.mutex.Lock()
@@ -31,7 +36,6 @@ func (p *Pool) Put(conn net.Conn) {
 
 	p.cleanup(poolConn.addrIndex)
 
-	address := p.addressFromConn(poolConn)
 	p.metrics.PutConnInc(address, connStateLive)
 }
 

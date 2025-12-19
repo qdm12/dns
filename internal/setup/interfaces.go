@@ -1,6 +1,8 @@
 package setup
 
 import (
+	"time"
+
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
@@ -59,6 +61,7 @@ type PoolMetrics interface {
 	PutConnInc(address, state string)
 	NewConnsInc(address, outcome string)
 	RenewConnInc(address, reason, outcome string)
+	RecordUseTime(address string, duration time.Duration)
 }
 
 type CacheMetrics interface { //nolint:interfacebloat

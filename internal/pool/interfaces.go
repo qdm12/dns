@@ -3,6 +3,7 @@ package pool
 import (
 	"context"
 	"net"
+	"time"
 )
 
 type Dialer interface {
@@ -53,4 +54,9 @@ type Metrics interface {
 	NewConnsInc(address, outcome string)
 	// RenewConnInc increments the counter of renew connection requests.
 	RenewConnInc(address, reason, outcome string)
+	// RecordUseTime records the duration a connection was in successful use
+	// between a [Pool.Get] or [Pool.Renew] and a [Pool.Put].
+	// It does not account for connections taken from the pool which failed to
+	// be used.
+	RecordUseTime(address string, duration time.Duration)
 }

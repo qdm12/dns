@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,11 @@ import (
 
 func Test_Pool_Renew(t *testing.T) {
 	t.Parallel()
+
+	now := time.Unix(10000, 0)
+	timeNow := func() time.Time {
+		return now
+	}
 
 	t.Run("not_a_poolConn", func(t *testing.T) {
 		t.Parallel()
@@ -84,6 +90,7 @@ func Test_Pool_Renew(t *testing.T) {
 		pool := &Pool{
 			dialer:         dialer,
 			metrics:        metrics,
+			timeNow:        timeNow,
 			oneConnPerAddr: true,
 			addrConns: []addressConns{{
 				address: address,
@@ -95,7 +102,7 @@ func Test_Pool_Renew(t *testing.T) {
 			oneConnPerAddr: true,
 			addrConns: []addressConns{{
 				address: address,
-				conns:   []poolConn{{}},
+				conns:   []poolConn{{lastUsed: now}},
 			}},
 		}
 		ctx := context.Background()
@@ -108,7 +115,9 @@ func Test_Pool_Renew(t *testing.T) {
 		// remove Conn from comparison
 		renewedPoolConn.Conn = nil
 		pool.addrConns[renewedPoolConn.addrIndex].conns[renewedPoolConn.connIndex].Conn = nil
-		expectedPoolConn := poolConn{}
+		expectedPoolConn := poolConn{
+			lastUsed: now,
+		}
 		assert.Equal(t, expectedPoolConn, renewedPoolConn)
 		clearPoolFieldsForComparison(pool)
 		assert.Equal(t, expectedPool, pool)
@@ -140,6 +149,7 @@ func Test_Pool_Renew(t *testing.T) {
 		pool := &Pool{
 			dialer:         dialer,
 			metrics:        metrics,
+			timeNow:        timeNow,
 			oneConnPerAddr: true,
 			addrConns: []addressConns{
 				{address: address, conns: []poolConn{liveConn}},
@@ -153,7 +163,9 @@ func Test_Pool_Renew(t *testing.T) {
 		checkConnCopies(t, renewedConn)
 		renewedPoolConn := renewedConn.(poolConn) //nolint:forcetypeassert
 		renewedPoolConn.Conn = nil                // remove Conn from comparison
-		expectedPoolConn := poolConn{}
+		expectedPoolConn := poolConn{
+			lastUsed: now,
+		}
 		assert.Equal(t, expectedPoolConn, renewedPoolConn)
 
 		select {

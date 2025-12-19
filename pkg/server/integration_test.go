@@ -258,7 +258,9 @@ func Test_Server_Mocks(t *testing.T) {
 	poolMetrics.EXPECT().LiveConnInc("1.0.0.1:853")
 	poolMetrics.EXPECT().GetConnInc("1.0.0.1:853", "success")
 	poolMetrics.EXPECT().NewConnsInc("1.0.0.1:853", "success")
+	poolMetrics.EXPECT().RecordUseTime("1.1.1.1:853", gomock.Any())
 	poolMetrics.EXPECT().PutConnInc("1.1.1.1:853", "live")
+	poolMetrics.EXPECT().RecordUseTime("1.0.0.1:853", gomock.Any())
 	poolMetrics.EXPECT().PutConnInc("1.0.0.1:853", "live")
 
 	server, err := New(Settings{

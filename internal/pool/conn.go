@@ -9,8 +9,10 @@ type poolConn struct {
 	net.Conn
 	addrIndex int
 	connIndex int
-	lastUsed  time.Time
-	inUse     bool
+	// lastUsed is set to the current time when the connection is get
+	// from the pool with [Pool.Get] and when it is put back with [Pool.Put].
+	lastUsed time.Time
+	inUse    bool
 	// dead is only used for caching for performance.
 	dead bool
 }

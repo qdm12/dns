@@ -6,6 +6,7 @@ package exchanger
 
 import (
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -91,6 +92,18 @@ func (m *MockPoolMetrics) PutConnInc(arg0, arg1 string) {
 func (mr *MockPoolMetricsMockRecorder) PutConnInc(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutConnInc", reflect.TypeOf((*MockPoolMetrics)(nil).PutConnInc), arg0, arg1)
+}
+
+// RecordUseTime mocks base method.
+func (m *MockPoolMetrics) RecordUseTime(arg0 string, arg1 time.Duration) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RecordUseTime", arg0, arg1)
+}
+
+// RecordUseTime indicates an expected call of RecordUseTime.
+func (mr *MockPoolMetricsMockRecorder) RecordUseTime(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordUseTime", reflect.TypeOf((*MockPoolMetrics)(nil).RecordUseTime), arg0, arg1)
 }
 
 // RemovedConnsAdd mocks base method.

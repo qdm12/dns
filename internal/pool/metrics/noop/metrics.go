@@ -1,5 +1,7 @@
 package noop
 
+import "time"
+
 type Metrics struct{}
 
 func New() (metrics *Metrics) {
@@ -21,3 +23,5 @@ func (m *Metrics) PutConnInc(string, string) {}
 func (m *Metrics) NewConnsInc(string, string) {}
 
 func (m *Metrics) RenewConnInc(string, string, string) {}
+
+func (m *Metrics) RecordUseTime(string, time.Duration) {}

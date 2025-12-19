@@ -79,3 +79,4 @@ The list of all metrics available is as follows:
 | `pool_put_connection` | Counter | `address`, `state` | Connection pool put connection operations by address and connection state, live or dead |
 | `pool_new_connection` | Counter | `address` , `outcome` | Connection pool new connection operations by address and outcome |
 | `pool_renew_connection` | Counter | `address`, `reason`, `outcome` | Connection pool renew operations by address, reason and outcome |
+| `pool_use_time` | Histogram | `address` | Connection pool connection successful use time duration by address |

@@ -15,6 +15,10 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 	t.Parallel()
 
 	now := time.Unix(10000, 0)
+	timeNow := func() time.Time {
+		return now
+	}
+
 	dialer, runErr := startLocalTCPServer(t, handleConnCopy)
 
 	testCases := map[string]struct {
@@ -57,6 +61,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				return &Pool{
 					dialer:  dialer,
 					metrics: metrics,
+					timeNow: timeNow,
 					addrConns: []addressConns{
 						{address: "already_has_a_conn", conns: []poolConn{{}}},
 						{address: "already_has_a_conn", conns: []poolConn{{}}}, // start here
@@ -68,6 +73,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				addrIndex: 2,
 				connIndex: 0,
 				inUse:     true,
+				lastUsed:  now,
 			},
 			expectedPool: &Pool{
 				dialer:            dialer,
@@ -80,6 +86,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 2,
 						connIndex: 0,
 						inUse:     true,
+						lastUsed:  now,
 					}}},
 				},
 			},
@@ -95,6 +102,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				return &Pool{
 					dialer:         dialer,
 					metrics:        metrics,
+					timeNow:        timeNow,
 					oneConnPerAddr: true,
 					addrConns: []addressConns{
 						{address: "previously_used_address", conns: []poolConn{{inUse: true}}},
@@ -109,6 +117,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				addrIndex: 2,
 				connIndex: 1,
 				inUse:     true,
+				lastUsed:  now,
 			},
 			expectedPool: &Pool{
 				dialer:            dialer,
@@ -121,6 +130,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 2,
 						connIndex: 1,
 						inUse:     true,
+						lastUsed:  now,
 					}}},
 					{address: "too_far_from_next", conns: []poolConn{{inUse: true}}},
 				},
@@ -172,7 +182,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 					dialer:         dialer,
 					metrics:        metrics,
 					oneConnPerAddr: true,
-					timeNow:        func() time.Time { return now },
+					timeNow:        timeNow,
 					addrConns: []addressConns{
 						{address: "previously_used", conns: []poolConn{{}}},
 						{address: dialer.Addresses()[0], conns: []poolConn{liveConn}}, // start here
@@ -255,7 +265,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 					dialer:         dialer,
 					metrics:        metrics,
 					oneConnPerAddr: true,
-					timeNow:        func() time.Time { return now },
+					timeNow:        timeNow,
 					addrConns: []addressConns{
 						{address: "previously_used", conns: []poolConn{{}}},
 						{address: dialer.Addresses()[0], conns: []poolConn{{
@@ -263,6 +273,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 							addrIndex: 1,
 							connIndex: 0,
 							dead:      true,
+							lastUsed:  now,
 						}}}, // start here
 					},
 				}
@@ -271,6 +282,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				addrIndex: 1,
 				connIndex: 0,
 				inUse:     true,
+				lastUsed:  now,
 			},
 			expectedPool: &Pool{
 				dialer:            dialer,
@@ -282,6 +294,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 1,
 						connIndex: 0,
 						inUse:     true,
+						lastUsed:  now,
 					}}},
 				},
 			},
@@ -448,6 +461,11 @@ func Test_Pool_findNextAvailConn(t *testing.T) {
 func Test_Pool_newConn(t *testing.T) {
 	t.Parallel()
 
+	now := time.Unix(1000, 0)
+	timeNow := func() time.Time {
+		return now
+	}
+
 	dialer, runErr := startLocalTCPServer(t, handleConnCopy)
 
 	testCases := map[string]struct {
@@ -485,6 +503,7 @@ func Test_Pool_newConn(t *testing.T) {
 				return &Pool{
 					dialer:  dialer,
 					metrics: metrics,
+					timeNow: timeNow,
 					addrConns: []addressConns{
 						{address: "previously_used_address", conns: []poolConn{{}}},
 						{address: "already_have_one_conn", conns: []poolConn{{}}}, // start here
@@ -497,6 +516,7 @@ func Test_Pool_newConn(t *testing.T) {
 				addrIndex: 2,
 				connIndex: 0,
 				inUse:     true,
+				lastUsed:  now,
 			},
 			addrIndex: 2,
 			expectedPool: &Pool{
@@ -509,6 +529,7 @@ func Test_Pool_newConn(t *testing.T) {
 						addrIndex: 2,
 						connIndex: 0,
 						inUse:     true,
+						lastUsed:  now,
 					}}},
 					{address: "no_conns_either", conns: []poolConn{}},
 				},
@@ -522,6 +543,7 @@ func Test_Pool_newConn(t *testing.T) {
 				return &Pool{
 					dialer:         dialer,
 					metrics:        metrics,
+					timeNow:        timeNow,
 					oneConnPerAddr: true,
 					addrConns: []addressConns{
 						{address: "previously_used_address", conns: []poolConn{{}}},
@@ -533,6 +555,7 @@ func Test_Pool_newConn(t *testing.T) {
 				addrIndex: 1,
 				connIndex: 1,
 				inUse:     true,
+				lastUsed:  now,
 			},
 			addrIndex: 1,
 			expectedPool: &Pool{
@@ -545,6 +568,7 @@ func Test_Pool_newConn(t *testing.T) {
 						addrIndex: 1,
 						connIndex: 1,
 						inUse:     true,
+						lastUsed:  now,
 					}}},
 				},
 			},
@@ -557,6 +581,7 @@ func Test_Pool_newConn(t *testing.T) {
 				return &Pool{
 					dialer:         dialer,
 					metrics:        metrics,
+					timeNow:        timeNow,
 					oneConnPerAddr: true,
 					addrConns: []addressConns{
 						{address: "previously_used_address", conns: []poolConn{{}}},
@@ -570,6 +595,7 @@ func Test_Pool_newConn(t *testing.T) {
 				addrIndex: 2,
 				connIndex: 1,
 				inUse:     true,
+				lastUsed:  now,
 			},
 			addrIndex: 2,
 			expectedPool: &Pool{
@@ -583,6 +609,7 @@ func Test_Pool_newConn(t *testing.T) {
 						addrIndex: 2,
 						connIndex: 1,
 						inUse:     true,
+						lastUsed:  now,
 					}}},
 					{address: "not_min_conns", conns: []poolConn{{}, {}}},
 				},

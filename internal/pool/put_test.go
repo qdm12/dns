@@ -38,6 +38,7 @@ func Test_Pool_Put(t *testing.T) {
 		// [Pool.cleanup] metrics
 		metrics.EXPECT().DeadConnInc(address)
 		// [Pool.Put] call metrics
+		metrics.EXPECT().RecordUseTime(address, time.Second)
 		metrics.EXPECT().PutConnInc(address, connStateLive)
 		metrics.EXPECT().RemovedConnsAdd(address, uint(2))
 
@@ -47,8 +48,8 @@ func Test_Pool_Put(t *testing.T) {
 			{inUse: true}, // in use and cannot be removed
 			{lastUsed: now.Add(-maxIdleDuration + 1)}, // not expired yet
 			{lastUsed: now.Add(-maxIdleDuration - 1)}, // expired
-			{dead: true},  // marked as dead already
-			{inUse: true}, // the one we put back
+			{dead: true}, // marked as dead already
+			{inUse: true, lastUsed: now.Add(-time.Second)}, // the one we put back
 		}
 		pool.addrConns[0].conns = conns
 		setFieldsForAddrConns(pool.addrConns)
