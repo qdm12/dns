@@ -87,6 +87,7 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 				// pool Renew call after connection closed by server
 				poolMetrics.EXPECT().RenewConnInc(localhostString, "connection error", "success")
 				poolMetrics.EXPECT().NewConnsInc(localhostString, "success")
+				poolMetrics.EXPECT().RecordLifetime(localhostString, gomock.Any())
 				// pool Put call after successful second exchange
 				poolMetrics.EXPECT().RecordUseTime(localhostString, gomock.Any())
 				poolMetrics.EXPECT().PutConnInc(localhostString, "live")

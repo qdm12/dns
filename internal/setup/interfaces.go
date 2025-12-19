@@ -62,6 +62,7 @@ type PoolMetrics interface {
 	NewConnsInc(address, outcome string)
 	RenewConnInc(address, reason, outcome string)
 	RecordUseTime(address string, duration time.Duration)
+	RecordLifetime(address string, duration time.Duration)
 }
 
 type CacheMetrics interface { //nolint:interfacebloat

@@ -133,12 +133,14 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 	if err != nil {
 		return poolConn{}, index, err
 	}
+	now := p.timeNow()
 	conn = poolConn{
 		Conn:      netConn,
 		addrIndex: index,
 		connIndex: len(addrConns.conns),
 		inUse:     true, // about to be returned and used
-		lastUsed:  p.timeNow(),
+		created:   now,
+		lastUsed:  now,
 	}
 	addrConns.conns = append(addrConns.conns, conn)
 	p.addrConns[index] = addrConns

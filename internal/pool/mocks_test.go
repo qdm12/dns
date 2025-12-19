@@ -96,6 +96,18 @@ func (mr *MockMetricsMockRecorder) PutConnInc(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutConnInc", reflect.TypeOf((*MockMetrics)(nil).PutConnInc), arg0, arg1)
 }
 
+// RecordLifetime mocks base method.
+func (m *MockMetrics) RecordLifetime(arg0 string, arg1 time.Duration) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RecordLifetime", arg0, arg1)
+}
+
+// RecordLifetime indicates an expected call of RecordLifetime.
+func (mr *MockMetricsMockRecorder) RecordLifetime(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordLifetime", reflect.TypeOf((*MockMetrics)(nil).RecordLifetime), arg0, arg1)
+}
+
 // RecordUseTime mocks base method.
 func (m *MockMetrics) RecordUseTime(arg0 string, arg1 time.Duration) {
 	m.ctrl.T.Helper()

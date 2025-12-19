@@ -37,6 +37,7 @@ func Test_Pool_Put(t *testing.T) {
 
 		// [Pool.cleanup] metrics
 		metrics.EXPECT().DeadConnInc(address)
+		metrics.EXPECT().RecordLifetime(address, time.Hour)
 		// [Pool.Put] call metrics
 		metrics.EXPECT().RecordUseTime(address, time.Second)
 		metrics.EXPECT().PutConnInc(address, connStateLive)
@@ -46,8 +47,8 @@ func Test_Pool_Put(t *testing.T) {
 		pool.timeNow = func() time.Time { return now }
 		conns := []poolConn{
 			{inUse: true}, // in use and cannot be removed
-			{lastUsed: now.Add(-maxIdleDuration + 1)}, // not expired yet
-			{lastUsed: now.Add(-maxIdleDuration - 1)}, // expired
+			{lastUsed: now.Add(-maxIdleDuration + 1)},                               // not expired yet
+			{lastUsed: now.Add(-maxIdleDuration - 1), created: now.Add(-time.Hour)}, // expired
 			{dead: true}, // marked as dead already
 			{inUse: true, lastUsed: now.Add(-time.Second)}, // the one we put back
 		}
@@ -116,6 +117,7 @@ func Test_Pool_PutDead(t *testing.T) {
 
 		// [Pool.cleanup] metrics (one connection expired internally)
 		metrics.EXPECT().DeadConnInc(address)
+		metrics.EXPECT().RecordLifetime(address, time.Hour)
 		// [Pool.PutDead] call metrics
 		metrics.EXPECT().PutConnInc(address, "dead")
 		metrics.EXPECT().RemovedConnsAdd(address, uint(3))
@@ -125,8 +127,8 @@ func Test_Pool_PutDead(t *testing.T) {
 		pool.timeNow = func() time.Time { return now }
 		conns := []poolConn{
 			{inUse: true}, // in use and cannot be removed
-			{lastUsed: now.Add(-maxIdleDuration + 1)}, // not expired yet
-			{lastUsed: now.Add(-maxIdleDuration - 1)}, // expired
+			{lastUsed: now.Add(-maxIdleDuration + 1)},                               // not expired yet
+			{lastUsed: now.Add(-maxIdleDuration - 1), created: now.Add(-time.Hour)}, // expired
 			{dead: true},  // marked as dead already
 			{inUse: true}, // the one we put back
 		}
@@ -190,12 +192,12 @@ func Test_Pool_cleanup(t *testing.T) {
 			addrConns: []addressConns{{
 				address: "127.0.0.1:853",
 				conns: []poolConn{
-					{lastUsed: now.Add(-maxIdleDuration - 1)}, // expired
+					{lastUsed: now.Add(-maxIdleDuration - 1), created: now.Add(-time.Hour)}, // expired
 					{inUse: true},
 					{dead: true},
 					{inUse: true},
 					{dead: true},
-					{lastUsed: now.Add(-maxIdleDuration - 2)}, // expired
+					{lastUsed: now.Add(-maxIdleDuration - 2), created: now.Add(-time.Minute)}, // expired
 					{lastUsed: now},
 					{dead: true},
 				},
@@ -213,6 +215,8 @@ func Test_Pool_cleanup(t *testing.T) {
 				metrics := NewMockMetrics(ctrl)
 				metrics.EXPECT().DeadConnInc("127.0.0.1:853").Times(2)
 				metrics.EXPECT().RemovedConnsAdd("127.0.0.1:853", uint(4))
+				metrics.EXPECT().RecordLifetime("127.0.0.1:853", time.Hour)
+				metrics.EXPECT().RecordLifetime("127.0.0.1:853", time.Minute)
 				return metrics
 			},
 		},

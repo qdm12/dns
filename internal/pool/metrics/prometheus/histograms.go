@@ -9,7 +9,8 @@ import (
 )
 
 type histograms struct {
-	useTimes *prometheus.HistogramVec
+	useTimes  *prometheus.HistogramVec
+	lifetimes *prometheus.HistogramVec
 }
 
 func newHistograms(settings prom.Settings) (h *histograms, err error) {
@@ -17,6 +18,8 @@ func newHistograms(settings prom.Settings) (h *histograms, err error) {
 	h = &histograms{
 		useTimes: helpers.NewHistogramVec(prefix, "pool_use_time",
 			"Pool connections in use duration spent by address", []string{"address"}, nil),
+		lifetimes: helpers.NewHistogramVec(prefix, "pool_connection_lifetime",
+			"Pool connection total lifetime duration in seconds by address", []string{"address"}, nil),
 	}
 	err = helpers.Register(settings.Registry, h.useTimes)
 	if err != nil {
@@ -27,4 +30,8 @@ func newHistograms(settings prom.Settings) (h *histograms, err error) {
 
 func (h *histograms) RecordUseTime(address string, duration time.Duration) {
 	h.useTimes.WithLabelValues(address).Observe(duration.Seconds())
+}
+
+func (h *histograms) RecordLifetime(address string, duration time.Duration) {
+	h.lifetimes.WithLabelValues(address).Observe(duration.Seconds())
 }

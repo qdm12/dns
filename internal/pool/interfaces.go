@@ -59,4 +59,8 @@ type Metrics interface {
 	// It does not account for connections taken from the pool which failed to
 	// be used.
 	RecordUseTime(address string, duration time.Duration)
+	// RecordLifetime records the total lifetime duration of a connection
+	// when it is marked as dead, by [Pool.PutDead] or a failed renewal in
+	// [Pool.Renew], or internally with [Pool.isConnDead].
+	RecordLifetime(address string, duration time.Duration)
 }

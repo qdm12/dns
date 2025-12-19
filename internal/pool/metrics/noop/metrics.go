@@ -25,3 +25,5 @@ func (m *Metrics) NewConnsInc(string, string) {}
 func (m *Metrics) RenewConnInc(string, string, string) {}
 
 func (m *Metrics) RecordUseTime(string, time.Duration) {}
+
+func (m *Metrics) RecordLifetime(string, time.Duration) {}

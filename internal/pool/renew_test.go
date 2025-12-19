@@ -40,9 +40,11 @@ func Test_Pool_Renew(t *testing.T) {
 		// [Pool.renew] metric calls
 		metrics.EXPECT().NewConnsInc(address, outcomeError)
 		metrics.EXPECT().RenewConnInc(address, renewReasonConnError, outcomeError)
+		metrics.EXPECT().RecordLifetime(address, time.Minute)
 		pool := &Pool{
 			dialer:         dialer,
 			metrics:        metrics,
+			timeNow:        timeNow,
 			oneConnPerAddr: true,
 			addrConns: []addressConns{{
 				address: address,
@@ -55,15 +57,17 @@ func Test_Pool_Renew(t *testing.T) {
 			addrConns: []addressConns{{
 				address: address,
 				conns: []poolConn{{
-					Conn: &noopConn{},
-					dead: true,
+					Conn:    &noopConn{},
+					created: now.Add(-time.Minute),
+					dead:    true,
 				}},
 			}},
 		}
 
 		const network = "tcp"
 		netConn := (net.Conn)(poolConn{
-			Conn: &noopConn{},
+			Conn:    &noopConn{},
+			created: now.Add(-time.Minute),
 		})
 		netConn, err := pool.Renew(context.Background(), network, netConn)
 		require.Error(t, err)
@@ -83,9 +87,11 @@ func Test_Pool_Renew(t *testing.T) {
 		// [Pool.renew] metric calls
 		metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
 		metrics.EXPECT().RenewConnInc(address, renewReasonConnError, outcomeSuccess)
+		metrics.EXPECT().RecordLifetime(address, time.Minute)
 		deadConn := poolConn{
-			Conn: &noopConn{},
-			dead: true,
+			Conn:    &noopConn{},
+			created: now.Add(-time.Minute),
+			dead:    true,
 		}
 		pool := &Pool{
 			dialer:         dialer,
@@ -102,7 +108,7 @@ func Test_Pool_Renew(t *testing.T) {
 			oneConnPerAddr: true,
 			addrConns: []addressConns{{
 				address: address,
-				conns:   []poolConn{{lastUsed: now}},
+				conns:   []poolConn{{created: now, lastUsed: now}},
 			}},
 		}
 		ctx := context.Background()
@@ -116,6 +122,7 @@ func Test_Pool_Renew(t *testing.T) {
 		renewedPoolConn.Conn = nil
 		pool.addrConns[renewedPoolConn.addrIndex].conns[renewedPoolConn.connIndex].Conn = nil
 		expectedPoolConn := poolConn{
+			created:  now,
 			lastUsed: now,
 		}
 		assert.Equal(t, expectedPoolConn, renewedPoolConn)
@@ -140,11 +147,12 @@ func Test_Pool_Renew(t *testing.T) {
 		// [Pool.renew] metric calls
 		metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
 		metrics.EXPECT().RenewConnInc(address, renewReasonConnError, outcomeSuccess)
+		metrics.EXPECT().RecordLifetime(address, time.Minute)
 		netConn, err := dialer.Dial(context.Background(), "tcp", address)
 		require.NoError(t, err)
 		liveConn := poolConn{
-			Conn: netConn,
-			dead: true,
+			Conn:    netConn,
+			created: now.Add(-time.Minute),
 		}
 		pool := &Pool{
 			dialer:         dialer,
@@ -164,6 +172,7 @@ func Test_Pool_Renew(t *testing.T) {
 		renewedPoolConn := renewedConn.(poolConn) //nolint:forcetypeassert
 		renewedPoolConn.Conn = nil                // remove Conn from comparison
 		expectedPoolConn := poolConn{
+			created:  now,
 			lastUsed: now,
 		}
 		assert.Equal(t, expectedPoolConn, renewedPoolConn)

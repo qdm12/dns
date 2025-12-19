@@ -63,6 +63,7 @@ func Test_Pool_isConnDead(t *testing.T) {
 						addrIndex: 1,
 						connIndex: 1,
 						dead:      true,
+						created:   now.Add(-maxIdleDuration - time.Hour),
 						lastUsed:  now.Add(-maxIdleDuration - time.Second),
 					}},
 				}},
@@ -71,12 +72,14 @@ func Test_Pool_isConnDead(t *testing.T) {
 				Conn:      &net.TCPConn{},
 				addrIndex: 1,
 				connIndex: 1,
+				created:   now.Add(-maxIdleDuration - time.Hour),
 				lastUsed:  now.Add(-maxIdleDuration - time.Second),
 			},
 			dead: true,
 			makeMetrics: func(ctrl *gomock.Controller) *MockMetrics {
 				metrics := NewMockMetrics(ctrl)
 				metrics.EXPECT().DeadConnInc("127.0.0.1:853")
+				metrics.EXPECT().RecordLifetime("127.0.0.1:853", maxIdleDuration+time.Hour)
 				return metrics
 			},
 		},

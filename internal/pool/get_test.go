@@ -73,6 +73,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				addrIndex: 2,
 				connIndex: 0,
 				inUse:     true,
+				created:   now,
 				lastUsed:  now,
 			},
 			expectedPool: &Pool{
@@ -86,6 +87,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 2,
 						connIndex: 0,
 						inUse:     true,
+						created:   now,
 						lastUsed:  now,
 					}}},
 				},
@@ -117,6 +119,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				addrIndex: 2,
 				connIndex: 1,
 				inUse:     true,
+				created:   now,
 				lastUsed:  now,
 			},
 			expectedPool: &Pool{
@@ -130,6 +133,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 2,
 						connIndex: 1,
 						inUse:     true,
+						created:   now,
 						lastUsed:  now,
 					}}},
 					{address: "too_far_from_next", conns: []poolConn{{inUse: true}}},
@@ -175,6 +179,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 					addrIndex: 1,
 					connIndex: 0,
 					inUse:     false,
+					created:   now,
 					lastUsed:  now,
 				}
 
@@ -193,6 +198,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				addrIndex: 1,
 				connIndex: 0,
 				inUse:     true,
+				created:   now,
 				lastUsed:  now,
 			},
 			expectedPool: &Pool{
@@ -205,6 +211,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 1,
 						connIndex: 0,
 						inUse:     true,
+						created:   now,
 						lastUsed:  now,
 					}}},
 				},
@@ -216,12 +223,14 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				// [Pool.renew] metric calls
 				metrics.EXPECT().NewConnsInc("127.0.0.1:0", outcomeError)
 				metrics.EXPECT().RenewConnInc("127.0.0.1:0", renewReasonMarkedDead, outcomeError)
+				metrics.EXPECT().RecordLifetime("127.0.0.1:0", time.Second)
 				// [Pool.Get] metric calls
 				metrics.EXPECT().GetConnInc("127.0.0.1:0", outcomeError)
 
 				return &Pool{
 					dialer:         dialer,
 					metrics:        metrics,
+					timeNow:        timeNow,
 					oneConnPerAddr: true,
 					addrConns: []addressConns{
 						{address: "previously_used", conns: []poolConn{{}}},
@@ -230,6 +239,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 							addrIndex: 1,
 							connIndex: 0,
 							dead:      true,
+							created:   now.Add(-time.Second),
 						}}}, // start here
 					},
 				}
@@ -246,6 +256,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 1,
 						connIndex: 0,
 						dead:      true,
+						created:   now.Add(-time.Second),
 					}}},
 				},
 			},
@@ -257,6 +268,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				// [Pool.renew] metric calls
 				metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
 				metrics.EXPECT().RenewConnInc(address, renewReasonMarkedDead, outcomeSuccess)
+				metrics.EXPECT().RecordLifetime(address, time.Second)
 				// [Pool.Get] metric calls
 				metrics.EXPECT().LiveConnInc(address)
 				metrics.EXPECT().GetConnInc(address, outcomeSuccess)
@@ -273,6 +285,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 							addrIndex: 1,
 							connIndex: 0,
 							dead:      true,
+							created:   now.Add(-time.Second),
 							lastUsed:  now,
 						}}}, // start here
 					},
@@ -282,6 +295,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				addrIndex: 1,
 				connIndex: 0,
 				inUse:     true,
+				created:   now,
 				lastUsed:  now,
 			},
 			expectedPool: &Pool{
@@ -294,6 +308,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 						addrIndex: 1,
 						connIndex: 0,
 						inUse:     true,
+						created:   now,
 						lastUsed:  now,
 					}}},
 				},
@@ -516,6 +531,7 @@ func Test_Pool_newConn(t *testing.T) {
 				addrIndex: 2,
 				connIndex: 0,
 				inUse:     true,
+				created:   now,
 				lastUsed:  now,
 			},
 			addrIndex: 2,
@@ -529,6 +545,7 @@ func Test_Pool_newConn(t *testing.T) {
 						addrIndex: 2,
 						connIndex: 0,
 						inUse:     true,
+						created:   now,
 						lastUsed:  now,
 					}}},
 					{address: "no_conns_either", conns: []poolConn{}},
@@ -555,6 +572,7 @@ func Test_Pool_newConn(t *testing.T) {
 				addrIndex: 1,
 				connIndex: 1,
 				inUse:     true,
+				created:   now,
 				lastUsed:  now,
 			},
 			addrIndex: 1,
@@ -568,6 +586,7 @@ func Test_Pool_newConn(t *testing.T) {
 						addrIndex: 1,
 						connIndex: 1,
 						inUse:     true,
+						created:   now,
 						lastUsed:  now,
 					}}},
 				},
@@ -595,6 +614,7 @@ func Test_Pool_newConn(t *testing.T) {
 				addrIndex: 2,
 				connIndex: 1,
 				inUse:     true,
+				created:   now,
 				lastUsed:  now,
 			},
 			addrIndex: 2,
@@ -609,6 +629,7 @@ func Test_Pool_newConn(t *testing.T) {
 						addrIndex: 2,
 						connIndex: 1,
 						inUse:     true,
+						created:   now,
 						lastUsed:  now,
 					}}},
 					{address: "not_min_conns", conns: []poolConn{{}, {}}},

@@ -9,6 +9,9 @@ type poolConn struct {
 	net.Conn
 	addrIndex int
 	connIndex int
+	// created is the time the connection was created.
+	// It is only used for metrics.
+	created time.Time
 	// lastUsed is set to the current time when the connection is get
 	// from the pool with [Pool.Get] and when it is put back with [Pool.Put].
 	lastUsed time.Time
@@ -26,14 +29,22 @@ func (p *Pool) isConnDead(conn poolConn) bool {
 		return true
 	case conn.inUse:
 		return false
-	case p.timeNow().Sub(conn.lastUsed) <= p.maxIdleDuration:
+	}
+
+	now := p.timeNow()
+	if now.Sub(conn.lastUsed) <= p.maxIdleDuration {
 		return false
 	}
+
 	conn.dead = true
 	_ = conn.Close() // ignore error since it may already be closed.
 	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+
 	address := p.addrConns[conn.addrIndex].address
 	p.metrics.DeadConnInc(address)
+	lifetime := now.Sub(conn.created)
+	p.metrics.RecordLifetime(address, lifetime)
+
 	return true
 }
 

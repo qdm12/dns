@@ -80,3 +80,4 @@ The list of all metrics available is as follows:
 | `pool_new_connection` | Counter | `address` , `outcome` | Connection pool new connection operations by address and outcome |
 | `pool_renew_connection` | Counter | `address`, `reason`, `outcome` | Connection pool renew operations by address, reason and outcome |
 | `pool_use_time` | Histogram | `address` | Connection pool connection successful use time duration by address |
+| `pool_connection_lifetime` | Histogram | `address` | Connection pool connection lifetime duration by address |
