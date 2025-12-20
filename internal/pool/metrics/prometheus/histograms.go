@@ -16,7 +16,7 @@ type histograms struct {
 func newHistograms(settings prom.Settings) (h *histograms, err error) {
 	prefix := settings.Prefix
 	h = &histograms{
-		useTimes: helpers.NewHistogramVec(prefix, "pool_use_time",
+		useTimes: helpers.NewHistogramVec(prefix, "pool_connection_usetime",
 			"Pool connections in use duration spent by address", []string{"address"}, nil),
 		lifetimes: helpers.NewHistogramVec(prefix, "pool_connection_lifetime",
 			"Pool connection total lifetime duration in seconds by address", []string{"address"}, nil),
