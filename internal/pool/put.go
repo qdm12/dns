@@ -3,7 +3,6 @@ package pool
 import (
 	"fmt"
 	"net"
-	"time"
 )
 
 const (
@@ -62,12 +61,15 @@ func (p *Pool) PutDead(conn net.Conn) {
 
 	poolConn.inUse = false
 	poolConn.dead = true // do not update metrics in [Pool.cleanup]
-	poolConn.lastUsed = time.Now()
+	address := p.addressFromConn(poolConn)
+	now := p.timeNow()
+	lifetime := now.Sub(poolConn.created)
+	p.metrics.RecordLifetime(address, lifetime)
+	poolConn.lastUsed = now
 
 	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
 	p.cleanup(poolConn.addrIndex)
 
-	address := p.addressFromConn(poolConn)
 	p.metrics.PutConnInc(address, connStateDead)
 	p.metrics.DeadConnInc(address)
 }

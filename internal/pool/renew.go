@@ -24,6 +24,9 @@ func (p *Pool) Renew(ctx context.Context, network string, conn net.Conn) (newCon
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	address := p.addressFromConn(poolConn)
+	now := p.timeNow()
+	lifetime := now.Sub(poolConn.created)
+	p.metrics.RecordLifetime(address, lifetime)
 	poolConn, err = p.renew(ctx, poolConn, network, renewReasonConnError)
 	if err != nil {
 		p.metrics.DeadConnInc(address)
@@ -48,10 +51,6 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 		p.metrics.RenewConnInc(address, reason, outcome)
 	}()
 
-	now := p.timeNow()
-	lifetime := now.Sub(conn.created)
-	p.metrics.RecordLifetime(address, lifetime)
-
 	netConn, err := p.dialer.Dial(ctx, network, address)
 	if err != nil {
 		// The pool will retry renewing the connection on another Get call.
@@ -62,6 +61,7 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 	}
 	conn.Conn = netConn
 	conn.dead = false
+	now := p.timeNow()
 	conn.created = now
 	conn.lastUsed = now
 	// note the connection is already marked as "in use"

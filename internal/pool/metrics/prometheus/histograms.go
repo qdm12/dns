@@ -21,7 +21,7 @@ func newHistograms(settings prom.Settings) (h *histograms, err error) {
 		lifetimes: helpers.NewHistogramVec(prefix, "pool_connection_lifetime",
 			"Pool connection total lifetime duration in seconds by address", []string{"address"}, nil),
 	}
-	err = helpers.Register(settings.Registry, h.useTimes)
+	err = helpers.Register(settings.Registry, h.useTimes, h.lifetimes)
 	if err != nil {
 		return nil, err
 	}
