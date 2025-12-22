@@ -24,7 +24,7 @@ type addressConns struct {
 	conns   []poolConn
 }
 
-const maxIdleDuration = time.Minute
+const maxIdleDuration = 2 * time.Hour
 
 const (
 	outcomeSuccess = "success"
