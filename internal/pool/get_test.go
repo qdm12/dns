@@ -223,7 +223,6 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				// [Pool.renew] metric calls
 				metrics.EXPECT().NewConnsInc("127.0.0.1:0", outcomeError)
 				metrics.EXPECT().RenewConnInc("127.0.0.1:0", renewReasonMarkedDead, outcomeError)
-				metrics.EXPECT().RecordLifetime("127.0.0.1:0", time.Second)
 				// [Pool.Get] metric calls
 				metrics.EXPECT().GetConnInc("127.0.0.1:0", outcomeError)
 
@@ -268,7 +267,6 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				// [Pool.renew] metric calls
 				metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
 				metrics.EXPECT().RenewConnInc(address, renewReasonMarkedDead, outcomeSuccess)
-				metrics.EXPECT().RecordLifetime(address, time.Second)
 				// [Pool.Get] metric calls
 				metrics.EXPECT().LiveConnInc(address)
 				metrics.EXPECT().GetConnInc(address, outcomeSuccess)

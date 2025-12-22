@@ -77,7 +77,7 @@ func Test_Pool_Put(t *testing.T) {
 func Test_Pool_PutDead(t *testing.T) {
 	t.Parallel()
 
-	now := time.Unix(10000, 0)
+	now := time.Unix(0, 1000*time.Hour.Nanoseconds())
 
 	t.Run("not_a_poolConn", func(t *testing.T) {
 		t.Parallel()
@@ -117,7 +117,8 @@ func Test_Pool_PutDead(t *testing.T) {
 
 		// [Pool.cleanup] metrics (one connection expired internally)
 		metrics.EXPECT().DeadConnInc(address)
-		metrics.EXPECT().RecordLifetime(address, time.Hour)
+		metrics.EXPECT().RecordLifetime(address, maxIdleDuration+time.Hour)
+		metrics.EXPECT().RecordLifetime(address, maxIdleDuration+2*time.Hour)
 		// [Pool.PutDead] call metrics
 		metrics.EXPECT().PutConnInc(address, "dead")
 		metrics.EXPECT().RemovedConnsAdd(address, uint(3))
@@ -127,10 +128,10 @@ func Test_Pool_PutDead(t *testing.T) {
 		pool.timeNow = func() time.Time { return now }
 		conns := []poolConn{
 			{inUse: true}, // in use and cannot be removed
-			{lastUsed: now.Add(-maxIdleDuration + 1)},                               // not expired yet
-			{lastUsed: now.Add(-maxIdleDuration - 1), created: now.Add(-time.Hour)}, // expired
-			{dead: true},  // marked as dead already
-			{inUse: true}, // the one we put back
+			{lastUsed: now.Add(-maxIdleDuration + 1)},                                                 // not expired yet
+			{lastUsed: now.Add(-maxIdleDuration - 1), created: now.Add(-maxIdleDuration - time.Hour)}, // expired
+			{dead: true}, // marked as dead already
+			{inUse: true, created: now.Add(-maxIdleDuration - 2*time.Hour)}, // the one we put back
 		}
 		pool.addrConns[0].conns = conns
 		setFieldsForAddrConns(pool.addrConns)
