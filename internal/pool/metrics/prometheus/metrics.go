@@ -1,0 +1,33 @@
+package prometheus
+
+import (
+	"fmt"
+)
+
+type Metrics struct {
+	*counters
+	*histograms
+}
+
+func New(settings Settings) (metrics *Metrics, err error) {
+	settings.SetDefaults()
+
+	err = settings.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("settings validation: %w", err)
+	}
+
+	metrics = new(Metrics)
+
+	metrics.counters, err = newCounters(settings.Prometheus)
+	if err != nil {
+		return nil, fmt.Errorf("creating counters: %w", err)
+	}
+
+	metrics.histograms, err = newHistograms(settings.Prometheus)
+	if err != nil {
+		return nil, fmt.Errorf("creating histograms: %w", err)
+	}
+
+	return metrics, nil
+}

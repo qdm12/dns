@@ -4,21 +4,25 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"hash/maphash"
+	"math/rand/v2"
 	"net"
 	"net/http"
+	"slices"
 	"sync"
 
-	"github.com/qdm12/dns/v2/internal/picker"
 	"github.com/qdm12/dns/v2/pkg/provider"
 )
 
 type Dialer struct {
-	picker     *picker.Picker
+	urlsSet    map[string]struct{}
+	urls       []string
 	servers    []provider.DoHServer
 	httpClient *http.Client
 	// HTTP bodies buffer pool
 	bufferPool *sync.Pool
 	metrics    Metrics
+	randGen    *rand.Rand
 }
 
 func New(settings Settings) (dial *Dialer, err error) {
@@ -28,13 +32,18 @@ func New(settings Settings) (dial *Dialer, err error) {
 		return nil, fmt.Errorf("validating settings: %w", err)
 	}
 
+	urlsSet := make(map[string]struct{}, len(settings.UpstreamResolvers))
+	urls := make([]string, len(settings.UpstreamResolvers))
 	servers := make([]provider.DoHServer, len(settings.UpstreamResolvers))
 	for i, upstreamResolver := range settings.UpstreamResolvers {
+		urlsSet[upstreamResolver.DoH.URL] = struct{}{}
+		urls[i] = upstreamResolver.DoH.URL
 		servers[i] = upstreamResolver.DoH
 	}
 
 	return &Dialer{
-		picker:     picker.New(),
+		urlsSet:    urlsSet,
+		urls:       urls,
 		servers:    servers,
 		httpClient: newHTTPClient(servers, settings.IPVersion),
 		bufferPool: &sync.Pool{
@@ -43,6 +52,7 @@ func New(settings Settings) (dial *Dialer, err error) {
 			},
 		},
 		metrics: settings.Metrics,
+		randGen: rand.New(&mapHashSource{}), //nolint:gosec
 	}, nil
 }
 
@@ -50,15 +60,40 @@ func (d *Dialer) String() string {
 	return "https"
 }
 
-func (d *Dialer) Dial(ctx context.Context, _, _ string) (
+// ReusableConnsSupported returns true to indicate that connections created
+// by this dialer can be reused.
+func (d *Dialer) ReusableConnsSupported() bool {
+	return false
+}
+
+func (d *Dialer) Addresses() []string {
+	return slices.Clone(d.urls)
+}
+
+func (d *Dialer) Dial(ctx context.Context, _, address string) (
 	conn net.Conn, err error,
 ) {
-	// Pick DoH server pseudo-randomly from the chosen providers
-	DoHServer := d.picker.DoHServer(d.servers)
+	url := d.pickURL(address)
 
-	d.metrics.DoHDialInc(DoHServer.URL)
+	d.metrics.DoHDialInc(url)
 
 	// Create connection object (no actual IO yet)
-	conn = newDoHConn(ctx, d.httpClient, d.bufferPool, DoHServer.URL)
+	conn = newDoHConn(ctx, d.httpClient, d.bufferPool, url)
 	return conn, nil
+}
+
+func (d *Dialer) pickURL(address string) string {
+	_, ok := d.urlsSet[address]
+	if ok {
+		return address
+	}
+	// when used as the dialer for a Go resolver, the address is the DNS system IP address
+	// so pick a server url at random.
+	return d.urls[d.randGen.IntN(len(d.urls))]
+}
+
+type mapHashSource struct{}
+
+func (s *mapHashSource) Uint64() uint64 {
+	return new(maphash.Hash).Sum64()
 }

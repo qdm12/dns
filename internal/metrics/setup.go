@@ -26,8 +26,7 @@ type Service interface {
 	Stop() (err error)
 }
 
-//nolint:ireturn
-func New(settings config.Metrics,
+func New(settings config.Metrics, //nolint:ireturn
 	parentLogger ParentLogger, prometheusGatherer PrometheusGatherer) (
 	service Service, err error,
 ) {

@@ -116,12 +116,12 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
 | `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
-| `BLOCK_HOSTNAMES` |  | comma separated list of hostnames to block from being resolved |
+| `BLOCK_HOSTNAMES` | | comma separated list of hostnames to block from being resolved |
 | `ALLOWED_HOSTNAMES` | | comma separated list of hostnames to leave unblocked |
 | `ALLOWED_IPS` | | comma separated list of IP addresses to leave unblocked |
 | `ALLOWED_CIDRS` | | comma separated list of IP networks (CIDRs) to leave unblocked |
-| `BLOCK_IPS` |  | comma separated list of IPs to block from being returned to clients |
-| `BLOCK_CIDRS` |  | comma separated list of IP networks (CIDRs) to block from being returned to clients |
+| `BLOCK_IPS` | | comma separated list of IPs to block from being returned to clients |
+| `BLOCK_CIDRS` | | comma separated list of IP networks (CIDRs) to block from being returned to clients |
 | `REBINDING_PROTECTION_EXEMPT_HOSTNAMES` | | comma separated list of hostnames to exempt from DNS rebinding protection |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warning` or `error` |
 | `LOG_CALLER` | `hidden` | `hidden` or `short` |

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	nooppoolmetrics "github.com/qdm12/dns/v2/internal/pool/metrics/noop"
 	lognoop "github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
@@ -18,6 +19,8 @@ type Settings struct {
 	// Dialer is used to establish connections with upstream resolvers
 	// and must be set.
 	Dialer Dialer
+	// PoolMetrics defines the pool metrics implementation.
+	PoolMetrics PoolMetrics
 	// Middlewares is a list of middlewares to use.
 	// The first one is the first wrapper, and the last one
 	// is the last wrapper of the handlers in the chain.
@@ -32,6 +35,7 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.ListeningAddress = gosettings.DefaultPointer(s.ListeningAddress, ":53")
+	s.PoolMetrics = gosettings.DefaultComparable[PoolMetrics](s.PoolMetrics, nooppoolmetrics.New())
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, lognoop.New())
 	s.TimeoutWarn = gosettings.DefaultPointer(s.TimeoutWarn, false)
 }

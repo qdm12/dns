@@ -1,6 +1,8 @@
 package setup
 
 import (
+	"time"
+
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
@@ -49,6 +51,18 @@ type DoHMetrics interface {
 
 type PlainMetrics interface {
 	PlainDialInc(address, outcome string)
+}
+
+type PoolMetrics interface {
+	LiveConnInc(address string)
+	DeadConnInc(address string)
+	RemovedConnsAdd(address string, removed uint)
+	GetConnInc(address, outcome string)
+	PutConnInc(address, state string)
+	NewConnsInc(address, outcome string)
+	RenewConnInc(address, reason, outcome string)
+	RecordUseTime(address string, duration time.Duration)
+	RecordLifetime(address string, duration time.Duration)
 }
 
 type CacheMetrics interface { //nolint:interfacebloat

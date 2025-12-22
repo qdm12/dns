@@ -29,7 +29,6 @@ FROM --platform=${BUILDPLATFORM} base AS test
 # - we set CGO_ENABLED=1 to have it enabled
 # - we installed g++ to support the race detector
 ENV CGO_ENABLED=1
-ENTRYPOINT go test -race -coverprofile=coverage.txt ./...
 
 FROM --platform=${BUILDPLATFORM} base AS lint
 COPY .golangci.yml ./

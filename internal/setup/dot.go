@@ -1,4 +1,4 @@
-package setup //nolint:dupl
+package setup
 
 import (
 	"fmt"
@@ -14,7 +14,8 @@ import (
 )
 
 func dotServer(userSettings config.Settings, ipv6Support bool,
-	middlewares []Middleware, logger Logger, metrics DoTMetrics) (
+	middlewares []Middleware, logger Logger, metrics DoTMetrics,
+	poolMetrics PoolMetrics) (
 	dotServer *server.Server, err error,
 ) {
 	providers := provider.NewProviders()
@@ -42,6 +43,7 @@ func dotServer(userSettings config.Settings, ipv6Support bool,
 	serverSettings := server.Settings{
 		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
 		Dialer:           dialer,
+		PoolMetrics:      poolMetrics,
 		Middlewares:      toServerMiddlewares(middlewares),
 		Logger:           logger,
 	}

@@ -61,7 +61,14 @@ jobs:
           touch coverage.txt
           docker run --rm \
           -v "$(pwd)/coverage.txt:/tmp/gobuild/coverage.txt" \
-          test-container
+          test-container \
+          go test -race -coverprofile=coverage.txt ./...
+
+      - name: Run fuzz tests in test container
+        run: |
+          docker run --rm \
+          test-container \
+          go test -fuzz=Fuzz_Pool_compact -fuzztime 10s ./internal/pool
 
       - name: Build final image
         run: docker build -t final-image .

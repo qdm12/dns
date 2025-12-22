@@ -14,8 +14,8 @@ import (
 )
 
 func dohServer(userSettings config.Settings, ipv6Support bool,
-	middlewares []Middleware, logger Logger, metrics DoHMetrics) (
-	dohServer *server.Server, err error,
+	middlewares []Middleware, logger Logger, metrics DoHMetrics,
+	poolMetrics PoolMetrics) (dohServer *server.Server, err error,
 ) {
 	providers := provider.NewProviders()
 
@@ -43,6 +43,7 @@ func dohServer(userSettings config.Settings, ipv6Support bool,
 	settings := server.Settings{
 		ListeningAddress: gosettings.CopyPointer(userSettings.ListeningAddress),
 		Dialer:           dohDialer,
+		PoolMetrics:      poolMetrics,
 		Middlewares:      toServerMiddlewares(middlewares),
 		Logger:           logger,
 	}
