@@ -29,6 +29,11 @@ type Settings struct {
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics Metrics
+	// DisablePooling disables connection pooling for DNS over TLS.
+	// When set to true, a new TCP+TLS connection is created for each
+	// DNS query. This can help on systems where TCP connection reuse
+	// causes issues (e.g., older Linux kernels like 4.4.x).
+	DisablePooling bool
 }
 
 func (s *Settings) SetDefaults() {
