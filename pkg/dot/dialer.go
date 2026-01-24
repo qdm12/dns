@@ -17,6 +17,7 @@ type Dialer struct {
 	addrPorts           []netip.AddrPort
 	ipv6                bool
 	netDialer           *net.Dialer
+	disablePooling      bool
 	metrics             Metrics
 	randGen             *rand.Rand
 }
@@ -50,8 +51,9 @@ func New(settings Settings) (dial *Dialer, err error) {
 		netDialer: &net.Dialer{
 			Timeout: settings.Timeout,
 		},
-		metrics: settings.Metrics,
-		randGen: rand.New(&mapHashSource{}), //nolint:gosec
+		disablePooling: settings.DisablePooling,
+		metrics:        settings.Metrics,
+		randGen:        rand.New(&mapHashSource{}), //nolint:gosec
 	}, nil
 }
 
@@ -60,9 +62,11 @@ func (d *Dialer) String() string {
 }
 
 // ReusableConnsSupported returns true to indicate that connections created
-// by this dialer can be reused.
+// by this dialer can be reused in a connection pool. Returns false if
+// DisablePooling was set in settings, which forces a new connection for
+// each DNS query.
 func (d *Dialer) ReusableConnsSupported() bool {
-	return true
+	return !d.disablePooling
 }
 
 func (d *Dialer) Addresses() []string {

@@ -29,6 +29,12 @@ type Settings struct {
 	// Metrics is the metrics interface to record metric data.
 	// It defaults to a No-Op metrics implementation.
 	Metrics Metrics
+	// DisablePooling disables connection pooling for DNS over TLS.
+	// When set to true, a new TCP+TLS connection is created for each
+	// DNS query instead of reusing connections from a pool. This can
+	// help on systems where TCP connection reuse causes issues
+	// (e.g., older Linux kernels like 4.4.x).
+	DisablePooling bool
 }
 
 func (s *Settings) SetDefaults() {
@@ -38,6 +44,7 @@ func (s *Settings) SetDefaults() {
 	s.Timeout = gosettings.DefaultComparable(s.Timeout, defaultTimeout)
 	s.IPVersion = gosettings.DefaultComparable(s.IPVersion, "ipv4")
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, metricsnoop.New())
+	// DisablePooling defaults to false (pooling enabled)
 }
 
 var ErrUpstreamResolversNotSet = errors.New("upstream resolvers not set")
@@ -83,6 +90,10 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 		connectingOver += " and ipv6"
 	}
 	node.Appendf("Connecting over: %s", connectingOver)
+
+	if s.DisablePooling {
+		node.Append("Connection pooling: disabled")
+	}
 
 	return node
 }
