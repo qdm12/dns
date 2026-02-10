@@ -2,11 +2,73 @@ package dot
 
 import (
 	"math/rand/v2"
+	"net"
 	"net/netip"
+	"slices"
+	"strings"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func Test_Dialer(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+
+	cloudflare := provider.Cloudflare()
+
+	metrics := NewMockMetrics(ctrl)
+	possibleAddrs := make([]string, 0, len(cloudflare.DoT.IPv4)+len(cloudflare.DoT.IPv6))
+	for _, server := range cloudflare.DoT.IPv4 {
+		possibleAddrs = append(possibleAddrs, server.String())
+	}
+	for _, server := range cloudflare.DoT.IPv6 {
+		possibleAddrs = append(possibleAddrs, server.String())
+	}
+	addrMatcher := &matcherAnyString{
+		strings: possibleAddrs,
+	}
+	metrics.EXPECT().DoTDialInc(cloudflare.DoT.Name, addrMatcher, "success").
+		MinTimes(1).MaxTimes(2) // A only or A+AAAA
+
+	dialer, err := New(Settings{
+		UpstreamResolvers: []provider.Provider{
+			cloudflare,
+		},
+		Metrics: metrics,
+	})
+	require.NoError(t, err)
+
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial:     dialer.Dial,
+	}
+
+	ips, err := resolver.LookupIPAddr(t.Context(), "github.com")
+	require.NoError(t, err)
+	require.NotEmpty(t, ips)
+}
+
+// matcherAnyString is a [gomock.Matcher] that returns true if
+// the argument matches any of the specified strings.
+type matcherAnyString struct {
+	strings []string
+}
+
+func (m matcherAnyString) Matches(x any) bool {
+	s, ok := x.(string)
+	if !ok {
+		return false
+	}
+	return slices.Contains(m.strings, s)
+}
+
+func (m matcherAnyString) String() string {
+	return "matches any of: " + strings.Join(m.strings, ", ")
+}
 
 func Test_Dialer_pickNameAddress(t *testing.T) {
 	t.Parallel()

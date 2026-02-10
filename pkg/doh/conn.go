@@ -65,8 +65,11 @@ func (c *dohConn) Read(b []byte) (n int, err error) {
 	dnsQueryBytes := c.inBuffer.Bytes()
 	dnsQueryBytes = dnsQueryBytes[2:]
 
-	c.ctx, c.cancel = context.WithCancel(c.ctx)
-	c.ctx, c.cancel = context.WithDeadline(c.ctx, c.deadline)
+	if c.deadline.IsZero() {
+		c.ctx, c.cancel = context.WithCancel(c.ctx)
+	} else {
+		c.ctx, c.cancel = context.WithDeadline(c.ctx, c.deadline)
+	}
 
 	dnsAnswerBytes, err := dohHTTPRequest(c.ctx, c.client, c.bufferPool, c.dohURL, dnsQueryBytes)
 	c.cancel()
