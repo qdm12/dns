@@ -14,7 +14,9 @@ func Test_Settings_BlockHostnames(t *testing.T) {
 		hostnames       []string
 		finalSettings   Settings
 	}{
-		"nothing": {
+		"nil": {},
+		"empty": {
+			hostnames: []string{},
 			finalSettings: Settings{
 				FqdnHostnames: []string{},
 			},

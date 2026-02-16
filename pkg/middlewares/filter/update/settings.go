@@ -14,18 +14,29 @@ import (
 
 type Settings struct {
 	// FqdnHostnames is a list of fully qualified domain names
-	// to filter out.
+	// to filter out. If it is nil, the existing filter hostnames
+	// are not updated. If it is empty, all filter hostnames are removed.
 	FqdnHostnames []string
 	// IPs is a list of IP addresses to filter out.
+	// If it is nil, the existing filter IPs are not updated. If it is empty,
+	// all filter IPs are removed.
 	IPs []netip.Addr
 	// IPPrefixes is a list of IP prefixes to filter out.
+	// If it is nil, the existing filter IP prefixes are not updated. If it is empty,
+	// all filter IP prefixes are removed.
 	IPPrefixes []netip.Prefix
 	// FqdnExemptFromRebindingProtection is a list of
 	// fully qualified domain names that are exempt from rebinding protection.
+	// If it is nil, the existing hostnames exempt from rebinding protection
+	// are not updated. If it is empty, all hostnames exempt from rebinding
+	// protection are removed.
 	FqdnExemptFromRebindingProtection []string
 	// ParentsExemptFromRebindingProtection is a list of fully qualified
 	// domain names for which all their subdomains are exempt from
 	// rebinding protection.
+	// If it is nil, the existing parent hostnames exempt from rebinding protection
+	// are not updated. If it is empty, all parent hostnames exempt from rebinding
+	// protection are removed.
 	ParentsExemptFromRebindingProtection []string
 }
 
@@ -56,7 +67,12 @@ func (s Settings) Validate() (err error) {
 
 // BlockHostnames transforms the slice of hostnames given to
 // FQDN hostnames and sets these to the settings.
+// If the slice is nil, it sets [Settings.FqdnHostnames] to nil.
 func (s *Settings) BlockHostnames(hostnames []string) {
+	if hostnames == nil {
+		s.FqdnHostnames = nil
+		return
+	}
 	s.FqdnHostnames = make([]string, len(hostnames))
 	for i := range hostnames {
 		s.FqdnHostnames[i] = dns.Fqdn(hostnames[i])
@@ -68,7 +84,14 @@ func (s *Settings) BlockHostnames(hostnames []string) {
 // specifying the "*." prefix to the hostname, for example "*.example.com"
 // will exempt all subdomains of example.com from rebinding protection.
 // Note the wildcard cannot be used anywhere else otherwise.
+// If the slice is nil, it sets [Settings.FqdnExemptFromRebindingProtection]
+// and [Settings.ParentsExemptFromRebindingProtection] to nil.
 func (s *Settings) SetRebindingProtectionExempt(hostnames []string) {
+	if hostnames == nil {
+		s.FqdnExemptFromRebindingProtection = nil
+		s.ParentsExemptFromRebindingProtection = nil
+		return
+	}
 	s.FqdnExemptFromRebindingProtection = make([]string, 0, len(hostnames))
 	for _, hostname := range hostnames {
 		if strings.HasPrefix(hostname, "*.") {
