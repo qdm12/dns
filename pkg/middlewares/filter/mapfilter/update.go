@@ -39,10 +39,15 @@ func (m *Filter) Update(settings update.Settings) (err error) {
 		m.allowRebindNames[name] = struct{}{}
 	}
 
+	m.allowRebindParents = make(map[string]struct{}, len(settings.ParentsExemptFromRebindingProtection))
+	for _, name := range settings.ParentsExemptFromRebindingProtection {
+		m.allowRebindParents[name] = struct{}{}
+	}
+
 	m.metrics.SetBlockedHostnames(len(m.fqdnHostnames))
 	m.metrics.SetBlockedIPs(len(m.ipv4) + len(m.ipv6))
 	m.metrics.SetBlockedIPPrefixes(len(m.ipPrefixes))
-	m.metrics.SetFqdnExemptFromRebindingProtection(len(m.allowRebindNames))
+	m.metrics.SetFqdnExemptFromRebindingProtection(len(m.allowRebindNames) + len(m.allowRebindParents))
 
 	m.logger.Log(fmt.Sprintf("filter updated: %d hostnames, %d IPs, %d IP prefixes blocked",
 		len(m.fqdnHostnames), len(m.ipv4)+len(m.ipv6), len(m.ipPrefixes)))

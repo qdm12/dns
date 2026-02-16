@@ -7,15 +7,16 @@ import (
 )
 
 type Filter struct {
-	fqdnHostnames     map[string]struct{}
-	ipv4              map[[4]byte]struct{}
-	ipv6              map[[16]byte]struct{}
-	ipPrefixes        []netip.Prefix
-	privateIPPrefixes []netip.Prefix
-	allowRebindNames  map[string]struct{}
-	metrics           Metrics
-	logger            Logger
-	updateLock        sync.RWMutex
+	fqdnHostnames      map[string]struct{}
+	ipv4               map[[4]byte]struct{}
+	ipv6               map[[16]byte]struct{}
+	ipPrefixes         []netip.Prefix
+	privateIPPrefixes  []netip.Prefix
+	allowRebindNames   map[string]struct{}
+	allowRebindParents map[string]struct{}
+	metrics            Metrics
+	logger             Logger
+	updateLock         sync.RWMutex
 }
 
 func New(settings Settings) (filter *Filter, err error) {

@@ -3,6 +3,7 @@ package mapfilter
 import (
 	"net"
 	"net/netip"
+	"strings"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/local"
@@ -19,6 +20,16 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 	if len(response.Question) == 1 {
 		nameIsLocal = local.IsFQDNLocal(response.Question[0].Name)
 		_, nameCanBeRebinded = m.allowRebindNames[response.Question[0].Name]
+		if !nameCanBeRebinded && len(m.allowRebindParents) > 0 {
+			labels := dns.SplitDomainName(response.Question[0].Name)
+			for i := len(labels) - 1; i >= 0; i-- {
+				parent := dns.Fqdn(strings.Join(labels[i:], "."))
+				if _, ok := m.allowRebindParents[parent]; ok {
+					nameCanBeRebinded = true
+					break
+				}
+			}
+		}
 	}
 
 	for _, rr := range response.Answer {
