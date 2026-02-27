@@ -54,7 +54,7 @@ func (s Settings) Validate() (err error) {
 	}
 
 	for _, upstreamResolver := range s.UpstreamResolvers {
-		err = upstreamResolver.ValidateForDoT(s.IPVersion == "ipv6")
+		err = upstreamResolver.ValidateForPlain(s.IPVersion == "ipv6")
 		if err != nil {
 			return fmt.Errorf("upstream resolver %s: %w", upstreamResolver.Name, err)
 		}
