@@ -48,9 +48,9 @@ var ErrDialFailed = errors.New("dial failed")
 func (e *Exchanger) Exchange(ctx context.Context, network string, request *dns.Msg) (
 	response *dns.Msg, err error,
 ) {
-	if e.reuseConns {
-		return e.exchangeWithPool(ctx, network, request) // dot, doh
-	}
+	// if e.reuseConns {
+	// 	return e.exchangeWithPool(ctx, network, request) // dot, doh
+	// }
 	return e.exchangeWithRand(ctx, network, request) // plain
 }
 
