@@ -48,7 +48,7 @@ var (
 func (s Settings) Validate() (err error) {
 	err = validate.ListeningAddress(*s.ListeningAddress, os.Getuid())
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrListeningAddressNotValid, *s.ListeningAddress)
+		return fmt.Errorf("%w: %w", ErrListeningAddressNotValid, err)
 	}
 
 	if s.Dialer == nil {
