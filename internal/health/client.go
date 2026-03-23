@@ -1,3 +1,5 @@
+// Package health provides health check functionality, including a health check
+// server and a client to query the health status.
 package health
 
 import (

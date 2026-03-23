@@ -10,11 +10,11 @@ type Infoer interface {
 	Info(s string)
 }
 
-func NewServer(address string, logger Infoer, healthcheck func(context.Context) error) (
+func NewServer(address string, logger Infoer, dnsListenAddr string) (
 	server *httpserver.Server, err error,
 ) {
 	ctx, cancel := context.WithCancel(context.Background())
-	handler := newHandler(ctx, healthcheck)
+	handler := newHandler(ctx, dnsListenAddr)
 	settings := httpserver.Settings{
 		Name:          stringPtr("health"),
 		Address:       &address,
