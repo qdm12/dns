@@ -66,7 +66,7 @@ RUN apk --update --no-cache add libcap && \
 FROM scratch
 EXPOSE 53/udp 53/tcp
 ENTRYPOINT ["/entrypoint"]
-HEALTHCHECK --interval=5m --timeout=15s --start-period=5s --retries=1 CMD ["/entrypoint", "healthcheck"]
+HEALTHCHECK --interval=5m --timeout=15s --start-period=30s --retries=2 CMD ["/entrypoint", "healthcheck"]
 USER 1000
 ENV \
     UPSTREAM_TYPE=DoT \
