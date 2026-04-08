@@ -126,6 +126,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	// Setup health server
 	healthServerAddr := settings.Health.ServerAddress
 	healthServerLogger := logger.New(log.SetComponent("health server"))
+	//nolint:contextcheck
 	healthServer, err := health.NewServer(healthServerAddr, healthServerLogger, *settings.ListeningAddress)
 	if err != nil {
 		return fmt.Errorf("creating health server: %w", err)
