@@ -70,7 +70,7 @@ func (e *Exchanger) exchangeWithPool(ctx context.Context, network string, reques
 		return response, nil
 	}
 
-	if !isClosedConnErr(err) {
+	if !isClosedOrTimeoutConnErr(err) {
 		e.pool.PutDead(netConn)
 		roundTripMilliseconds := roundTripDuration.Round(time.Millisecond).Milliseconds()
 		return nil, fmt.Errorf("exchanging over %s connection (%dms) for request %s: %w",
@@ -134,11 +134,15 @@ func extractRequestQuestion(request *dns.Msg) (s string) {
 		strings.ToLower(question.Name)
 }
 
-func isClosedConnErr(err error) bool {
-	return errors.Is(err, net.ErrClosed) ||
+func isClosedOrTimeoutConnErr(err error) bool {
+	if errors.Is(err, net.ErrClosed) ||
 		errors.Is(err, io.EOF) ||
 		errors.Is(err, syscall.EPIPE) ||
-		errors.Is(err, syscall.ECONNRESET)
+		errors.Is(err, syscall.ECONNRESET) {
+		return true
+	}
+	var netErr net.Error
+	return errors.As(err, &netErr) && netErr.Timeout()
 }
 
 func newMaphashSource() *mapHashSource {
