@@ -108,7 +108,7 @@ func Test_Pool_Renew(t *testing.T) {
 			oneConnPerAddr: true,
 			addrConns: []addressConns{{
 				address: address,
-				conns:   []poolConn{{created: now, lastUsed: now}},
+				conns:   []poolConn{{created: now, lastUsed: now, inUse: true}},
 			}},
 		}
 		ctx := context.Background()
@@ -124,6 +124,7 @@ func Test_Pool_Renew(t *testing.T) {
 		expectedPoolConn := poolConn{
 			created:  now,
 			lastUsed: now,
+			inUse:    true,
 		}
 		assert.Equal(t, expectedPoolConn, renewedPoolConn)
 		clearPoolFieldsForComparison(pool)
@@ -174,6 +175,7 @@ func Test_Pool_Renew(t *testing.T) {
 		expectedPoolConn := poolConn{
 			created:  now,
 			lastUsed: now,
+			inUse:    true,
 		}
 		assert.Equal(t, expectedPoolConn, renewedPoolConn)
 

@@ -8,9 +8,6 @@ import (
 )
 
 func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err error) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
-
 	var address string
 	defer func() {
 		outcome := outcomeSuccess
@@ -20,26 +17,32 @@ func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err e
 		p.metrics.GetConnInc(address, outcome)
 	}()
 
+	p.mutex.Lock()
 	if !p.oneConnPerAddr {
+		p.mutex.Unlock()
 		// Not all addresses have one connection yet, so we need
 		// to create a new connection for any address without one.
 		// This is a form of lazy loading for creating one connection
 		// per address.
 		conn, addrIndex, err := p.newConn(ctx, network)
+		p.mutex.Lock()
 		address = p.addrConns[addrIndex].address
+		p.mutex.Unlock()
 		if err != nil {
 			return nil, fmt.Errorf("creating connection: %w", err)
 		}
-		p.setIfAllAddrsHaveOneConn()
 		return conn, nil
 	}
 
 	conn, found, live := p.findNextAvailConn()
 	if !found {
+		p.mutex.Unlock()
 		// All addresses have one connection, but all connections
 		// are in use, so we need to create an additional connection.
 		conn, addrIndex, err := p.newConn(ctx, network)
+		p.mutex.Lock()
 		address = p.addrConns[addrIndex].address
+		p.mutex.Unlock()
 		if err != nil {
 			return nil, fmt.Errorf("creating connection: %w", err)
 		}
@@ -54,9 +57,15 @@ func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err e
 	if live {
 		conn.lastUsed = p.timeNow()
 		p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+		p.mutex.Unlock()
 		return conn, nil
 	}
-	conn, err = p.renew(ctx, conn, network, "marked dead")
+
+	// Reserve this dead connection slot while renewing outside the lock.
+	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+	p.mutex.Unlock()
+
+	conn, err = p.renew(ctx, conn, network, renewReasonMarkedDead)
 	if err != nil {
 		return nil, fmt.Errorf("renewing dead connection: %w", err)
 	}
@@ -116,9 +125,11 @@ func (p *Pool) findNextAvailConn() (conn poolConn, found, live bool) {
 func (p *Pool) newConn(ctx context.Context, network string) (
 	conn poolConn, addrIndex int, err error,
 ) {
+	p.mutex.Lock()
 	index := p.findAddressForNewConn()
 	addrConns := p.addrConns[index]
 	address := addrConns.address
+	p.mutex.Unlock()
 
 	defer func() {
 		if err != nil {
@@ -133,6 +144,10 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 	if err != nil {
 		return poolConn{}, index, err
 	}
+
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	now := p.timeNow()
 	conn = poolConn{
 		Conn:      netConn,
@@ -145,6 +160,7 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 	addrConns.conns = append(addrConns.conns, conn)
 	p.addrConns[index] = addrConns
 	p.lastUsedAddrIndex = conn.addrIndex
+	p.setIfAllAddrsHaveOneConn()
 	return conn, index, nil
 }
 

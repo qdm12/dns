@@ -22,10 +22,14 @@ func (p *Pool) Renew(ctx context.Context, network string, conn net.Conn) (newCon
 		panic(fmt.Sprintf("cannot renew non-pool connection %T", conn))
 	}
 	p.mutex.Lock()
-	defer p.mutex.Unlock()
 	address := p.addressFromConn(poolConn)
 	now := p.timeNow()
 	lifetime := now.Sub(poolConn.created)
+	// Ensure this slot cannot be reused while the renewal dials outside the lock.
+	poolConn.inUse = true
+	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
+	p.mutex.Unlock()
+
 	p.metrics.RecordLifetime(address, lifetime)
 	poolConn, err = p.renew(ctx, poolConn, network, renewReasonConnError)
 	if err != nil {
@@ -36,12 +40,16 @@ func (p *Pool) Renew(ctx context.Context, network string, conn net.Conn) (newCon
 }
 
 // renew creates a new connection to replace the given one in the pool.
-// It assumes the pool mutex is already held.
+// It dials outside the pool mutex and only locks to mutate pool state.
 func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string) (
 	newConn poolConn, err error,
 ) {
 	_ = conn.Close() // ignore error since it may already be closed.
+
+	p.mutex.Lock()
 	address := p.addressFromConn(conn)
+	p.mutex.Unlock()
+
 	defer func() {
 		outcome := outcomeSuccess
 		if err != nil {
@@ -52,6 +60,10 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 	}()
 
 	netConn, err := p.dialer.Dial(ctx, network, address)
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	conn = p.addrConns[conn.addrIndex].conns[conn.connIndex]
 	if err != nil {
 		// The pool will retry renewing the connection on another Get call.
 		conn.inUse = false
