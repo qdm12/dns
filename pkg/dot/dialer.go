@@ -90,6 +90,7 @@ func (d *Dialer) Dial(ctx context.Context, _, address string) (
 
 	err = tlsConn.HandshakeContext(ctx)
 	if err != nil {
+		_ = conn.Close()
 		d.metrics.DoTDialInc(serverName, serverAddress, "handshake error")
 		return nil, fmt.Errorf("running TLS handshake with %s (%s): %w",
 			serverAddress, serverName, err)
