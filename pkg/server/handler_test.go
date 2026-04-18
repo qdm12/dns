@@ -70,6 +70,37 @@ func Test_Handler_ServeDNS(t *testing.T) {
 				Question: []dns.Question{{Name: "test"}},
 			},
 		},
+		"udp_buffer_too_small_retries_tcp": {
+			makeHandler: func(t *testing.T, ctrl *gomock.Controller) *handler {
+				t.Helper()
+				expectedRequest := &dns.Msg{
+					Question: []dns.Question{{Name: "test"}},
+				}
+
+				ctx := context.Background()
+
+				exchanger := NewMockexchangerIntf(ctrl)
+				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
+					Return(nil, dns.ErrBuf)
+				exchanger.EXPECT().Exchange(ctx, "tcp", expectedRequest).
+					Return(&dns.Msg{Answer: []dns.RR{&dns.A{}}}, nil)
+
+				return &handler{
+					ctx:       ctx,
+					exchanger: exchanger,
+				}
+			},
+			request: &dns.Msg{
+				Question: []dns.Question{{Name: "test"}},
+			},
+			response: &dns.Msg{
+				MsgHdr: dns.MsgHdr{
+					Response: true,
+				},
+				Question: []dns.Question{{Name: "test"}},
+				Answer:   []dns.RR{&dns.A{}},
+			},
+		},
 		"exchanged_response": {
 			makeHandler: func(t *testing.T, ctrl *gomock.Controller) *handler {
 				t.Helper()
