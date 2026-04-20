@@ -3,6 +3,7 @@ package pool
 import (
 	"context"
 	"net"
+	"sync"
 	"testing"
 	"time"
 
@@ -746,4 +747,84 @@ func Test_Pool_findAddressForNewConn(t *testing.T) {
 			assert.Equal(t, testCase.addressIndex, addressIndex)
 		})
 	}
+}
+
+type blockingTestDialer struct {
+	started chan struct{}
+	resume  chan struct{}
+	once    sync.Once
+}
+
+func (d *blockingTestDialer) Addresses() []string {
+	return []string{"127.0.0.1:853"}
+}
+
+func (d *blockingTestDialer) Dial(_ context.Context, _, _ string) (net.Conn, error) {
+	d.once.Do(func() { close(d.started) })
+	<-d.resume
+	conn1, conn2 := net.Pipe()
+	_ = conn2.Close()
+	return conn1, nil
+}
+
+func Test_Pool_newConn_preserves_concurrent_updates(t *testing.T) {
+	t.Parallel()
+
+	dialer := &blockingTestDialer{
+		started: make(chan struct{}),
+		resume:  make(chan struct{}),
+	}
+
+	ctrl := gomock.NewController(t)
+	metrics := NewMockMetrics(ctrl)
+	metrics.EXPECT().NewConnsInc("127.0.0.1:853", outcomeSuccess)
+	metrics.EXPECT().LiveConnInc("127.0.0.1:853")
+
+	pool := &Pool{
+		dialer:  dialer,
+		metrics: metrics,
+		timeNow: func() time.Time { return time.Unix(0, 0) },
+		addrConns: []addressConns{{
+			address: "127.0.0.1:853",
+			conns: []poolConn{{
+				Conn:      &noopConn{},
+				addrIndex: 0,
+				connIndex: 0,
+			}},
+		}},
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		conn, _, err := pool.newConn(context.Background(), "tcp")
+		if err == nil {
+			_ = conn.Close()
+		}
+		errCh <- err
+	}()
+
+	<-dialer.started
+
+	pool.mutex.Lock()
+	pool.addrConns[0].conns = append(pool.addrConns[0].conns, poolConn{
+		Conn:      &noopConn{},
+		addrIndex: 0,
+		connIndex: 1,
+	})
+	pool.mutex.Unlock()
+
+	close(dialer.resume)
+
+	select {
+	case err := <-errCh:
+		require.NoError(t, err)
+	case <-time.After(time.Second):
+		t.Fatal("newConn did not return")
+	}
+
+	pool.mutex.Lock()
+	defer pool.mutex.Unlock()
+	require.Len(t, pool.addrConns[0].conns, 3)
+	assert.Equal(t, 0, pool.addrConns[0].conns[2].addrIndex)
+	assert.Equal(t, 2, pool.addrConns[0].conns[2].connIndex)
 }

@@ -127,8 +127,7 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 ) {
 	p.mutex.Lock()
 	index := p.findAddressForNewConn()
-	addrConns := p.addrConns[index]
-	address := addrConns.address
+	address := p.addrConns[index].address
 	p.mutex.Unlock()
 
 	defer func() {
@@ -147,6 +146,7 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	addrConns := p.addrConns[index]
 
 	now := p.timeNow()
 	conn = poolConn{
