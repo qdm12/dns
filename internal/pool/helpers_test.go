@@ -29,7 +29,7 @@ func (d *testDialer) Dial(ctx context.Context, network, address string,
 	return dialer.DialContext(ctx, network, address)
 }
 
-func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
+func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) ( //nolint:cyclop
 	dialer *testDialer, runError <-chan error,
 ) {
 	t.Helper()
@@ -57,12 +57,12 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 				runErrorCh <- fmt.Errorf("accepting connection: %w", err)
 				return
 			}
+			connsInFlightMutex.Lock()
+			connsInFlight[conn.RemoteAddr().String()] = conn
+			connsInFlightMutex.Unlock()
 			handleConnWg.Add(1)
 			handleConnWg.Go(func() {
 				defer handleConnWg.Done()
-				connsInFlightMutex.Lock()
-				connsInFlight[conn.RemoteAddr().String()] = conn
-				connsInFlightMutex.Unlock()
 				err := handleConn(conn)
 				if err != nil {
 					select {
@@ -74,8 +74,16 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 		}
 	}()
 
-	stop := func() {
+	t.Cleanup(func() {
 		_ = listener.Close()
+		// drain error channel in case test exited with fatal and did not read the runError
+		// channel return, and one or more goroutines are trying to write an error to runErrorCh
+		for range len(connsInFlight) {
+			select {
+			case <-runErrorCh:
+			default:
+			}
+		}
 		<-listenerDone
 		connsInFlightMutex.Lock()
 		for _, conn := range connsInFlight {
@@ -83,8 +91,7 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 		}
 		connsInFlightMutex.Unlock()
 		handleConnWg.Wait()
-	}
-	t.Cleanup(stop)
+	})
 
 	select {
 	case <-ready:
