@@ -27,7 +27,7 @@ func (p *Pool) Renew(ctx context.Context, network string, conn net.Conn) (newCon
 	lifetime := now.Sub(poolConn.created)
 	// Ensure this slot cannot be reused while the renewal dials outside the lock.
 	poolConn.inUse = true
-	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
+	p.setConn(poolConn)
 	p.mutex.Unlock()
 
 	p.metrics.RecordLifetime(address, lifetime)
@@ -62,13 +62,40 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 	netConn, err := p.dialer.Dial(ctx, network, address)
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	addrConns := p.addrConns[conn.addrIndex]
+	p.ensureConnIDToIndex(&addrConns)
+	connIndex, found := addrConns.connIDToIndex[conn.id]
+	if !found {
+		if err != nil {
+			return poolConn{}, err
+		}
+		// The original slot disappeared while dialing. Append a replacement conn
+		// and keep it in use for the caller.
+		now := p.timeNow()
+		connID := p.nextID()
+		conn = poolConn{
+			Conn:      netConn,
+			id:        connID,
+			addrIndex: conn.addrIndex,
+			connIndex: len(addrConns.conns),
+			inUse:     true,
+			created:   now,
+			lastUsed:  now,
+		}
+		addrConns.conns = append(addrConns.conns, conn)
+		addrConns.connIDToIndex[conn.id] = conn.connIndex
+		p.addrConns[conn.addrIndex] = addrConns
+		return conn, nil
+	}
 
-	conn = p.addrConns[conn.addrIndex].conns[conn.connIndex]
+	conn = addrConns.conns[connIndex]
+	conn.connIndex = connIndex
 	if err != nil {
 		// The pool will retry renewing the connection on another Get call.
 		conn.inUse = false
 		conn.dead = true
-		p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+		addrConns.conns[connIndex] = conn
+		p.addrConns[conn.addrIndex] = addrConns
 		return poolConn{}, err
 	}
 	conn.Conn = netConn
@@ -77,6 +104,7 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 	conn.created = now
 	conn.lastUsed = now
 	// note the connection is already marked as "in use"
-	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+	addrConns.conns[connIndex] = conn
+	p.addrConns[conn.addrIndex] = addrConns
 	return conn, nil
 }

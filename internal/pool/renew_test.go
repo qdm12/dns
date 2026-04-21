@@ -120,6 +120,7 @@ func Test_Pool_Renew(t *testing.T) {
 		renewedPoolConn := renewedConn.(poolConn) //nolint:forcetypeassert
 		// remove Conn from comparison
 		renewedPoolConn.Conn = nil
+		renewedPoolConn.id = 0
 		pool.addrConns[renewedPoolConn.addrIndex].conns[renewedPoolConn.connIndex].Conn = nil
 		expectedPoolConn := poolConn{
 			created:  now,
@@ -172,6 +173,7 @@ func Test_Pool_Renew(t *testing.T) {
 		checkConnCopies(t, renewedConn)
 		renewedPoolConn := renewedConn.(poolConn) //nolint:forcetypeassert
 		renewedPoolConn.Conn = nil                // remove Conn from comparison
+		renewedPoolConn.id = 0
 		expectedPoolConn := poolConn{
 			created:  now,
 			lastUsed: now,
@@ -185,4 +187,59 @@ func Test_Pool_Renew(t *testing.T) {
 		default:
 		}
 	})
+}
+
+func Test_Pool_renew_staleConnectionIndex(t *testing.T) {
+	t.Parallel()
+
+	dialer, runErr := startLocalTCPServer(t, handleConnCopy)
+	address := dialer.Addresses()[0]
+	ctrl := gomock.NewController(t)
+	metrics := NewMockMetrics(ctrl)
+	metrics.EXPECT().NewConnsInc(address, outcomeSuccess)
+	metrics.EXPECT().RenewConnInc(address, renewReasonMarkedDead, outcomeSuccess)
+
+	pool := &Pool{
+		dialer:  dialer,
+		metrics: metrics,
+		timeNow: func() time.Time {
+			return time.Unix(10000, 0)
+		},
+		addrConns: []addressConns{{
+			address: address,
+			conns: []poolConn{
+				{Conn: &noopConn{}, addrIndex: 0, connIndex: 0},
+				{Conn: &noopConn{}, addrIndex: 0, connIndex: 1},
+				{Conn: &noopConn{}, addrIndex: 0, connIndex: 2},
+				{Conn: &noopConn{}, addrIndex: 0, connIndex: 3},
+				{Conn: &noopConn{}, addrIndex: 0, connIndex: 4},
+			},
+		}},
+	}
+
+	staleConn := poolConn{
+		Conn:      &noopConn{},
+		addrIndex: 0,
+		connIndex: 5,
+	}
+
+	renewedConn, err := pool.renew(context.Background(), staleConn, "tcp", renewReasonMarkedDead)
+	require.NoError(t, err)
+	checkConnCopies(t, renewedConn)
+	assert.Equal(t, 0, renewedConn.addrIndex)
+	assert.Equal(t, 5, renewedConn.connIndex)
+	assert.True(t, renewedConn.inUse)
+
+	pool.mutex.Lock()
+	require.Len(t, pool.addrConns[0].conns, 6)
+	assert.Equal(t, 5, pool.addrConns[0].conns[5].connIndex)
+	assert.True(t, pool.addrConns[0].conns[5].inUse)
+	pool.addrConns[0].conns[5].Conn = nil
+	pool.mutex.Unlock()
+
+	select {
+	case err := <-runErr:
+		require.NoError(t, err)
+	default:
+	}
 }

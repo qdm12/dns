@@ -12,6 +12,7 @@ type Pool struct {
 	// Internal state
 	mutex             sync.Mutex
 	addrConns         []addressConns
+	nextConnID        uint64
 	lastUsedAddrIndex int
 	oneConnPerAddr    bool
 
@@ -20,8 +21,9 @@ type Pool struct {
 }
 
 type addressConns struct {
-	address string
-	conns   []poolConn
+	address       string
+	conns         []poolConn
+	connIDToIndex map[uint64]int
 }
 
 const maxIdleDuration = 2 * time.Hour
@@ -42,14 +44,16 @@ func New(dialer Dialer, metrics Metrics) *Pool {
 	addrConns := make([]addressConns, len(addresses))
 	for i, address := range addresses {
 		addrConns[i] = addressConns{
-			address: address,
-			conns:   []poolConn{},
+			address:       address,
+			conns:         []poolConn{},
+			connIDToIndex: map[uint64]int{},
 		}
 	}
 	return &Pool{
 		dialer:          dialer,
 		metrics:         metrics,
 		addrConns:       addrConns,
+		nextConnID:      1,
 		timeNow:         time.Now,
 		maxIdleDuration: maxIdleDuration,
 	}

@@ -7,6 +7,7 @@ import (
 
 type poolConn struct {
 	net.Conn
+	id        uint64
 	addrIndex int
 	connIndex int
 	// created is the time the connection was created.
@@ -38,7 +39,7 @@ func (p *Pool) isConnDead(conn poolConn) bool {
 
 	conn.dead = true
 	_ = conn.Close() // ignore error since it may already be closed.
-	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+	p.setConn(conn)
 
 	address := p.addrConns[conn.addrIndex].address
 	p.metrics.DeadConnInc(address)
@@ -50,4 +51,74 @@ func (p *Pool) isConnDead(conn poolConn) bool {
 
 func (p *Pool) addressFromConn(conn poolConn) string {
 	return p.addrConns[conn.addrIndex].address
+}
+
+func (p *Pool) setConn(conn poolConn) {
+	addrConns := &p.addrConns[conn.addrIndex]
+	if conn.id == 0 {
+		storedConn := addrConns.conns[conn.connIndex]
+		if storedConn.id != 0 {
+			conn.id = storedConn.id
+		}
+		addrConns.conns[conn.connIndex] = conn
+		p.ensureConnIDToIndex(addrConns)
+		addrConns.connIDToIndex[conn.id] = conn.connIndex
+		return
+	}
+	p.ensureConnIDToIndex(addrConns)
+	connIndex := addrConns.connIDToIndex[conn.id]
+	conn.connIndex = connIndex
+	addrConns.conns[connIndex] = conn
+}
+
+func (p *Pool) connFromID(addrIndex int, id uint64) (conn poolConn, found bool) {
+	addrConns := &p.addrConns[addrIndex]
+	if id == 0 {
+		return poolConn{}, false
+	}
+	p.ensureConnIDToIndex(addrConns)
+	connIndex, found := addrConns.connIDToIndex[id]
+	if !found {
+		return poolConn{}, false
+	}
+	conn = addrConns.conns[connIndex]
+	conn.connIndex = connIndex
+	return conn, true
+}
+
+func (p *Pool) ensureConnIDToIndex(addrConns *addressConns) {
+	if addrConns.connIDToIndex != nil {
+		return
+	}
+	addrConns.connIDToIndex = make(map[uint64]int, len(addrConns.conns))
+	for i, conn := range addrConns.conns {
+		_, duplicate := addrConns.connIDToIndex[conn.id]
+		if conn.id == 0 || duplicate {
+			conn.id = p.nextID()
+			addrConns.conns[i] = conn
+		}
+		addrConns.connIDToIndex[conn.id] = i
+	}
+}
+
+func (p *Pool) rebuildConnIDToIndex(addrIndex int) {
+	addrConns := &p.addrConns[addrIndex]
+	addrConns.connIDToIndex = make(map[uint64]int, len(addrConns.conns))
+	for i, conn := range addrConns.conns {
+		if conn.id == 0 {
+			conn.id = p.nextID()
+		}
+		conn.connIndex = i
+		addrConns.conns[i] = conn
+		addrConns.connIDToIndex[conn.id] = i
+	}
+}
+
+func (p *Pool) nextID() uint64 {
+	if p.nextConnID == 0 {
+		p.nextConnID = 1
+	}
+	id := p.nextConnID
+	p.nextConnID++
+	return id
 }

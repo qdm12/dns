@@ -154,4 +154,15 @@ func setFieldsForAddrConns(addrConns []addressConns) {
 func clearPoolFieldsForComparison(p *Pool) {
 	p.timeNow = nil
 	p.metrics = nil
+	p.nextConnID = 0
+	normalizeAddrConnsForComparison(p.addrConns)
+}
+
+func normalizeAddrConnsForComparison(addrConns []addressConns) {
+	for i := range addrConns {
+		addrConns[i].connIDToIndex = nil
+		for j := range addrConns[i].conns {
+			addrConns[i].conns[j].id = 0
+		}
+	}
 }

@@ -56,13 +56,13 @@ func (p *Pool) Get(ctx context.Context, network string) (netConn net.Conn, err e
 	address = p.addressFromConn(conn)
 	if live {
 		conn.lastUsed = p.timeNow()
-		p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+		p.setConn(conn)
 		p.mutex.Unlock()
 		return conn, nil
 	}
 
 	// Reserve this dead connection slot while renewing outside the lock.
-	p.addrConns[conn.addrIndex].conns[conn.connIndex] = conn
+	p.setConn(conn)
 	p.mutex.Unlock()
 
 	conn, err = p.renew(ctx, conn, network, renewReasonMarkedDead)
@@ -151,6 +151,7 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 	now := p.timeNow()
 	conn = poolConn{
 		Conn:      netConn,
+		id:        p.nextID(),
 		addrIndex: index,
 		connIndex: len(addrConns.conns),
 		inUse:     true, // about to be returned and used
@@ -158,6 +159,8 @@ func (p *Pool) newConn(ctx context.Context, network string) (
 		lastUsed:  now,
 	}
 	addrConns.conns = append(addrConns.conns, conn)
+	p.ensureConnIDToIndex(&addrConns)
+	addrConns.connIDToIndex[conn.id] = conn.connIndex
 	p.addrConns[index] = addrConns
 	p.lastUsedAddrIndex = conn.addrIndex
 	p.setIfAllAddrsHaveOneConn()

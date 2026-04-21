@@ -29,7 +29,8 @@ func Test_New(t *testing.T) {
 		expectedPool := &Pool{
 			dialer:          testDialer,
 			metrics:         testMetrics,
-			addrConns:       []addressConns{{address: "127.0.0.1:8053", conns: []poolConn{}}},
+			addrConns:       []addressConns{{address: "127.0.0.1:8053", conns: []poolConn{}, connIDToIndex: map[uint64]int{}}},
+			nextConnID:      1,
 			maxIdleDuration: maxIdleDuration,
 		}
 

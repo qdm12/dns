@@ -22,19 +22,18 @@ func (p *Pool) Put(conn net.Conn) {
 
 	now := p.timeNow()
 	inUseDuration := now.Sub(poolConn.lastUsed)
-	address := p.addressFromConn(poolConn)
-	p.metrics.RecordUseTime(address, inUseDuration)
-
 	poolConn.lastUsed = now
 	poolConn.inUse = false
 
 	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	address := p.addressFromConn(poolConn)
 
-	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
+	p.setConn(poolConn)
 
 	p.cleanup(poolConn.addrIndex)
+	p.mutex.Unlock()
 
+	p.metrics.RecordUseTime(address, inUseDuration)
 	p.metrics.PutConnInc(address, connStateLive)
 }
 
@@ -53,7 +52,11 @@ func (p *Pool) PutDead(conn net.Conn) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	isMarkedDead := p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex].dead
+	storedConn, found := p.connFromID(poolConn.addrIndex, poolConn.id)
+	if !found {
+		storedConn = p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex]
+	}
+	isMarkedDead := storedConn.dead
 	if isMarkedDead {
 		// Just in case the caller calls this function after a failed [Pool.Renew]
 		return
@@ -67,7 +70,7 @@ func (p *Pool) PutDead(conn net.Conn) {
 	p.metrics.RecordLifetime(address, lifetime)
 	poolConn.lastUsed = now
 
-	p.addrConns[poolConn.addrIndex].conns[poolConn.connIndex] = poolConn
+	p.setConn(poolConn)
 	p.cleanup(poolConn.addrIndex)
 
 	p.metrics.PutConnInc(address, connStateDead)
@@ -85,6 +88,7 @@ func (p *Pool) cleanup(addrIndex int) {
 
 	conns, removed := p.compact(conns)
 	p.addrConns[addrIndex].conns = conns
+	p.rebuildConnIDToIndex(addrIndex)
 	if removed > 0 {
 		address := p.addrConns[addrIndex].address
 		p.metrics.RemovedConnsAdd(address, removed)
@@ -129,8 +133,6 @@ func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed uint) {
 		// Swap the alive unused connection pointed by readIdx with the dead connection
 		// pointed by writeIdx.
 		conns[readIndex], conns[writeIndex] = conns[writeIndex], conns[readIndex]
-		conns[readIndex].connIndex = readIndex
-		conns[writeIndex].connIndex = writeIndex
 		writeIndex++
 	}
 

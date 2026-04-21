@@ -333,6 +333,7 @@ func Test_Pool_Get(t *testing.T) { //nolint:maintidx
 				checkConnCopies(t, conn)
 				poolConn := conn.(poolConn) //nolint:forcetypeassert
 				poolConn.Conn = nil         // ignore net.Conn comparison
+				poolConn.id = 0
 				conn = poolConn
 				pool.addrConns[poolConn.addrIndex].conns[poolConn.connIndex].Conn = nil
 			}
@@ -654,6 +655,7 @@ func Test_Pool_newConn(t *testing.T) {
 				require.NoError(t, err)
 				checkConnCopies(t, conn.Conn)
 				conn.Conn = nil // ignore net.Conn comparison
+				conn.id = 0
 				pool.addrConns[conn.addrIndex].conns[conn.connIndex].Conn = nil
 			}
 			assert.Equal(t, testCase.conn, conn)

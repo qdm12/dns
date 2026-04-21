@@ -69,6 +69,8 @@ func Test_Pool_Put(t *testing.T) {
 		conn := conns[len(conns)-1]
 
 		pool.Put(conn)
+		normalizeAddrConnsForComparison(pool.addrConns)
+		normalizeAddrConnsForComparison(expectedAddrConns)
 
 		assert.Equal(t, expectedAddrConns, pool.addrConns)
 	})
@@ -149,6 +151,8 @@ func Test_Pool_PutDead(t *testing.T) {
 		conn := conns[len(conns)-1]
 
 		pool.PutDead(conn)
+		normalizeAddrConnsForComparison(pool.addrConns)
+		normalizeAddrConnsForComparison(expectedAddrConns)
 
 		assert.Equal(t, expectedAddrConns, pool.addrConns)
 	})
@@ -241,6 +245,8 @@ func Test_Pool_cleanup(t *testing.T) {
 			}
 
 			pool.cleanup(testCase.addrIndex)
+			normalizeAddrConnsForComparison(pool.addrConns)
+			normalizeAddrConnsForComparison(testCase.expectedAddrConns)
 			assert.Equal(t, testCase.expectedAddrConns, pool.addrConns)
 		})
 	}
