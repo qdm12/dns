@@ -62,6 +62,20 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 	netConn, err := p.dialer.Dial(ctx, network, address)
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	// The pool may have been reset (p.addrConns emptied) while we were
+	// dialing outside the lock. Without this guard, p.addrConns[conn.addrIndex]
+	// panics with 'index out of range [0] with length 0' and crashes
+	// the DNS server goroutine, taking gluetun and its network
+	// namespace down with it.
+	if conn.addrIndex < 0 || conn.addrIndex >= len(p.addrConns) {
+		if netConn != nil {
+			_ = netConn.Close()
+		}
+		if err == nil {
+			err = fmt.Errorf("pool addrIndex %d out of range; pool reset while dialing", conn.addrIndex)
+		}
+		return poolConn{}, err
+	}
 	addrConns := p.addrConns[conn.addrIndex]
 	p.ensureConnIDToIndex(&addrConns)
 	connIndex, found := addrConns.connIDToIndex[conn.id]
