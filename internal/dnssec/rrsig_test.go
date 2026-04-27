@@ -5,6 +5,7 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_sortRRSIGsByAlgo(t *testing.T) {
@@ -167,6 +168,54 @@ func Test_rrSigCheckSignerName(t *testing.T) {
 			if testCase.errWrapped != nil {
 				assert.EqualError(t, err, testCase.errMessage)
 			}
+		})
+	}
+}
+
+func Test_verifyRRSetRRSigs(t *testing.T) {
+	t.Parallel()
+
+	rrSet := []dns.RR{
+		&dns.A{Hdr: dns.RR_Header{Name: "example.com.", Rrtype: dns.TypeA, Class: dns.ClassINET}},
+	}
+
+	const now = uint32(1000)
+	overBudgetRRSigs := make([]*dns.RRSIG, maxRRSIGValidationsPerRRSet+1)
+	for i := range overBudgetRRSigs {
+		overBudgetRRSigs[i] = &dns.RRSIG{}
+	}
+	singleRRSig := []*dns.RRSIG{{
+		Hdr:        dns.RR_Header{Name: "example.com.", Rrtype: dns.TypeRRSIG, Class: dns.ClassINET},
+		KeyTag:     12345,
+		Expiration: now + 60,
+		Inception:  now - 60,
+	}}
+
+	testCases := map[string]struct {
+		rrSigs     []*dns.RRSIG
+		budget     *rrsigValidationBudget
+		errWrapped error
+	}{
+		"rrset_budget_exceeded": {
+			rrSigs:     overBudgetRRSigs,
+			budget:     newRRSIGValidationBudget(),
+			errWrapped: errRRSIGValidationRRSetBudgetExceeded,
+		},
+		"message_budget_exceeded": {
+			rrSigs:     singleRRSig,
+			budget:     &rrsigValidationBudget{remaining: 0},
+			errWrapped: errRRSIGValidationBudgetExceeded,
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			err := verifyRRSetRRSigs(rrSet, testCase.rrSigs, map[uint16]*dns.DNSKEY{}, testCase.budget)
+
+			require.Error(t, err)
+			assert.ErrorIs(t, err, testCase.errWrapped)
 		})
 	}
 }

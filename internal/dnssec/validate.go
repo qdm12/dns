@@ -23,7 +23,8 @@ func validateWithChain(desiredZone string, qType uint16,
 	// the RRSIG key tag.
 	rootZoneKeyTagToDNSKey := makeKeyTagToDNSKey(rootZone.dnsKeyResponse.onlyAnswerRRSet())
 	err = verifyRRSetRRSigs(rootZone.dnsKeyResponse.onlyAnswerRRSet(),
-		rootZone.dnsKeyResponse.onlyAnswerRRSigs(), rootZoneKeyTagToDNSKey)
+		rootZone.dnsKeyResponse.onlyAnswerRRSigs(), rootZoneKeyTagToDNSKey,
+		newRRSIGValidationBudget())
 	if err != nil {
 		return fmt.Errorf("verifying DNSKEY records for the root zone: %w",
 			err)
@@ -96,7 +97,7 @@ func validateWithChain(desiredZone string, qType uint16,
 		keyTagToDNSKey := makeKeyTagToDNSKey(zoneData.dnsKeyResponse.onlyAnswerRRSet())
 		err = verifyRRSetRRSigs(zoneData.dnsKeyResponse.onlyAnswerRRSet(),
 			zoneData.dnsKeyResponse.onlyAnswerRRSigs(),
-			keyTagToDNSKey)
+			keyTagToDNSKey, newRRSIGValidationBudget())
 		if err != nil {
 			return fmt.Errorf("validating DNSKEY RRSet for zone %s: %w",
 				zoneData.zone, err)
@@ -106,7 +107,8 @@ func validateWithChain(desiredZone string, qType uint16,
 		// matching the RRSIG key tag.
 		parentKeyTagToDNSKey := makeKeyTagToDNSKey(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
 		err = verifyRRSetRRSigs(zoneData.dsResponse.onlyAnswerRRSet(),
-			zoneData.dsResponse.onlyAnswerRRSigs(), parentKeyTagToDNSKey)
+			zoneData.dsResponse.onlyAnswerRRSigs(), parentKeyTagToDNSKey,
+			newRRSIGValidationBudget())
 		if err != nil {
 			return fmt.Errorf("validating DS RRSet for zone %s: %w",
 				zoneData.zone, err)
