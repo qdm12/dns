@@ -365,14 +365,6 @@ func nsec3VerifyClosestEncloserProof(qname string, nsec3RRSet []dns.RR) (
 // then nextCloser="example.com.".
 func getNextCloser(qname, closestEncloser string) (nextCloser string) {
 	closestEncloserLabelsCount := dns.CountLabel(closestEncloser)
-	qnameLabelsCount := dns.CountLabel(qname)
-
-	// Double check the qname is two labels longer than the closest encloser.
-	// TODO eventual remove check
-	if qnameLabelsCount < closestEncloserLabelsCount+1 {
-		panic(fmt.Sprintf("qname %s is not at least one label longer than closest encloser %s",
-			qname, closestEncloser))
-	}
 
 	nextCloserStartIndex, startOvershoot := dns.PrevLabel(qname, closestEncloserLabelsCount+1)
 	if startOvershoot {
