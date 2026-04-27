@@ -114,49 +114,71 @@ func nsecMatchesQname(nsec *dns.NSEC, qname string) bool {
 
 // nsecCoversZone returns true if the zone is within the OPEN interval
 // delimited by the nsecOwner and the nsecNext FQDNs given.
-// TODO improve inspiring from
-// https://github.com/NLnetLabs/unbound/blob/master/util/data/dname.c#L802
+// The comparison follows canonical DNS name ordering from RFC 4034 section 6.1,
+// matching the approach taken by Unbound's dname_canonical_compare.
 func nsecCoversZone(zone, nsecOwner, nsecNext string) (ok bool) {
 	if zone == nsecOwner || zone == nsecNext {
 		return false
 	}
 
-	zoneLabels := dns.SplitDomainName(zone)
-	nsecOwnerLabels := dns.SplitDomainName(nsecOwner)
+	ownerToNext := canonicalNameCompare(nsecOwner, nsecNext)
+	ownerToZone := canonicalNameCompare(nsecOwner, zone)
+	zoneToNext := canonicalNameCompare(zone, nsecNext)
 
-	if len(zoneLabels) < len(nsecOwnerLabels) {
-		// zone is shorter than NSEC owner, so it cannot be covered
-		return false
+	switch {
+	case ownerToNext < 0:
+		// Regular interval: (owner, next)
+		return ownerToZone < 0 && zoneToNext < 0
+	case ownerToNext > 0:
+		// Wrapped interval across the canonical ordering end:
+		// zone in (owner, +inf) U (-inf, next)
+		return ownerToZone < 0 || zoneToNext < 0
+	default:
+		// owner == next means the NSEC covers the full canonical range,
+		// except owner/next itself which is filtered above.
+		return true
 	}
+}
 
-	for i := range nsecOwnerLabels {
-		zoneLabel := zoneLabels[len(zoneLabels)-1-i]
-		nsecOwnerLabel := nsecOwnerLabels[len(nsecOwnerLabels)-1-i]
-		if nsecOwnerLabel == "*" {
-			// wildcard NSEC owner containing zone
-			return true
-		} else if zoneLabel < nsecOwnerLabel {
-			return false
+// canonicalNameCompare compares two domain names using RFC 4034 canonical
+// ordering, label-by-label from the zone apex towards the left-most label.
+// Returns -1 if a < b, 0 if a == b, +1 if a > b.
+func canonicalNameCompare(a, b string) int {
+	aLabels := dns.SplitDomainName(strings.ToLower(a))
+	bLabels := dns.SplitDomainName(strings.ToLower(b))
+
+	minLabels := min(len(aLabels), len(bLabels))
+	for i := 1; i <= minLabels; i++ {
+		al := aLabels[len(aLabels)-i]
+		bl := bLabels[len(bLabels)-i]
+
+		if al == bl {
+			continue
 		}
-	}
 
-	nsecNextLabels := dns.SplitDomainName(nsecNext)
-	if len(zoneLabels) < len(nsecNextLabels) {
-		// zone is shorter than NSEC next, so it cannot be covered
-		return false
-	}
-
-	minLabelsCount := min(len(zoneLabels), len(nsecNextLabels))
-	for i := range minLabelsCount {
-		zoneLabel := zoneLabels[len(zoneLabels)-1-i]
-		nsecNextLabel := nsecNextLabels[len(nsecNextLabels)-1-i]
-		if zoneLabel > nsecNextLabel {
-			return false
+		// RFC 4034 canonical label ordering compares by bytes and if equal
+		// up to min length, the shorter label sorts first.
+		minLen := min(len(al), len(bl))
+		for j := 0; j < minLen; j++ {
+			if al[j] < bl[j] {
+				return -1
+			}
+			if al[j] > bl[j] {
+				return 1
+			}
 		}
+
+		if len(al) < len(bl) {
+			return -1
+		}
+		return 1
 	}
 
-	// Zone and next domain have the same labels for the first
-	// minLabelsCount labels, and zone != next, so zone is within
-	// the interval delimited by owner and next.
-	return true
+	if len(aLabels) < len(bLabels) {
+		return -1
+	}
+	if len(aLabels) > len(bLabels) {
+		return 1
+	}
+	return 0
 }
