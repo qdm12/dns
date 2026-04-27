@@ -3,6 +3,7 @@ package dnssec
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -253,7 +254,7 @@ func rrSigCheckSignerName(rrSig *dns.RRSIG) (err error) {
 		}
 	}
 
-	if isOneOf(rrSig.SignerName, validSignerNames...) {
+	if slices.Contains(validSignerNames, rrSig.SignerName) {
 		return nil
 	}
 

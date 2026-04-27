@@ -2,6 +2,7 @@ package dnssec
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -21,7 +22,7 @@ func hashToString(hashType uint8) string {
 	if ok {
 		return s
 	}
-	return fmt.Sprintf("%d", hashType)
+	return strconv.FormatUint(uint64(hashType), 10)
 }
 
 func hashesToString(hashTypes []uint8) string {
@@ -42,13 +43,4 @@ func integersToString[T constraints.Integer](integers []T) string {
 
 func wrapError(zone string, qClass, qType uint16, err error) error {
 	return fmt.Errorf("for %s: %w", nameClassTypeToString(zone, qClass, qType), err)
-}
-
-func isOneOf[T comparable](value T, values ...T) bool {
-	for _, v := range values {
-		if value == v {
-			return true
-		}
-	}
-	return false
 }

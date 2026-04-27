@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -33,12 +34,7 @@ func extractNSEC3s(rrSets []dnssecRRSet) (
 		rrs = append(rrs, rrSet.rrSet...)
 
 		if !wildcard {
-			for _, rrSig := range rrSet.rrSigs {
-				if isRRSigForWildcard(rrSig) {
-					wildcard = true
-					break
-				}
-			}
+			wildcard = slices.ContainsFunc(rrSet.rrSigs, isRRSigForWildcard)
 		}
 	}
 	return rrs, wildcard
@@ -66,13 +62,13 @@ func nsec3InitialChecks(nsec3RRSet []dns.RR, keyTagToDNSKey map[uint16]*dns.DNSK
 
 		// Only accept supported hash type
 		// https://datatracker.ietf.org/doc/html/rfc5155#section-8.1
-		if !isOneOf(nsec3.Hash, dns.SHA1) {
+		if nsec3.Hash != dns.SHA1 {
 			continue
 		}
 
 		// Flag field must be zero or one (opt-out).
 		// https://datatracker.ietf.org/doc/html/rfc5155#section-8.2
-		if !isOneOf(nsec3.Flags, 0, 1) {
+		if nsec3.Flags != 0 && nsec3.Flags != 1 {
 			continue
 		}
 
