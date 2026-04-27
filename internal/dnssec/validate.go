@@ -8,6 +8,8 @@ import (
 	"github.com/miekg/dns"
 )
 
+var errWildcardedDNAME = errors.New("DNAME record cannot be synthesized from wildcard per RFC 6672 section 5.3.1")
+
 // verify uses the zone data in the signed zone and its parent signed zones
 // to verify the DNSSEC chain of trust.
 // It starts the verification with the RRSet given as argument, and,
@@ -52,6 +54,14 @@ func validateWithChain(desiredZone string, qType uint16,
 	if wildcardName != "" {
 		wildcardLabelsCount := dns.CountLabel(wildcardName)
 		chain = chain[:wildcardLabelsCount]
+
+		// Per RFC 6672 section 5.3.1, DNAME records must not be synthesized
+		// from wildcards. Reject any response with wildcard expansion that
+		// contains DNAME records in the answer section.
+		if answerHasWildcardedDNAME(desiredResponse.answerRRSets) {
+			return fmt.Errorf("%w: answer contains DNAME with wildcard %s",
+				errWildcardedDNAME, wildcardName)
+		}
 	}
 
 	parentZoneInsecure := false
