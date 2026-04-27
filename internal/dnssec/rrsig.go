@@ -94,6 +94,11 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 
 	errs := new(joinedErrors)
 	for _, rrSig := range rrSigs {
+		if err = checkRRSigAlgorithm(rrSig); err != nil {
+			errs.add(err)
+			continue
+		}
+
 		err = budget.consume()
 		if err != nil {
 			return err
@@ -126,13 +131,36 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 }
 
 var (
-	errRRSigDNSKeyTag = errors.New("DNSKEY not found")
-	errRRSigExpired   = errors.New("RRSIG has expired")
+	errRRSigDNSKeyTag            = errors.New("DNSKEY not found")
+	errRRSigExpired              = errors.New("RRSIG has expired")
+	errRRSigForbiddenAlgorithm   = errors.New("RRSIG algorithm is forbidden by RFC 8624")
+	errRRSigUnsupportedAlgorithm = errors.New("RRSIG algorithm is not supported")
 )
+
+// checkRRSigAlgorithm returns an error if the RRSIG's algorithm must not
+// or cannot be used for validation per RFC 8624 section 3.1.
+// This enforces the algorithm policy rather than merely preferring stronger
+// algorithms: MustNot algorithms are hard-rejected and Unknown algorithms
+// are skipped (RFC 4035 section 5.3.1: treat as if not present).
+func checkRRSigAlgorithm(rrSig *dns.RRSIG) error {
+	switch algoIDToPreference(rrSig.Algorithm) {
+	case algoPreferenceMustNot:
+		return fmt.Errorf("%w: %s",
+			errRRSigForbiddenAlgorithm, dns.AlgorithmToString[rrSig.Algorithm])
+	case algoPreferenceUnknown:
+		return fmt.Errorf("%w: algorithm %d",
+			errRRSigUnsupportedAlgorithm, rrSig.Algorithm)
+	}
+	return nil
+}
 
 func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
 	keyTagToDNSKey map[uint16]*dns.DNSKEY, budget *rrsigValidationBudget,
 ) (err error) {
+	if err = checkRRSigAlgorithm(rrSig); err != nil {
+		return err
+	}
+
 	err = budget.consume()
 	if err != nil {
 		return err

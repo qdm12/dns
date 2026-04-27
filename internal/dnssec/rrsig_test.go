@@ -186,6 +186,7 @@ func Test_verifyRRSetRRSigs(t *testing.T) {
 	}
 	singleRRSig := []*dns.RRSIG{{
 		Hdr:        dns.RR_Header{Name: "example.com.", Rrtype: dns.TypeRRSIG, Class: dns.ClassINET},
+		Algorithm:  dns.ED25519,
 		KeyTag:     12345,
 		Expiration: now + 60,
 		Inception:  now - 60,
@@ -205,6 +206,16 @@ func Test_verifyRRSetRRSigs(t *testing.T) {
 			rrSigs:     singleRRSig,
 			budget:     &rrsigValidationBudget{remaining: 0},
 			errWrapped: errRRSIGValidationBudgetExceeded,
+		},
+		"forbidden_algorithm": {
+			rrSigs:     []*dns.RRSIG{{Algorithm: dns.RSAMD5}},
+			budget:     newRRSIGValidationBudget(),
+			errWrapped: errRRSigForbiddenAlgorithm,
+		},
+		"unsupported_algorithm": {
+			rrSigs:     []*dns.RRSIG{{Algorithm: 255}},
+			budget:     newRRSIGValidationBudget(),
+			errWrapped: errRRSigUnsupportedAlgorithm,
 		},
 	}
 
