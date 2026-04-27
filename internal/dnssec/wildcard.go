@@ -38,7 +38,7 @@ func extractWildcardExpansion(signedRRSets []dnssecRRSet) (wildcardName string) 
 	return wildcardName
 }
 
-var ErrNSECxMissing = errors.New("NSEC or NSEC3 record missing")
+var errNSECxMissing = errors.New("NSEC or NSEC3 record missing")
 
 // For wildcard considerations in positive responses, see:
 // - https://datatracker.ietf.org/doc/html/rfc2535#section-5.3
@@ -63,5 +63,5 @@ func validateWildcardExpansion(expandedQname string,
 		return nsecValidateNxDomain(expandedQname, nsecRRs)
 	}
 
-	return fmt.Errorf("%w", ErrNSECxMissing)
+	return fmt.Errorf("%w", errNSECxMissing)
 }

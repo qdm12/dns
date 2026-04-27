@@ -9,7 +9,7 @@ import (
 	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
-var ErrQuestionsMultiple = errors.New("multiple questions")
+var errQuestionsMultiple = errors.New("multiple questions")
 
 func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err error) {
 	switch len(request.Question) {
@@ -19,7 +19,7 @@ func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err err
 		return response, nil
 	case 1:
 	default:
-		return nil, fmt.Errorf("%w: %d", ErrQuestionsMultiple, len(request.Question))
+		return nil, fmt.Errorf("%w: %d", errQuestionsMultiple, len(request.Question))
 	}
 
 	desiredZone := request.Question[0].Name

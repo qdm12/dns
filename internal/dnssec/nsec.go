@@ -36,7 +36,7 @@ func nsecValidateNxDomain(qname string, nsecRRSet []dns.RR) (err error) {
 
 	return fmt.Errorf("for qname %s: %w: "+
 		"no NSEC covering qname found",
-		qname, ErrBogus)
+		qname, errBogus)
 }
 
 func nsecValidateNoData(qname string, qType uint16,
@@ -58,7 +58,7 @@ func nsecValidateNoData(qname string, qType uint16,
 	if qnameMatchingNSEC == nil {
 		return fmt.Errorf("for zone %s and type %s: %w: "+
 			"no NSEC matching qname found",
-			qname, dns.TypeToString[qType], ErrBogus)
+			qname, dns.TypeToString[qType], errBogus)
 	}
 
 	for _, nsecType := range qnameMatchingNSEC.TypeBitMap {
@@ -66,14 +66,14 @@ func nsecValidateNoData(qname string, qType uint16,
 		case qType:
 			return fmt.Errorf("for qname %s and type %s: %w: "+
 				"qtype contained in NSEC",
-				qname, dns.TypeToString[qType], ErrBogus)
+				qname, dns.TypeToString[qType], errBogus)
 		case dns.TypeCNAME:
 			// Per RFC 4034 §4.4: A CNAME RR and other RRs cannot coexist at the same owner name.
 			// Therefore, if NSEC type bitmap contains CNAME for a qtype query that is not CNAME,
 			// the NSEC is invalid (it claims both CNAME and qtype exist at the same owner).
 			return fmt.Errorf("for qname %s and type %s: %w: "+
 				"NSEC contains both CNAME and qtype (RFC 4034 violation)",
-				qname, dns.TypeToString[qType], ErrBogus)
+				qname, dns.TypeToString[qType], errBogus)
 		}
 	}
 
@@ -93,7 +93,7 @@ func nsecValidateNoDataDS(qname string, nsecRRSet []dns.RR) (err error) {
 	if qnameMatchingNSEC == nil {
 		return fmt.Errorf("for qname %s: %w: "+
 			"no NSEC matching qname found",
-			qname, ErrBogus)
+			qname, errBogus)
 	}
 
 	err = verifyNoDataNsecxTypesDS("NSEC", qnameMatchingNSEC.TypeBitMap)

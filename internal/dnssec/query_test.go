@@ -23,7 +23,7 @@ func Test_groupRRs(t *testing.T) {
 			rrs: []dns.RR{
 				newEmptyRRSig(dns.TypeA),
 			},
-			errWrapped: ErrRRSigForNoRRSet,
+			errWrapped: errRRSigForNoRRSet,
 			errMessage: "for RRSet example.com. A: RRSIG for no RRSet",
 		},
 		"bad_rrsig_for_no_rrset": {
@@ -32,7 +32,7 @@ func Test_groupRRs(t *testing.T) {
 				newEmptyRRSig(dns.TypeAAAA),
 				newEmptyRRSig(dns.TypeA), // bad one
 			},
-			errWrapped: ErrRRSigForNoRRSet,
+			errWrapped: errRRSigForNoRRSet,
 			errMessage: "for RRSet example.com. A: RRSIG for no RRSet",
 		},
 		"multiple_rrsig_for_same_type": {
@@ -59,7 +59,7 @@ func Test_groupRRs(t *testing.T) {
 				newEmptyAAAA(),
 				newEmptyA(),
 			},
-			errWrapped: ErrRRSetSignedAndUnsigned,
+			errWrapped: errRRSetSignedAndUnsigned,
 			errMessage: "mix of signed and unsigned RRSets: 1 signed and 1 unsigned RRSets",
 		},
 		"signed_rrsets": {

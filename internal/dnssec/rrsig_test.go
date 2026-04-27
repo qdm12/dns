@@ -88,7 +88,7 @@ func Test_rrSigCheckSignerName(t *testing.T) {
 				TypeCovered: dns.TypeA,
 				SignerName:  ".",
 			},
-			errWrapped: ErrRRSigSignerName,
+			errWrapped: errRRSigSignerName,
 			errMessage: `for RRSIG for owner example.com. and type A: ` +
 				`signer name is not valid: "." should be "example.com." or "com."`,
 		},
@@ -109,7 +109,7 @@ func Test_rrSigCheckSignerName(t *testing.T) {
 				TypeCovered: dns.TypeDNSKEY,
 				SignerName:  "com.",
 			},
-			errWrapped: ErrRRSigSignerName,
+			errWrapped: errRRSigSignerName,
 			errMessage: `for RRSIG for owner . and type DNSKEY: ` +
 				`signer name is not valid: "com." should be "."`,
 		},
@@ -130,7 +130,7 @@ func Test_rrSigCheckSignerName(t *testing.T) {
 				TypeCovered: dns.TypeDS,
 				SignerName:  "example.com.",
 			},
-			errWrapped: ErrRRSigSignerName,
+			errWrapped: errRRSigSignerName,
 			errMessage: `for RRSIG for owner example.com. and type DS: ` +
 				`signer name is not valid: "example.com." should be "com."`,
 		},
@@ -151,7 +151,7 @@ func Test_rrSigCheckSignerName(t *testing.T) {
 				TypeCovered: dns.TypeCNAME,
 				SignerName:  "example.com.",
 			},
-			errWrapped: ErrRRSigSignerName,
+			errWrapped: errRRSigSignerName,
 			errMessage: `for RRSIG for owner example.com. and type CNAME: ` +
 				`signer name is not valid: "example.com." should be "com."`,
 		},

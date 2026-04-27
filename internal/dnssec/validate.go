@@ -126,7 +126,7 @@ func validateWithChain(desiredZone string, qType uint16,
 		// no parent zone was found to be unsigned, meaning this
 		// is bogus.
 		return fmt.Errorf("%w: desired query response is unsigned "+
-			"but no parent zone was found to be insecure", ErrBogus)
+			"but no parent zone was found to be insecure", errBogus)
 	}
 
 	if parentZoneInsecure {
@@ -211,9 +211,9 @@ func verifyDSRRSet(dsRRSet []dns.RR,
 }
 
 var (
-	ErrDNSKeyNotFound   = errors.New("DNSKEY resource record not found")
-	ErrDNSKeyToDS       = errors.New("failed to calculate DS from DNSKEY")
-	ErrDNSKeyDSMismatch = errors.New("DS does not match DNS key")
+	errDNSKeyNotFound   = errors.New("DNSKEY resource record not found")
+	errDNSKeyToDS       = errors.New("failed to calculate DS from DNSKEY")
+	errDNSKeyDSMismatch = errors.New("DS does not match DNS key")
 )
 
 func verifyDS(receivedDS *dns.DS,
@@ -223,19 +223,19 @@ func verifyDS(receivedDS *dns.DS,
 	dnsKey, ok := keyTagToDNSKey[receivedDS.KeyTag]
 	if !ok {
 		return fmt.Errorf("for RRSIG key tag %d: %w",
-			receivedDS.KeyTag, ErrDNSKeyNotFound)
+			receivedDS.KeyTag, errDNSKeyNotFound)
 	}
 
 	calculatedDS := dnsKey.ToDS(receivedDS.DigestType)
 	if calculatedDS == nil {
 		return fmt.Errorf("%w: for DNSKEY name %s and digest type %d",
-			ErrDNSKeyToDS, dnsKey.Header().Name, receivedDS.DigestType)
+			errDNSKeyToDS, dnsKey.Header().Name, receivedDS.DigestType)
 	}
 
 	if !strings.EqualFold(receivedDS.Digest, calculatedDS.Digest) {
 		return fmt.Errorf("%w: DS record has digest %s "+
 			"but DNSKEY calculated DS has digest %s",
-			ErrDNSKeyDSMismatch, receivedDS.Digest, calculatedDS.Digest)
+			errDNSKeyDSMismatch, receivedDS.Digest, calculatedDS.Digest)
 	}
 
 	return nil

@@ -7,7 +7,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-var ErrRRSigWildcardUnexpected = errors.New("RRSIG for a wildcard is unexpected")
+var errRRSigWildcardUnexpected = errors.New("RRSIG for a wildcard is unexpected")
 
 func validateNxDomain(qname string, authoritySection []dnssecRRSet,
 	keyTagToDNSKey map[uint16]*dns.DNSKEY,
@@ -20,7 +20,7 @@ func validateNxDomain(qname string, authoritySection []dnssecRRSet,
 	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
 	if wildcard {
 		return fmt.Errorf("for NXDOMAIN response for %s: NSEC3: %w",
-			qname, ErrRRSigWildcardUnexpected)
+			qname, errRRSigWildcardUnexpected)
 	} else if len(nsec3RRs) > 0 {
 		nsec3RRs, err = nsec3InitialChecks(nsec3RRs)
 		if err != nil {
@@ -35,5 +35,5 @@ func validateNxDomain(qname string, authoritySection []dnssecRRSet,
 	}
 
 	return fmt.Errorf("for %s: %w: no NSEC or NSEC3 record found",
-		qname, ErrBogus)
+		qname, errBogus)
 }
