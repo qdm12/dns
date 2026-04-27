@@ -185,7 +185,8 @@ func validateWithChain(desiredZone string, qType uint16,
 			return fmt.Errorf("verifying authority section RRSets with RRSigs: %w", err)
 		}
 
-		err = validateWildcardExpansion(desiredZone, desiredResponse.authorityRRSets)
+		err = validateWildcardExpansion(desiredZone, desiredResponse.authorityRRSets,
+			lastSecureKeyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("validating wildcard expansion: %w", err)
 		}

@@ -22,7 +22,7 @@ func validateNoData(qname string, qtype uint16,
 
 	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
-		nsec3RRs, err = nsec3InitialChecks(nsec3RRs)
+		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		} else if wildcard {
@@ -52,7 +52,7 @@ func validateNoDataDS(qname string,
 
 	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
-		nsec3RRs, err = nsec3InitialChecks(nsec3RRs)
+		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		} else if wildcard {
