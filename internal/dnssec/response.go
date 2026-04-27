@@ -21,7 +21,9 @@ func (d dnssecResponse) isNoData() bool {
 }
 
 func (d dnssecResponse) isSigned() bool {
-	// Note a slice of DNSSEC RRSets is either all signed or all unsigned.
+	// Check the first RRSet to determine the signing status of the primary zone.
+	// Different owner names (from different zones in a CNAME chain) may have
+	// different signing status; this checks the first (typically the queried name).
 	switch {
 	case len(d.answerRRSets) > 0 && len(d.answerRRSets[0].rrSigs) == 0,
 		len(d.authorityRRSets) > 0 && len(d.authorityRRSets[0].rrSigs) == 0,

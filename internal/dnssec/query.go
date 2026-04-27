@@ -157,9 +157,6 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 	}
 	typeZoneToIndex := make(map[typeZoneKey]int, maxRRSets)
 
-	// Used to check we have all signed RRSets or all
-	// unsigned RRSets.
-	signedRRSetsCount := 0
 	for _, rr := range rrs {
 		header := rr.Header()
 		typeZoneKey := typeZoneKey{
@@ -183,9 +180,6 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 				typeZoneToIndex[typeZoneKey] = i
 			}
 
-			if len(dnssecRRSets[i].rrSigs) == 0 {
-				signedRRSetsCount++
-			}
 			dnssecRRSets[i].rrSigs = append(dnssecRRSets[i].rrSigs, rrsig)
 			continue
 		}
@@ -200,14 +194,9 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 		dnssecRRSets[i].rrSet = append(dnssecRRSets[i].rrSet, rr)
 	}
 
-	// Verify all RRSets are either signed or unsigned.
-	switch signedRRSetsCount {
-	case 0:
-	case len(dnssecRRSets):
-	default:
-		unsignedRRSetsCount := len(dnssecRRSets) - signedRRSetsCount
-		return nil, fmt.Errorf("%w: %d signed and %d unsigned RRSets",
-			errRRSetSignedAndUnsigned, signedRRSetsCount, unsignedRRSetsCount)
+	err = validateOwnerSigningConsistency(dnssecRRSets)
+	if err != nil {
+		return nil, err
 	}
 
 	// Verify built DNSSEC RRSets are well formed.
@@ -221,4 +210,41 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 	}
 
 	return dnssecRRSets, nil
+}
+
+// validateOwnerSigningConsistency checks each owner name has only signed
+// or only unsigned RRSets. Different owner names (from different zones in a
+// CNAME chain) may legitimately have different signing status.
+func validateOwnerSigningConsistency(rrSets []dnssecRRSet) error {
+	type ownerStats struct{ signed, unsigned int }
+	ownerSigningMap := make(map[string]*ownerStats, len(rrSets))
+	for _, rrSet := range rrSets {
+		var owner string
+		if len(rrSet.rrSet) > 0 {
+			owner = rrSet.rrSet[0].Header().Name
+		} else {
+			// RRSIG-only RRSet; errRRSigForNoRRSet will be returned by groupRRs.
+			owner = rrSet.rrSigs[0].Hdr.Name
+		}
+
+		stats := ownerSigningMap[owner]
+		if stats == nil {
+			stats = &ownerStats{}
+			ownerSigningMap[owner] = stats
+		}
+		if len(rrSet.rrSigs) > 0 {
+			stats.signed++
+		} else {
+			stats.unsigned++
+		}
+	}
+
+	for owner, stats := range ownerSigningMap {
+		if stats.signed > 0 && stats.unsigned > 0 {
+			return fmt.Errorf("%w: owner %s has %d signed and %d unsigned RRSets",
+				errRRSetSignedAndUnsigned, owner, stats.signed, stats.unsigned)
+		}
+	}
+
+	return nil
 }
