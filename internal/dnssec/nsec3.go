@@ -47,10 +47,10 @@ var (
 	errNSEC3IterationsTooHigh        = errors.New("NSEC3 iteration count too high for DNSKEY strength policy")
 )
 
-func nsec3InitialChecks(nsec3RRSet []dns.RR, keyTagToDNSKey map[uint16]*dns.DNSKEY,
+func nsec3InitialChecks(nsec3RRSet []dns.RR, keyTagToDNSKeys dnsKeysByTag,
 ) (sanitizedNSEC3RRSet []dns.RR, err error) {
 	sanitizedNSEC3RRSet = make([]dns.RR, 0, len(nsec3RRSet))
-	maxIterations := maxNSEC3IterationsForDNSKeys(keyTagToDNSKey)
+	maxIterations := maxNSEC3IterationsForDNSKeys(keyTagToDNSKeys)
 
 	const usualCapacity = 1
 	hashTypes := make(map[uint8]struct{}, usualCapacity)
@@ -104,7 +104,7 @@ func nsec3InitialChecks(nsec3RRSet []dns.RR, keyTagToDNSKey map[uint16]*dns.DNSK
 	return sanitizedNSEC3RRSet, nil
 }
 
-func maxNSEC3IterationsForDNSKeys(keyTagToDNSKey map[uint16]*dns.DNSKEY) uint16 {
+func maxNSEC3IterationsForDNSKeys(keyTagToDNSKeys dnsKeysByTag) uint16 {
 	// RFC 5155 section 10.3 policy table constants.
 	const (
 		nsec3SmallKeyBitsThreshold  uint16 = 1024
@@ -114,18 +114,20 @@ func maxNSEC3IterationsForDNSKeys(keyTagToDNSKey map[uint16]*dns.DNSKEY) uint16 
 		nsec3MaxIterationsLargeKey  uint16 = 2500
 	)
 
-	if len(keyTagToDNSKey) == 0 {
+	if len(keyTagToDNSKeys) == 0 {
 		return nsec3MaxIterationsLargeKey
 	}
 
 	var minBits uint16
-	for _, dnsKey := range keyTagToDNSKey {
-		bits := dnsKeyStrengthBits(dnsKey)
-		if bits == 0 {
-			continue
-		}
-		if minBits == 0 || bits < minBits {
-			minBits = bits
+	for _, dnsKeys := range keyTagToDNSKeys {
+		for _, dnsKey := range dnsKeys {
+			bits := dnsKeyStrengthBits(dnsKey)
+			if bits == 0 {
+				continue
+			}
+			if minBits == 0 || bits < minBits {
+				minBits = bits
+			}
 		}
 	}
 

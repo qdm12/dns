@@ -58,11 +58,11 @@ func rrsigInitialChecks(rrsig *dns.RRSIG) (err error) {
 	return nil
 }
 
-func verifyRRSetsRRSig(answerRRSets []dnssecRRSet, keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
+func verifyRRSetsRRSig(answerRRSets []dnssecRRSet, keyTagToDNSKeys dnsKeysByTag) (err error) {
 	budget := newRRSIGValidationBudget()
 	for _, signedRRSet := range answerRRSets {
 		err = verifyRRSetRRSigs(signedRRSet.rrSet,
-			signedRRSet.rrSigs, keyTagToDNSKey, budget)
+			signedRRSet.rrSigs, keyTagToDNSKeys, budget)
 		if err != nil {
 			return err
 		}
@@ -72,7 +72,7 @@ func verifyRRSetsRRSig(answerRRSets []dnssecRRSet, keyTagToDNSKey map[uint16]*dn
 }
 
 func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY, budget *rrsigValidationBudget,
+	keyTagToDNSKeys dnsKeysByTag, budget *rrsigValidationBudget,
 ) (
 	err error,
 ) {
@@ -84,7 +84,7 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 			errRRSIGValidationRRSetBudgetExceeded,
 			len(rrSigs), maxRRSIGValidationsPerRRSet)
 	case len(rrSigs) == 1:
-		return verifyRRSetRRSig(rrSet, rrSigs[0], keyTagToDNSKey, budget)
+		return verifyRRSetRRSig(rrSet, rrSigs[0], keyTagToDNSKeys, budget)
 	}
 
 	// Multiple RRSIGs for the same RRSet, sort them by algorithm preference
@@ -110,21 +110,25 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 			continue
 		}
 
-		keyTag := rrSig.KeyTag
-		dnsKey, ok := keyTagToDNSKey[keyTag]
-		if !ok {
-			errs.add(fmt.Errorf("%w: in %d DNSKEY(s) for key tag %d",
-				errRRSigDNSKeyTag, len(keyTagToDNSKey), keyTag))
+		matchingDNSKeys := matchingDNSKeysForRRSIG(rrSig, keyTagToDNSKeys)
+		if len(matchingDNSKeys) == 0 {
+			errs.add(fmt.Errorf("%w: for signer %s, algorithm %d and key tag %d",
+				errRRSigDNSKey, rrSig.SignerName, rrSig.Algorithm, rrSig.KeyTag))
 			continue
 		}
 
-		err = rrSig.Verify(dnsKey, rrSet)
-		if err != nil {
+		var verified bool
+		for _, dnsKey := range matchingDNSKeys {
+			err = rrSig.Verify(dnsKey, rrSet)
+			if err == nil {
+				verified = true
+				break
+			}
 			errs.add(err)
-			continue
 		}
-
-		return nil
+		if verified {
+			return nil
+		}
 	}
 
 	return fmt.Errorf("%d RRSIGs failed to validate the RRSet: %w",
@@ -132,11 +136,31 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 }
 
 var (
-	errRRSigDNSKeyTag            = errors.New("DNSKEY not found")
+	errRRSigDNSKey               = errors.New("DNSKEY not found")
 	errRRSigExpired              = errors.New("RRSIG has expired")
 	errRRSigForbiddenAlgorithm   = errors.New("RRSIG algorithm is forbidden by RFC 8624")
 	errRRSigUnsupportedAlgorithm = errors.New("RRSIG algorithm is not supported")
 )
+
+func matchingDNSKeysForRRSIG(rrSig *dns.RRSIG, keyTagToDNSKeys dnsKeysByTag) []*dns.DNSKEY {
+	dnsKeys := keyTagToDNSKeys[rrSig.KeyTag]
+	if len(dnsKeys) == 0 {
+		return nil
+	}
+
+	matches := make([]*dns.DNSKEY, 0, len(dnsKeys))
+	for _, dnsKey := range dnsKeys {
+		if !strings.EqualFold(dnsKey.Header().Name, rrSig.SignerName) {
+			continue
+		}
+		if dnsKey.Algorithm != rrSig.Algorithm {
+			continue
+		}
+		matches = append(matches, dnsKey)
+	}
+
+	return matches
+}
 
 // checkRRSigAlgorithm returns an error if the RRSIG's algorithm must not
 // or cannot be used for validation per RFC 8624 section 3.1.
@@ -156,7 +180,7 @@ func checkRRSigAlgorithm(rrSig *dns.RRSIG) error {
 }
 
 func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY, budget *rrsigValidationBudget,
+	keyTagToDNSKeys dnsKeysByTag, budget *rrsigValidationBudget,
 ) (err error) {
 	if err = checkRRSigAlgorithm(rrSig); err != nil {
 		return err
@@ -171,19 +195,20 @@ func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
 		return fmt.Errorf("%w", errRRSigExpired)
 	}
 
-	keyTag := rrSig.KeyTag
-	dnsKey, ok := keyTagToDNSKey[keyTag]
-	if !ok {
-		return fmt.Errorf("%w: in %d DNSKEY(s) for key tag %d",
-			errRRSigDNSKeyTag, len(keyTagToDNSKey), keyTag)
+	matchingDNSKeys := matchingDNSKeysForRRSIG(rrSig, keyTagToDNSKeys)
+	if len(matchingDNSKeys) == 0 {
+		return fmt.Errorf("%w: for signer %s, algorithm %d and key tag %d",
+			errRRSigDNSKey, rrSig.SignerName, rrSig.Algorithm, rrSig.KeyTag)
 	}
 
-	err = rrSig.Verify(dnsKey, rrSet)
-	if err != nil {
-		return err
+	for _, dnsKey := range matchingDNSKeys {
+		err = rrSig.Verify(dnsKey, rrSet)
+		if err == nil {
+			return nil
+		}
 	}
 
-	return nil
+	return err
 }
 
 const (

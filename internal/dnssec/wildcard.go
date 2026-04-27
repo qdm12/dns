@@ -58,11 +58,11 @@ func answerHasWildcardedDNAME(answerRRSets []dnssecRRSet) bool {
 // - https://datatracker.ietf.org/doc/html/rfc4035#section-5.3.4
 // - https://datatracker.ietf.org/doc/html/rfc4035#section-3.1.3.3
 func validateWildcardExpansion(expandedQname string,
-	authoritySection []dnssecRRSet, keyTagToDNSKey map[uint16]*dns.DNSKEY,
+	authoritySection []dnssecRRSet, keyTagToDNSKeys dnsKeysByTag,
 ) (err error) {
 	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
-		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKey)
+		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		}

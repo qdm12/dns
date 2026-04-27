@@ -50,7 +50,7 @@ func Test_nsec3InitialChecks_IterationPolicy(t *testing.T) {
 
 	testCases := map[string]struct {
 		iterations     uint16
-		keyTagToDNSKey map[uint16]*dns.DNSKEY
+		keyTagToDNSKey dnsKeysByTag
 		errWrapped     error
 		expectLen      int
 	}{
@@ -60,12 +60,12 @@ func Test_nsec3InitialChecks_IterationPolicy(t *testing.T) {
 		},
 		"rejects_iterations_above_small_key_policy": {
 			iterations:     151,
-			keyTagToDNSKey: map[uint16]*dns.DNSKEY{12345: ed25519Key},
+			keyTagToDNSKey: dnsKeysByTag{12345: {ed25519Key}},
 			errWrapped:     errNSEC3IterationsTooHigh,
 		},
 		"accepts_iterations_within_policy": {
 			iterations:     150,
-			keyTagToDNSKey: map[uint16]*dns.DNSKEY{12345: ed25519Key},
+			keyTagToDNSKey: dnsKeysByTag{12345: {ed25519Key}},
 			expectLen:      1,
 		},
 	}

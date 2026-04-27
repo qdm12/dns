@@ -23,9 +23,9 @@ func validateWithChain(desiredZone string, qType uint16,
 
 	// Verify DNSKEY RRSet with its RRSIG and the DNSKEY matching
 	// the RRSIG key tag.
-	rootZoneKeyTagToDNSKey := makeKeyTagToDNSKey(rootZone.dnsKeyResponse.onlyAnswerRRSet())
+	rootZoneKeyTagToDNSKeys := makeKeyTagToDNSKeys(rootZone.dnsKeyResponse.onlyAnswerRRSet())
 	err = verifyRRSetRRSigs(rootZone.dnsKeyResponse.onlyAnswerRRSet(),
-		rootZone.dnsKeyResponse.onlyAnswerRRSigs(), rootZoneKeyTagToDNSKey,
+		rootZone.dnsKeyResponse.onlyAnswerRRSigs(), rootZoneKeyTagToDNSKeys,
 		newRRSIGValidationBudget())
 	if err != nil {
 		return fmt.Errorf("verifying DNSKEY records for the root zone: %w",
@@ -45,7 +45,7 @@ func validateWithChain(desiredZone string, qType uint16,
 		KeyTag:     rootAnchorKeyTag,
 		Digest:     rootAnchorDigest,
 	}
-	err = verifyDS(rootAnchor, rootZoneKeyTagToDNSKey)
+	err = verifyDS(rootAnchor, rootZoneKeyTagToDNSKeys)
 	if err != nil {
 		return fmt.Errorf("verifying the root anchor: %w", err)
 	}
@@ -76,8 +76,8 @@ func validateWithChain(desiredZone string, qType uint16,
 
 		switch {
 		case zoneData.dsResponse.isNXDomain():
-			parentKeyTagToDNSKey := makeKeyTagToDNSKey(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
-			err = validateNxDomain(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKey)
+			parentKeyTagToDNSKeys := makeKeyTagToDNSKeys(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
+			err = validateNxDomain(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKeys)
 			if err != nil {
 				return fmt.Errorf("validating NXDOMAIN DS response: %w", err)
 			}
@@ -85,8 +85,8 @@ func validateWithChain(desiredZone string, qType uint16,
 			// child zones are unsigned.
 			parentZoneInsecure = true
 		case zoneData.dsResponse.isNoData():
-			parentKeyTagToDNSKey := makeKeyTagToDNSKey(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
-			err = validateNoDataDS(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKey)
+			parentKeyTagToDNSKeys := makeKeyTagToDNSKeys(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
+			err = validateNoDataDS(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKeys)
 			if err != nil {
 				return fmt.Errorf("validating no data DS response: %w", err)
 			}
@@ -104,10 +104,10 @@ func validateWithChain(desiredZone string, qType uint16,
 		// Validate DNSKEY RRSet with its RRSIG and the DNSKEY matching
 		// the RRSIG key tag. Note a zone should only have a DNSKEY RRSet
 		// if it has a DS RRSet.
-		keyTagToDNSKey := makeKeyTagToDNSKey(zoneData.dnsKeyResponse.onlyAnswerRRSet())
+		keyTagToDNSKeys := makeKeyTagToDNSKeys(zoneData.dnsKeyResponse.onlyAnswerRRSet())
 		err = verifyRRSetRRSigs(zoneData.dnsKeyResponse.onlyAnswerRRSet(),
 			zoneData.dnsKeyResponse.onlyAnswerRRSigs(),
-			keyTagToDNSKey, newRRSIGValidationBudget())
+			keyTagToDNSKeys, newRRSIGValidationBudget())
 		if err != nil {
 			return fmt.Errorf("validating DNSKEY RRSet for zone %s: %w",
 				zoneData.zone, err)
@@ -115,9 +115,9 @@ func validateWithChain(desiredZone string, qType uint16,
 
 		// Validate DS RRSet with its RRSIG and the DNSKEY of its parent zone
 		// matching the RRSIG key tag.
-		parentKeyTagToDNSKey := makeKeyTagToDNSKey(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
+		parentKeyTagToDNSKeys := makeKeyTagToDNSKeys(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
 		err = verifyRRSetRRSigs(zoneData.dsResponse.onlyAnswerRRSet(),
-			zoneData.dsResponse.onlyAnswerRRSigs(), parentKeyTagToDNSKey,
+			zoneData.dsResponse.onlyAnswerRRSigs(), parentKeyTagToDNSKeys,
 			newRRSIGValidationBudget())
 		if err != nil {
 			return fmt.Errorf("validating DS RRSet for zone %s: %w",
@@ -125,7 +125,7 @@ func validateWithChain(desiredZone string, qType uint16,
 		}
 
 		// Validate DS RRSet digests with their corresponding DNSKEYs.
-		err = verifyDSRRSet(zoneData.dsResponse.onlyAnswerRRSet(), keyTagToDNSKey)
+		err = verifyDSRRSet(zoneData.dsResponse.onlyAnswerRRSet(), keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("verifying DS RRSet for zone %s: %w",
 				zoneData.zone, err)
@@ -164,18 +164,18 @@ func validateWithChain(desiredZone string, qType uint16,
 		}
 	}
 
-	lastSecureKeyTagToDNSKey := makeKeyTagToDNSKey(lastSecureZoneData.dnsKeyResponse.onlyAnswerRRSet())
+	lastSecureKeyTagToDNSKeys := makeKeyTagToDNSKeys(lastSecureZoneData.dnsKeyResponse.onlyAnswerRRSet())
 	switch {
 	case desiredResponse.isNXDomain():
 		err = validateNxDomain(desiredZone, desiredResponse.authorityRRSets,
-			lastSecureKeyTagToDNSKey)
+			lastSecureKeyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("validating negative NXDOMAIN response: %w", err)
 		}
 		return nil
 	case desiredResponse.isNoData():
 		err = validateNoData(desiredZone, qType, desiredResponse.authorityRRSets,
-			lastSecureKeyTagToDNSKey)
+			lastSecureKeyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("validating negative NODATA response: %w", err)
 		}
@@ -183,7 +183,7 @@ func validateWithChain(desiredZone string, qType uint16,
 	default:
 		// Verify the desired RRSets with the DNSKEY of the desired
 		// zone matching the RRSIG key tag.
-		err = verifyRRSetsRRSig(desiredResponse.answerRRSets, lastSecureKeyTagToDNSKey)
+		err = verifyRRSetsRRSig(desiredResponse.answerRRSets, lastSecureKeyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("verifying RRSets with RRSigs: %w", err)
 		}
@@ -192,13 +192,13 @@ func validateWithChain(desiredZone string, qType uint16,
 			return nil
 		}
 
-		err = verifyRRSetsRRSig(desiredResponse.authorityRRSets, lastSecureKeyTagToDNSKey)
+		err = verifyRRSetsRRSig(desiredResponse.authorityRRSets, lastSecureKeyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("verifying authority section RRSets with RRSigs: %w", err)
 		}
 
 		err = validateWildcardExpansion(desiredZone, desiredResponse.authorityRRSets,
-			lastSecureKeyTagToDNSKey)
+			lastSecureKeyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("validating wildcard expansion: %w", err)
 		}
@@ -211,11 +211,11 @@ func validateWithChain(desiredZone string, qType uint16,
 // is equal to the digest of the calculated DS obtained
 // from the DNSKEY (KSK) matching the received DS key tag.
 func verifyDSRRSet(dsRRSet []dns.RR,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+	keyTagToDNSKeys dnsKeysByTag,
 ) (err error) {
 	for _, rr := range dsRRSet {
 		ds := mustRRToDS(rr)
-		err = verifyDS(ds, keyTagToDNSKey)
+		err = verifyDS(ds, keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("verifying DS record: %w", err)
 		}
@@ -225,31 +225,33 @@ func verifyDSRRSet(dsRRSet []dns.RR,
 
 var (
 	errDNSKeyNotFound   = errors.New("DNSKEY resource record not found")
-	errDNSKeyToDS       = errors.New("failed to calculate DS from DNSKEY")
 	errDNSKeyDSMismatch = errors.New("DS does not match DNS key")
 )
 
 func verifyDS(receivedDS *dns.DS,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+	keyTagToDNSKeys dnsKeysByTag,
 ) error {
-	// Note keyTagToDNSKey only contains ZSKs.
-	dnsKey, ok := keyTagToDNSKey[receivedDS.KeyTag]
-	if !ok {
+	dnsKeys := keyTagToDNSKeys[receivedDS.KeyTag]
+	if len(dnsKeys) == 0 {
 		return fmt.Errorf("for RRSIG key tag %d: %w",
 			receivedDS.KeyTag, errDNSKeyNotFound)
 	}
 
-	calculatedDS := dnsKey.ToDS(receivedDS.DigestType)
-	if calculatedDS == nil {
-		return fmt.Errorf("%w: for DNSKEY name %s and digest type %d",
-			errDNSKeyToDS, dnsKey.Header().Name, receivedDS.DigestType)
+	for _, dnsKey := range dnsKeys {
+		if dnsKey.Algorithm != receivedDS.Algorithm {
+			continue
+		}
+
+		calculatedDS := dnsKey.ToDS(receivedDS.DigestType)
+		if calculatedDS == nil {
+			continue
+		}
+
+		if strings.EqualFold(receivedDS.Digest, calculatedDS.Digest) {
+			return nil
+		}
 	}
 
-	if !strings.EqualFold(receivedDS.Digest, calculatedDS.Digest) {
-		return fmt.Errorf("%w: DS record has digest %s "+
-			"but DNSKEY calculated DS has digest %s",
-			errDNSKeyDSMismatch, receivedDS.Digest, calculatedDS.Digest)
-	}
-
-	return nil
+	return fmt.Errorf("%w: for key tag %d and algorithm %d",
+		errDNSKeyDSMismatch, receivedDS.KeyTag, receivedDS.Algorithm)
 }

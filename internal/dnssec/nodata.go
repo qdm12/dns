@@ -13,16 +13,16 @@ import (
 // validateNoDataDS for the qtype DS.
 func validateNoData(qname string, qtype uint16,
 	authoritySection []dnssecRRSet,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+	keyTagToDNSKeys dnsKeysByTag,
 ) (err error) {
-	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKeys)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}
 
 	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
-		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKey)
+		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		} else if wildcard {
@@ -43,16 +43,16 @@ func validateNoData(qname string, qtype uint16,
 
 func validateNoDataDS(qname string,
 	authoritySection []dnssecRRSet,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+	keyTagToDNSKeys dnsKeysByTag,
 ) (err error) {
-	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKey)
+	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKeys)
 	if err != nil {
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}
 
 	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
-		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKey)
+		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		} else if wildcard {

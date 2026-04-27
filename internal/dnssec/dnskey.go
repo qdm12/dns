@@ -14,10 +14,12 @@ func mustRRToDNSKey(rr dns.RR) *dns.DNSKEY {
 	return dnsKey
 }
 
-// makeKeyTagToDNSKey creates a map of key tag to DNSKEY from a DNSKEY RRSet,
-// ignoring any RR which is not a Zone signing key.
-func makeKeyTagToDNSKey(dnsKeyRRSet []dns.RR) (keyTagToDNSKey map[uint16]*dns.DNSKEY) {
-	keyTagToDNSKey = make(map[uint16]*dns.DNSKEY, len(dnsKeyRRSet))
+type dnsKeysByTag map[uint16][]*dns.DNSKEY
+
+// makeKeyTagToDNSKeys creates a map of key tag to DNSKEYs from a DNSKEY RRSet,
+// ignoring any RR which is not a zone signing key.
+func makeKeyTagToDNSKeys(dnsKeyRRSet []dns.RR) (keyTagToDNSKeys dnsKeysByTag) {
+	keyTagToDNSKeys = make(dnsKeysByTag, len(dnsKeyRRSet))
 	for _, dnsKeyRR := range dnsKeyRRSet {
 		dnsKey := mustRRToDNSKey(dnsKeyRR)
 		if dnsKey.Flags&dns.ZONE == 0 {
@@ -31,9 +33,10 @@ func makeKeyTagToDNSKey(dnsKeyRRSet []dns.RR) (keyTagToDNSKey map[uint16]*dns.DN
 			// in the validation process.
 			continue
 		}
-		keyTagToDNSKey[dnsKey.KeyTag()] = dnsKey
+		keyTag := dnsKey.KeyTag()
+		keyTagToDNSKeys[keyTag] = append(keyTagToDNSKeys[keyTag], dnsKey)
 	}
-	return keyTagToDNSKey
+	return keyTagToDNSKeys
 }
 
 const (
