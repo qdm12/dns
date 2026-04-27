@@ -51,6 +51,27 @@ func Test_Validate(t *testing.T) {
 				},
 			},
 		},
+		"cname_chain_signed_unsigned_dns1.nextdns.io": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "dns1.nextdns.io.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"cname_chain_signed_unsigned_acme-v02.api.letsencrypt.org_A": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "acme-v02.api.letsencrypt.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"cname_chain_signed_unsigned_acme-v02.api.letsencrypt.org_AAAA": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "acme-v02.api.letsencrypt.org.", Qtype: dns.TypeAAAA, Qclass: dns.ClassINET},
+				},
+			},
+		},
 		"nxdomain_nsec": {
 			request: &dns.Msg{
 				Question: []dns.Question{

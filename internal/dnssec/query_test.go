@@ -60,7 +60,7 @@ func Test_groupRRs(t *testing.T) {
 				newEmptyA(),
 			},
 			errWrapped: errRRSetSignedAndUnsigned,
-			errMessage: "mix of signed and unsigned RRSets: 1 signed and 1 unsigned RRSets",
+			errMessage: "mix of signed and unsigned RRSets: owner example.com. has 1 signed and 1 unsigned RRSets",
 		},
 		"signed_rrsets": {
 			rrs: []dns.RR{
