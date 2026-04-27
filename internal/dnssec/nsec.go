@@ -67,9 +67,12 @@ func nsecValidateNoData(qname string, qType uint16,
 			return fmt.Errorf("for qname %s and type %s: %w: "+
 				"qtype contained in NSEC",
 				qname, dns.TypeToString[qType], ErrBogus)
-		case dns.TypeCNAME: // TODO check this is invalid
+		case dns.TypeCNAME:
+			// Per RFC 4034 §4.4: A CNAME RR and other RRs cannot coexist at the same owner name.
+			// Therefore, if NSEC type bitmap contains CNAME for a qtype query that is not CNAME,
+			// the NSEC is invalid (it claims both CNAME and qtype exist at the same owner).
 			return fmt.Errorf("for qname %s and type %s: %w: "+
-				"CNAME contained in NSEC",
+				"NSEC contains both CNAME and qtype (RFC 4034 violation)",
 				qname, dns.TypeToString[qType], ErrBogus)
 		}
 	}
