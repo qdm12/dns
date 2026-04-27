@@ -55,106 +55,56 @@ func Test_sortRRSIGsByAlgo(t *testing.T) {
 	}
 }
 
-func Test_rrSigCheckSignerName(t *testing.T) {
+func Test_checkRRSigSignerName(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		rrSig      *dns.RRSIG
-		errWrapped error
-		errMessage string
+		rrSig           *dns.RRSIG
+		keyTagToDNSKeys dnsKeysByTag
+		errWrapped      error
+		errMessage      string
 	}{
-		"a_signer_is_owner": {
+		"signer_matches_dnskey_owner": {
 			rrSig: &dns.RRSIG{
 				Hdr: dns.RR_Header{
 					Name: "example.com.",
 				},
 				TypeCovered: dns.TypeA,
 				SignerName:  "example.com.",
+				KeyTag:      42,
+			},
+			keyTagToDNSKeys: dnsKeysByTag{
+				42: {&dns.DNSKEY{Hdr: dns.RR_Header{Name: "example.com."}}},
 			},
 		},
-		"a_signer_is_parent": {
+		"signer_mismatch": {
 			rrSig: &dns.RRSIG{
 				Hdr: dns.RR_Header{
 					Name: "example.com.",
 				},
 				TypeCovered: dns.TypeA,
 				SignerName:  "com.",
+				KeyTag:      42,
 			},
-		},
-		"a_signer_is_invalid": {
-			rrSig: &dns.RRSIG{
-				Hdr: dns.RR_Header{
-					Name: "example.com.",
-				},
-				TypeCovered: dns.TypeA,
-				SignerName:  ".",
+			keyTagToDNSKeys: dnsKeysByTag{
+				42: {&dns.DNSKEY{Hdr: dns.RR_Header{Name: "example.com."}}},
 			},
 			errWrapped: errRRSigSignerName,
 			errMessage: `for RRSIG for owner example.com. and type A: ` +
-				`signer name is not valid: "." should be "example.com." or "com."`,
+				`RRSIG signer name is not zone apex: "com." should be "example.com."`,
 		},
-		"root_dnskey_signer_is_root": {
-			rrSig: &dns.RRSIG{
-				Hdr: dns.RR_Header{
-					Name: ".",
-				},
-				TypeCovered: dns.TypeDNSKEY,
-				SignerName:  ".",
-			},
-		},
-		"root_dnskey_signer_is_invalid": {
-			rrSig: &dns.RRSIG{
-				Hdr: dns.RR_Header{
-					Name: ".",
-				},
-				TypeCovered: dns.TypeDNSKEY,
-				SignerName:  "com.",
-			},
-			errWrapped: errRRSigSignerName,
-			errMessage: `for RRSIG for owner . and type DNSKEY: ` +
-				`signer name is not valid: "com." should be "."`,
-		},
-		"ds_signer_is_parent": {
+		"key_tag_not_found": {
 			rrSig: &dns.RRSIG{
 				Hdr: dns.RR_Header{
 					Name: "example.com.",
 				},
-				TypeCovered: dns.TypeDS,
-				SignerName:  "com.",
-			},
-		},
-		"ds_signer_is_owner": {
-			rrSig: &dns.RRSIG{
-				Hdr: dns.RR_Header{
-					Name: "example.com.",
-				},
-				TypeCovered: dns.TypeDS,
+				TypeCovered: dns.TypeA,
 				SignerName:  "example.com.",
+				KeyTag:      99,
 			},
-			errWrapped: errRRSigSignerName,
-			errMessage: `for RRSIG for owner example.com. and type DS: ` +
-				`signer name is not valid: "example.com." should be "com."`,
-		},
-		"cname_signer_is_parent": {
-			rrSig: &dns.RRSIG{
-				Hdr: dns.RR_Header{
-					Name: "example.com.",
-				},
-				TypeCovered: dns.TypeCNAME,
-				SignerName:  "com.",
-			},
-		},
-		"cname_signer_is_owner": {
-			rrSig: &dns.RRSIG{
-				Hdr: dns.RR_Header{
-					Name: "example.com.",
-				},
-				TypeCovered: dns.TypeCNAME,
-				SignerName:  "example.com.",
-			},
-			errWrapped: errRRSigSignerName,
-			errMessage: `for RRSIG for owner example.com. and type CNAME: ` +
-				`signer name is not valid: "example.com." should be "com."`,
+			keyTagToDNSKeys: dnsKeysByTag{},
+			errWrapped:      errRRSigDNSKey,
+			errMessage:      `DNSKEY not found: for key tag 99`,
 		},
 	}
 
@@ -162,7 +112,7 @@ func Test_rrSigCheckSignerName(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			err := rrSigCheckSignerName(testCase.rrSig)
+			err := checkRRSigSignerName(testCase.rrSig, testCase.keyTagToDNSKeys)
 
 			assert.ErrorIs(t, err, testCase.errWrapped)
 			if testCase.errWrapped != nil {

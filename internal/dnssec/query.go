@@ -138,13 +138,13 @@ func validateNegativeResponseProofSignatures(rrSets []dnssecRRSet) (err error) {
 //     same class
 //   - The RRSIG RR's Type Covered field MUST equal the RRset's type.
 //
-// And the function returns an error for the following unmet requirements:
-//   - The RRSIG RR's Signer's Name field MUST be the name of the zone
-//     that contains the RRset.
+// And the function returns an error for the following unmet requirement:
 //   - The number of labels in the RRset owner name MUST be greater than
 //     or equal to the value in the RRSIG RR's Labels field.
 //
 // The following requirements are enforced at a later stage:
+//   - The RRSIG RR's Signer's Name field MUST be the name of the zone
+//     that contains the RRset.
 //   - The validator's notion of the current time MUST be less than or
 //     equal to the time listed in the RRSIG RR's Expiration field.
 func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {

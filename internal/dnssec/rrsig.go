@@ -3,7 +3,6 @@ package dnssec
 import (
 	"errors"
 	"fmt"
-	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -41,11 +40,6 @@ var errRRSigLabels = errors.New("RRSIG labels greater than owner labels")
 // See https://datatracker.ietf.org/doc/html/rfc4035#section-5.3.1
 func rrsigInitialChecks(rrsig *dns.RRSIG) (err error) {
 	rrSetOwner := rrsig.Hdr.Name
-
-	err = rrSigCheckSignerName(rrsig)
-	if err != nil {
-		return err
-	}
 
 	if int(rrsig.Labels) > dns.CountLabel(rrSetOwner) {
 		// The number of labels in the RRset owner name MUST be greater than
@@ -110,6 +104,12 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 			continue
 		}
 
+		err = checkRRSigSignerName(rrSig, keyTagToDNSKeys)
+		if err != nil {
+			errs.add(err)
+			continue
+		}
+
 		matchingDNSKeys := matchingDNSKeysForRRSIG(rrSig, keyTagToDNSKeys)
 		if len(matchingDNSKeys) == 0 {
 			errs.add(fmt.Errorf("%w: for signer %s, algorithm %d and key tag %d",
@@ -137,6 +137,7 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 
 var (
 	errRRSigDNSKey               = errors.New("DNSKEY not found")
+	errRRSigSignerName           = errors.New("RRSIG signer name is not zone apex")
 	errRRSigExpired              = errors.New("RRSIG has expired")
 	errRRSigForbiddenAlgorithm   = errors.New("RRSIG algorithm is forbidden by RFC 8624")
 	errRRSigUnsupportedAlgorithm = errors.New("RRSIG algorithm is not supported")
@@ -195,6 +196,11 @@ func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
 		return fmt.Errorf("%w", errRRSigExpired)
 	}
 
+	err = checkRRSigSignerName(rrSig, keyTagToDNSKeys)
+	if err != nil {
+		return err
+	}
+
 	matchingDNSKeys := matchingDNSKeysForRRSIG(rrSig, keyTagToDNSKeys)
 	if len(matchingDNSKeys) == 0 {
 		return fmt.Errorf("%w: for signer %s, algorithm %d and key tag %d",
@@ -244,57 +250,33 @@ func sortRRSIGsByAlgo(rrSigs []*dns.RRSIG) {
 	})
 }
 
-var errRRSigSignerName = errors.New("signer name is not valid")
-
-// The RRSIG RR's Signer's Name field MUST be the
-// name of the zone that contains the RRset.
-func rrSigCheckSignerName(rrSig *dns.RRSIG) (err error) {
-	var validSignerNames []string
-	switch rrSig.TypeCovered {
-	case dns.TypeDS, dns.TypeCNAME, dns.TypeNSEC3:
-		validSignerNames = []string{parentName(rrSig.Hdr.Name)}
-	default:
-		// For NSEC RRs, the signer name must be the apex name which
-		// can be the owner or the parent of the owner of the RRSIG.
-		// For example:
-		// p.example.com. 3601 IN NSEC   r.example.com. A RRSIG NSEC
-		// p.example.com. 3601 IN RRSIG  NSEC 13 3 3601 20240111000000 20231221000000 42950 example.com. 0se..m GY..w==
-		// example.com.   3601 IN NSEC   l.example.com. A NS SOA RRSIG NSEC DNSKEY
-		// example.com.   3601 IN RRSIG  NSEC 13 2 3601 20240111000000 20231221000000 42950 example.com. pe..B 4V..Q==
-
-		// For other RRs, such as A, the signer name must be the owner
-		// or the parent of the owner, for example for sigok.ippacket.stream.
-		// the A record RRSIG owner is sigok.rsa2048-sha256.ippacket.stream.
-		// and signer name is rsa2048-sha256.ippacket.stream.
-		if rrSig.Hdr.Name == "." {
-			validSignerNames = []string{"."}
-			break
-		}
-
-		validSignerNames = make([]string, 0, strings.Count(rrSig.Hdr.Name, "."))
-		current := rrSig.Hdr.Name
-		for current != "." {
-			validSignerNames = append(validSignerNames, current)
-			current = parentName(current)
-		}
+func checkRRSigSignerName(rrSig *dns.RRSIG, keyTagToDNSKeys dnsKeysByTag) error {
+	dnsKeys := keyTagToDNSKeys[rrSig.KeyTag]
+	if len(dnsKeys) == 0 {
+		return fmt.Errorf("%w: for key tag %d", errRRSigDNSKey, rrSig.KeyTag)
 	}
 
-	if slices.Contains(validSignerNames, rrSig.SignerName) {
-		return nil
+	validSignerNames := make([]string, 0, len(dnsKeys))
+	for _, dnsKey := range dnsKeys {
+		signerName := dnsKey.Header().Name
+		if strings.EqualFold(signerName, rrSig.SignerName) {
+			return nil
+		}
+
+		duplicate := false
+		for _, existingSignerName := range validSignerNames {
+			if strings.EqualFold(existingSignerName, signerName) {
+				duplicate = true
+				break
+			}
+		}
+		if !duplicate {
+			validSignerNames = append(validSignerNames, signerName)
+		}
 	}
 
 	quoteStrings(validSignerNames)
 	return fmt.Errorf("for %s: %w: %q should be %s",
 		rrSigToOwnerTypeCovered(rrSig), errRRSigSignerName,
 		rrSig.SignerName, orStrings(validSignerNames))
-}
-
-func parentName(name string) (parent string) {
-	const offset = 0
-	nextLabelStart, end := dns.NextLabel(name, offset)
-	if end {
-		// parent of 'tld.' is '.' and parent of '.' is '.'
-		return "."
-	}
-	return name[nextLabelStart:]
 }
