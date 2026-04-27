@@ -38,7 +38,7 @@ func validateNoData(qname string, qtype uint16,
 
 	return fmt.Errorf("verifying no data for %s: %w: "+
 		"no NSEC or NSEC3 record found",
-		nameTypeToString(qname, qtype), ErrBogus)
+		nameTypeToString(qname, qtype), errBogus)
 }
 
 func validateNoDataDS(qname string,
@@ -68,7 +68,7 @@ func validateNoDataDS(qname string,
 
 	return fmt.Errorf("verifying no DS data for %s: %w: "+
 		"no NSEC or NSEC3 record found",
-		qname, ErrBogus)
+		qname, errBogus)
 }
 
 // See https://datatracker.ietf.org/doc/html/rfc5155#section-8.6
@@ -80,12 +80,12 @@ func verifyNoDataNsecxTypesDS(nsecVariant string,
 		case dns.TypeSOA:
 			return fmt.Errorf("%w: %s contains SOA type"+
 				" so is from the child zone and not the parent zone",
-				ErrBogus, nsecVariant)
+				errBogus, nsecVariant)
 		case dns.TypeDS:
-			return fmt.Errorf("%w: %s contains DS type", ErrBogus, nsecVariant)
+			return fmt.Errorf("%w: %s contains DS type", errBogus, nsecVariant)
 		case dns.TypeCNAME:
 			return fmt.Errorf("%w: %s contains CNAME type",
-				ErrBogus, nsecVariant)
+				errBogus, nsecVariant)
 		}
 	}
 

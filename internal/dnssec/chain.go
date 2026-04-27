@@ -88,7 +88,7 @@ func queryDelegation(handler dns.Handler, zone string, qClass uint16) (
 	return data, true, nil
 }
 
-var ErrDSAndNSECAbsent = errors.New("zone has no DS record and no NSEC record")
+var errDSAndNSECAbsent = errors.New("zone has no DS record and no NSEC record")
 
 func queryDS(handler dns.Handler, zone string, qClass uint16) (
 	response dnssecResponse, err error,
@@ -100,7 +100,7 @@ func queryDS(handler dns.Handler, zone string, qClass uint16) (
 	case !response.isSigned():
 		// no signed DS answer and no NSEC/NSEC3 authority RR
 		return dnssecResponse{}, wrapError(
-			zone, qClass, dns.TypeDS, ErrDSAndNSECAbsent)
+			zone, qClass, dns.TypeDS, errDSAndNSECAbsent)
 	case response.isNXDomain(), response.isNoData():
 		// there is one or more NSEC/NSEC3 authority RRSets.
 		return response, nil
@@ -134,7 +134,7 @@ func queryDNSKeys(handler dns.Handler, qname string, qClass uint16) (
 		// no signed DNSKEY answer
 		return dnssecResponse{}, fmt.Errorf("for %s: %w",
 			nameClassTypeToString(qname, qClass, dns.TypeDNSKEY),
-			ErrDNSKeyNotFound)
+			errDNSKeyNotFound)
 	}
 
 	// Double check we only have 1 DNSKEY RRSet.

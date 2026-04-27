@@ -35,7 +35,7 @@ func isRRSigForWildcard(rrSig *dns.RRSIG) bool {
 	return rrSig.Labels < ownerLabelsCount
 }
 
-var ErrRRSigLabels = errors.New("RRSIG labels greater than owner labels")
+var errRRSigLabels = errors.New("RRSIG labels greater than owner labels")
 
 // See https://datatracker.ietf.org/doc/html/rfc4035#section-5.3.1
 func rrsigInitialChecks(rrsig *dns.RRSIG) (err error) {
@@ -50,7 +50,7 @@ func rrsigInitialChecks(rrsig *dns.RRSIG) (err error) {
 		// The number of labels in the RRset owner name MUST be greater than
 		// or equal to the value in the RRSIG RR's Labels field.
 		return fmt.Errorf("for %s: %w: RRSig labels field is %d and owner is %d labels",
-			rrSigToOwnerTypeCovered(rrsig), ErrRRSigLabels,
+			rrSigToOwnerTypeCovered(rrsig), errRRSigLabels,
 			rrsig.Labels, dns.CountLabel(rrSetOwner))
 	}
 
@@ -90,7 +90,7 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 	errs := new(joinedErrors)
 	for _, rrSig := range rrSigs {
 		if !rrSig.ValidityPeriod(time.Now()) {
-			errs.add(fmt.Errorf("%w", ErrRRSigExpired))
+			errs.add(fmt.Errorf("%w", errRRSigExpired))
 			continue
 		}
 
@@ -98,7 +98,7 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 		dnsKey, ok := keyTagToDNSKey[keyTag]
 		if !ok {
 			errs.add(fmt.Errorf("%w: in %d DNSKEY(s) for key tag %d",
-				ErrRRSigDNSKeyTag, len(keyTagToDNSKey), keyTag))
+				errRRSigDNSKeyTag, len(keyTagToDNSKey), keyTag))
 			continue
 		}
 
@@ -116,22 +116,22 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 }
 
 var (
-	ErrRRSigDNSKeyTag = errors.New("DNSKEY not found")
-	ErrRRSigExpired   = errors.New("RRSIG has expired")
+	errRRSigDNSKeyTag = errors.New("DNSKEY not found")
+	errRRSigExpired   = errors.New("RRSIG has expired")
 )
 
 func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
 	keyTagToDNSKey map[uint16]*dns.DNSKEY,
 ) (err error) {
 	if !rrSig.ValidityPeriod(time.Now()) {
-		return fmt.Errorf("%w", ErrRRSigExpired)
+		return fmt.Errorf("%w", errRRSigExpired)
 	}
 
 	keyTag := rrSig.KeyTag
 	dnsKey, ok := keyTagToDNSKey[keyTag]
 	if !ok {
 		return fmt.Errorf("%w: in %d DNSKEY(s) for key tag %d",
-			ErrRRSigDNSKeyTag, len(keyTagToDNSKey), keyTag)
+			errRRSigDNSKeyTag, len(keyTagToDNSKey), keyTag)
 	}
 
 	err = rrSig.Verify(dnsKey, rrSet)
@@ -149,7 +149,7 @@ func sortRRSIGsByAlgo(rrSigs []*dns.RRSIG) {
 	})
 }
 
-var ErrRRSigSignerName = errors.New("signer name is not valid")
+var errRRSigSignerName = errors.New("signer name is not valid")
 
 // The RRSIG RR's Signer's Name field MUST be the
 // name of the zone that contains the RRset.
@@ -190,7 +190,7 @@ func rrSigCheckSignerName(rrSig *dns.RRSIG) (err error) {
 
 	quoteStrings(validSignerNames)
 	return fmt.Errorf("for %s: %w: %q should be %s",
-		rrSigToOwnerTypeCovered(rrSig), ErrRRSigSignerName,
+		rrSigToOwnerTypeCovered(rrSig), errRRSigSignerName,
 		rrSig.SignerName, orStrings(validSignerNames))
 }
 

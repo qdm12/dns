@@ -43,9 +43,9 @@ func extractNSEC3s(rrSets []dnssecRRSet) (
 }
 
 var (
-	ErrNSEC3RRSetDifferentHashTypes  = errors.New("NSEC3 RRSet contains different hash types")
-	ErrNSEC3RRSetDifferentIterations = errors.New("NSEC3 RRSet contains different iterations")
-	ErrNSEC3RRSetDifferentSalts      = errors.New("NSEC3 RRSet contains different salts")
+	errNSEC3RRSetDifferentHashTypes  = errors.New("NSEC3 RRSet contains different hash types")
+	errNSEC3RRSetDifferentIterations = errors.New("NSEC3 RRSet contains different iterations")
+	errNSEC3RRSetDifferentSalts      = errors.New("NSEC3 RRSet contains different salts")
 )
 
 func nsec3InitialChecks(nsec3RRSet []dns.RR) (sanitizedNSEC3RRSet []dns.RR, err error) {
@@ -85,13 +85,13 @@ func nsec3InitialChecks(nsec3RRSet []dns.RR) (sanitizedNSEC3RRSet []dns.RR, err 
 	// https://datatracker.ietf.org/doc/html/rfc5155#section-8.2
 	switch {
 	case len(hashTypes) > 1:
-		return nil, fmt.Errorf("%w: %s", ErrNSEC3RRSetDifferentHashTypes,
+		return nil, fmt.Errorf("%w: %s", errNSEC3RRSetDifferentHashTypes,
 			hashesToString(maps.Keys(hashTypes)))
 	case len(iterations) > 1:
-		return nil, fmt.Errorf("%w: %s", ErrNSEC3RRSetDifferentIterations,
+		return nil, fmt.Errorf("%w: %s", errNSEC3RRSetDifferentIterations,
 			integersToString(maps.Keys(iterations)))
 	case len(salts) > 1:
-		return nil, fmt.Errorf("%w: %s", ErrNSEC3RRSetDifferentSalts,
+		return nil, fmt.Errorf("%w: %s", errNSEC3RRSetDifferentSalts,
 			strings.Join(maps.Keys(salts), ", "))
 	}
 
@@ -113,7 +113,7 @@ func nsec3ValidateNxDomain(qname string, nsec3RRSet []dns.RR) (err error) {
 	if wildcardCoveringNSEC3 == nil {
 		return fmt.Errorf("for qname %s: %w: "+
 			"NSEC3 matching wildcard %s not found",
-			qname, ErrBogus, wildcardName)
+			qname, errBogus, wildcardName)
 	}
 
 	return nil
@@ -164,14 +164,14 @@ func nsec3ValidateNoDataDS(qname string, nsec3RRSet []dns.RR) (err error) {
 	if nextCloserCoveringNSEC3 == nil {
 		return fmt.Errorf("for qname %s: %w: "+
 			"no NSEC3 covers next closer %s",
-			qname, ErrBogus, nextCloser)
+			qname, errBogus, nextCloser)
 	}
 
 	optOutBitSet := nextCloserCoveringNSEC3.Flags == 1
 	if !optOutBitSet {
 		return fmt.Errorf("for qname %s: %w: "+
 			"NSEC3 covering next closer %s Opt-Out bit %d is not set",
-			qname, ErrBogus, nextCloser, nextCloserCoveringNSEC3.Flags)
+			qname, errBogus, nextCloser, nextCloserCoveringNSEC3.Flags)
 	}
 
 	return nil
@@ -223,7 +223,7 @@ func nsec3ValidateWildcard(qname string, nsec3RRSet []dns.RR) (err error) {
 
 	return fmt.Errorf("for qname %s: %w: "+
 		"no NSEC3 covers next closer %s",
-		qname, ErrBogus, nextCloser)
+		qname, errBogus, nextCloser)
 }
 
 // The delegationName argument is the owner name of the NS RRSet in the
@@ -245,18 +245,18 @@ func nsec3ValidateReferralsToUnsignedSubzones(qname, delegationName string,
 			case dns.TypeDS:
 				return fmt.Errorf("for qname %s and delegation name %s: %w: "+
 					"NSEC3 matching the delegation name contains DS type",
-					qname, delegationName, ErrBogus)
+					qname, delegationName, errBogus)
 			case dns.TypeSOA:
 				return fmt.Errorf("for qname %s and delegation name %s: %w: "+
 					"NSEC3 matching the delegation name contains SOA type",
-					qname, delegationName, ErrBogus)
+					qname, delegationName, errBogus)
 			}
 		}
 
 		if !hasNS {
 			return fmt.Errorf("for qname %s and delegation name %s: %w: "+
 				"NSEC3 matching the delegation name does not contain NS type",
-				qname, delegationName, ErrBogus)
+				qname, delegationName, errBogus)
 		}
 
 		return nil
@@ -276,7 +276,7 @@ func nsec3ValidateReferralsToUnsignedSubzones(qname, delegationName string,
 	if nextCloserCoveringNSEC3 == nil {
 		return fmt.Errorf("for qname %s and delegation name %s: %w: "+
 			"no NSEC3 covers next closer %s",
-			qname, delegationName, ErrBogus, nextCloser)
+			qname, delegationName, errBogus, nextCloser)
 	}
 
 	optOutBitSet := nextCloserCoveringNSEC3.Flags == 1
@@ -285,7 +285,7 @@ func nsec3ValidateReferralsToUnsignedSubzones(qname, delegationName string,
 	}
 	return fmt.Errorf("for qname %s and delegation name %s: %w: "+
 		"NSEC3 covering next closer %s Opt-Out bit %d is not set",
-		qname, delegationName, ErrBogus, nextCloser, nextCloserCoveringNSEC3.Flags)
+		qname, delegationName, errBogus, nextCloser, nextCloserCoveringNSEC3.Flags)
 }
 
 // nsec3VerifyClosestEncloserProof validates a closest encloser proof,
@@ -321,7 +321,7 @@ func nsec3VerifyClosestEncloserProof(qname string, nsec3RRSet []dns.RR) (
 		if matchingNSEC3 != nil {
 			if !snameCovered {
 				return "", fmt.Errorf("%w: sname %s matched but not covered",
-					ErrBogus, sname)
+					errBogus, sname)
 			}
 			closestEncloser = sname
 
@@ -335,7 +335,7 @@ func nsec3VerifyClosestEncloserProof(qname string, nsec3RRSet []dns.RR) (
 				switch nsec3Type {
 				case dns.TypeDNAME:
 					return "", fmt.Errorf("%w: NSEC3 of closest encloser %s "+
-						"contains the DNAME type", ErrBogus, sname)
+						"contains the DNAME type", errBogus, sname)
 				case dns.TypeNS:
 					hasNS = true
 				case dns.TypeSOA:
@@ -344,7 +344,7 @@ func nsec3VerifyClosestEncloserProof(qname string, nsec3RRSet []dns.RR) (
 			}
 			if hasNS && !hasSOA {
 				return "", fmt.Errorf("%w: NSEC3 of closest encloser %s "+
-					"contains the NS type but not the SOA type", ErrBogus, sname)
+					"contains the NS type but not the SOA type", errBogus, sname)
 			}
 
 			return closestEncloser, nil
@@ -353,7 +353,7 @@ func nsec3VerifyClosestEncloserProof(qname string, nsec3RRSet []dns.RR) (
 		const offset = 0
 		i, end := dns.NextLabel(sname, offset)
 		if end {
-			return "", fmt.Errorf("%w: sname reached the last label already", ErrBogus)
+			return "", fmt.Errorf("%w: sname reached the last label already", errBogus)
 		}
 		sname = sname[i:]
 	}
@@ -392,7 +392,7 @@ func nsec3RRSetHasMatchingWithoutTypes(nsec3RRSet []dns.RR,
 	matchingNSEC3 := nsec3FindMatching(matchName, nsec3RRSet)
 	if matchingNSEC3 == nil {
 		return fmt.Errorf("%w: no NSEC3 matching %s",
-			ErrBogus, matchName)
+			errBogus, matchName)
 	}
 
 	for _, nsec3Type := range matchingNSEC3.TypeBitMap {
@@ -401,7 +401,7 @@ func nsec3RRSetHasMatchingWithoutTypes(nsec3RRSet []dns.RR,
 				continue
 			}
 			return fmt.Errorf("%w: NSEC3 matching %s contains type %s",
-				ErrBogus, matchName, dns.TypeToString[notType])
+				errBogus, matchName, dns.TypeToString[notType])
 		}
 	}
 

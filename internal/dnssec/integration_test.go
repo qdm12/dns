@@ -75,7 +75,7 @@ func Test_Validate(t *testing.T) {
 					{Name: "dnssec-failed.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
 				},
 			},
-			errWrapped: ErrRcodeBad,
+			errWrapped: errRcodeBad,
 			errMessage: "running desired query: " +
 				"for dnssec-failed.org. IN A: " +
 				"bad response rcode: SERVFAIL",

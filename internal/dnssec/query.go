@@ -8,7 +8,7 @@ import (
 	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
-var ErrRcodeBad = errors.New("bad response rcode")
+var errRcodeBad = errors.New("bad response rcode")
 
 func queryRRSets(handler dns.Handler, zone string,
 	qClass, qType uint16,
@@ -94,15 +94,15 @@ func queryRRSets(handler dns.Handler, zone string,
 		return dnssecResponse{}, fmt.Errorf(
 			"for %s: %w: %s",
 			nameClassTypeToString(zone, qClass, qType),
-			ErrRcodeBad, dns.RcodeToString[dnsResponse.Rcode])
+			errRcodeBad, dns.RcodeToString[dnsResponse.Rcode])
 	}
 }
 
 var (
-	ErrRRSetSignedAndUnsigned        = errors.New("mix of signed and unsigned RRSets")
-	ErrRRSigForNoRRSet               = errors.New("RRSIG for no RRSet")
-	ErrNegativeResponseUnsignedNSEC  = errors.New("negative response has unsigned NSEC")
-	ErrNegativeResponseUnsignedNSEC3 = errors.New("negative response has unsigned NSEC3")
+	errRRSetSignedAndUnsigned        = errors.New("mix of signed and unsigned RRSets")
+	errRRSigForNoRRSet               = errors.New("RRSIG for no RRSet")
+	errNegativeResponseUnsignedNSEC  = errors.New("negative response has unsigned NSEC")
+	errNegativeResponseUnsignedNSEC3 = errors.New("negative response has unsigned NSEC3")
 )
 
 // validateNegativeResponseProofSignatures ensures NSEC/NSEC3 RRSets
@@ -115,9 +115,9 @@ func validateNegativeResponseProofSignatures(rrSets []dnssecRRSet) (err error) {
 		}
 		switch rrSet.qtype() {
 		case dns.TypeNSEC:
-			err = ErrNegativeResponseUnsignedNSEC
+			err = errNegativeResponseUnsignedNSEC
 		case dns.TypeNSEC3:
-			err = ErrNegativeResponseUnsignedNSEC3
+			err = errNegativeResponseUnsignedNSEC3
 		default:
 			continue
 		}
@@ -207,7 +207,7 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 	default:
 		unsignedRRSetsCount := len(dnssecRRSets) - signedRRSetsCount
 		return nil, fmt.Errorf("%w: %d signed and %d unsigned RRSets",
-			ErrRRSetSignedAndUnsigned, signedRRSetsCount, unsignedRRSetsCount)
+			errRRSetSignedAndUnsigned, signedRRSetsCount, unsignedRRSetsCount)
 	}
 
 	// Verify built DNSSEC RRSets are well formed.
@@ -216,7 +216,7 @@ func groupRRs(rrs []dns.RR) (dnssecRRSets []dnssecRRSet, err error) {
 			return nil, fmt.Errorf("for RRSet %s %s: %w",
 				dnssecRRSet.rrSigs[0].Hdr.Name,
 				dns.TypeToString[dnssecRRSet.rrSigs[0].TypeCovered],
-				ErrRRSigForNoRRSet)
+				errRRSigForNoRRSet)
 		}
 	}
 

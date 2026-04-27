@@ -71,25 +71,25 @@ func dnssecRRSetsToRRs(rrSets []dnssecRRSet, ignoreTypes ...uint16) (rrs []dns.R
 }
 
 var (
-	ErrRRSetsMissing       = errors.New("no RRSet")
-	ErrRRSetsMultiple      = errors.New("multiple RRSets")
-	ErrRRSetTypeUnexpected = errors.New("RRSet type unexpected")
+	errRRSetsMissing       = errors.New("no RRSet")
+	errRRSetsMultiple      = errors.New("multiple RRSets")
+	errRRSetTypeUnexpected = errors.New("RRSet type unexpected")
 )
 
 func dnssecRRSetsIsSingleOfType(rrSets []dnssecRRSet, qType uint16) (err error) {
 	switch {
 	case len(rrSets) == 0:
-		return fmt.Errorf("%w", ErrRRSetsMissing)
+		return fmt.Errorf("%w", errRRSetsMissing)
 	case len(rrSets) == 1:
 	default:
 		return fmt.Errorf("%w: received %d RRSets instead of 1",
-			ErrRRSetsMultiple, len(rrSets))
+			errRRSetsMultiple, len(rrSets))
 	}
 
 	rrSetType := rrSets[0].qtype()
 	if rrSetType != qType {
 		return fmt.Errorf("%w: received %s RRSet instead of %s",
-			ErrRRSetTypeUnexpected, dns.TypeToString[rrSetType],
+			errRRSetTypeUnexpected, dns.TypeToString[rrSetType],
 			dns.TypeToString[qType])
 	}
 
