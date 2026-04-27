@@ -223,7 +223,7 @@ func Test_verifyRRSetRRSigs(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			err := verifyRRSetRRSigs(rrSet, testCase.rrSigs, map[uint16]*dns.DNSKEY{}, testCase.budget)
+			err := verifyRRSetRRSigs(rrSet, testCase.rrSigs, dnsKeysByTag{}, testCase.budget)
 
 			require.Error(t, err)
 			assert.ErrorIs(t, err, testCase.errWrapped)
