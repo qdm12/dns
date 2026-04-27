@@ -159,7 +159,7 @@ func canonicalNameCompare(a, b string) int {
 		// RFC 4034 canonical label ordering compares by bytes and if equal
 		// up to min length, the shorter label sorts first.
 		minLen := min(len(al), len(bl))
-		for j := 0; j < minLen; j++ {
+		for j := range minLen {
 			if al[j] < bl[j] {
 				return -1
 			}
