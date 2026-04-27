@@ -73,7 +73,16 @@ func queryRRSets(handler dns.Handler, zone string,
 				nameClassTypeToString(zone, qClass, qType), err)
 		}
 
-		// TODO make sure we ignore nsec without rrsig
+		// Negative responses must have signed NSEC/NSEC3 RRSets for validity.
+		// RFC 4034 §4.1 and RFC 5155 require NSEC/NSEC3 to be signed when
+		// used in negative assertions. Unsigned NSEC/NSEC3 cannot prove non-existence.
+		err = validateNegativeResponseProofSignatures(response.authorityRRSets)
+		if err != nil {
+			return dnssecResponse{}, fmt.Errorf(
+				"validating negative response proof signatures for %s: %w",
+				nameClassTypeToString(zone, qClass, qType), err)
+		}
+
 		return response, nil
 	default: // other error
 		// If the response Rcode is dns.RcodeServerFailure,
@@ -90,9 +99,33 @@ func queryRRSets(handler dns.Handler, zone string,
 }
 
 var (
-	ErrRRSetSignedAndUnsigned = errors.New("mix of signed and unsigned RRSets")
-	ErrRRSigForNoRRSet        = errors.New("RRSIG for no RRSet")
+	ErrRRSetSignedAndUnsigned        = errors.New("mix of signed and unsigned RRSets")
+	ErrRRSigForNoRRSet               = errors.New("RRSIG for no RRSet")
+	ErrNegativeResponseUnsignedNSEC  = errors.New("negative response has unsigned NSEC")
+	ErrNegativeResponseUnsignedNSEC3 = errors.New("negative response has unsigned NSEC3")
 )
+
+// validateNegativeResponseProofSignatures ensures NSEC/NSEC3 RRSets
+// used in negative proofs are all signed. Per RFC 4034 and RFC 5155,
+// unsigned NSEC/NSEC3 cannot serve as proof of non-existence.
+func validateNegativeResponseProofSignatures(rrSets []dnssecRRSet) (err error) {
+	for _, rrSet := range rrSets {
+		if len(rrSet.rrSigs) != 0 {
+			continue
+		}
+		switch rrSet.qtype() {
+		case dns.TypeNSEC:
+			err = ErrNegativeResponseUnsignedNSEC
+		case dns.TypeNSEC3:
+			err = ErrNegativeResponseUnsignedNSEC3
+		default:
+			continue
+		}
+		owner := rrSet.rrSet[0].Header().Name
+		return fmt.Errorf("%w: RRSet owner %s has no RRSIG", err, owner)
+	}
+	return nil
+}
 
 // groupRRs groups RRs by type AND owner AND class, returning a slice
 // of 'DNSSEC RRSets' where each contains at least one RR,
