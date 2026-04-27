@@ -92,6 +92,27 @@ func Test_rrSigCheckSignerName(t *testing.T) {
 			errMessage: `for RRSIG for owner example.com. and type A: ` +
 				`signer name is not valid: "." should be "example.com." or "com."`,
 		},
+		"root_dnskey_signer_is_root": {
+			rrSig: &dns.RRSIG{
+				Hdr: dns.RR_Header{
+					Name: ".",
+				},
+				TypeCovered: dns.TypeDNSKEY,
+				SignerName:  ".",
+			},
+		},
+		"root_dnskey_signer_is_invalid": {
+			rrSig: &dns.RRSIG{
+				Hdr: dns.RR_Header{
+					Name: ".",
+				},
+				TypeCovered: dns.TypeDNSKEY,
+				SignerName:  "com.",
+			},
+			errWrapped: ErrRRSigSignerName,
+			errMessage: `for RRSIG for owner . and type DNSKEY: ` +
+				`signer name is not valid: "com." should be "."`,
+		},
 		"ds_signer_is_parent": {
 			rrSig: &dns.RRSIG{
 				Hdr: dns.RR_Header{
