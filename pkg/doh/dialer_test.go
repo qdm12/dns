@@ -4,9 +4,9 @@ import (
 	"net"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/qdm12/dns/v2/pkg/provider"
 	"github.com/stretchr/testify/require"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_Dialer(t *testing.T) {

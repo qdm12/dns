@@ -6,9 +6,9 @@ import (
 	"net/netip"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/require"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_handler(t *testing.T) {

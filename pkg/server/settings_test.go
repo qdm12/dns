@@ -3,9 +3,9 @@ package server
 import (
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/qdm12/dns/v2/internal/pool/metrics/noop"
 	"github.com/stretchr/testify/assert"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_Settings_String(t *testing.T) {

@@ -6,11 +6,11 @@ import (
 	"net"
 	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/mockhelp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_Exchanger_exchangeWithPool(t *testing.T) {
