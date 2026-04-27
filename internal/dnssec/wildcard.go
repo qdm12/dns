@@ -40,6 +40,19 @@ func extractWildcardExpansion(signedRRSets []dnssecRRSet) (wildcardName string) 
 
 var errNSECxMissing = errors.New("NSEC or NSEC3 record missing")
 
+// answerHasWildcardedDNAME returns true if the answer section contains
+// DNAME records. Per RFC 6672 section 5.3.1, DNAME records must not be
+// synthesized from wildcards, so if a response uses wildcard expansion
+// and contains DNAME records, it is bogus.
+func answerHasWildcardedDNAME(answerRRSets []dnssecRRSet) bool {
+	for _, rrSet := range answerRRSets {
+		if rrSet.qtype() == dns.TypeDNAME {
+			return true
+		}
+	}
+	return false
+}
+
 // For wildcard considerations in positive responses, see:
 // - https://datatracker.ietf.org/doc/html/rfc2535#section-5.3
 // - https://datatracker.ietf.org/doc/html/rfc4035#section-5.3.4
