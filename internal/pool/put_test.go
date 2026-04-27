@@ -326,7 +326,7 @@ func Fuzz_Pool_compact(f *testing.F) {
 func validateCompaction(t *testing.T, from, to []poolConn, removed uint) {
 	t.Helper()
 
-	diff := uint(max(0, len(from)-len(to))) //nolint:gosec
+	diff := uint(max(0, len(from)-len(to)))
 
 	if removed != diff {
 		t.Errorf("removed count %d does not match length difference %d",

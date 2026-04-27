@@ -162,9 +162,9 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 			blockedHostnames, errs := builder.buildHostnames(ctx,
 				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
 				tc.additionalBlockedHostnames, tc.additionalAllowedHostnames)
-			var errsString []string
-			for _, err := range errs {
-				errsString = append(errsString, err.Error())
+			errsString := make([]string, len(errs))
+			for i := range errs {
+				errsString[i] = errs[i].Error()
 			}
 			assert.ElementsMatch(t, tc.errsString, errsString)
 			assert.ElementsMatch(t, tc.blockedHostnames, blockedHostnames)

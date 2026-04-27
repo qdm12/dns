@@ -144,6 +144,6 @@ func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed uint) {
 		}
 	}
 
-	removed = uint(len(conns) - finalLength) //nolint:gosec
+	removed = uint(len(conns) - finalLength)
 	return conns[:finalLength], removed
 }

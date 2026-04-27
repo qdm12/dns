@@ -103,7 +103,7 @@ func patchResolvFile(resolvPath string, ips []netip.Addr) (err error) {
 
 	patchedData := []byte(patchedString)
 	const permissions os.FileMode = 0o600
-	err = os.WriteFile(resolvPath, patchedData, permissions)
+	err = os.WriteFile(resolvPath, patchedData, permissions) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("writing resolv file: %w", err)
 	}

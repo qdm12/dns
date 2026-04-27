@@ -144,9 +144,9 @@ func (*noopConn) Close() error {
 func setFieldsForAddrConns(addrConns []addressConns) {
 	for i := range addrConns {
 		for j := range addrConns[i].conns {
-			addrConns[i].conns[j].addrIndex = i
-			addrConns[i].conns[j].connIndex = j
-			addrConns[i].conns[j].Conn = &noopConn{}
+			addrConns[i].conns[j].addrIndex = i      //nolint:gosec
+			addrConns[i].conns[j].connIndex = j      //nolint:gosec
+			addrConns[i].conns[j].Conn = &noopConn{} //nolint:gosec
 		}
 	}
 }
@@ -162,7 +162,7 @@ func normalizeAddrConnsForComparison(addrConns []addressConns) {
 	for i := range addrConns {
 		addrConns[i].connIDToIndex = nil
 		for j := range addrConns[i].conns {
-			addrConns[i].conns[j].id = 0
+			addrConns[i].conns[j].id = 0 //nolint:gosec
 		}
 	}
 }

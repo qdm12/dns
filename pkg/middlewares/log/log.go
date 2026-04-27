@@ -32,9 +32,7 @@ func (m *Middleware) String() string {
 }
 
 // Wrap wraps the DNS handler with the middleware.
-//
-//nolint:ireturn
-func (m *Middleware) Wrap(next dns.Handler) dns.Handler {
+func (m *Middleware) Wrap(next dns.Handler) dns.Handler { //nolint:ireturn
 	return &handler{
 		logger: m.logger,
 		next:   next,

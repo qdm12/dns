@@ -13,10 +13,10 @@ type Infoer interface {
 func NewServer(address string, logger Infoer, dnsListenAddr string) (
 	server *httpserver.Server, err error,
 ) {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background()) //nolint:gosec
 	handler := newHandler(ctx, dnsListenAddr)
 	settings := httpserver.Settings{
-		Name:          stringPtr("health"),
+		Name:          new("health"),
 		Address:       &address,
 		Handler:       handler,
 		Logger:        logger,
@@ -24,5 +24,3 @@ func NewServer(address string, logger Infoer, dnsListenAddr string) (
 	}
 	return httpserver.New(settings)
 }
-
-func stringPtr(s string) *string { return &s }

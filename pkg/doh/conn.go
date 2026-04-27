@@ -3,6 +3,7 @@ package doh
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -129,15 +130,28 @@ func (c *dohConn) SetWriteDeadline(time.Time) error {
 
 func (c *dohConn) writeToOutputBuffer(b []byte) (err error) {
 	// Write the size of the message in the first two bytes
-	const bitsInByte = 8
-	if err := c.outBuffer.WriteByte(byte(len(b) >> bitsInByte)); err != nil {
-		return err
+	lengthBytes, err := intLenToBytes(len(b))
+	if err != nil {
+		return fmt.Errorf("getting length bytes: %w", err)
 	}
-
-	if err := c.outBuffer.WriteByte(byte(len(b))); err != nil {
+	_, err = c.outBuffer.Write(lengthBytes[:])
+	if err != nil {
 		return err
 	}
 
 	_, err = c.outBuffer.Write(b)
 	return err
+}
+
+var errLenOverflow = errors.New("length overflow: message too long to fit in 2 bytes")
+
+func intLenToBytes(n int) (bytes [2]byte, err error) {
+	const maxLen = 1<<16 - 1
+	if n > maxLen {
+		return bytes, fmt.Errorf("%w: %d > %d", errLenOverflow, n, maxLen)
+	}
+	const bitsInByte = 8
+	bytes[0] = byte(n >> bitsInByte) //nolint:gosec
+	bytes[1] = byte(n)               //nolint:gosec
+	return bytes, nil
 }

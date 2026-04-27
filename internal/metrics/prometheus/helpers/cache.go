@@ -63,7 +63,8 @@ func (m *metricCache) setHistogramVec(prefix, name string, histogramVec *prometh
 	setToMetricCache(prefix, name, &m.mutex, m.nameToHistogramVec, histogramVec)
 }
 
-func getFromMetricCache[T any](prefix, name string, mutex *sync.Mutex, //nolint:ireturn
+//nolint:ireturn
+func getFromMetricCache[T any](prefix, name string, mutex *sync.Mutex,
 	nameToCollector map[string]T,
 ) (collector T) {
 	mutex.Lock()

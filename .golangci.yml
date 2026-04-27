@@ -25,7 +25,8 @@ linters:
         source: ^\t+(defaultPlainIPv6AddrPort|defaultDoTIPv6AddrPort|netip.AddrFrom16)\(.+\),$
       - linters:
           - ireturn
-        text: .+returns interface \(github\.com\/prometheus\/client_golang\/prometheus\.[a-zA-Z]+\)$
+        text: .+returns interface
+          \(github\.com\/prometheus\/client_golang\/prometheus\.[a-zA-Z]+\)$
       - linters:
           - nolintlint
         path: pkg/middlewares/.+/middleware\.go
