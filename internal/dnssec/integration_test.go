@@ -23,94 +23,94 @@ func Test_Validate(t *testing.T) {
 		errWrapped error
 		errMessage string
 	}{
-		// "exists_not_signed": {
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "test.github.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// "exists_signed": {
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "icann.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// "nodata_nsec3": {
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "icann.org.", Qtype: dns.TypeMD, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// "nxdomain_nsec3": {
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "xyz.icann.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// "nxdomain_nsec": {
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "x.cloudflare.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// "a_and_cname": {
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "sigok.ippacket.stream.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// //
-		// // Special cases
-		// //
-		// "dnssec_failed_by_upstream": {
-		// 	// One can also try rhybar.cz.
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "dnssec-failed.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// 	errWrapped: ErrRcodeBad,
-		// 	errMessage: "running desired query: " +
-		// 		"for dnssec-failed.org. IN A: " +
-		// 		"bad response rcode: SERVFAIL",
-		// },
-		// "signed_answer_insecure_parent": {
-		// 	// The answer is a NODATA with an NSEC RRSet signed by whispersystems.org.
-		// 	// The parent zone whispersystems.org. has DNSKEYs (ZSK+KSK) but
-		// 	// no DS record, so it is therefore insecure and so is the answer.
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "textsecure-service.whispersystems.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// "nxdomain_2_rrsigs_per_nsec": {
-		// 	// There are two RRSIGs per NSEC RR, each with a
-		// 	// different algorithm. This is to allow transitioning
-		// 	// from one weaker/older algorithm to a stronger/newer one.
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "xyzzy14.sdsmt.edu.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
-		// "nodata_2_rrsigs_dnskey": {
-		// 	// The DNSKEY RRSet of vip.icann.org. is signed by two RRSIGs,
-		// 	// one validating against the ZSK of icann.org. and the other
-		// 	// validating against the KSK of icann.org. This is valid although
-		// 	// not very conventional.
-		// 	request: &dns.Msg{
-		// 		Question: []dns.Question{
-		// 			{Name: "vip.icann.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
-		// 		},
-		// 	},
-		// },
+		"exists_not_signed": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "test.github.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"exists_signed": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "icann.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"nodata_nsec3": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "icann.org.", Qtype: dns.TypeMD, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"nxdomain_nsec3": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "xyz.icann.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"nxdomain_nsec": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "x.cloudflare.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"a_and_cname": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "sigok.ippacket.stream.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		//
+		// Special cases
+		//
+		"dnssec_failed_by_upstream": {
+			// One can also try rhybar.cz.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "dnssec-failed.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+			errWrapped: ErrRcodeBad,
+			errMessage: "running desired query: " +
+				"for dnssec-failed.org. IN A: " +
+				"bad response rcode: SERVFAIL",
+		},
+		"signed_answer_insecure_parent": {
+			// The answer is a NODATA with an NSEC RRSet signed by whispersystems.org.
+			// The parent zone whispersystems.org. has DNSKEYs (ZSK+KSK) but
+			// no DS record, so it is therefore insecure and so is the answer.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "textsecure-service.whispersystems.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"nxdomain_2_rrsigs_per_nsec": {
+			// There are two RRSIGs per NSEC RR, each with a
+			// different algorithm. This is to allow transitioning
+			// from one weaker/older algorithm to a stronger/newer one.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "xyzzy14.sdsmt.edu.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"nodata_2_rrsigs_dnskey": {
+			// The DNSKEY RRSet of vip.icann.org. is signed by two RRSIGs,
+			// one validating against the ZSK of icann.org. and the other
+			// validating against the KSK of icann.org. This is valid although
+			// not very conventional.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "vip.icann.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
 		"wildcard_expanded": {
 			request: &dns.Msg{
 				Question: []dns.Question{
@@ -177,7 +177,7 @@ func (h *integTestHandler) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
 	const maxTries = 3
 	success := false
 	var response *dns.Msg
-	for i := 0; i < maxTries; i++ {
+	for i := range maxTries {
 		const timeout = time.Second
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
