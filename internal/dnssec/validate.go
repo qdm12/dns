@@ -146,7 +146,7 @@ func validateWithChain(desiredZone string, qType uint16,
 	var lastSecureZoneData signedData
 	for i := len(chain) - 1; i >= 0; i-- {
 		zoneData := chain[i]
-		if len(zoneData.dsResponse.onlyAnswerRRSet()) > 0 {
+		if i == 0 || len(zoneData.dsResponse.answerRRSets) == 1 {
 			lastSecureZoneData = zoneData
 			break
 		}
