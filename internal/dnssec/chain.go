@@ -108,7 +108,6 @@ func queryDS(handler dns.Handler, zone string, qClass uint16) (
 	// signed answer RRSet(s)
 
 	// Double check we only have 1 DS RRSet.
-	// TODO remove?
 	err = dnssecRRSetsIsSingleOfType(response.answerRRSets, dns.TypeDS)
 	if err != nil {
 		return dnssecResponse{},
@@ -138,7 +137,6 @@ func queryDNSKeys(handler dns.Handler, qname string, qClass uint16) (
 	}
 
 	// Double check we only have 1 DNSKEY RRSet.
-	// TODO remove?
 	err = dnssecRRSetsIsSingleOfType(response.answerRRSets, dns.TypeDNSKEY)
 	if err != nil {
 		return dnssecResponse{},
