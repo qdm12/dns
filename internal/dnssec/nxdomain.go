@@ -22,7 +22,7 @@ func validateNxDomain(qname string, authoritySection []dnssecRRSet,
 		return fmt.Errorf("for NXDOMAIN response for %s: NSEC3: %w",
 			qname, errRRSigWildcardUnexpected)
 	} else if len(nsec3RRs) > 0 {
-		nsec3RRs, err = nsec3InitialChecks(nsec3RRs)
+		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKey)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		}

@@ -1,6 +1,8 @@
 package dnssec
 
 import (
+	"encoding/base64"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"strings"
@@ -46,10 +48,13 @@ var (
 	errNSEC3RRSetDifferentHashTypes  = errors.New("NSEC3 RRSet contains different hash types")
 	errNSEC3RRSetDifferentIterations = errors.New("NSEC3 RRSet contains different iterations")
 	errNSEC3RRSetDifferentSalts      = errors.New("NSEC3 RRSet contains different salts")
+	errNSEC3IterationsTooHigh        = errors.New("NSEC3 iteration count too high for DNSKEY strength policy")
 )
 
-func nsec3InitialChecks(nsec3RRSet []dns.RR) (sanitizedNSEC3RRSet []dns.RR, err error) {
+func nsec3InitialChecks(nsec3RRSet []dns.RR, keyTagToDNSKey map[uint16]*dns.DNSKEY,
+) (sanitizedNSEC3RRSet []dns.RR, err error) {
 	sanitizedNSEC3RRSet = make([]dns.RR, 0, len(nsec3RRSet))
+	maxIterations := maxNSEC3IterationsForDNSKeys(keyTagToDNSKey)
 
 	const usualCapacity = 1
 	hashTypes := make(map[uint8]struct{}, usualCapacity)
@@ -69,6 +74,11 @@ func nsec3InitialChecks(nsec3RRSet []dns.RR) (sanitizedNSEC3RRSet []dns.RR, err 
 		// https://datatracker.ietf.org/doc/html/rfc5155#section-8.2
 		if !isOneOf(nsec3.Flags, 0, 1) {
 			continue
+		}
+
+		if nsec3.Iterations > maxIterations {
+			return nil, fmt.Errorf("%w: got %d and policy max is %d",
+				errNSEC3IterationsTooHigh, nsec3.Iterations, maxIterations)
 		}
 
 		// Track hash algorithms, iterations and salts
@@ -96,6 +106,95 @@ func nsec3InitialChecks(nsec3RRSet []dns.RR) (sanitizedNSEC3RRSet []dns.RR, err 
 	}
 
 	return sanitizedNSEC3RRSet, nil
+}
+
+func maxNSEC3IterationsForDNSKeys(keyTagToDNSKey map[uint16]*dns.DNSKEY) uint16 {
+	// RFC 5155 section 10.3 policy table constants.
+	const (
+		nsec3SmallKeyBitsThreshold  uint16 = 1024
+		nsec3MediumKeyBitsThreshold uint16 = 2048
+		nsec3MaxIterationsSmallKey  uint16 = 150
+		nsec3MaxIterationsMediumKey uint16 = 500
+		nsec3MaxIterationsLargeKey  uint16 = 2500
+	)
+
+	if len(keyTagToDNSKey) == 0 {
+		return nsec3MaxIterationsLargeKey
+	}
+
+	var minBits uint16
+	for _, dnsKey := range keyTagToDNSKey {
+		bits := dnsKeyStrengthBits(dnsKey)
+		if bits == 0 {
+			continue
+		}
+		if minBits == 0 || bits < minBits {
+			minBits = bits
+		}
+	}
+
+	if minBits == 0 {
+		return nsec3MaxIterationsLargeKey
+	}
+
+	// RFC 5155 section 10.3 policy table.
+	if minBits <= nsec3SmallKeyBitsThreshold {
+		return nsec3MaxIterationsSmallKey
+	}
+	if minBits <= nsec3MediumKeyBitsThreshold {
+		return nsec3MaxIterationsMediumKey
+	}
+	return nsec3MaxIterationsLargeKey
+}
+
+//nolint:mnd
+func dnsKeyStrengthBits(dnsKey *dns.DNSKEY) uint16 {
+	if dnsKey == nil {
+		return 0
+	}
+
+	switch dnsKey.Algorithm {
+	case dns.ECDSAP256SHA256, dns.ED25519:
+		return 256
+	case dns.ECDSAP384SHA384:
+		return 384
+	case dns.ED448:
+		return 456
+	case dns.RSASHA1, dns.RSASHA1NSEC3SHA1, dns.RSASHA256, dns.RSASHA512:
+		return rsaDNSKEYBits(dnsKey.PublicKey)
+	default:
+		return 0
+	}
+}
+
+func rsaDNSKEYBits(publicKeyBase64 string) uint16 {
+	publicKey, err := base64.StdEncoding.DecodeString(publicKeyBase64)
+	const minPublicKeyLength = 3
+	if err != nil || len(publicKey) < minPublicKeyLength {
+		return 0
+	}
+
+	var exponentLength int
+	var offset int
+	if publicKey[0] == 0 {
+		exponentLength = int(binary.BigEndian.Uint16(publicKey[1:3]))
+		offset = 3
+	} else {
+		exponentLength = int(publicKey[0])
+		offset = 1
+	}
+
+	modulusOffset := offset + exponentLength
+	if exponentLength <= 0 || modulusOffset >= len(publicKey) {
+		return 0
+	}
+
+	modulusLength := len(publicKey) - modulusOffset
+	if modulusLength <= 0 {
+		return 0
+	}
+
+	return uint16(modulusLength * 8) //nolint:gosec,mnd
 }
 
 func nsec3ValidateNxDomain(qname string, nsec3RRSet []dns.RR) (err error) {
