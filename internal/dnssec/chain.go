@@ -62,8 +62,6 @@ func queryDelegation(handler dns.Handler, zone string, qClass uint16) (
 	data.zone = zone
 	data.class = qClass
 
-	// TODO set root zone DS here!
-
 	// do not query DS for root zone since its DS record
 	// is the trust root anchor.
 	if zone != "." {
