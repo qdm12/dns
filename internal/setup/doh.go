@@ -63,7 +63,7 @@ func dohMetrics(metricsType string, //nolint:ireturn
 		}
 		return prometheusmetrics.New(prometheusSettings)
 	default:
-		panic(fmt.Sprintf("unknown metrics type: %s", metricsType))
+		panic("unknown metrics type: " + metricsType)
 	}
 }
 

@@ -35,8 +35,8 @@ func logMiddleware(userSettings config.MiddlewareLog) (middleware *log.Middlewar
 
 	middlewareLoggerSettings := console.Settings{
 		Writer:       file,
-		LogRequests:  boolPtr(*userSettings.LogRequests),
-		LogResponses: boolPtr(*userSettings.LogResponses),
+		LogRequests:  new(*userSettings.LogRequests),
+		LogResponses: new(*userSettings.LogResponses),
 	}
 	middlewareLogger, err := console.New(middlewareLoggerSettings)
 	if err != nil {
@@ -49,5 +49,3 @@ func logMiddleware(userSettings config.MiddlewareLog) (middleware *log.Middlewar
 
 	return log.New(settings)
 }
-
-func boolPtr(b bool) *bool { return &b }

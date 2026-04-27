@@ -37,23 +37,23 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 	}{
 		"none blocked": {
 			settings: Settings{
-				BlockMalicious:    ptrTo(false),
-				BlockAds:          ptrTo(false),
-				BlockSurveillance: ptrTo(false),
+				BlockMalicious:    new(false),
+				BlockAds:          new(false),
+				BlockSurveillance: new(false),
 			},
 		},
 		"all blocked without lists": {
 			settings: Settings{
-				BlockMalicious:    ptrTo(true),
-				BlockAds:          ptrTo(true),
-				BlockSurveillance: ptrTo(true),
+				BlockMalicious:    new(true),
+				BlockAds:          new(true),
+				BlockSurveillance: new(true),
 			},
 		},
 		"all blocked with lists": {
 			settings: Settings{
-				BlockMalicious:    ptrTo(true),
-				BlockAds:          ptrTo(true),
-				BlockSurveillance: ptrTo(true),
+				BlockMalicious:    new(true),
+				BlockAds:          new(true),
+				BlockSurveillance: new(true),
 			},
 			maliciousHosts: httpCase{
 				content: []byte("malicious.com"),
@@ -78,9 +78,9 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 		},
 		"all blocked with allowed hostnames": {
 			settings: Settings{
-				BlockMalicious:    ptrTo(true),
-				BlockAds:          ptrTo(true),
-				BlockSurveillance: ptrTo(true),
+				BlockMalicious:    new(true),
+				BlockAds:          new(true),
+				BlockSurveillance: new(true),
 				AllowedHosts:      []string{"ads.com"},
 			},
 			maliciousHosts: httpCase{
@@ -106,9 +106,9 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 		},
 		"blocked with additional blocked IP addresses": {
 			settings: Settings{
-				BlockMalicious:    ptrTo(true),
-				BlockAds:          ptrTo(false),
-				BlockSurveillance: ptrTo(false),
+				BlockMalicious:    new(true),
+				BlockAds:          new(false),
+				BlockSurveillance: new(false),
 				AddBlockedIPs:     []netip.Addr{netip.AddrFrom4([4]byte{1, 2, 3, 7})},
 			},
 			maliciousHosts: httpCase{
@@ -122,9 +122,9 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 		},
 		"all blocked with lists and one error": {
 			settings: Settings{
-				BlockMalicious:    ptrTo(true),
-				BlockAds:          ptrTo(true),
-				BlockSurveillance: ptrTo(true),
+				BlockMalicious:    new(true),
+				BlockAds:          new(true),
+				BlockSurveillance: new(true),
 			},
 			maliciousHosts: httpCase{
 				content: []byte("malicious.com"),
@@ -152,9 +152,9 @@ func Test_Builder_BuildAll(t *testing.T) { //nolint:cyclop,maintidx
 		},
 		"all blocked with errors": {
 			settings: Settings{
-				BlockMalicious:    ptrTo(true),
-				BlockAds:          ptrTo(true),
-				BlockSurveillance: ptrTo(true),
+				BlockMalicious:    new(true),
+				BlockAds:          new(true),
+				BlockSurveillance: new(true),
 			},
 			maliciousHosts: httpCase{
 				err: errors.New("malicious hostnames"),

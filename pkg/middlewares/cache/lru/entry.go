@@ -1,7 +1,7 @@
 package lru
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -15,7 +15,9 @@ type entry struct {
 
 func makeKey(request *dns.Msg) (key string) {
 	question := request.Question[0]
-	key = strings.ToLower(question.Name) + "|" + fmt.Sprint(question.Qtype) + "|" + fmt.Sprint(question.Qclass)
+	key = strings.ToLower(question.Name) + "|" +
+		strconv.FormatUint(uint64(question.Qtype), 10) + "|" +
+		strconv.FormatUint(uint64(question.Qclass), 10)
 	return key
 }
 

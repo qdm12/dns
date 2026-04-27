@@ -3,7 +3,7 @@ package blockbuilder
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"testing"
@@ -26,12 +26,12 @@ func Test_getList(t *testing.T) {
 		},
 		"bad status": {
 			status: http.StatusInternalServerError,
-			err:    fmt.Errorf("bad HTTP status code: 500 Internal Server Error"),
+			err:    errors.New("bad HTTP status code: 500 Internal Server Error"),
 		},
 		"network error": {
 			status:    http.StatusOK,
-			clientErr: fmt.Errorf("error"),
-			err:       fmt.Errorf(`Get "http://irrelevant_url": error`),
+			clientErr: errors.New("error"),
+			err:       errors.New(`Get "http://irrelevant_url": error`),
 		},
 		"results": {
 			content: []byte("a\nb\nc\n"),

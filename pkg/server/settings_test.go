@@ -25,7 +25,7 @@ func Test_Settings_String(t *testing.T) {
 	}{
 		"empty_settings": {
 			settings: Settings{
-				ListeningAddress: ptrTo("localhost:53"),
+				ListeningAddress: new("localhost:53"),
 				Dialer:           dialer,
 			},
 			s: `Server settings:
@@ -35,11 +35,11 @@ func Test_Settings_String(t *testing.T) {
 		},
 		"non_empty_settings": {
 			settings: Settings{
-				ListeningAddress: ptrTo(":8000"),
+				ListeningAddress: new(":8000"),
 				Dialer:           dialer,
 				PoolMetrics:      noop.New(),
 				Middlewares:      []Middleware{middleware},
-				TimeoutWarn:      ptrTo(false),
+				TimeoutWarn:      new(false),
 			},
 			s: `Server settings:
 ├── Listening address: :8000

@@ -70,7 +70,7 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 			},
 			surveillance: blockParams{
 				blocked:   true,
-				clientErr: fmt.Errorf("surveillance error"),
+				clientErr: errors.New("surveillance error"),
 			},
 			blockedIPs:        []string{"1.2.3.4", "254.254.254.1"},
 			blockedIPPrefixes: []string{"66.67.68.10/28"},

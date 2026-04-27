@@ -1,6 +1,7 @@
 package mockhelp
 
 import (
+	"slices"
 	"strings"
 )
 
@@ -18,17 +19,7 @@ func (m *MatcherOneOf) String() string {
 	return "must be one of: " + strings.Join(m.possibilities, ", ")
 }
 
-func (m *MatcherOneOf) Matches(x interface{}) bool {
+func (m *MatcherOneOf) Matches(x any) bool {
 	s, ok := x.(string)
-	if !ok {
-		return false
-	}
-
-	for _, possibility := range m.possibilities {
-		if s == possibility {
-			return true
-		}
-	}
-
-	return false
+	return ok && slices.Contains(m.possibilities, s)
 }

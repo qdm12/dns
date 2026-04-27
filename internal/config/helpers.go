@@ -1,22 +1,25 @@
 package config
 
+import "strings"
+
 func andStrings(strings []string) (result string) {
 	return joinStrings(strings, "and")
 }
 
-func joinStrings(strings []string, lastJoin string) (result string) {
-	if len(strings) == 0 {
+func joinStrings(ss []string, lastJoin string) (result string) {
+	if len(ss) == 0 {
 		return ""
 	}
 
-	result = strings[0]
-	for i := 1; i < len(strings); i++ {
-		if i < len(strings)-1 {
-			result += strings[i] + ", "
+	stringsBuilder := strings.Builder{}
+	stringsBuilder.WriteString(ss[0])
+	for i := 1; i < len(ss); i++ {
+		if i < len(ss)-1 {
+			stringsBuilder.WriteString(ss[i] + ", ")
 		} else {
-			result += " " + lastJoin + " " + strings[i]
+			stringsBuilder.WriteString(lastJoin + " " + ss[i])
 		}
 	}
 
-	return result
+	return stringsBuilder.String()
 }

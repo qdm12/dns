@@ -20,7 +20,7 @@ func (m *MatcherRequest) String() string {
 	return m.request.String() + " [ignoring .MsgHdr.Id]"
 }
 
-func (m *MatcherRequest) Matches(x interface{}) bool {
+func (m *MatcherRequest) Matches(x any) bool {
 	msg, ok := x.(*dns.Msg)
 	if !ok {
 		return false

@@ -4,10 +4,6 @@ import (
 	"net/netip"
 )
 
-func ptrTo[T any](x T) *T {
-	return &x
-}
-
 func convertIPsToString(ips []netip.Addr) (ipStrings []string) {
 	ipStrings = make([]string, len(ips))
 	for i := range ips {

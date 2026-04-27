@@ -1,14 +1,14 @@
 package console
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/miekg/dns"
 )
 
 func formatError(requestID uint16, errString string) string {
-	return "id: " + fmt.Sprint(requestID) + "; error: " + errString
+	return "id: " + strconv.FormatUint(uint64(requestID), 10) + "; error: " + errString
 }
 
 func formatRequestResponse(request, response *dns.Msg) string {
@@ -18,7 +18,7 @@ func formatRequestResponse(request, response *dns.Msg) string {
 }
 
 func formatRequest(request *dns.Msg) (s string) {
-	s = "id: " + fmt.Sprint(request.Id)
+	s = "id: " + strconv.FormatUint(uint64(request.Id), 10)
 
 	questionStrings := make([]string, len(request.Question))
 	for i, question := range request.Question {
@@ -40,7 +40,7 @@ func formatRequest(request *dns.Msg) (s string) {
 }
 
 func formatResponse(response *dns.Msg) (s string) {
-	s = "id: " + fmt.Sprint(response.Id)
+	s = "id: " + strconv.FormatUint(uint64(response.Id), 10)
 
 	answerStrings := make([]string, len(response.Answer))
 	for i, answer := range response.Answer {

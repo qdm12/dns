@@ -25,7 +25,7 @@ func Test_Server(t *testing.T) {
 	require.NoError(t, err)
 
 	server, err := New(Settings{
-		ListeningAddress: ptrTo(""),
+		ListeningAddress: new(""),
 		Dialer:           dialer,
 	})
 	require.NoError(t, err)
@@ -264,12 +264,12 @@ func Test_Server_Mocks(t *testing.T) {
 	poolMetrics.EXPECT().PutConnInc("1.0.0.1:853", "live")
 
 	server, err := New(Settings{
-		ListeningAddress: ptrTo(""),
+		ListeningAddress: new(""),
 		Dialer:           dialer,
 		PoolMetrics:      poolMetrics,
 		Middlewares:      []Middleware{metricsMiddleware, cacheMiddleware, filterMiddleware},
 		Logger:           logger,
-		TimeoutWarn:      ptrTo(true),
+		TimeoutWarn:      new(true),
 	})
 	require.NoError(t, err)
 

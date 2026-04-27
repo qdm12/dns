@@ -47,7 +47,7 @@ func (m *Metrics) ToLinesNode() (node *gotree.Node) {
 	case "prometheus":
 		node.AppendNode(m.Prometheus.ToLinesNode())
 	default:
-		panic(fmt.Sprintf("unknown metrics type: %s", m.Type))
+		panic("unknown metrics type: " + m.Type)
 	}
 
 	return node

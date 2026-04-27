@@ -3,7 +3,6 @@ package metrics
 
 import (
 	"context"
-	"fmt"
 
 	dto "github.com/prometheus/client_model/go"
 	"github.com/qdm12/dns/v2/internal/config"
@@ -26,9 +25,7 @@ type Service interface {
 	Stop() (err error)
 }
 
-//nolint:ireturn
-func New(settings config.Metrics,
-	parentLogger ParentLogger, prometheusGatherer PrometheusGatherer) (
+func New(settings config.Metrics, parentLogger ParentLogger, prometheusGatherer PrometheusGatherer) ( //nolint:ireturn
 	service Service, err error,
 ) {
 	switch settings.Type {
@@ -38,6 +35,6 @@ func New(settings config.Metrics,
 		logger := parentLogger.New(log.SetComponent("prometheus server"))
 		return prometheus.New(settings.Prometheus, prometheusGatherer, logger)
 	default:
-		panic(fmt.Sprintf("unknown metrics type: %s", settings.Type))
+		panic("unknown metrics type: " + settings.Type)
 	}
 }

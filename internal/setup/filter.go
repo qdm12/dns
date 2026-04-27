@@ -29,7 +29,7 @@ func BuildFilterMetrics(userSettings config.Metrics, //nolint:ireturn
 		}
 		return metrics, nil
 	default:
-		panic(fmt.Sprintf("unknown metrics type: %s", userSettings.Type))
+		panic("unknown metrics type: " + userSettings.Type)
 	}
 }
 

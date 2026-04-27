@@ -29,7 +29,7 @@ func BuildCache(userSettings config.Cache, //nolint:ireturn
 			Metrics:    metrics,
 		})
 	default:
-		panic(fmt.Sprintf("unknown cache type: %s", userSettings.Type))
+		panic("unknown cache type: " + userSettings.Type)
 	}
 }
 
@@ -52,7 +52,7 @@ func BuildCacheMetrics(userSettings config.Metrics, //nolint:ireturn
 			return nil, fmt.Errorf("setting up Prometheus metrics: %w", err)
 		}
 	default:
-		panic(fmt.Sprintf("unknown metrics type: %s", userSettings.Type))
+		panic("unknown metrics type: " + userSettings.Type)
 	}
 
 	return metrics, nil

@@ -18,7 +18,7 @@ func (m *MatcherRegex) String() string {
 	return "must match regex " + m.regex.String()
 }
 
-func (m *MatcherRegex) Matches(x interface{}) bool {
+func (m *MatcherRegex) Matches(x any) bool {
 	s, ok := x.(string)
 	if !ok {
 		return false

@@ -48,7 +48,7 @@ func DNS(userSettings config.Settings, ipv6Support bool, //nolint:ireturn
 		return setupPlain(userSettings, ipv6Support, middlewares,
 			loggerConstructor, commonPrometheus)
 	default:
-		panic(fmt.Sprintf("unknown upstream: %s", userSettings.Upstream))
+		panic("unknown upstream: " + userSettings.Upstream)
 	}
 }
 

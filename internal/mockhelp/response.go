@@ -98,7 +98,7 @@ func (m *MatcherResponse) String() string {
 	return m.mismatchReason
 }
 
-func (m *MatcherResponse) Matches(x interface{}) bool {
+func (m *MatcherResponse) Matches(x any) bool {
 	msg, ok := x.(*dns.Msg)
 	if !ok {
 		m.mismatchReason = "not a *dns.Msg"
@@ -148,8 +148,7 @@ func checkOnlyHasAnswers(response *dns.Msg,
 		answerType := answer.Header().Rrtype
 		_, expectedType := onlyHasAnswerTypes[answerType]
 		if !expectedType {
-			return fmt.Sprintf("unexpected answer type: %s",
-				dns.TypeToString[answerType])
+			return "unexpected answer type: " + dns.TypeToString[answerType]
 		}
 		delete(answerTypesNotPresent, answerType)
 	}
@@ -163,8 +162,7 @@ func checkOnlyHasAnswers(response *dns.Msg,
 		answerTypesMissing = append(answerTypesMissing,
 			dns.TypeToString[answerType])
 	}
-	return fmt.Sprintf("missing answer types: %s",
-		strings.Join(answerTypesMissing, ", "))
+	return "missing answer types: " + strings.Join(answerTypesMissing, ", ")
 }
 
 func filterAnswers(response *dns.Msg,
@@ -243,8 +241,7 @@ func answersAreEqual(expected, actual dns.RR) (equal bool) {
 	case dns.TypeAAAA:
 		return answersAAAAEqual(expected, actual)
 	default:
-		panic(fmt.Sprintf("unexpected answer type: %s",
-			dns.TypeToString[receivedHeader.Rrtype]))
+		panic("unexpected answer type: " + dns.TypeToString[receivedHeader.Rrtype])
 	}
 }
 
@@ -306,8 +303,7 @@ func extrasAreEqual(expected, actual dns.RR) (equal bool) {
 	case dns.TypeOPT:
 		return extrasOPTEqual(expected, actual)
 	default:
-		panic(fmt.Sprintf("unexpected extra type: %s",
-			dns.TypeToString[receivedHeader.Rrtype]))
+		panic("unexpected extra type: " + dns.TypeToString[receivedHeader.Rrtype])
 	}
 }
 

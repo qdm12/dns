@@ -119,7 +119,7 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	case "plain":
 		node.AppendNode(s.Plain.ToLinesNode())
 	default:
-		panic(fmt.Sprintf("unknown upstream type: %s", s.Upstream))
+		panic("unknown upstream type: " + s.Upstream)
 	}
 
 	node.AppendNode(s.Cache.ToLinesNode())

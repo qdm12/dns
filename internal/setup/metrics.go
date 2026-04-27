@@ -34,7 +34,7 @@ func middlewareMetrics(metricsType string,
 			return nil, fmt.Errorf("prometheus metrics: %w", err)
 		}
 	default:
-		panic(fmt.Sprintf("unknown metrics type: %s", metricsType))
+		panic("unknown metrics type: " + metricsType)
 	}
 
 	settings := metricsmiddleware.Settings{

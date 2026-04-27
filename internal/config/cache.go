@@ -48,7 +48,7 @@ func (c *Cache) ToLinesNode() (node *gotree.Node) {
 	case "lru":
 		node.AppendNode(c.LRU.ToLinesNode())
 	default:
-		panic(fmt.Sprintf("unknown cache type: %s", c.Type))
+		panic("unknown cache type: " + c.Type)
 	}
 	return node
 }

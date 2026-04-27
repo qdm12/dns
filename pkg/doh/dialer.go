@@ -47,7 +47,7 @@ func New(settings Settings) (dial *Dialer, err error) {
 		servers:    servers,
 		httpClient: newHTTPClient(servers, settings.IPVersion),
 		bufferPool: &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return bytes.NewBuffer(nil)
 			},
 		},

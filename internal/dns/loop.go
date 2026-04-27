@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"strconv"
 	"time"
 
 	"github.com/qdm12/dns/v2/internal/config"
@@ -211,9 +212,9 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 		for _, err := range result.Errors {
 			l.logger.Warn(err.Error())
 		}
-		l.logger.Info(fmt.Sprint(len(result.BlockedHostnames)) + " hostnames blocked overall")
-		l.logger.Info(fmt.Sprint(len(result.BlockedIPs)) + " IP addresses blocked overall")
-		l.logger.Info(fmt.Sprint(len(result.BlockedIPPrefixes)) + " IP networks blocked overall")
+		l.logger.Info(strconv.FormatInt(int64(len(result.BlockedHostnames)), 10) + " hostnames blocked overall")
+		l.logger.Info(strconv.FormatInt(int64(len(result.BlockedIPs)), 10) + " IP addresses blocked overall")
+		l.logger.Info(strconv.FormatInt(int64(len(result.BlockedIPPrefixes)), 10) + " IP networks blocked overall")
 		filterSettings.Update.IPs = result.BlockedIPs
 		filterSettings.Update.IPPrefixes = result.BlockedIPPrefixes
 		filterSettings.Update.BlockHostnames(result.BlockedHostnames)

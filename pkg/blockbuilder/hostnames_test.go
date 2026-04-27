@@ -3,7 +3,7 @@ package blockbuilder
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"sync"
@@ -64,7 +64,7 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 			},
 			surveillance: blockParams{
 				blocked:   true,
-				clientErr: fmt.Errorf("surveillance error"),
+				clientErr: errors.New("surveillance error"),
 			},
 			blockedHostnames: []string{"site_a", "site_b", "site_c"},
 			errsString: []string{

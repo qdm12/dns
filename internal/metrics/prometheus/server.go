@@ -21,12 +21,10 @@ func New(settings config.Prometheus, gatherer Gatherer,
 		ErrorLog: &promLogger{logger: logger},
 	}
 	httpSettings := httpserver.Settings{
-		Name:    stringPtr("prometheus"),
+		Name:    new("prometheus"),
 		Handler: promhttp.HandlerFor(gatherer, handlerOptions),
-		Address: stringPtr(settings.ListeningAddress),
+		Address: new(settings.ListeningAddress),
 		Logger:  logger,
 	}
 	return httpserver.New(httpSettings)
 }
-
-func stringPtr(s string) *string { return &s }

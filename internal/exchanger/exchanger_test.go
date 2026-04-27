@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"testing"
 
 	"github.com/miekg/dns"
@@ -199,7 +200,7 @@ type testDialer struct {
 func (d *testDialer) Dial(ctx context.Context, network, _ string,
 ) (net.Conn, error) {
 	dialer := &net.Dialer{}
-	return dialer.DialContext(ctx, network, net.JoinHostPort("127.0.0.1", fmt.Sprintf("%d", d.port)))
+	return dialer.DialContext(ctx, network, net.JoinHostPort("127.0.0.1", strconv.FormatUint(uint64(d.port), 10)))
 }
 
 func (d *testDialer) ReusableConnsSupported() bool {
@@ -213,7 +214,7 @@ func (d *testDialer) Addresses() []string {
 }
 
 func (d *testDialer) String() string {
-	return "test-dialer-tcp-" + fmt.Sprint(d.port)
+	return "test-dialer-tcp-" + strconv.FormatUint(uint64(d.port), 10)
 }
 
 func startLocalTCPDNS(t *testing.T, handler dns.Handler,

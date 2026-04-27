@@ -23,8 +23,7 @@ func getLocalNameservers(filename string) (nameservers []netip.Addr, err error) 
 	}
 
 	var errs []error
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		if line == "" || line[0] == '#' {
 			continue
 		}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"net"
+	"strings"
 	"testing"
 	"time"
 
@@ -376,10 +377,11 @@ func validateCompaction(t *testing.T, from, to []poolConn, removed uint) {
 }
 
 func connsToString(conns []poolConn) string {
-	s := "{\n"
+	builder := strings.Builder{}
+	builder.WriteString("{\n")
 	for _, conn := range conns {
-		s += fmt.Sprintf("  {dead:%t, inUse:%t},\n", conn.dead, conn.inUse)
+		fmt.Fprintf(&builder, "  {dead:%t, inUse:%t},\n", conn.dead, conn.inUse)
 	}
-	s += "\n}"
-	return s
+	builder.WriteString("\n}")
+	return builder.String()
 }
