@@ -58,9 +58,10 @@ func rrsigInitialChecks(rrsig *dns.RRSIG) (err error) {
 }
 
 func verifyRRSetsRRSig(answerRRSets []dnssecRRSet, keyTagToDNSKey map[uint16]*dns.DNSKEY) (err error) {
+	budget := newRRSIGValidationBudget()
 	for _, signedRRSet := range answerRRSets {
 		err = verifyRRSetRRSigs(signedRRSet.rrSet,
-			signedRRSet.rrSigs, keyTagToDNSKey)
+			signedRRSet.rrSigs, keyTagToDNSKey, budget)
 		if err != nil {
 			return err
 		}
@@ -70,15 +71,19 @@ func verifyRRSetsRRSig(answerRRSets []dnssecRRSet, keyTagToDNSKey map[uint16]*dn
 }
 
 func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY) (
+	keyTagToDNSKey map[uint16]*dns.DNSKEY, budget *rrsigValidationBudget,
+) (
 	err error,
 ) {
-	if len(rrSet) == 0 || len(rrSigs) == 0 {
+	switch {
+	case len(rrSet) == 0 || len(rrSigs) == 0:
 		panic("no rrs or rrsigs")
-	}
-
-	if len(rrSigs) == 1 {
-		return verifyRRSetRRSig(rrSet, rrSigs[0], keyTagToDNSKey)
+	case len(rrSigs) > maxRRSIGValidationsPerRRSet:
+		return fmt.Errorf("%w: got %d rrsigs above the limit of %d",
+			errRRSIGValidationRRSetBudgetExceeded,
+			len(rrSigs), maxRRSIGValidationsPerRRSet)
+	case len(rrSigs) == 1:
+		return verifyRRSetRRSig(rrSet, rrSigs[0], keyTagToDNSKey, budget)
 	}
 
 	// Multiple RRSIGs for the same RRSet, sort them by algorithm preference
@@ -89,6 +94,11 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 
 	errs := new(joinedErrors)
 	for _, rrSig := range rrSigs {
+		err = budget.consume()
+		if err != nil {
+			return err
+		}
+
 		if !rrSig.ValidityPeriod(time.Now()) {
 			errs.add(fmt.Errorf("%w", errRRSigExpired))
 			continue
@@ -121,8 +131,13 @@ var (
 )
 
 func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
-	keyTagToDNSKey map[uint16]*dns.DNSKEY,
+	keyTagToDNSKey map[uint16]*dns.DNSKEY, budget *rrsigValidationBudget,
 ) (err error) {
+	err = budget.consume()
+	if err != nil {
+		return err
+	}
+
 	if !rrSig.ValidityPeriod(time.Now()) {
 		return fmt.Errorf("%w", errRRSigExpired)
 	}
@@ -139,6 +154,32 @@ func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
 		return err
 	}
 
+	return nil
+}
+
+const (
+	maxRRSIGValidationsPerRRSet   = 16
+	maxRRSIGValidationsPerMessage = 64
+)
+
+var (
+	errRRSIGValidationRRSetBudgetExceeded = errors.New("RRSIG validation RRSet budget exceeded")
+	errRRSIGValidationBudgetExceeded      = errors.New("RRSIG validation message budget exceeded")
+)
+
+type rrsigValidationBudget struct {
+	remaining uint
+}
+
+func newRRSIGValidationBudget() *rrsigValidationBudget {
+	return &rrsigValidationBudget{remaining: maxRRSIGValidationsPerMessage}
+}
+
+func (b *rrsigValidationBudget) consume() error {
+	if b.remaining == 0 {
+		return fmt.Errorf("%w: %d", errRRSIGValidationBudgetExceeded, maxRRSIGValidationsPerMessage)
+	}
+	b.remaining--
 	return nil
 }
 
