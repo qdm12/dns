@@ -96,10 +96,15 @@ func queryDS(handler dns.Handler, zone string, qClass uint16) (
 	switch {
 	case err != nil:
 		return dnssecResponse{}, err
+	case !response.isSigned() && response.isNoData():
+		// Some resolvers may return an unsigned NODATA response for DS
+		// without NSEC/NSEC3 proofs. Treat this as an insecure delegation
+		// rather than failing the entire validation chain.
+		return response, nil
 	case !response.isSigned():
-		// no signed DS answer and no NSEC/NSEC3 authority RR
-		return dnssecResponse{}, wrapError(
-			zone, qClass, dns.TypeDS, errDSAndNSECAbsent)
+		// Signed DS responses must not be unsigned.
+		return dnssecResponse{}, wrapError(zone, qClass, dns.TypeDS,
+			errDSAndNSECAbsent)
 	case response.isNXDomain(), response.isNoData():
 		// there is one or more NSEC/NSEC3 authority RRSets.
 		return response, nil
