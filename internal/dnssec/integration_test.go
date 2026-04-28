@@ -131,6 +131,17 @@ func Test_Validate(t *testing.T) {
 				},
 			},
 		},
+		"signed_answer_insecure_parent_deploy.mopinion.com": {
+			// deploy.mopinion.com. is in an unsigned delegation path and should be
+			// treated as insecure rather than bogus even when DS denial proofs
+			// are not present from a resolver.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "deploy.mopinion.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+			assertVolatileAnswer: true,
+		},
 		"nxdomain_2_rrsigs_per_nsec": {
 			// There are two RRSIGs per NSEC RR, each with a
 			// different algorithm. This is to allow transitioning
