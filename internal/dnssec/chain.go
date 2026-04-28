@@ -96,8 +96,8 @@ func queryDS(handler dns.Handler, zone string, qClass uint16) (
 	switch {
 	case err != nil:
 		return dnssecResponse{}, err
-	case !response.isSigned() && response.isNoData():
-		// Some resolvers may return an unsigned NODATA response for DS
+	case !response.isSigned() && (response.isNoData() || response.isNXDomain()):
+		// Some resolvers may return an unsigned NODATA or NXDOMAIN response for DS
 		// without NSEC/NSEC3 proofs. Treat this as an insecure delegation
 		// rather than failing the entire validation chain.
 		return response, nil

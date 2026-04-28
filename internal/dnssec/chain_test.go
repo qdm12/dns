@@ -52,6 +52,7 @@ func Test_queryDS(t *testing.T) {
 	testCases := map[string]struct {
 		response   *dns.Msg
 		noData     bool
+		nxDomain   bool
 		errWrapped error
 	}{
 		"unsigned_nodata_is_treated_as_insecure": {
@@ -71,6 +72,12 @@ func Test_queryDS(t *testing.T) {
 			},
 			errWrapped: errDSAndNSECAbsent,
 		},
+		"unsigned_nxdomain_is_treated_as_insecure": {
+			response: &dns.Msg{
+				MsgHdr: dns.MsgHdr{Rcode: dns.RcodeNameError},
+			},
+			nxDomain: true,
+		},
 	}
 
 	for name, testCase := range testCases {
@@ -83,6 +90,9 @@ func Test_queryDS(t *testing.T) {
 			assert.ErrorIs(t, err, testCase.errWrapped)
 			if testCase.noData {
 				assert.True(t, response.isNoData())
+			}
+			if testCase.nxDomain {
+				assert.True(t, response.isNXDomain())
 			}
 		})
 	}
