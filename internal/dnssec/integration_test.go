@@ -111,6 +111,16 @@ func Test_Validate(t *testing.T) {
 				},
 			},
 		},
+		"signed_answer_insecure_parent_contentproxy.signal.org": {
+			// contentproxy.signal.org. is delegated from signal.org. without DS.
+			// Validation should treat it as insecure delegation and not fail
+			// delegation chain construction.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "contentproxy.signal.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
 		"nxdomain_2_rrsigs_per_nsec": {
 			// There are two RRSIGs per NSEC RR, each with a
 			// different algorithm. This is to allow transitioning
