@@ -89,6 +89,13 @@ func Test_Validate(t *testing.T) {
 				},
 			},
 		},
+		"reverse_ptr_nxdomain_44.10.10.10.in-addr.arpa": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "44.10.10.10.in-addr.arpa.", Qtype: dns.TypePTR, Qclass: dns.ClassINET},
+				},
+			},
+		},
 		"a_and_cname": {
 			request: &dns.Msg{
 				Question: []dns.Question{

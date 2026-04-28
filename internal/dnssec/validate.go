@@ -221,20 +221,39 @@ func validateWithChain(desiredZone string, qType uint16,
 	}
 }
 
-// verifyDSRRSet verifies the digest of each received DS
-// is equal to the digest of the calculated DS obtained
-// from the DNSKEY (KSK) matching the received DS key tag.
+var errNoDSRecordToVerify = errors.New("no DS record to verify")
+
+// verifyDSRRSet verifies the DS RRSet against child DNSKEYs.
+//
+// The RRSet is accepted if at least one DS record matches a DNSKEY
+// in the child zone. This tolerates stale DS records during rollover,
+// as long as there is a valid DS->DNSKEY path.
 func verifyDSRRSet(dsRRSet []dns.RR,
 	keyTagToDNSKeys dnsKeysByTag,
 ) (err error) {
+	errs := new(joinedErrors)
+	var oneMatched bool
+
 	for _, rr := range dsRRSet {
 		ds := mustRRToDS(rr)
 		err = verifyDS(ds, keyTagToDNSKeys)
 		if err != nil {
-			return fmt.Errorf("verifying DS record: %w", err)
+			errs.add(fmt.Errorf("DS key tag %d: %w", ds.KeyTag, err))
+			continue
 		}
+
+		oneMatched = true
 	}
-	return nil
+
+	if oneMatched {
+		return nil
+	}
+
+	if len(errs.errs) == 0 {
+		return fmt.Errorf("%w", errNoDSRecordToVerify)
+	}
+
+	return fmt.Errorf("no DS record matched child DNSKEY RRSet: %w", errs)
 }
 
 var (
@@ -247,7 +266,7 @@ func verifyDS(receivedDS *dns.DS,
 ) error {
 	dnsKeys := keyTagToDNSKeys[receivedDS.KeyTag]
 	if len(dnsKeys) == 0 {
-		return fmt.Errorf("for RRSIG key tag %d: %w",
+		return fmt.Errorf("for DS key tag %d: %w",
 			receivedDS.KeyTag, errDNSKeyNotFound)
 	}
 
