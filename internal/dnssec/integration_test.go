@@ -19,9 +19,10 @@ func Test_Validate(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		request    *dns.Msg
-		errWrapped error
-		errMessage string
+		request              *dns.Msg
+		errWrapped           error
+		errMessage           string
+		assertVolatileAnswer bool
 	}{
 		"exists_not_signed": {
 			request: &dns.Msg{
@@ -71,6 +72,15 @@ func Test_Validate(t *testing.T) {
 					{Name: "acme-v02.api.letsencrypt.org.", Qtype: dns.TypeAAAA, Qclass: dns.ClassINET},
 				},
 			},
+		},
+		"cname_chain_signed_unsigned_mrodevicemgr.officeapps.live.com_A": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "mrodevicemgr.officeapps.live.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+			// Endpoint A records rotate quickly, so compare only stable properties.
+			assertVolatileAnswer: true,
 		},
 		"nxdomain_nsec": {
 			request: &dns.Msg{
@@ -163,6 +173,23 @@ func Test_Validate(t *testing.T) {
 			response, err := Validate(testCase.request, handler)
 
 			require.ErrorIs(t, err, testCase.errWrapped)
+
+			if testCase.assertVolatileAnswer {
+				require.Nil(t, err)
+				require.NotNil(t, response)
+				assert.Equal(t, dns.RcodeSuccess, response.Rcode)
+				assert.NotEmpty(t, response.Answer)
+
+				var hasA bool
+				for _, answer := range response.Answer {
+					if answer.Header().Rrtype == dns.TypeA {
+						hasA = true
+						break
+					}
+				}
+				assert.True(t, hasA)
+				return
+			}
 
 			var expectedResponse *dns.Msg
 			if testCase.errWrapped != nil {
