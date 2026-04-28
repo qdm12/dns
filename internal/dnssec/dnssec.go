@@ -38,6 +38,11 @@ func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err err
 		return nil, fmt.Errorf("running desired query: %w", err)
 	}
 
+	if desiredResponse.rcode == dns.RcodeRefused {
+		// Pass through policy-refused responses without DNSSEC validation.
+		return desiredResponse.toDNSMsg(request), nil
+	}
+
 	originalDesiredZone := desiredZone
 	cnameTarget := getCnameTarget(desiredResponse.answerRRSets)
 	if cnameTarget != "" {

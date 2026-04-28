@@ -84,6 +84,10 @@ func queryRRSets(handler dns.Handler, zone string,
 		}
 
 		return response, nil
+	case dnsResponse.Rcode == dns.RcodeRefused:
+		// REFUSED commonly indicates local policy decisions (for example,
+		// blocked by a filter middleware). DNSSEC validation is not applicable.
+		return response, nil
 	default: // other error
 		// If the response Rcode is dns.RcodeServerFailure,
 		// this may mean DNSSEC validation failed on the upstream server.
