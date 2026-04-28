@@ -76,6 +76,13 @@ func validateWithChain(desiredZone string, qType uint16,
 
 		switch {
 		case zoneData.dsResponse.isNXDomain():
+			if !zoneData.dsResponse.isSigned() {
+				// Some resolvers may return unsigned NXDOMAIN for DS queries
+				// without NSEC/NSEC3 proofs. Treat this as insecure delegation.
+				parentZoneInsecure = true
+				break
+			}
+
 			parentKeyTagToDNSKeys := makeKeyTagToDNSKeys(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
 			err = validateNxDomain(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKeys)
 			if err != nil {
@@ -85,6 +92,13 @@ func validateWithChain(desiredZone string, qType uint16,
 			// child zones are unsigned.
 			parentZoneInsecure = true
 		case zoneData.dsResponse.isNoData():
+			if !zoneData.dsResponse.isSigned() {
+				// Some resolvers may return unsigned NODATA for DS queries
+				// without NSEC/NSEC3 proofs. Treat this as insecure delegation.
+				parentZoneInsecure = true
+				break
+			}
+
 			parentKeyTagToDNSKeys := makeKeyTagToDNSKeys(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
 			err = validateNoDataDS(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKeys)
 			if err != nil {
