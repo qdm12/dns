@@ -107,8 +107,19 @@ func (l *LRU) Get(request *dns.Msg) (response *dns.Msg) {
 	l.linkedList.MoveToFront(listElement)
 	entryPtr := listElement.Value.(*entry) //nolint:forcetypeassert
 
-	if l.timeNow().Unix() >= entryPtr.expUnix {
+	now := l.timeNow().Unix()
+
+	if now >= entryPtr.expUnix {
 		// expired record
+		l.remove(listElement)
+		l.metrics.CacheExpiredInc()
+		return nil
+	}
+
+	// For DNSSEC-signed responses, verify RRSIGs haven't expired
+	// even if their TTL hasn't. RRSIGs have absolute Expiration times.
+	if !verifyRRSIGValidity(entryPtr.response, now) {
+		// RRSIG has expired, treat as cache miss
 		l.remove(listElement)
 		l.metrics.CacheExpiredInc()
 		return nil
