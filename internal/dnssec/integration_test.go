@@ -6,6 +6,7 @@ package dnssec
 import (
 	"context"
 	"net"
+	"slices"
 	"testing"
 	"time"
 
@@ -214,36 +215,28 @@ func Test_Validator_Validate(t *testing.T) {
 
 			require.ErrorIs(t, err, testCase.errWrapped)
 
-			if testCase.assertVolatileAnswer {
-				require.Nil(t, err)
+			if testCase.errWrapped != nil {
+				assert.EqualError(t, err, testCase.errMessage)
+				assert.Nil(t, response)
+			} else if testCase.assertVolatileAnswer { // no error, fetch expected response
 				require.NotNil(t, response)
 				assert.Equal(t, dns.RcodeSuccess, response.Rcode)
 				assert.NotEmpty(t, response.Answer)
-
-				var hasA bool
-				for _, answer := range response.Answer {
-					if answer.Header().Rrtype == dns.TypeA {
-						hasA = true
-						break
-					}
-				}
-				assert.True(t, hasA)
-				return
-			}
-
-			var expectedResponse *dns.Msg
-			if testCase.errWrapped != nil {
-				assert.EqualError(t, err, testCase.errMessage)
-			} else { // no error, fetch expected response
+				assert.True(t, slices.ContainsFunc(response.Answer, func(rr dns.RR) bool {
+					return rr.Header().Rrtype == dns.TypeA
+				}))
+			} else {
+				// For non-volatile answers, we can compare the full response.
+				// Fetch the expected response by replaying the request to the
+				// handler (which will fetch from the real DNS server).
 				statefulWriter := stateful.NewWriter()
 				requestCopy.Id = dns.Id()
 				handler.ServeDNS(statefulWriter, requestCopy)
-				expectedResponse = statefulWriter.Response
+				expectedResponse := statefulWriter.Response
 				// DNSSEC does not do recursion for now
 				expectedResponse.RecursionAvailable = false
+				assertResponsesEqual(t, expectedResponse, response)
 			}
-
-			assertResponsesEqual(t, expectedResponse, response)
 		})
 	}
 }
