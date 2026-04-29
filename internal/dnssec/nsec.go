@@ -49,7 +49,8 @@ func nsecValidateNoData(qname string, qType uint16,
 	var qnameMatchingNSEC *dns.NSEC
 	for _, nsecRR := range nsecRRSet {
 		nsec := mustRRToNSEC(nsecRR)
-		if nsecMatchesQname(nsec, qname) {
+		// Check both exact/wildcard match and interval coverage
+		if nsecMatchesQname(nsec, qname) || nsecCoversZone(qname, nsec.Hdr.Name, nsec.NextDomain) {
 			qnameMatchingNSEC = nsec
 			break
 		}
@@ -84,7 +85,8 @@ func nsecValidateNoDataDS(qname string, nsecRRSet []dns.RR) (err error) {
 	var qnameMatchingNSEC *dns.NSEC
 	for _, nsecRR := range nsecRRSet {
 		nsec := mustRRToNSEC(nsecRR)
-		if nsecMatchesQname(nsec, qname) {
+		// Check both exact/wildcard match and interval coverage
+		if nsecMatchesQname(nsec, qname) || nsecCoversZone(qname, nsec.Hdr.Name, nsec.NextDomain) {
 			qnameMatchingNSEC = nsec
 			break
 		}

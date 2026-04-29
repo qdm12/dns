@@ -96,6 +96,16 @@ func Test_Validator_Validate(t *testing.T) {
 				},
 			},
 		},
+		"reverse_ptr_nodata_209.85.244.167.in-addr.arpa": {
+			// This reverse zone returns signed NODATA for DS queries with NSEC
+			// interval coverage proofs (not exact name match), testing that our
+			// NSEC validation correctly handles interval-based coverage.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "209.85.244.167.in-addr.arpa.", Qtype: dns.TypePTR, Qclass: dns.ClassINET},
+				},
+			},
+		},
 		"a_and_cname": {
 			request: &dns.Msg{
 				Question: []dns.Question{
