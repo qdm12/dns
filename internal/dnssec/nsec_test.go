@@ -3,6 +3,7 @@ package dnssec
 import (
 	"testing"
 
+	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -148,4 +149,55 @@ func Test_canonicalNameCompare(t *testing.T) {
 			assert.Equal(t, tc.expected, actual)
 		})
 	}
+}
+
+func Test_findNoDataDSProofNSEC_prefers_exact_match(t *testing.T) {
+	t.Parallel()
+
+	const qname = "f.ip6.arpa."
+
+	// First NSEC covers qname by interval but is not an exact owner match.
+	coveringNSEC := &dns.NSEC{
+		Hdr: dns.RR_Header{
+			Name:   "e.ip6.arpa.",
+			Rrtype: dns.TypeNSEC,
+			Class:  dns.ClassINET,
+		},
+		NextDomain: "g.ip6.arpa.",
+		TypeBitMap: []uint16{dns.TypeDS, dns.TypeRRSIG, dns.TypeNSEC},
+	}
+
+	// Second NSEC is the correct exact owner-name proof for qname.
+	exactNSEC := &dns.NSEC{
+		Hdr: dns.RR_Header{
+			Name:   qname,
+			Rrtype: dns.TypeNSEC,
+			Class:  dns.ClassINET,
+		},
+		NextDomain: "z.ip6.arpa.",
+		TypeBitMap: []uint16{dns.TypeNS, dns.TypeRRSIG, dns.TypeNSEC},
+	}
+
+	exactMatch, covering := findNoDataDSProofNSEC(qname, []dns.RR{coveringNSEC, exactNSEC})
+
+	assert.Same(t, exactNSEC, exactMatch)
+	assert.Same(t, coveringNSEC, covering)
+}
+
+func Test_nsecValidateNoDataDS_accepts_covering_nsec(t *testing.T) {
+	t.Parallel()
+
+	err := nsecValidateNoDataDS("0.224.in-addr.arpa.", []dns.RR{
+		&dns.NSEC{
+			Hdr: dns.RR_Header{
+				Name:   "224.in-addr.arpa.",
+				Rrtype: dns.TypeNSEC,
+				Class:  dns.ClassINET,
+			},
+			NextDomain: "0.0.0.224.in-addr.arpa.",
+			TypeBitMap: []uint16{dns.TypeNS, dns.TypeSOA, dns.TypeRRSIG, dns.TypeNSEC, dns.TypeDNSKEY},
+		},
+	})
+
+	assert.NoError(t, err)
 }

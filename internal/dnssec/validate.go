@@ -97,6 +97,11 @@ func validateWithChain(desiredZone string, qType uint16,
 			// no need to continue the verification for this zone since
 			// child zones are unsigned.
 			parentZoneInsecure = true
+		case !zoneData.dsResponse.isSigned():
+			// The DS query returned an unsigned answer that is neither NODATA nor
+			// NXDOMAIN (e.g. a CNAME chain for a name that is an alias, not a
+			// delegation). Treat this as an insecure delegation.
+			parentZoneInsecure = true
 		default: // signed zone
 		}
 

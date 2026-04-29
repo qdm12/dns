@@ -107,6 +107,43 @@ func Test_Validator_Validate(t *testing.T) {
 				},
 			},
 		},
+		"reverse_ptr_nxdomain_91.65.101.151.in-addr.arpa": {
+			// DS denial for 101.151.in-addr.arpa. can include multiple NSEC RRs,
+			// where only one RR proves non-existence for the queried name.
+			// Validation should consider all NSEC RRs from authority.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "91.65.101.151.in-addr.arpa.", Qtype: dns.TypePTR, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"reverse_ptr_nodata_252.0.0.224.in-addr.arpa": {
+			// DS denial for 0.224.in-addr.arpa. is proven by a covering NSEC
+			// from 224.in-addr.arpa. whose type bitmap includes SOA because the
+			// owner is the zone apex, not the queried name.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "252.0.0.224.in-addr.arpa.", Qtype: dns.TypePTR, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"reverse_ptr_nodata_250.255.255.239.in-addr.arpa": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "250.255.255.239.in-addr.arpa.", Qtype: dns.TypePTR, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"reverse_ptr_nodata_b.f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.f.f.ip6.arpa": {
+			// DS denial for f.ip6.arpa. can be proven by a covering NSEC whose
+			// owner bitmap includes DS because the owner is a different delegated
+			// name, not the queried qname.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "b.f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.f.f.ip6.arpa.", Qtype: dns.TypePTR, Qclass: dns.ClassINET},
+				},
+			},
+		},
 		"a_and_cname": {
 			request: &dns.Msg{
 				Question: []dns.Question{
@@ -167,6 +204,20 @@ func Test_Validator_Validate(t *testing.T) {
 			request: &dns.Msg{
 				Question: []dns.Question{
 					{Name: "vinted.lt.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+			assertVolatileAnswer: true,
+		},
+		"ds_returns_cname_chain_for_alias_zone": {
+			// officeclient.microsoft.com. triggers building a delegation chain
+			// through config.officeapps.live.com. whose DS query returns a CNAME
+			// chain (officeapps.live.com. is a CNAME alias, not a real delegation).
+			// The CNAME chain ends with an unsigned authority SOA, making the DS
+			// response unsigned. The chain should stop here and treat this as an
+			// insecure delegation rather than proceeding to query DNSKEY.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "officeclient.microsoft.com.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
 				},
 			},
 			assertVolatileAnswer: true,

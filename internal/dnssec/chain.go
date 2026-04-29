@@ -68,7 +68,7 @@ func queryDelegation(handler dns.Handler, zone string, qClass uint16) (
 			return signedData{}, false, fmt.Errorf("querying DS record: %w", err)
 		}
 
-		if data.dsResponse.isNoData() || data.dsResponse.isNXDomain() {
+		if !data.dsResponse.isSigned() || data.dsResponse.isNoData() || data.dsResponse.isNXDomain() {
 			// If no DS RRSet is found, the entire zone is unsigned.
 			// This also means no DNSKEY RRSet exists, since child zones are
 			// also unsigned, so return with the error errZoneHasNoDSRcord

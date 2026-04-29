@@ -18,12 +18,14 @@ func mustRRToNSEC(rr dns.RR) (nsec *dns.NSEC) {
 // extractNSECs returns the NSEC RRs found in the NSEC
 // signed RRSet from the slice of signed RRSets.
 func extractNSECs(rrSets []dnssecRRSet) (nsecs []dns.RR) {
+	nsecs = make([]dns.RR, 0, len(rrSets))
 	for _, rrSet := range rrSets {
-		if rrSet.qtype() == dns.TypeNSEC {
-			return rrSet.rrSet
+		if rrSet.qtype() != dns.TypeNSEC {
+			continue
 		}
+		nsecs = append(nsecs, rrSet.rrSet...)
 	}
-	return nil
+	return nsecs
 }
 
 func nsecValidateNxDomain(qname string, nsecRRSet []dns.RR) (err error) {
@@ -49,8 +51,7 @@ func nsecValidateNoData(qname string, qType uint16,
 	var qnameMatchingNSEC *dns.NSEC
 	for _, nsecRR := range nsecRRSet {
 		nsec := mustRRToNSEC(nsecRR)
-		// Check both exact/wildcard match and interval coverage
-		if nsecMatchesQname(nsec, qname) || nsecCoversZone(qname, nsec.Hdr.Name, nsec.NextDomain) {
+		if nsecMatchesQname(nsec, qname) {
 			qnameMatchingNSEC = nsec
 			break
 		}
@@ -82,28 +83,45 @@ func nsecValidateNoData(qname string, qType uint16,
 }
 
 func nsecValidateNoDataDS(qname string, nsecRRSet []dns.RR) (err error) {
-	var qnameMatchingNSEC *dns.NSEC
-	for _, nsecRR := range nsecRRSet {
-		nsec := mustRRToNSEC(nsecRR)
-		// Check both exact/wildcard match and interval coverage
-		if nsecMatchesQname(nsec, qname) || nsecCoversZone(qname, nsec.Hdr.Name, nsec.NextDomain) {
-			qnameMatchingNSEC = nsec
-			break
-		}
-	}
+	exactMatchNSEC, coveringNSEC := findNoDataDSProofNSEC(qname, nsecRRSet)
 
-	if qnameMatchingNSEC == nil {
+	switch {
+	case exactMatchNSEC != nil:
+		err = verifyNoDataNsecxTypesDS("NSEC", exactMatchNSEC.TypeBitMap)
+		if err != nil {
+			return fmt.Errorf("for qname %s: %w",
+				qname, err)
+		}
+		return nil
+	case coveringNSEC != nil:
+		// A covering NSEC proves the qname does not exist, which is sufficient
+		// to establish absence of DS at the queried name.
+		return nil
+	default:
 		return fmt.Errorf("for qname %s: %w: "+
 			"no NSEC matching qname found",
 			qname, errBogus)
 	}
+}
 
-	err = verifyNoDataNsecxTypesDS("NSEC", qnameMatchingNSEC.TypeBitMap)
-	if err != nil {
-		return fmt.Errorf("for qname %s: %w",
-			qname, err)
+// findNoDataDSProofNSEC selects candidate NSEC proofs for DS NODATA.
+// An exact or wildcard owner-name match proves the name exists but has no DS.
+// A covering NSEC proves the queried name does not exist, which also implies
+// DS absence at that name.
+func findNoDataDSProofNSEC(qname string, nsecRRSet []dns.RR) (exactMatch, covering *dns.NSEC) {
+	var coveringNSEC *dns.NSEC
+
+	for _, nsecRR := range nsecRRSet {
+		nsec := mustRRToNSEC(nsecRR)
+		if nsecMatchesQname(nsec, qname) {
+			return nsec, coveringNSEC
+		}
+		if coveringNSEC == nil && nsecCoversZone(qname, nsec.Hdr.Name, nsec.NextDomain) {
+			coveringNSEC = nsec
+		}
 	}
-	return nil
+
+	return nil, coveringNSEC
 }
 
 // nsecMatchesQname returns true if the NSEC owner name is equal
