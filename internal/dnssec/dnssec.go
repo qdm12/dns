@@ -11,7 +11,7 @@ import (
 
 var errQuestionsMultiple = errors.New("multiple questions")
 
-func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err error) {
+func (v *Validator) Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err error) {
 	switch len(request.Question) {
 	case 0:
 		response = new(dns.Msg)
@@ -55,7 +55,8 @@ func Validate(request *dns.Msg, handler dns.Handler) (response *dns.Msg, err err
 			originalDesiredZone, err)
 	}
 
-	err = validateWithChain(desiredZone, qType, desiredResponse, delegationChain)
+	err = validateWithChain(desiredZone, qType, desiredResponse, delegationChain,
+		v.rootTrustAnchorsDSRecords())
 	if err != nil {
 		return nil, fmt.Errorf("for %s: validating answer RRSets"+
 			" with delegation chain: %w",

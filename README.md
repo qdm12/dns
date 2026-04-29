@@ -136,6 +136,7 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `CACHE_TYPE` | `lru` | `lru` or `noop`. LRU caches DNS responses by least recently used |
 | `CACHE_LRU_MAX_ENTRIES` | `10000` | Number of elements to keep in the LRU cache. |
 | `DNSSEC_VALIDATION` | `on` | `on` or `off`. Enable or disable DNSSEC validation |
+| `DNSSEC_ROOT_TRUST_ANCHOR_REFRESH_PERIOD` | `168h` | Period to refresh the local root trust anchors from the authenticated root DNSKEY RRSet. Set to `0` to disable. |
 | `METRICS_TYPE` | `noop` | `noop` or `prometheus` |
 | `METRICS_PROMETHEUS_ADDRESS` | `:9090` | HTTP Prometheus server listening address |
 | `METRICS_PROMETHEUS_SUBSYSTEM` | `dns` | Prometheus metrics prefix/subsystem |

@@ -75,7 +75,8 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 
 	if dnssecEnabled {
 		settings := dnssec.Settings{
-			Logger: loggerConstructor.New(log.SetComponent("DNSSEC")),
+			Logger:                       loggerConstructor.New(log.SetComponent("DNSSEC")),
+			RootTrustAnchorRefreshPeriod: new(*userSettings.DNSSEC.RootTrustAnchorRefreshPeriod),
 		}
 		dnssecMiddleware, err := dnssec.New(settings)
 		if err != nil {

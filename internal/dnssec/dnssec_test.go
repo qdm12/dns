@@ -19,14 +19,15 @@ func (h *refusedHandler) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
 	_ = w.WriteMsg(response)
 }
 
-func Test_Validate_RefusedPassThrough(t *testing.T) {
+func Test_Validator_Validate_RefusedPassThrough(t *testing.T) {
 	t.Parallel()
 
 	handler := new(refusedHandler)
+	validator := New()
 	request := new(dns.Msg)
 	request.SetQuestion("graph.instagram.com.", dns.TypeA)
 
-	response, err := Validate(request, handler)
+	response, err := validator.Validate(request, handler)
 
 	require.NoError(t, err)
 	require.NotNil(t, response)
