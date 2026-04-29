@@ -159,6 +159,17 @@ func Test_Validator_Validate(t *testing.T) {
 			},
 			assertVolatileAnswer: true,
 		},
+		"unsigned_ds_positive_answer": {
+			// vinted.lt. returns an unsigned positive DS answer, indicating an
+			// insecure delegation. The validator should accept this and continue
+			// building the chain rather than rejecting it as bogus.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "vinted.lt.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+			assertVolatileAnswer: true,
+		},
 		"nxdomain_2_rrsigs_per_nsec": {
 			// There are two RRSIGs per NSEC RR, each with a
 			// different algorithm. This is to allow transitioning

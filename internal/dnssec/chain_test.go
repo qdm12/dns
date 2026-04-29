@@ -61,7 +61,9 @@ func Test_queryDS(t *testing.T) {
 			},
 			noData: true,
 		},
-		"unsigned_positive_answer_is_rejected": {
+		"unsigned_positive_answer_is_treated_as_insecure": {
+			// Even unsigned positive DS answers indicate an insecure delegation
+			// (the zone doesn't have DNSSEC protection).
 			response: &dns.Msg{
 				MsgHdr: dns.MsgHdr{Rcode: dns.RcodeSuccess},
 				Answer: []dns.RR{&dns.DS{Hdr: dns.RR_Header{
@@ -70,7 +72,7 @@ func Test_queryDS(t *testing.T) {
 					Class:  dns.ClassINET,
 				}}},
 			},
-			errWrapped: errDSAndNSECAbsent,
+			noData: false,
 		},
 		"unsigned_nxdomain_is_treated_as_insecure": {
 			response: &dns.Msg{
