@@ -1,7 +1,6 @@
 package dnssec
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -86,8 +85,6 @@ func queryDelegation(handler dns.Handler, zone string, qClass uint16) (
 
 	return data, true, nil
 }
-
-var errDSAndNSECAbsent = errors.New("zone has no DS record and no NSEC record")
 
 func queryDS(handler dns.Handler, zone string, qClass uint16) (
 	response dnssecResponse, err error,
