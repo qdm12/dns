@@ -16,7 +16,7 @@ var errWildcardedDNAME = errors.New("DNAME record cannot be synthesized from wil
 // assuming a signature is valid, it walks through the slice of signed
 // zones checking the RRSIGs on the DNSKEY and DS resource record sets.
 func validateWithChain(desiredZone string, qType uint16,
-	desiredResponse dnssecResponse, chain []signedData,
+	desiredResponse dnssecResponse, chain []signedData, rootTrustAnchors []dns.DS,
 ) (err error) {
 	// Verify the root zone "."
 	rootZone := chain[0]
@@ -32,22 +32,11 @@ func validateWithChain(desiredZone string, qType uint16,
 			err)
 	}
 
-	// Verify the root anchor digest against the digest of the DS
-	// calculated from the DNSKEY of the root zone matching the
-	// root anchor key tag.
-	const (
-		rootAnchorKeyTag = 20326
-		rootAnchorDigest = "E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D"
-	)
-	rootAnchor := &dns.DS{
-		Algorithm:  dns.RSASHA256,
-		DigestType: dns.SHA256,
-		KeyTag:     rootAnchorKeyTag,
-		Digest:     rootAnchorDigest,
-	}
-	err = verifyDS(rootAnchor, rootZoneKeyTagToDNSKeys)
+	// Verify that the configured root trust anchors match at least one KSK
+	// published in the authenticated root DNSKEY RRSet.
+	err = verifyRootTrustAnchors(rootTrustAnchors, rootZoneKeyTagToDNSKeys)
 	if err != nil {
-		return fmt.Errorf("verifying the root anchor: %w", err)
+		return fmt.Errorf("verifying the root trust anchors: %w", err)
 	}
 
 	wildcardName := extractWildcardExpansion(desiredResponse.answerRRSets)

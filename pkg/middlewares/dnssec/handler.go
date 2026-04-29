@@ -7,19 +7,21 @@ import (
 
 type handler struct {
 	// Injected from middleware
-	logger Logger
-	next   dns.Handler
+	logger    Logger
+	validator *dnssec.Validator
+	next      dns.Handler
 }
 
-func newHandler(logger Logger, next dns.Handler) *handler {
+func newHandler(logger Logger, validator *dnssec.Validator, next dns.Handler) *handler {
 	return &handler{
-		logger: logger,
-		next:   next,
+		logger:    logger,
+		validator: validator,
+		next:      next,
 	}
 }
 
 func (h *handler) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
-	response, err := dnssec.Validate(request, h.next)
+	response, err := h.validator.Validate(request, h.next)
 	if err != nil {
 		h.logger.Warn(err.Error())
 		response = new(dns.Msg)

@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Validate(t *testing.T) {
+func Test_Validator_Validate(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
@@ -187,8 +187,9 @@ func Test_Validate(t *testing.T) {
 			requestCopy := testCase.request.Copy()
 
 			handler := newIntegTestHandler(t)
+			validator := New()
 
-			response, err := Validate(testCase.request, handler)
+			response, err := validator.Validate(testCase.request, handler)
 
 			require.ErrorIs(t, err, testCase.errWrapped)
 
