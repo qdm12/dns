@@ -15,6 +15,9 @@ linters:
           - err113
         path: _test\.go
       - linters:
+          - err113
+        text: "do not define dynamic errors, use wrapped static errors instead"
+      - linters:
           - dupl
         path: pkg/provider/.*\.go
       - linters:
