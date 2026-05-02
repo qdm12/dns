@@ -62,6 +62,17 @@ func (p *Pool) renew(ctx context.Context, conn poolConn, network, reason string)
 	netConn, err := p.dialer.Dial(ctx, network, address)
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	if conn.addrIndex >= len(p.addrConns) {
+		// The pool was reconfigured/emptied while we were dialing.
+		// Drop the new conn and report the original error (or a fresh one).
+		if netConn != nil {
+			_ = netConn.Close()
+		}
+		if err == nil {
+			err = fmt.Errorf("pool address index %d out of range", conn.addrIndex)
+		}
+		return poolConn{}, err
+	}
 	addrConns := p.addrConns[conn.addrIndex]
 	p.ensureConnIDToIndex(&addrConns)
 	connIndex, found := addrConns.connIDToIndex[conn.id]
