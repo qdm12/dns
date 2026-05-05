@@ -61,7 +61,7 @@ func (s *Settings) SetDefaults() {
 
 var ErrUpdatePeriodTooShort = errors.New("update period is too short")
 
-func (s *Settings) Validate() (err error) {
+func (s *Settings) Validate(ipv6 bool) (err error) {
 	err = validate.IsOneOf(s.Upstream, "dot", "doh", "plain")
 	if err != nil {
 		return fmt.Errorf("upstream type: %w", err)
@@ -75,10 +75,10 @@ func (s *Settings) Validate() (err error) {
 	nameToValidate := map[string]func() error{
 		"block":          s.Block.validate,
 		"cache":          s.Cache.validate,
-		"DoH":            s.DoH.validate,
-		"DoT":            s.DoT.validate,
-		"plain":          s.Plain.validate,
-		"log":            s.Log.validate,
+		"DoH":            func() error { return s.DoH.validate(ipv6) },
+		"DoT":            func() error { return s.DoT.validate(ipv6) },
+		"plain":          func() error { return s.Plain.validate(ipv6) },
+		"log":            s.Log.Validate,
 		"middleware log": s.MiddlewareLog.validate,
 		"metrics":        s.Metrics.validate,
 		"local DNS":      s.LocalDNS.validate,

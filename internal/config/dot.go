@@ -33,8 +33,8 @@ func (d *DoT) setDefaults() {
 
 var ErrTimeoutTooSmall = errors.New("timeout is too small")
 
-func (d *DoT) validate() (err error) {
-	err = checkUpstreamResolverNames(d.UpstreamResolvers)
+func (d *DoT) validate(ipv6 bool) (err error) {
+	err = checkUpstreamResolverNames(d.UpstreamResolvers, "dot", ipv6)
 	if err != nil {
 		return fmt.Errorf("upstream resolvers: %w", err)
 	}

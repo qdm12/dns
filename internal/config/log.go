@@ -36,7 +36,7 @@ func (l *Log) setDefaults() {
 	l.Caller = gosettings.DefaultComparable(l.Caller, "hidden")
 }
 
-func (l *Log) validate() (err error) {
+func (l *Log) Validate() (err error) {
 	_, err = log.ParseLevel(l.Level)
 	if err != nil {
 		return fmt.Errorf("log level: %w", err)

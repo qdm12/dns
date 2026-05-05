@@ -18,6 +18,7 @@ import (
 	"github.com/qdm12/dns/v2/internal/metrics"
 	"github.com/qdm12/dns/v2/internal/models"
 	"github.com/qdm12/dns/v2/internal/setup"
+	"github.com/qdm12/dns/v2/internal/support"
 	"github.com/qdm12/goservices"
 	"github.com/qdm12/goservices/hooks"
 	"github.com/qdm12/gosettings/reader"
@@ -114,12 +115,18 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 	}
 	settings.SetDefaults()
 
-	err = settings.Validate()
+	err = settings.Log.Validate()
+	if err != nil {
+		return fmt.Errorf("invalid log settings: %w", err)
+	}
+	logger.Patch(settings.Log.ToOptions()...)
+
+	ipv6Support := checkIPv6Support(ctx, logger)
+
+	err = settings.Validate(ipv6Support)
 	if err != nil {
 		return fmt.Errorf("invalid settings: %w", err)
 	}
-
-	logger.Patch(settings.Log.ToOptions()...)
 
 	logger.Info(settings.String())
 
@@ -151,7 +158,7 @@ func _main(ctx context.Context, buildInfo models.BuildInformation, //nolint:cycl
 		return fmt.Errorf("cache: %w", err)
 	}
 
-	dnsLoop, err := dns.New(settings, dnsLogger, blockBuilder, cache, prometheusRegistry)
+	dnsLoop, err := dns.New(settings, ipv6Support, dnsLogger, blockBuilder, cache, prometheusRegistry)
 	if err != nil {
 		return fmt.Errorf("creating DNS loop: %w", err)
 	}
@@ -212,4 +219,17 @@ func initialDisplay(buildInfo models.BuildInformation) {
 	for _, line := range gosplash.MakeLines(splashSettings) {
 		fmt.Println(line)
 	}
+}
+
+func checkIPv6Support(ctx context.Context, logger Logger) (ok bool) {
+	ipv6Support, err := support.IPv6(ctx)
+	if err != nil {
+		logger.Warn("IPv6 support cannot be determined: " + err.Error())
+	}
+	if ipv6Support {
+		logger.Info("IPv6 is supported, communicating with upstream resolvers only over IPv6")
+	} else {
+		logger.Info("IPv6 is not supported, communicating with upstream resolvers only over IPv4")
+	}
+	return ipv6Support
 }

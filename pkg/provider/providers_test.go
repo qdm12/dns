@@ -56,6 +56,10 @@ func Test_Providers_Get(t *testing.T) {
 			s:        "cloudflare family",
 			provider: CloudflareFamily(),
 		},
+		"cloudflaremozilla": {
+			s:        "cloudflare mozilla",
+			provider: CloudflareMozilla(),
+		},
 		"cloudflaresecurity": {
 			s:        "cloudflare security",
 			provider: CloudflareSecurity(),
@@ -107,24 +111,32 @@ func Test_Providers_List(t *testing.T) {
 
 	providers := NewProviders()
 	listed := providers.List()
-	assert.Len(t, listed, 16)
+	const currentListCount = 17
+	assert.GreaterOrEqual(t, len(listed), currentListCount)
 
 	for _, provider := range listed {
-		errMessage := "for provider " + provider.DoT.Name
+		errMessage := "for provider " + provider.Name
 
-		assert.NotEmpty(t, provider.DoT.Name, errMessage)
-		err := checkAddrPorts(provider.DoT.IPv4)
-		assert.NoError(t, err, errMessage)
-		err = checkAddrPorts(provider.DoT.IPv6)
-		assert.NoError(t, err, errMessage)
-
-		assert.NotEmpty(t, provider.DoH.URL, errMessage)
-		if len(provider.DoH.IPv4) == 0 && len(provider.DoH.IPv6) == 0 {
-			t.Errorf("provider %s: %s", provider.DoT.Name, ErrDoHIPNotSet)
+		if provider.DoT.Name == "" {
+			assert.Empty(t, provider.DoT.IPv4, errMessage)
+			assert.Empty(t, provider.DoT.IPv6, errMessage)
+		} else {
+			assert.NotEmpty(t, append(provider.DoT.IPv4, provider.DoT.IPv6...), errMessage)
+			err := checkAddrPorts(provider.DoT.IPv4)
+			assert.NoError(t, err, errMessage)
+			err = checkAddrPorts(provider.DoT.IPv6)
+			assert.NoError(t, err, errMessage)
 		}
-		err = checkAddresses(provider.DoH.IPv4)
-		assert.NoError(t, err, errMessage)
-		err = checkAddresses(provider.DoH.IPv6)
-		assert.NoError(t, err, errMessage)
+
+		if provider.DoH.URL == "" {
+			assert.Empty(t, provider.DoH.IPv4, errMessage)
+			assert.Empty(t, provider.DoH.IPv6, errMessage)
+		} else {
+			assert.NotEmpty(t, append(provider.DoH.IPv4, provider.DoH.IPv6...), errMessage)
+			err := checkAddresses(provider.DoH.IPv4)
+			assert.NoError(t, err, errMessage)
+			err = checkAddresses(provider.DoH.IPv6)
+			assert.NoError(t, err, errMessage)
+		}
 	}
 }

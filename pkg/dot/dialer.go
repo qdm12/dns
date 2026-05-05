@@ -41,6 +41,9 @@ func New(settings Settings) (dial *Dialer, err error) {
 				addrPorts = append(addrPorts, addrPort)
 			}
 		}
+		if len(addrPorts) == 0 {
+			return nil, fmt.Errorf("no DoT server addresses found for provider %s", upstreamResolver.Name)
+		}
 	}
 
 	return &Dialer{

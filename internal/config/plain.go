@@ -29,8 +29,8 @@ func (p *Plain) setDefaults() {
 	p.Timeout = gosettings.DefaultComparable(p.Timeout, defaultTimeout)
 }
 
-func (p *Plain) validate() (err error) {
-	err = checkUpstreamResolverNames(p.UpstreamResolvers)
+func (p *Plain) validate(ipv6 bool) (err error) {
+	err = checkUpstreamResolverNames(p.UpstreamResolvers, "plain", ipv6)
 	if err != nil {
 		return fmt.Errorf("upstream resolvers: %w", err)
 	}

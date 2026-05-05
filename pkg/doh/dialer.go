@@ -36,6 +36,9 @@ func New(settings Settings) (dial *Dialer, err error) {
 	urls := make([]string, len(settings.UpstreamResolvers))
 	servers := make([]provider.DoHServer, len(settings.UpstreamResolvers))
 	for i, upstreamResolver := range settings.UpstreamResolvers {
+		if upstreamResolver.DoH.URL == "" {
+			return nil, fmt.Errorf("upstream resolver %s: DoH URL is empty", upstreamResolver.Name)
+		}
 		urlsSet[upstreamResolver.DoH.URL] = struct{}{}
 		urls[i] = upstreamResolver.DoH.URL
 		servers[i] = upstreamResolver.DoH

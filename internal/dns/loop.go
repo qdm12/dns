@@ -10,7 +10,6 @@ import (
 
 	"github.com/qdm12/dns/v2/internal/config"
 	"github.com/qdm12/dns/v2/internal/setup"
-	"github.com/qdm12/dns/v2/internal/support"
 	"github.com/qdm12/dns/v2/pkg/check"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/mapfilter"
 	"github.com/qdm12/dns/v2/pkg/nameserver"
@@ -20,6 +19,7 @@ import (
 type Loop struct {
 	// Dependencies injected
 	settings           config.Settings
+	ipv6Support        bool
 	logger             Logger
 	blockBuilder       BlockBuilder
 	cache              Cache
@@ -29,25 +29,19 @@ type Loop struct {
 	updateTimer *time.Timer
 	runCancel   context.CancelFunc
 	runDone     chan struct{}
-	ipv6Support bool
 }
 
-func New(settings config.Settings, logger Logger,
+func New(settings config.Settings, ipv6Support bool, logger Logger,
 	blockBuilder BlockBuilder, cache Cache,
 	prometheusRegistry PrometheusRegistry,
 ) (loop *Loop, err error) {
-	settings.SetDefaults()
-	err = settings.Validate()
-	if err != nil {
-		return nil, fmt.Errorf("validating settings: %w", err)
-	}
-
 	return &Loop{
 		settings:           settings,
 		logger:             logger,
 		blockBuilder:       blockBuilder,
 		cache:              cache,
 		prometheusRegistry: prometheusRegistry,
+		ipv6Support:        ipv6Support,
 	}, nil
 }
 
@@ -58,8 +52,6 @@ func (l *Loop) String() string {
 func (l *Loop) Start(ctx context.Context) ( //nolint:contextcheck
 	runError <-chan error, err error,
 ) {
-	l.ipv6Support = checkIPv6Support(ctx, l.logger)
-
 	err = l.runFirst(ctx)
 	if err != nil {
 		return nil, err
@@ -103,19 +95,6 @@ func (l *Loop) Stop() (err error) {
 	l.runCancel()
 	<-l.runDone
 	return l.dnsServer.Stop()
-}
-
-func checkIPv6Support(ctx context.Context, logger Logger) (ok bool) {
-	ipv6Support, err := support.IPv6(ctx)
-	if err != nil {
-		logger.Warn("IPv6 support cannot be determined: " + err.Error())
-	}
-	if ipv6Support {
-		logger.Info("IPv6 is supported, communicating with upstream resolvers only over IPv6")
-	} else {
-		logger.Info("IPv6 is not supported, communicating with upstream resolvers only over IPv4")
-	}
-	return ipv6Support
 }
 
 func (l *Loop) runFirst(ctx context.Context) (err error) {

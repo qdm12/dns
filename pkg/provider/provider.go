@@ -43,6 +43,19 @@ var (
 	ErrPlainIPNotSet      = errors.New("plaintext server IP addresses not set")
 )
 
+func (p Provider) ValidateForType(upstreamType string, ipv6 bool) (err error) {
+	switch upstreamType {
+	case "dot":
+		return p.ValidateForDoT(ipv6)
+	case "doh":
+		return p.ValidateForDoH(ipv6)
+	case "plain":
+		return p.ValidateForPlain(ipv6)
+	default:
+		return fmt.Errorf("unknown upstream type: %s", upstreamType)
+	}
+}
+
 func (p Provider) ValidateForDoT(ipv6 bool) (err error) {
 	switch {
 	case p.Name == "":

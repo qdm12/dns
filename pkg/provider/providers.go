@@ -21,6 +21,7 @@ func NewProviders() *Providers {
 			CleanBrowsingSecurity(),
 			Cloudflare(),
 			CloudflareFamily(),
+			CloudflareMozilla(),
 			CloudflareSecurity(),
 			Google(),
 			LibreDNS(),
