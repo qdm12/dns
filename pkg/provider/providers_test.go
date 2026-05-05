@@ -56,6 +56,10 @@ func Test_Providers_Get(t *testing.T) {
 			s:        "cloudflare family",
 			provider: CloudflareFamily(),
 		},
+		"cloudflaremozilla": {
+			s:        "cloudflare mozilla",
+			provider: CloudflareMozilla(),
+		},
 		"cloudflaresecurity": {
 			s:        "cloudflare security",
 			provider: CloudflareSecurity(),
