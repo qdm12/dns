@@ -131,6 +131,11 @@ func verifyRRSetRRSigs(rrSet []dns.RR, rrSigs []*dns.RRSIG,
 		}
 	}
 
+	if allJoinedErrorsAre(errs, dns.ErrKey) {
+		return fmt.Errorf("%w: %d RRSIGs failed to validate the RRSet: %w",
+			errRRSigAllBadKeys, len(rrSigs), errs)
+	}
+
 	return fmt.Errorf("%d RRSIGs failed to validate the RRSet: %w",
 		len(rrSigs), errs)
 }
@@ -141,6 +146,7 @@ var (
 	errRRSigExpired              = errors.New("RRSIG has expired")
 	errRRSigForbiddenAlgorithm   = errors.New("RRSIG algorithm is forbidden by RFC 8624")
 	errRRSigUnsupportedAlgorithm = errors.New("RRSIG algorithm is not supported")
+	errRRSigAllBadKeys           = errors.New("all candidate RRSIG validations failed with bad key")
 )
 
 func matchingDNSKeysForRRSIG(rrSig *dns.RRSIG, keyTagToDNSKeys dnsKeysByTag) []*dns.DNSKEY {
@@ -207,14 +213,36 @@ func verifyRRSetRRSig(rrSet []dns.RR, rrSig *dns.RRSIG,
 			errRRSigDNSKey, rrSig.SignerName, rrSig.Algorithm, rrSig.KeyTag)
 	}
 
+	errs := new(joinedErrors)
+
 	for _, dnsKey := range matchingDNSKeys {
 		err = rrSig.Verify(dnsKey, rrSet)
 		if err == nil {
 			return nil
 		}
+		err = fmt.Errorf("for DNSKEY key tag %d: %w", dnsKey.KeyTag(), err)
+		errs.add(err)
 	}
 
-	return err
+	if allJoinedErrorsAre(errs, dns.ErrKey) {
+		return fmt.Errorf("%w: %w", errRRSigAllBadKeys, errs)
+	}
+
+	return errs
+}
+
+func allJoinedErrorsAre(joined *joinedErrors, target error) bool {
+	if joined == nil || len(joined.errs) == 0 {
+		return false
+	}
+
+	for _, err := range joined.errs {
+		if !errors.Is(err, target) {
+			return false
+		}
+	}
+
+	return true
 }
 
 const (
