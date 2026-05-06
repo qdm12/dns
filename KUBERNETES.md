@@ -39,6 +39,8 @@ data:
   CACHE_TYPE: lru
   CACHE_LRU_MAX_ENTRIES: '10000'
 
+  DNSSEC_ROOT_TRUST_ANCHOR_REFRESH_PERIOD: 168h
+
   CHECK_DNS: 'off'
   UPDATE_PERIOD: '0' # actually 24h, but there is bug currently
 ```
