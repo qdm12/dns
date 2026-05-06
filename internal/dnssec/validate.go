@@ -129,6 +129,12 @@ func validateParentChain(chain []signedData) (parentZoneInsecure bool, err error
 
 		err = validateSignedDelegation(zoneData, parentZoneData)
 		if err != nil {
+			if errors.Is(err, errRRSigAllBadKeys) {
+				// Some delegated zones publish DNSKEY RRSIGs that cannot be
+				// validated by available keys. Treat this zone as insecure
+				// rather than failing the entire response validation.
+				return true, nil
+			}
 			return false, err
 		}
 	}

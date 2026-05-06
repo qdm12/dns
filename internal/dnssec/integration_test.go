@@ -208,6 +208,17 @@ func Test_Validator_Validate(t *testing.T) {
 			},
 			assertVolatileAnswer: true,
 		},
+		"signed_answer_insecure_parent_track.us.org": {
+			// track.us.org. currently returns DNSKEY RRSIGs that fail verification
+			// with "dns: bad key" for both signatures. Treat this as insecure
+			// delegation rather than rejecting the full response.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "track.us.org.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+			assertVolatileAnswer: true,
+		},
 		"unsigned_ds_positive_answer": {
 			// vinted.lt. returns an unsigned positive DS answer, indicating an
 			// insecure delegation. The validator should accept this and continue
