@@ -197,6 +197,17 @@ func Test_Validator_Validate(t *testing.T) {
 			},
 			assertVolatileAnswer: true,
 		},
+		"signed_answer_insecure_parent_sdkc.vervegroupinc.net": {
+			// sdkc.vervegroupinc.net. can trigger a DS query path that returns
+			// a CNAME RRSet rather than DS, which should be treated as an
+			// insecure delegation instead of failing delegation chain building.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "sdkc.vervegroupinc.net.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+			assertVolatileAnswer: true,
+		},
 		"unsigned_ds_positive_answer": {
 			// vinted.lt. returns an unsigned positive DS answer, indicating an
 			// insecure delegation. The validator should accept this and continue
