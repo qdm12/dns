@@ -101,6 +101,11 @@ func queryDS(handler dns.Handler, zone string, qClass uint16) (
 	case response.isNXDomain(), response.isNoData():
 		// Signed negative response with NSEC/NSEC3 authority RRSets.
 		return response, nil
+	case len(response.answerRRSets) > 0 && response.answerRRSets[0].qtype() == dns.TypeCNAME:
+		// A CNAME in response to a DS query means the queried name is a CNAME
+		// alias and therefore cannot be a zone apex. Since zone apexes cannot be
+		// CNAMEs, no DS record can exist for this name. Treat as insecure delegation.
+		return dnssecResponse{}, nil
 	}
 	// signed answer RRSet(s)
 
