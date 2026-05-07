@@ -8,7 +8,7 @@ import (
 	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
-var errRcodeBad = errors.New("bad response rcode")
+var ErrRcodeBad = errors.New("bad response rcode")
 
 func queryRRSets(handler dns.Handler, zone string,
 	qClass, qType uint16,
@@ -89,7 +89,7 @@ func queryRRSets(handler dns.Handler, zone string,
 		// blocked by a filter middleware). DNSSEC validation is not applicable.
 		return response, nil
 	default: // other error
-		// If the response Rcode is dns.RcodeServerFailure,
+		// If the response Rcode is [dns.RcodeServerFailure],
 		// this may mean DNSSEC validation failed on the upstream server.
 		// https://www.ietf.org/rfc/rfc4033.txt
 		// This specification only defines how security-aware name servers can
@@ -98,7 +98,7 @@ func queryRRSets(handler dns.Handler, zone string,
 		return dnssecResponse{}, fmt.Errorf(
 			"for %s: %w: %s",
 			nameClassTypeToString(zone, qClass, qType),
-			errRcodeBad, dns.RcodeToString[dnsResponse.Rcode])
+			ErrRcodeBad, dns.RcodeToString[dnsResponse.Rcode])
 	}
 }
 
