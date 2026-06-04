@@ -22,7 +22,7 @@ func newHTTPClient(dohServers []provider.DoHServer, ipVersion string) (
 	httpTransport := http.DefaultTransport.(*http.Transport).Clone() //nolint:forcetypeassert
 
 	dialer := &net.Dialer{
-		Resolver: newHTTPClientResolver(dohServers, ipVersion),
+		Resolver: NewResolverHardcodedIPs(dohServers, ipVersion),
 	}
 	httpTransport.DialContext = dialer.DialContext
 	const timeout = 5 * time.Second
@@ -32,7 +32,9 @@ func newHTTPClient(dohServers []provider.DoHServer, ipVersion string) (
 	}
 }
 
-func newHTTPClientResolver(dohServers []provider.DoHServer,
+// NewResolverHardcodedIPs returns a [net.Resolver] that resolves DoH server names
+// to hardcoded IPv6 and/or IPv4 addresses.
+func NewResolverHardcodedIPs(dohServers []provider.DoHServer,
 	ipVersion string,
 ) *net.Resolver {
 	// Compute mappings early and once for all dial calls
