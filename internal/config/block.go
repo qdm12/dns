@@ -15,7 +15,6 @@ import (
 type Block struct {
 	BlockMalicious       *bool
 	BlockAds             *bool
-	BlockSurveillance    *bool
 	AllowedHosts         []string
 	AllowedIPs           []netip.Addr
 	AllowedIPPrefixes    []netip.Prefix
@@ -30,7 +29,6 @@ type Block struct {
 func (b *Block) setDefaults() {
 	b.BlockMalicious = gosettings.DefaultPointer(b.BlockMalicious, true)
 	b.BlockAds = gosettings.DefaultPointer(b.BlockAds, false)
-	b.BlockSurveillance = gosettings.DefaultPointer(b.BlockSurveillance, false)
 }
 
 var regexHostname = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
@@ -65,9 +63,6 @@ func (b *Block) ToLinesNode() (node *gotree.Node) {
 	var blockedCategories []string
 	if *b.BlockMalicious {
 		blockedCategories = append(blockedCategories, "malicious")
-	}
-	if *b.BlockSurveillance {
-		blockedCategories = append(blockedCategories, "surveillance")
 	}
 	if *b.BlockAds {
 		blockedCategories = append(blockedCategories, "ads")
@@ -111,11 +106,6 @@ func (b *Block) ToLinesNode() (node *gotree.Node) {
 
 func (b *Block) read(reader *reader.Reader) (err error) {
 	b.BlockMalicious, err = reader.BoolPtr("BLOCK_MALICIOUS")
-	if err != nil {
-		return err
-	}
-
-	b.BlockSurveillance, err = reader.BoolPtr("BLOCK_SURVEILLANCE")
 	if err != nil {
 		return err
 	}

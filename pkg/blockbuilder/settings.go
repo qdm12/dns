@@ -16,7 +16,6 @@ type Settings struct {
 	Client               *http.Client
 	BlockMalicious       *bool
 	BlockAds             *bool
-	BlockSurveillance    *bool
 	AllowedHosts         []string
 	AllowedIPs           []netip.Addr
 	AllowedIPPrefixes    []netip.Prefix
@@ -29,7 +28,6 @@ func (s *Settings) SetDefaults() {
 	s.Client = gosettings.DefaultComparable(s.Client, http.DefaultClient)
 	s.BlockMalicious = gosettings.DefaultPointer(s.BlockMalicious, false)
 	s.BlockAds = gosettings.DefaultPointer(s.BlockAds, false)
-	s.BlockSurveillance = gosettings.DefaultPointer(s.BlockSurveillance, false)
 }
 
 var hostRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
@@ -58,9 +56,6 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	var blockedCategories []string
 	if *s.BlockMalicious {
 		blockedCategories = append(blockedCategories, "malicious")
-	}
-	if *s.BlockSurveillance {
-		blockedCategories = append(blockedCategories, "surveillance")
 	}
 	if *s.BlockAds {
 		blockedCategories = append(blockedCategories, "ads")

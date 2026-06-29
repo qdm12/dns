@@ -18,7 +18,6 @@ func New(settings Settings) (builder *Builder, err error) {
 		client:               settings.Client,
 		blockMalicious:       *settings.BlockMalicious,
 		blockAds:             *settings.BlockAds,
-		blockSurveillance:    *settings.BlockSurveillance,
 		allowedHosts:         settings.AllowedHosts,
 		allowedIPs:           settings.AllowedIPs,
 		allowedIPPrefixes:    settings.AllowedIPPrefixes,
@@ -33,7 +32,6 @@ type Builder struct {
 	client               *http.Client
 	blockMalicious       bool
 	blockAds             bool
-	blockSurveillance    bool
 	allowedHosts         []string
 	allowedIPs           []netip.Addr
 	allowedIPPrefixes    []netip.Prefix

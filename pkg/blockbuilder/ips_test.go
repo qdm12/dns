@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
+func Test_Builder_IPs(t *testing.T) {
 	t.Parallel()
 	type blockParams struct {
 		blocked   bool
@@ -25,7 +25,6 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 	tests := map[string]struct {
 		malicious                   blockParams
 		ads                         blockParams
-		surveillance                blockParams
 		allowedIPs                  []netip.Addr
 		additionalBlockedIPs        []netip.Addr
 		allowedIPPrefixes           []netip.Prefix
@@ -52,10 +51,6 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 				blocked: true,
 				content: []byte("1.2.3.4\n254.254.254.1"),
 			},
-			surveillance: blockParams{
-				blocked: true,
-				content: []byte("254.254.254.1\n1.2.3.4"),
-			},
 			blockedIPs:        []string{"1.2.3.4", "254.254.254.1"},
 			blockedIPPrefixes: []string{"66.67.68.10/28"},
 		},
@@ -65,17 +60,13 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 				content: []byte("1.2.3.4\n66.67.68.10/28"),
 			},
 			ads: blockParams{
-				blocked: true,
-				content: []byte("1.2.3.4\n254.254.254.1"),
-			},
-			surveillance: blockParams{
 				blocked:   true,
-				clientErr: errors.New("surveillance error"),
+				clientErr: errors.New("ads error"),
 			},
-			blockedIPs:        []string{"1.2.3.4", "254.254.254.1"},
+			blockedIPs:        []string{"1.2.3.4"},
 			blockedIPPrefixes: []string{"66.67.68.10/28"},
 			errsString: []string{
-				`Get "https://raw.githubusercontent.com/qdm12/files/master/surveillance-ips.updated": surveillance error`,
+				`Get "https://raw.githubusercontent.com/qdm12/files/master/ads-ips.updated": ads error`,
 			},
 		},
 		"blocked with private addresses": {
@@ -113,9 +104,6 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 			if tc.ads.blocked {
 				clientCalls.m[adsBlockListIPsURL] = 0
 			}
-			if tc.surveillance.blocked {
-				clientCalls.m[surveillanceBlockListIPsURL] = 0
-			}
 
 			errUnknownURL := errors.New("unknown URL")
 
@@ -137,9 +125,6 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 					case adsBlockListIPsURL:
 						body = tc.ads.content
 						err = tc.ads.clientErr
-					case surveillanceBlockListIPsURL:
-						body = tc.surveillance.content
-						err = tc.surveillance.clientErr
 					default: // just in case if the test is badly written
 						return nil, fmt.Errorf("%w: %q", errUnknownURL, url)
 					}
@@ -158,7 +143,7 @@ func Test_Builder_IPs(t *testing.T) { //nolint:cyclop
 			require.NoError(t, err)
 
 			blockedIPs, blockedIPPrefixes, errs := builder.buildIPs(ctx,
-				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
+				tc.malicious.blocked, tc.ads.blocked,
 				tc.allowedIPs, tc.additionalBlockedIPs,
 				tc.allowedIPPrefixes, tc.additionalBlockedIPPrefixes)
 

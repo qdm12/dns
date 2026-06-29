@@ -7,18 +7,17 @@ import (
 )
 
 const (
-	adsBlockListIPsURL          = "https://raw.githubusercontent.com/qdm12/files/master/ads-ips.updated"
-	maliciousBlockListIPsURL    = "https://raw.githubusercontent.com/qdm12/files/master/malicious-ips.updated"
-	surveillanceBlockListIPsURL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-ips.updated"
+	adsBlockListIPsURL       = "https://raw.githubusercontent.com/qdm12/files/master/ads-ips.updated"
+	maliciousBlockListIPsURL = "https://raw.githubusercontent.com/qdm12/files/master/malicious-ips.updated"
 )
 
 func (b *Builder) buildIPs(ctx context.Context,
-	blockMalicious, blockAds, blockSurveillance bool,
+	blockMalicious, blockAds bool,
 	allowedIPs, additionalBlockedIPs []netip.Addr,
 	allowedIPPrefixes, additionalBlockedIPPrefixes []netip.Prefix) (
 	blockedIPs []netip.Addr, blockedIPPrefixes []netip.Prefix, errs []error,
 ) {
-	urls := getIPsURLs(blockMalicious, blockAds, blockSurveillance)
+	urls := getIPsURLs(blockMalicious, blockAds)
 
 	uniqueResults, errs := getLists(ctx, b.client, urls)
 
@@ -41,7 +40,7 @@ func (b *Builder) buildIPs(ctx context.Context,
 	return blockedIPs, blockedIPPrefixes, errs
 }
 
-func getIPsURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []string) {
+func getIPsURLs(blockMalicious, blockAds bool) (urls []string) {
 	const maxURLs = 3
 	urls = make([]string, 0, maxURLs)
 	if blockMalicious {
@@ -49,9 +48,6 @@ func getIPsURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []string
 	}
 	if blockAds {
 		urls = append(urls, string(adsBlockListIPsURL))
-	}
-	if blockSurveillance {
-		urls = append(urls, string(surveillanceBlockListIPsURL))
 	}
 	return urls
 }

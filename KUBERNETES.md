@@ -24,7 +24,6 @@ data:
   DOH_RESOLVERS: cloudflare,quad9,libredns,google
 
   BLOCK_MALICIOUS: 'off'
-  BLOCK_SURVEILLANCE: 'off'
   BLOCK_ADS: 'off'
 
   LOG_LEVEL: warning

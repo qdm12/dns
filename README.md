@@ -47,7 +47,7 @@ It's fully coded in Go and is a single and cross platform binary program.
   - [CIRA Canadian Shield](https://www.cira.ca/en/canadian-shield/)
 - Random split-horizon DNS (an upstream resolver is picked at random for every request received)
 - Hostnames and IP addresses filtering 🛑
-  - for 3 categories: malicious, surveillance and ads
+  - for categories malicious and ads
   - auto-update [block lists](https://github.com/qdm12/files) periodically with minimal downtime
   - Specify custom hostnames and IP addresses
 - DNS rebinding protection
@@ -114,7 +114,6 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `DOH_TIMEOUT` | `3s` | DNS over HTTPs exchange timeout |
 | `PLAIN_TIMEOUT` | `3s` | Plain DNS exchange timeout |
 | `BLOCK_MALICIOUS` | `on` | `on` or `off`, to block malicious IP addresses and malicious hostnames from being resolved |
-| `BLOCK_SURVEILLANCE` | `off` | `on` or `off`, to block surveillance IP addresses and hostnames from being resolved |
 | `BLOCK_ADS` | `off` | `on` or `off`, to block ads IP addresses and hostnames from being resolved |
 | `BLOCK_HOSTNAMES` | | comma separated list of hostnames to block from being resolved |
 | `ALLOWED_HOSTNAMES` | | comma separated list of hostnames to leave unblocked |

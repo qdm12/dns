@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
+func Test_Builder_Hostnames(t *testing.T) {
 	t.Parallel()
 	type blockParams struct {
 		blocked   bool
@@ -23,7 +23,6 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 	tests := map[string]struct {
 		malicious                  blockParams
 		ads                        blockParams
-		surveillance               blockParams
 		additionalBlockedHostnames []string
 		additionalAllowedHostnames []string
 		blockedHostnames           []string
@@ -46,10 +45,6 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 				blocked: true,
 				content: []byte("site_a\nsite_c"),
 			},
-			surveillance: blockParams{
-				blocked: true,
-				content: []byte("site_c\nsite_a"),
-			},
 			blockedHostnames: []string{"site_a", "site_b", "site_c"},
 			errsString:       nil,
 		},
@@ -59,16 +54,12 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 				content: []byte("site_a\nsite_b"),
 			},
 			ads: blockParams{
-				blocked: true,
-				content: []byte("site_a\nsite_c"),
-			},
-			surveillance: blockParams{
 				blocked:   true,
-				clientErr: errors.New("surveillance error"),
+				clientErr: errors.New("ads error"),
 			},
-			blockedHostnames: []string{"site_a", "site_b", "site_c"},
+			blockedHostnames: []string{"site_a", "site_b"},
 			errsString: []string{
-				`Get "https://raw.githubusercontent.com/qdm12/files/master/surveillance-hostnames.updated": surveillance error`,
+				`Get "https://raw.githubusercontent.com/qdm12/files/master/ads-hostnames.updated": ads error`,
 			},
 		},
 		"blocked with allowed hostnames": {
@@ -115,9 +106,6 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 			if tc.ads.blocked {
 				clientCalls.m[adsBlockListHostnamesURL] = 0
 			}
-			if tc.surveillance.blocked {
-				clientCalls.m[surveillanceBlockListHostnamesURL] = 0
-			}
 
 			client := &http.Client{
 				Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
@@ -138,9 +126,6 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 					case adsBlockListHostnamesURL:
 						body = tc.ads.content
 						err = tc.ads.clientErr
-					case surveillanceBlockListHostnamesURL:
-						body = tc.surveillance.content
-						err = tc.surveillance.clientErr
 					default: // just in case if the test is badly written
 						t.Errorf("unknown URL %q", url)
 						return nil, nil //nolint:nilnil
@@ -160,7 +145,7 @@ func Test_Builder_Hostnames(t *testing.T) { //nolint:cyclop
 			require.NoError(t, err)
 
 			blockedHostnames, errs := builder.buildHostnames(ctx,
-				tc.malicious.blocked, tc.ads.blocked, tc.surveillance.blocked,
+				tc.malicious.blocked, tc.ads.blocked,
 				tc.additionalBlockedHostnames, tc.additionalAllowedHostnames)
 			errsString := make([]string, len(errs))
 			for i := range errs {

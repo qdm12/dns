@@ -6,7 +6,6 @@ services:
     environment:
       - LOG_LEVEL=info
       - BLOCK_MALICIOUS=on
-      - BLOCK_SURVEILLANCE=on
       - BLOCK_ADS=off
       - BLOCK_IPS=
       - BLOCK_HOSTNAMES=

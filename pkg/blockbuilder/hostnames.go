@@ -6,21 +6,19 @@ import (
 	"strings"
 )
 
-//nolint:lll
 const (
-	adsBlockListHostnamesURL          = "https://raw.githubusercontent.com/qdm12/files/master/ads-hostnames.updated"
-	maliciousBlockListHostnamesURL    = "https://raw.githubusercontent.com/qdm12/files/master/malicious-hostnames.updated"
-	surveillanceBlockListHostnamesURL = "https://raw.githubusercontent.com/qdm12/files/master/surveillance-hostnames.updated"
+	adsBlockListHostnamesURL       = "https://raw.githubusercontent.com/qdm12/files/master/ads-hostnames.updated"
+	maliciousBlockListHostnamesURL = "https://raw.githubusercontent.com/qdm12/files/master/malicious-hostnames.updated"
 )
 
 var hostnameRegex = regexp.MustCompile(`^([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9_])(\.([a-zA-Z0-9]|[a-zA-Z0-9_][a-zA-Z0-9\-_]{0,61}[a-zA-Z0-9]))*$`) //nolint:lll
 
 func (b *Builder) buildHostnames(ctx context.Context,
-	blockMalicious, blockAds, blockSurveillance bool,
+	blockMalicious, blockAds bool,
 	additionalBlockedHostnames, allowedHostnames []string) (
 	blockedHostnames []string, errs []error,
 ) {
-	urls := getHostnamesURLs(blockMalicious, blockAds, blockSurveillance)
+	urls := getHostnamesURLs(blockMalicious, blockAds)
 
 	uniqueResults, errs := getLists(ctx, b.client, urls)
 
@@ -51,7 +49,7 @@ func (b *Builder) buildHostnames(ctx context.Context,
 	return blockedHostnames, errs
 }
 
-func getHostnamesURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []string) {
+func getHostnamesURLs(blockMalicious, blockAds bool) (urls []string) {
 	const maxURLs = 3
 	urls = make([]string, 0, maxURLs)
 	if blockMalicious {
@@ -59,9 +57,6 @@ func getHostnamesURLs(blockMalicious, blockAds, blockSurveillance bool) (urls []
 	}
 	if blockAds {
 		urls = append(urls, string(adsBlockListHostnamesURL))
-	}
-	if blockSurveillance {
-		urls = append(urls, string(surveillanceBlockListHostnamesURL))
 	}
 	return urls
 }

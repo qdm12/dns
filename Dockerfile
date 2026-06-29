@@ -88,7 +88,6 @@ ENV \
     CACHE_TYPE=lru \
     CACHE_LRU_MAX_ENTRIES=10000 \
     BLOCK_MALICIOUS=on \
-    BLOCK_SURVEILLANCE=off \
     BLOCK_ADS=off \
     BLOCK_IPS= \
     BLOCK_CIDRS= \
