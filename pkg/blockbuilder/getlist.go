@@ -18,7 +18,14 @@ func getList(ctx context.Context, client *http.Client, url string) (results []st
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
-	} else if response.StatusCode != http.StatusOK {
+	}
+
+	switch response.StatusCode {
+	case http.StatusOK:
+	case http.StatusNotFound:
+		_ = response.Body.Close()
+		return nil, nil
+	default:
 		_ = response.Body.Close()
 		return nil, fmt.Errorf("%w: %d %s", ErrBadStatusCode, response.StatusCode, response.Status)
 	}
