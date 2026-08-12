@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"strings"
 
 	"github.com/qdm12/dns/v2/pkg/nameserver"
 	"github.com/qdm12/gosettings"
@@ -12,8 +13,9 @@ import (
 )
 
 type LocalDNS struct {
-	Enabled   *bool
-	Resolvers []netip.AddrPort
+	Enabled            *bool
+	Resolvers          []netip.AddrPort
+	PublicNamesAsLocal []string
 }
 
 var (
@@ -25,6 +27,7 @@ func (l *LocalDNS) setDefault() {
 	l.Enabled = gosettings.DefaultPointer(l.Enabled, true)
 	privateNameservers, _ := nameserver.GetPrivateDNSServers()
 	l.Resolvers = gosettings.DefaultSlice(l.Resolvers, addrsToAddr53(privateNameservers))
+	l.PublicNamesAsLocal = gosettings.DefaultSlice(l.PublicNamesAsLocal, []string{})
 }
 
 func addrsToAddr53(addrs []netip.Addr) (addrPorts []netip.AddrPort) {
@@ -66,6 +69,12 @@ func (l *LocalDNS) ToLinesNode() (node *gotree.Node) {
 		resolversNode.Appendf("%s", resolver)
 	}
 	node.AppendNode(resolversNode)
+
+	if len(l.PublicNamesAsLocal) > 0 {
+		node.Appendf("Public names considered local: %s",
+			strings.Join(l.PublicNamesAsLocal, ", "))
+	}
+
 	return node
 }
 
@@ -79,5 +88,8 @@ func (l *LocalDNS) read(reader *reader.Reader) (err error) {
 	if err != nil {
 		return err
 	}
+
+	l.PublicNamesAsLocal = reader.CSV("MIDDLEWARE_LOCALDNS_PUBLIC_NAMES_AS_LOCAL")
+
 	return nil
 }

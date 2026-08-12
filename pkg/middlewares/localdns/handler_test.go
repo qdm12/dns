@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/local"
 	"github.com/stretchr/testify/require"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -60,8 +61,12 @@ func Test_handler(t *testing.T) {
 		_ = writer.WriteMsg(response)
 	})
 
+	localChecker := NewMockLocalChecker(ctrl)
+	localChecker.EXPECT().IsFQDNLocal("domain.com.").Return(false)
+	localChecker.EXPECT().IsFQDNLocal("domain.local.").Return(true)
+
 	const timeoutWarn = false
-	handler := newHandler(resolvers, logger, next, timeoutWarn)
+	handler := newHandler(resolvers, localChecker, logger, next, timeoutWarn)
 
 	writer := NewMockResponseWriter(ctrl)
 
@@ -174,9 +179,11 @@ func Test_handler_ServeDNS(t *testing.T) {
 					Name: "domain.com.",
 				}},
 			},
+
 			makeHandler: func(_ *gomock.Controller) *handler {
 				return &handler{
-					next: next,
+					localChecker: local.New(nil),
+					next:         next,
 				}
 			},
 			response: nextResponse,
@@ -200,6 +207,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}
 
 				return &handler{
+					localChecker:   local.New(nil),
 					ctx:            ctx,
 					logger:         logger,
 					next:           next,
@@ -244,6 +252,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 				return &handler{
 					ctx:            ctx,
 					logger:         logger,
+					localChecker:   local.New(nil),
 					next:           next,
 					localExchanges: localExchanges,
 					localResolvers: []string{"10.0.0.1:53"},
@@ -280,6 +289,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 				}
 
 				return &handler{
+					localChecker:   local.New(nil),
 					ctx:            ctx,
 					next:           next,
 					localExchanges: localExchanges,
@@ -331,6 +341,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 					"rcode REFUSED")
 
 				return &handler{
+					localChecker:   local.New(nil),
 					ctx:            ctx,
 					logger:         logger,
 					next:           next,

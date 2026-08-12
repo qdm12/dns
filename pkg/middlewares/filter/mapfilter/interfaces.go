@@ -1,5 +1,9 @@
 package mapfilter
 
+type LocalChecker interface {
+	IsFQDNLocal(fqdn string) bool
+}
+
 type Metrics interface {
 	SetBlockedHostnames(n int)
 	SetBlockedIPs(n int)

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/local"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,15 +17,17 @@ func Test_New(t *testing.T) {
 		Resolvers: []netip.AddrPort{
 			netip.AddrPortFrom(netip.MustParseAddr("1.2.3.4"), 53),
 		},
-		Logger:      NewMockLogger(nil),
-		TimeoutWarn: new(true),
+		PublicNamesAsLocal: []string{"github.com"},
+		Logger:             NewMockLogger(nil),
+		TimeoutWarn:        new(true),
 	}
 
 	middleware, err := New(settings)
 	require.NoError(t, err)
 
 	expectedMiddleware := &Middleware{
-		settings: settings,
+		settings:     settings,
+		localChecker: local.New(settings.PublicNamesAsLocal),
 	}
 	assert.Equal(t, expectedMiddleware, middleware)
 

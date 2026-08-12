@@ -2,6 +2,7 @@ package localdns
 
 import (
 	"net/netip"
+	"strings"
 
 	"github.com/qdm12/dns/v2/pkg/log/noop"
 	"github.com/qdm12/dns/v2/pkg/nameserver"
@@ -15,6 +16,8 @@ type Settings struct {
 	// in order, until one returns an answer for the question.
 	// If left empty, the local nameservers found are used.
 	Resolvers []netip.AddrPort
+	// PublicNamesAsLocal is a list of local names that should be considered local.
+	PublicNamesAsLocal []string
 	// Logger is the logger to use.
 	// It defaults to a No-op implementation.
 	Logger Logger
@@ -26,6 +29,7 @@ type Settings struct {
 func (s *Settings) SetDefaults() {
 	privateNameservers, _ := nameserver.GetPrivateDNSServers()
 	s.Resolvers = gosettings.DefaultSlice(s.Resolvers, addrsToAddr53(privateNameservers))
+	s.PublicNamesAsLocal = gosettings.DefaultSlice(s.PublicNamesAsLocal, []string{})
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
 	s.TimeoutWarn = gosettings.DefaultPointer(s.TimeoutWarn, false)
 }
@@ -55,6 +59,11 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	resolversNode := node.Appendf("Local resolvers:")
 	for _, resolver := range s.Resolvers {
 		resolversNode.Appendf("%s", resolver)
+	}
+
+	if len(s.PublicNamesAsLocal) > 0 {
+		node.Appendf("Public names considered local: %s",
+			strings.Join(s.PublicNamesAsLocal, ", "))
 	}
 
 	return node

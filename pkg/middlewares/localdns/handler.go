@@ -13,15 +13,15 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/exchanger"
-	"github.com/qdm12/dns/v2/internal/local"
 	nooppoolmetrics "github.com/qdm12/dns/v2/internal/pool/metrics/noop"
 )
 
 type handler struct {
 	// Injected from middleware
-	logger      Logger
-	next        dns.Handler
-	timeoutWarn bool
+	localChecker LocalChecker
+	logger       Logger
+	next         dns.Handler
+	timeoutWarn  bool
 
 	// Internal fields
 	localExchanges []exchangerIntf
@@ -32,8 +32,8 @@ type handler struct {
 	waitGroup      sync.WaitGroup
 }
 
-func newHandler(resolvers []netip.AddrPort, logger Logger,
-	next dns.Handler, timeoutWarn bool,
+func newHandler(resolvers []netip.AddrPort, localChecker LocalChecker,
+	logger Logger, next dns.Handler, timeoutWarn bool,
 ) *handler {
 	netDialer := &net.Dialer{
 		Timeout: time.Second,
@@ -61,6 +61,7 @@ func newHandler(resolvers []netip.AddrPort, logger Logger,
 		logger:         logger,
 		next:           next,
 		timeoutWarn:    timeoutWarn,
+		localChecker:   localChecker,
 		localExchanges: localExchangers,
 		localResolvers: localResolvers,
 	}
@@ -106,7 +107,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	// see https://github.com/miekg/dns/issues/396#issuecomment-240149439
 	const expectedQuestionCount = 1
 	if len(r.Question) != expectedQuestionCount ||
-		!local.IsFQDNLocal(r.Question[0].Name) {
+		!h.localChecker.IsFQDNLocal(r.Question[0].Name) {
 		h.next.ServeDNS(w, r)
 		return
 	}

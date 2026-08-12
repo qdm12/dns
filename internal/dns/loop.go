@@ -181,8 +181,9 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 	logger := setup.BuildFilterLogger(l.logger.New(log.SetComponent("filter")))
 
 	filterSettings := mapfilter.Settings{
-		Metrics: filterMetrics,
-		Logger:  logger,
+		PublicNamesAsLocal: l.settings.LocalDNS.PublicNamesAsLocal,
+		Metrics:            filterMetrics,
+		Logger:             logger,
 	}
 
 	if downloadBlockFiles {

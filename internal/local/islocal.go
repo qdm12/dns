@@ -6,7 +6,26 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-func IsFQDNLocal(fqdn string) bool {
+// Checker checks if a fully qualified domain name (FQDN) is local or not.
+type Checker struct {
+	// publicNames is a set of domain names that are considered local.
+	// The trailing FQDN dot is removed for each.
+	publicNames map[string]struct{}
+}
+
+func New(publicNamesAsLocal []string) *Checker {
+	publicNames := make(map[string]struct{}, len(publicNamesAsLocal))
+	for _, name := range publicNamesAsLocal {
+		name = strings.TrimSuffix(strings.ToLower(name), ".")
+		publicNames[name] = struct{}{}
+	}
+
+	return &Checker{
+		publicNames: publicNames,
+	}
+}
+
+func (f *Checker) IsFQDNLocal(fqdn string) bool {
 	if fqdn == "" {
 		// Bad question really, but consider it as
 		// non-local and let the upstream resolver
@@ -29,7 +48,7 @@ func IsFQDNLocal(fqdn string) bool {
 		return true
 	}
 
-	commonLocalTLDs := []string{
+	commonLocalTLDs := [...]string{
 		".local",
 		".lan",
 		".private",
@@ -42,6 +61,11 @@ func IsFQDNLocal(fqdn string) bool {
 		if strings.HasSuffix(domainName, commonLocalTLD) {
 			return true
 		}
+	}
+
+	_, publicNameIsLocal := f.publicNames[domainName]
+	if publicNameIsLocal {
+		return true
 	}
 
 	publicSuffix, icannManaged := publicsuffix.PublicSuffix(domainName)

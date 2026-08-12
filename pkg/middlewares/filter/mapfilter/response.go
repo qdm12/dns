@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/internal/local"
 )
 
 func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
@@ -18,7 +17,7 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 	nameIsLocal := false
 	nameCanBeRebinded := false
 	if len(response.Question) == 1 {
-		nameIsLocal = local.IsFQDNLocal(response.Question[0].Name)
+		nameIsLocal = m.localChecker.IsFQDNLocal(response.Question[0].Name)
 		_, nameCanBeRebinded = m.allowRebindNames[response.Question[0].Name]
 		if !nameCanBeRebinded && len(m.allowRebindParents) > 0 {
 			labels := dns.SplitDomainName(response.Question[0].Name)

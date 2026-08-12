@@ -10,8 +10,9 @@ func Test_IsFQDNLocal(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		fqdn    string
-		isLocal bool
+		publicNames []string
+		fqdn        string
+		isLocal     bool
 	}{
 		"no_dot": {
 			fqdn:    "localhost.",
@@ -43,13 +44,20 @@ func Test_IsFQDNLocal(t *testing.T) {
 		"network_tld": {
 			fqdn: "orpheus.network.",
 		},
+		"public_name_as_local": {
+			publicNames: []string{"github.com"},
+			fqdn:        "github.com.",
+			isLocal:     true,
+		},
 	}
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			isLocal := IsFQDNLocal(testCase.fqdn)
+			checker := New(testCase.publicNames)
+
+			isLocal := checker.IsFQDNLocal(testCase.fqdn)
 
 			assert.Equal(t, testCase.isLocal, isLocal)
 		})

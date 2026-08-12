@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/local"
 )
 
 // Middleware implements a DNS forwarder for requests
 // containing a single local name question.
 type Middleware struct {
-	settings Settings
-	handlers []*handler
+	settings     Settings
+	localChecker LocalChecker
+	handlers     []*handler
 }
 
 func New(settings Settings) (middleware *Middleware, err error) {
@@ -21,8 +23,11 @@ func New(settings Settings) (middleware *Middleware, err error) {
 		return nil, fmt.Errorf("validating settings: %w", err)
 	}
 
+	localChecker := local.New(settings.PublicNamesAsLocal)
+
 	return &Middleware{
-		settings: settings,
+		settings:     settings,
+		localChecker: localChecker,
 	}, nil
 }
 
@@ -32,7 +37,7 @@ func (m *Middleware) String() string {
 
 // Wrap wraps the DNS handler with the middleware.
 func (m *Middleware) Wrap(next dns.Handler) dns.Handler { //nolint:ireturn
-	handler := newHandler(m.settings.Resolvers,
+	handler := newHandler(m.settings.Resolvers, m.localChecker,
 		m.settings.Logger, next, *m.settings.TimeoutWarn)
 	m.handlers = append(m.handlers, handler)
 	return handler

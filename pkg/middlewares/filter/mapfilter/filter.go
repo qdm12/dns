@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/netip"
 	"sync"
+
+	"github.com/qdm12/dns/v2/internal/local"
 )
 
 type Filter struct {
@@ -14,6 +16,7 @@ type Filter struct {
 	privateIPPrefixes  []netip.Prefix
 	allowRebindNames   map[string]struct{}
 	allowRebindParents map[string]struct{}
+	localChecker       LocalChecker
 	metrics            Metrics
 	logger             Logger
 	updateLock         sync.RWMutex
@@ -29,6 +32,7 @@ func New(settings Settings) (filter *Filter, err error) {
 
 	filter = &Filter{
 		privateIPPrefixes: getPrivateIPPrefixes(),
+		localChecker:      local.New(settings.PublicNamesAsLocal),
 		metrics:           settings.Metrics,
 		logger:            settings.Logger,
 	}
