@@ -72,8 +72,9 @@ func setupMiddlewares(userSettings config.Settings, cache Cache,
 
 	if *userSettings.LocalDNS.Enabled {
 		localDNSMiddleware, err := localdns.New(localdns.Settings{
-			Resolvers: userSettings.LocalDNS.Resolvers, // possibly auto-detected
-			Logger:    loggerConstructor.New(log.SetComponent("local redirector")),
+			Resolvers:                userSettings.LocalDNS.Resolvers, // possibly auto-detected
+			PublicNameserversAsLocal: userSettings.LocalDNS.PublicNameserversAsLocal,
+			Logger:                   loggerConstructor.New(log.SetComponent("local redirector")),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("creating local DNS middleware: %w", err)

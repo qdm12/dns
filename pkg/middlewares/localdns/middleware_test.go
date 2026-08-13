@@ -26,7 +26,13 @@ func Test_New(t *testing.T) {
 	require.NoError(t, err)
 
 	expectedMiddleware := &Middleware{
-		settings:     settings,
+		settings: Settings{
+			Resolvers:                settings.Resolvers,
+			PublicNameserversAsLocal: []netip.Prefix{},
+			PublicNamesAsLocal:       settings.PublicNamesAsLocal,
+			Logger:                   settings.Logger,
+			TimeoutWarn:              settings.TimeoutWarn,
+		},
 		localChecker: local.New(settings.PublicNamesAsLocal),
 	}
 	assert.Equal(t, expectedMiddleware, middleware)

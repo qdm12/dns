@@ -1,6 +1,7 @@
 package localdns
 
 import (
+	"fmt"
 	"net/netip"
 	"strings"
 
@@ -16,6 +17,9 @@ type Settings struct {
 	// in order, until one returns an answer for the question.
 	// If left empty, the local nameservers found are used.
 	Resolvers []netip.AddrPort
+	// PublicNameserversAsLocal is a list of public CIDRs that should be
+	// considered local when selecting nameservers from the system resolvers.
+	PublicNameserversAsLocal []netip.Prefix
 	// PublicNamesAsLocal is a list of local names that should be considered local.
 	PublicNamesAsLocal []string
 	// Logger is the logger to use.
@@ -27,8 +31,9 @@ type Settings struct {
 }
 
 func (s *Settings) SetDefaults() {
-	privateNameservers, _ := nameserver.GetPrivateDNSServers()
+	privateNameservers, _ := nameserver.GetPrivateDNSServersWithPublicCIDRsAsLocal(s.PublicNameserversAsLocal)
 	s.Resolvers = gosettings.DefaultSlice(s.Resolvers, addrsToAddr53(privateNameservers))
+	s.PublicNameserversAsLocal = gosettings.DefaultSlice(s.PublicNameserversAsLocal, []netip.Prefix{})
 	s.PublicNamesAsLocal = gosettings.DefaultSlice(s.PublicNamesAsLocal, []string{})
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, noop.New())
 	s.TimeoutWarn = gosettings.DefaultPointer(s.TimeoutWarn, false)
@@ -44,6 +49,12 @@ func addrsToAddr53(addrs []netip.Addr) (addrPorts []netip.AddrPort) {
 }
 
 func (s *Settings) Validate() (err error) {
+	for _, prefix := range s.PublicNameserversAsLocal {
+		if !prefix.IsValid() {
+			return fmt.Errorf("nameserver public CIDR is not valid: %s", prefix)
+		}
+	}
+
 	return nil
 }
 
@@ -64,6 +75,14 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	if len(s.PublicNamesAsLocal) > 0 {
 		node.Appendf("Public names considered local: %s",
 			strings.Join(s.PublicNamesAsLocal, ", "))
+	}
+
+	if len(s.PublicNameserversAsLocal) > 0 {
+		cidrs := make([]string, len(s.PublicNameserversAsLocal))
+		for i, cidr := range s.PublicNameserversAsLocal {
+			cidrs[i] = cidr.String()
+		}
+		node.Appendf("Public nameserver CIDRs considered local: %s", strings.Join(cidrs, ", "))
 	}
 
 	return node

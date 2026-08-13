@@ -13,9 +13,10 @@ import (
 )
 
 type LocalDNS struct {
-	Enabled            *bool
-	Resolvers          []netip.AddrPort
-	PublicNamesAsLocal []string
+	Enabled                  *bool
+	Resolvers                []netip.AddrPort
+	PublicNamesAsLocal       []string
+	PublicNameserversAsLocal []netip.Prefix
 }
 
 var (
@@ -25,9 +26,12 @@ var (
 
 func (l *LocalDNS) setDefault() {
 	l.Enabled = gosettings.DefaultPointer(l.Enabled, true)
-	privateNameservers, _ := nameserver.GetPrivateDNSServers()
+	privateNameservers, _ := nameserver.GetPrivateDNSServersWithPublicCIDRsAsLocal(
+		l.PublicNameserversAsLocal)
 	l.Resolvers = gosettings.DefaultSlice(l.Resolvers, addrsToAddr53(privateNameservers))
 	l.PublicNamesAsLocal = gosettings.DefaultSlice(l.PublicNamesAsLocal, []string{})
+	l.PublicNameserversAsLocal = gosettings.DefaultSlice(l.PublicNameserversAsLocal,
+		[]netip.Prefix{})
 }
 
 func addrsToAddr53(addrs []netip.Addr) (addrPorts []netip.AddrPort) {
@@ -48,6 +52,12 @@ func (l *LocalDNS) validate() (err error) {
 		case resolver.Port() == 0:
 			return fmt.Errorf("%w: %s",
 				ErrLocalResolverPortIsZero, resolver)
+		}
+	}
+
+	for _, prefix := range l.PublicNameserversAsLocal {
+		if !prefix.IsValid() {
+			return fmt.Errorf("nameserver public CIDR is not valid: %s", prefix)
 		}
 	}
 
@@ -75,6 +85,14 @@ func (l *LocalDNS) ToLinesNode() (node *gotree.Node) {
 			strings.Join(l.PublicNamesAsLocal, ", "))
 	}
 
+	if len(l.PublicNameserversAsLocal) > 0 {
+		cidrs := make([]string, len(l.PublicNameserversAsLocal))
+		for i, cidr := range l.PublicNameserversAsLocal {
+			cidrs[i] = cidr.String()
+		}
+		node.Appendf("Public nameserver CIDRs considered local: %s", strings.Join(cidrs, ", "))
+	}
+
 	return node
 }
 
@@ -90,6 +108,12 @@ func (l *LocalDNS) read(reader *reader.Reader) (err error) {
 	}
 
 	l.PublicNamesAsLocal = reader.CSV("MIDDLEWARE_LOCALDNS_PUBLIC_NAMES_AS_LOCAL")
+
+	l.PublicNameserversAsLocal, err = reader.CSVNetipPrefixes(
+		"MIDDLEWARE_LOCALDNS_NAMESERVERS_PUBLIC_CIDRS_AS_LOCAL")
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

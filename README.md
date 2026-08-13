@@ -139,6 +139,7 @@ For example, the environment variable `UPSTREAM_TYPE` corresponds to the CLI fla
 | `MIDDLEWARE_LOCALDNS_ENABLED` | `on` | Enable or disable the local DNS middleware |
 | `MIDDLEWARE_LOCALDNS_RESOLVERS` | Local DNS servers | Comma separated list of local DNS resolvers to use for local names DNS requests |
 | `MIDDLEWARE_LOCALDNS_PUBLIC_NAMES_AS_LOCAL` | | Comma separated list of public names to consider as local. For example `github.com,gitlab.com` |
+| `MIDDLEWARE_LOCALDNS_NAMESERVERS_PUBLIC_CIDRS_AS_LOCAL` | | Comma separated list of public nameservers CIDRs to consider as local when reading default nameservers from the system. For example `8.8.8.8/32`. |
 | `MIDDLEWARE_SUBSTITUTER_SUBSTITUTIONS` | | JSON encoded list of substitutions. For example `[{"name":"github.com","ips":["1.2.3.4"]}]`. You can also specify the `type`, `class` and `ttl`, where they default respectively to `A`/`AAAA`, `IN` and `300`. |
 | `CHECK_DNS` | `on` | `on` or `off`. Check resolving github.com using `127.0.0.1:53` at start |
 | `UPDATE_PERIOD` | `24h` | Period to update block lists and restart Unbound. Set to `0` to disable. |
