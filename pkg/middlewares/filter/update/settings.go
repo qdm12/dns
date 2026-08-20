@@ -38,6 +38,13 @@ type Settings struct {
 	// are not updated. If it is empty, all parent hostnames exempt from rebinding
 	// protection are removed.
 	ParentsExemptFromRebindingProtection []string
+	// PublicFQDNsAsLocal is a list of fully qualified domain names
+	// that are considered local and not public. This is useful for
+	// internal services that have a public FQDN but are only accessible
+	// internally. If it is nil, the existing public FQDNs considered local
+	// are not updated. If it is empty, all public FQDNs considered local
+	// are removed.
+	PublicFQDNsAsLocal []string
 }
 
 func (s *Settings) SetDefaults() {}
@@ -60,6 +67,11 @@ func (s Settings) Validate() (err error) {
 	err = validate.AllMatchRegex(s.ParentsExemptFromRebindingProtection, fqdnHostRegex)
 	if err != nil {
 		return fmt.Errorf("parent FQDNs exempt from rebinding protection: %w", err)
+	}
+
+	err = validate.AllMatchRegex(s.PublicFQDNsAsLocal, fqdnHostRegex)
+	if err != nil {
+		return fmt.Errorf("public FQDNs considered local: %w", err)
 	}
 
 	return nil
@@ -103,6 +115,20 @@ func (s *Settings) SetRebindingProtectionExempt(hostnames []string) {
 	}
 }
 
+// SetPublicFQDNsAsLocal transforms the slice of hostnames given to
+// FQDNs and sets these to the settings.
+// If the slice is nil, it sets [Settings.PublicFQDNsAsLocal] to nil.
+func (s *Settings) SetPublicFQDNsAsLocal(hostnames []string) {
+	if hostnames == nil {
+		s.PublicFQDNsAsLocal = nil
+		return
+	}
+	s.PublicFQDNsAsLocal = make([]string, len(hostnames))
+	for i := range hostnames {
+		s.PublicFQDNsAsLocal[i] = dns.Fqdn(hostnames[i])
+	}
+}
+
 func (s *Settings) String() string {
 	return s.ToLinesNode().String()
 }
@@ -137,6 +163,13 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) { //nolint:cyclop
 	if len(s.ParentsExemptFromRebindingProtection) > 0 {
 		subNode := node.Appendf("Parent domains exempt from rebinding protection:")
 		for _, fqdn := range s.ParentsExemptFromRebindingProtection {
+			subNode.Appendf("%s", fqdn)
+		}
+	}
+
+	if len(s.PublicFQDNsAsLocal) > 0 {
+		subNode := node.Appendf("Public FQDNs considered local:")
+		for _, fqdn := range s.PublicFQDNsAsLocal {
 			subNode.Appendf("%s", fqdn)
 		}
 	}

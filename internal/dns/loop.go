@@ -181,9 +181,8 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 	logger := setup.BuildFilterLogger(l.logger.New(log.SetComponent("filter")))
 
 	filterSettings := mapfilter.Settings{
-		PublicNamesAsLocal: l.settings.LocalDNS.PublicNamesAsLocal,
-		Metrics:            filterMetrics,
-		Logger:             logger,
+		Metrics: filterMetrics,
+		Logger:  logger,
 	}
 
 	if downloadBlockFiles {
@@ -200,6 +199,7 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 		filterSettings.Update.BlockHostnames(result.BlockedHostnames)
 	}
 	filterSettings.Update.SetRebindingProtectionExempt(l.settings.Block.RebindingProtectionExemptHostnames)
+	filterSettings.Update.SetPublicFQDNsAsLocal(l.settings.LocalDNS.PublicNamesAsLocal)
 
 	filter, err := mapfilter.New(filterSettings)
 	if err != nil {

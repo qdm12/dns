@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/netip"
 
+	"github.com/qdm12/dns/v2/internal/local"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
 )
 
@@ -11,6 +12,7 @@ func (m *Filter) Update(settings update.Settings) (err error) {
 	m.updateLock.Lock()
 	defer m.updateLock.Unlock()
 
+	m.localChecker = local.New(settings.PublicFQDNsAsLocal)
 	m.blockHostnames(settings.FqdnHostnames)
 	m.blockIPs(settings.IPs)
 	m.blockIPPrefixes(settings.IPPrefixes)

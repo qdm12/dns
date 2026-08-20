@@ -15,8 +15,6 @@ import (
 type Settings struct {
 	// Update contains the filter update settings.
 	Update update.Settings
-	// PublicNamesAsLocal is a list of public names that should be considered local.
-	PublicNamesAsLocal []string
 	// Metrics is the metric interface and defaults
 	// to a no-op implementation if left unset.
 	Metrics Metrics
@@ -27,7 +25,6 @@ type Settings struct {
 
 func (s *Settings) SetDefaults() {
 	s.Update.SetDefaults()
-	s.PublicNamesAsLocal = gosettings.DefaultSlice(s.PublicNamesAsLocal, []string{})
 	s.Metrics = gosettings.DefaultComparable[Metrics](s.Metrics, noop.New())
 	s.Logger = gosettings.DefaultComparable[Logger](s.Logger, &noopLogger{})
 }
@@ -52,11 +49,6 @@ func (s *Settings) String() string {
 func (s *Settings) ToLinesNode() (node *gotree.Node) {
 	node = gotree.New("Filter settings:")
 	node.AppendNode(s.Update.ToLinesNode())
-
-	if len(s.PublicNamesAsLocal) > 0 {
-		node.Appendf("Public names considered local: %s",
-			strings.Join(s.PublicNamesAsLocal, ", "))
-	}
 
 	var metricsType string
 	switch s.Metrics.(type) {

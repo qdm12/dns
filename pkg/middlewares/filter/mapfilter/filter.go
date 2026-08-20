@@ -32,7 +32,7 @@ func New(settings Settings) (filter *Filter, err error) {
 
 	filter = &Filter{
 		privateIPPrefixes: getPrivateIPPrefixes(),
-		localChecker:      local.New(settings.PublicNamesAsLocal),
+		localChecker:      local.New(settings.Update.PublicFQDNsAsLocal),
 		metrics:           settings.Metrics,
 		logger:            settings.Logger,
 	}
