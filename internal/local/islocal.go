@@ -3,21 +3,22 @@ package local
 import (
 	"strings"
 
+	"github.com/miekg/dns"
 	"golang.org/x/net/publicsuffix"
 )
 
 // Checker checks if a fully qualified domain name (FQDN) is local or not.
 type Checker struct {
-	// publicNames is a set of domain names that are considered local.
+	// publicNames is a list of domain names that are considered local.
 	// The trailing FQDN dot is removed for each.
-	publicNames map[string]struct{}
+	// Note a public name is considered local if its parent domain is contained in this list.
+	publicNames []string
 }
 
 func New(publicNamesAsLocal []string) *Checker {
-	publicNames := make(map[string]struct{}, len(publicNamesAsLocal))
-	for _, name := range publicNamesAsLocal {
-		name = strings.TrimSuffix(strings.ToLower(name), ".")
-		publicNames[name] = struct{}{}
+	publicNames := make([]string, len(publicNamesAsLocal))
+	for i, name := range publicNamesAsLocal {
+		publicNames[i] = strings.TrimSuffix(strings.ToLower(name), ".")
 	}
 
 	return &Checker{
@@ -63,8 +64,7 @@ func (f *Checker) IsFQDNLocal(fqdn string) bool {
 		}
 	}
 
-	_, publicNameIsLocal := f.publicNames[domainName]
-	if publicNameIsLocal {
+	if f.treatDomainAsLocal(domainName) {
 		return true
 	}
 
@@ -77,4 +77,13 @@ func (f *Checker) IsFQDNLocal(fqdn string) bool {
 	}
 
 	return true
+}
+
+func (f *Checker) treatDomainAsLocal(domainName string) bool {
+	for _, publicName := range f.publicNames {
+		if dns.IsSubDomain(publicName, domainName) {
+			return true
+		}
+	}
+	return false
 }
