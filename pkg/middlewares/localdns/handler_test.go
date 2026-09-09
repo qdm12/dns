@@ -4,13 +4,149 @@ import (
 	"context"
 	"errors"
 	"net/netip"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/miekg/dns"
 	"github.com/qdm12/dns/v2/internal/local"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	gomock "go.uber.org/mock/gomock"
 )
+
+type testBlockingExchanger struct {
+	once          sync.Once
+	started       chan struct{}
+	release       chan struct{}
+	response      *dns.Msg
+	exchangeCalls atomic.Int32
+}
+
+func (b *testBlockingExchanger) Exchange(_ context.Context, _ string,
+	request *dns.Msg,
+) (*dns.Msg, error) {
+	b.exchangeCalls.Add(1)
+	b.once.Do(func() { close(b.started) })
+	<-b.release
+	responseCopy := b.response.Copy()
+	responseCopy.SetReply(request)
+	return responseCopy, nil
+}
+
+type testRecordingWriter struct {
+	dns.ResponseWriter
+	messages []*dns.Msg
+}
+
+func (w *testRecordingWriter) WriteMsg(m *dns.Msg) error {
+	w.messages = append(w.messages, m)
+	return nil
+}
+
+func Test_handler_ServeDNS_SingleFlight(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	logger := NewMockLogger(ctrl)
+
+	localResponse := &dns.Msg{
+		MsgHdr: dns.MsgHdr{
+			Rcode: dns.RcodeSuccess,
+		},
+		Answer: []dns.RR{
+			&dns.TXT{Txt: []string{"handled_by_local"}},
+		},
+	}
+	blockingExchanger := &testBlockingExchanger{
+		started:  make(chan struct{}),
+		release:  make(chan struct{}),
+		response: localResponse,
+	}
+
+	waiterAttached := make(chan struct{})
+	handler := &handler{
+		inFlight:       make(map[string]*inFlightExchange),
+		localChecker:   local.New(nil),
+		logger:         logger,
+		next:           dns.HandlerFunc(func(_ dns.ResponseWriter, _ *dns.Msg) {}),
+		ctx:            context.Background(),
+		localExchanges: []exchangerIntf{blockingExchanger},
+		localResolvers: []string{"10.0.0.1:53"},
+		waitInFlightNotifier: func() {
+			close(waiterAttached)
+		},
+	}
+
+	makeRequest := func(messageID uint16) *dns.Msg {
+		return &dns.Msg{
+			MsgHdr: dns.MsgHdr{Id: messageID},
+			Question: []dns.Question{{
+				Name:   "domain.local.",
+				Qtype:  dns.TypeA,
+				Qclass: dns.ClassINET,
+			}},
+		}
+	}
+
+	leaderWriter := &testRecordingWriter{}
+	leaderDone := make(chan struct{})
+	go func() {
+		handler.ServeDNS(leaderWriter, makeRequest(1))
+		close(leaderDone)
+	}()
+
+	select {
+	case <-blockingExchanger.started:
+	case <-time.After(2 * time.Second):
+		t.Fatal("exchange did not start")
+	}
+
+	waiterWriter := &testRecordingWriter{}
+	waiterDone := make(chan struct{})
+	go func() {
+		handler.ServeDNS(waiterWriter, makeRequest(2))
+		close(waiterDone)
+	}()
+
+	select {
+	case <-waiterAttached:
+	case <-time.After(2 * time.Second):
+		t.Fatal("waiter did not attach to the in-flight exchange")
+	}
+
+	close(blockingExchanger.release)
+
+	for name, done := range map[string]<-chan struct{}{
+		"leader": leaderDone,
+		"waiter": waiterDone,
+	} {
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Fatalf("%s did not complete", name)
+		}
+	}
+
+	// Only one exchange is performed for the two concurrent requests
+	assert.EqualValues(t, 1, blockingExchanger.exchangeCalls.Load())
+
+	require.Len(t, leaderWriter.messages, 1)
+	require.Len(t, waiterWriter.messages, 1)
+	for _, writer := range []*testRecordingWriter{leaderWriter, waiterWriter} {
+		response := writer.messages[0]
+		assert.Equal(t, dns.RcodeSuccess, response.Rcode)
+		require.Len(t, response.Answer, 1)
+		txt, ok := response.Answer[0].(*dns.TXT)
+		require.True(t, ok)
+		require.Len(t, txt.Txt, 1)
+		assert.Equal(t, "handled_by_local", txt.Txt[0])
+	}
+
+	assert.EqualValues(t, 1, leaderWriter.messages[0].Id)
+	assert.EqualValues(t, 2, waiterWriter.messages[0].Id)
+}
 
 func Test_handler(t *testing.T) {
 	t.Parallel()
@@ -213,6 +349,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 					next:           next,
 					localExchanges: localExchanges,
 					localResolvers: []string{"10.0.0.1:53"},
+					inFlight:       make(map[string]*inFlightExchange),
 				}
 			},
 			response: &dns.Msg{
@@ -256,6 +393,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 					next:           next,
 					localExchanges: localExchanges,
 					localResolvers: []string{"10.0.0.1:53"},
+					inFlight:       make(map[string]*inFlightExchange),
 				}
 			},
 			response: &dns.Msg{
@@ -294,6 +432,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 					next:           next,
 					localExchanges: localExchanges,
 					localResolvers: []string{"10.0.0.1:53"},
+					inFlight:       make(map[string]*inFlightExchange),
 				}
 			},
 			response: &dns.Msg{
@@ -350,6 +489,7 @@ func Test_handler_ServeDNS(t *testing.T) {
 						"10.0.0.1:53", "10.0.0.2:53",
 						"10.0.0.3:53", "10.0.0.4:53",
 					},
+					inFlight: make(map[string]*inFlightExchange),
 				}
 			},
 			response: &dns.Msg{

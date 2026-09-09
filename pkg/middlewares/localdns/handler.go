@@ -30,6 +30,19 @@ type handler struct {
 	cancel         context.CancelFunc
 	stopped        atomic.Bool
 	waitGroup      sync.WaitGroup
+	inFlightMutex  sync.Mutex
+	// inFlight tracks ongoing local exchanges, keyed by question and
+	// resolver, so that concurrent identical requests reuse a single
+	// exchange instead of performing one per request. This prevents a
+	// forwarding loop between this server and a local nameserver which
+	// forwards unknown names back to this server, for example Docker's
+	// built-in DNS, from amplifying into thousands of concurrent
+	// exchanges, each waiting for a timeout and writing to the log.
+	inFlight map[string]*inFlightExchange
+	// waitInFlightNotifier, when non-nil, is called when a request
+	// attaches to an in-flight exchange, before waiting for its result.
+	// It is used by tests to synchronize with the attaching request.
+	waitInFlightNotifier func()
 }
 
 func newHandler(resolvers []netip.AddrPort, localChecker LocalChecker,
@@ -64,6 +77,7 @@ func newHandler(resolvers []netip.AddrPort, localChecker LocalChecker,
 		localChecker:   localChecker,
 		localExchanges: localExchangers,
 		localResolvers: localResolvers,
+		inFlight:       make(map[string]*inFlightExchange),
 	}
 }
 
@@ -139,7 +153,90 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 
 var errRcodeNotSuccess = errors.New("rcode is not success")
 
+// inFlightExchange is the result of an ongoing local exchange,
+// set by the leader request which performs the exchange and read by
+// waiter requests which waited for its completion.
+type inFlightExchange struct {
+	done     chan struct{}
+	response *dns.Msg
+	err      error
+}
+
+// singleFlightWaitDuration is the maximum duration a request waits for
+// an in-flight exchange result. It is bigger than the worst case duration
+// of a local exchange, a timed out UDP exchange followed by a timed out
+// TCP exchange for a truncated response.
+const singleFlightWaitDuration = 5 * time.Second
+
 func (h *handler) tryExchange(exchange exchangerIntf, resolverName string, r *dns.Msg) (
+	response *dns.Msg, err error,
+) {
+	key := makeInFlightKey(r, resolverName)
+
+	h.inFlightMutex.Lock()
+	inFlight, inFlightExists := h.inFlight[key]
+	if !inFlightExists {
+		inFlight = &inFlightExchange{done: make(chan struct{})}
+		h.inFlight[key] = inFlight
+	}
+	h.inFlightMutex.Unlock()
+
+	if inFlightExists {
+		if h.waitInFlightNotifier != nil {
+			h.waitInFlightNotifier()
+		}
+		return h.waitInFlight(inFlight, r)
+	}
+
+	defer func() {
+		h.inFlightMutex.Lock()
+		delete(h.inFlight, key)
+		h.inFlightMutex.Unlock()
+		close(inFlight.done)
+	}()
+
+	response, err = h.exchange(exchange, resolverName, r)
+	inFlight.response = response
+	inFlight.err = err
+	return response, err
+}
+
+// waitInFlight waits for the result of an in-flight exchange and returns
+// it with the header fields set for the given request.
+func (h *handler) waitInFlight(inFlight *inFlightExchange, r *dns.Msg) (
+	response *dns.Msg, err error,
+) {
+	timer := time.NewTimer(singleFlightWaitDuration)
+	defer timer.Stop()
+
+	select {
+	case <-inFlight.done:
+	case <-h.ctx.Done():
+		return nil, h.ctx.Err()
+	case <-timer.C:
+		// The in-flight exchange is taking too long, treat it as a
+		// failure to move on to the next resolver.
+		return nil, errRcodeNotSuccess
+	}
+
+	if inFlight.err != nil {
+		return nil, inFlight.err
+	}
+
+	copiedResponse := inFlight.response.Copy()
+	copiedResponse.SetReply(r)
+	return copiedResponse, nil
+}
+
+func makeInFlightKey(r *dns.Msg, resolverName string) string {
+	question := r.Question[0]
+	return question.Name + "|" +
+		dns.TypeToString[question.Qtype] + "|" +
+		dns.ClassToString[question.Qclass] + "|" +
+		resolverName
+}
+
+func (h *handler) exchange(exchange exchangerIntf, resolverName string, r *dns.Msg) (
 	response *dns.Msg, err error,
 ) {
 	response, err = exchange.Exchange(h.ctx, "udp", r)
