@@ -3,6 +3,7 @@ package mapfilter
 import (
 	"fmt"
 	"net/netip"
+	"strings"
 
 	"github.com/qdm12/dns/v2/internal/local"
 	"github.com/qdm12/dns/v2/pkg/middlewares/filter/update"
@@ -14,6 +15,7 @@ func (m *Filter) Update(settings update.Settings) (err error) {
 
 	m.localChecker = local.New(settings.PublicFQDNsAsLocal)
 	m.blockHostnames(settings.FqdnHostnames)
+	m.setAllowedHostnames(settings.AllowedHostnames)
 	m.blockIPs(settings.IPs)
 	m.blockIPPrefixes(settings.IPPrefixes)
 	m.setRebindingProtectionExempt(settings.FqdnExemptFromRebindingProtection)
@@ -35,6 +37,16 @@ func (m *Filter) blockHostnames(fqdnHostnames []string) {
 		m.fqdnHostnames[fqdnHostname] = struct{}{}
 	}
 	m.metrics.SetBlockedHostnames(len(m.fqdnHostnames))
+}
+
+func (m *Filter) setAllowedHostnames(fqdnHostnames []string) {
+	if fqdnHostnames == nil {
+		return
+	}
+	m.allowedHostnames = make(map[string]struct{}, len(fqdnHostnames))
+	for _, fqdnHostname := range fqdnHostnames {
+		m.allowedHostnames[strings.ToLower(fqdnHostname)] = struct{}{}
+	}
 }
 
 func (m *Filter) blockIPs(ips []netip.Addr) {

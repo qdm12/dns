@@ -10,6 +10,7 @@ import (
 
 type Filter struct {
 	fqdnHostnames      map[string]struct{}
+	allowedHostnames   map[string]struct{}
 	ipv4               map[[4]byte]struct{}
 	ipv6               map[[16]byte]struct{}
 	ipPrefixes         []netip.Prefix

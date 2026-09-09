@@ -17,6 +17,10 @@ type Settings struct {
 	// to filter out. If it is nil, the existing filter hostnames
 	// are not updated. If it is empty, all filter hostnames are removed.
 	FqdnHostnames []string
+	// AllowedHostnames is a list of fully qualified domain names
+	// for which resolved IP addresses are exempt from the IP blocklists.
+	// Subdomains of allowed hostnames are allowed as well.
+	AllowedHostnames []string
 	// IPs is a list of IP addresses to filter out.
 	// If it is nil, the existing filter IPs are not updated. If it is empty,
 	// all filter IPs are removed.
@@ -59,6 +63,11 @@ func (s Settings) Validate() (err error) {
 		return fmt.Errorf("FQDN hostnames: %w", err)
 	}
 
+	err = validate.AllMatchRegex(s.AllowedHostnames, fqdnHostRegex)
+	if err != nil {
+		return fmt.Errorf("allowed FQDN hostnames: %w", err)
+	}
+
 	err = validate.AllMatchRegex(s.FqdnExemptFromRebindingProtection, fqdnHostRegex)
 	if err != nil {
 		return fmt.Errorf("FQDNs exempt from rebinding protection: %w", err)
@@ -88,6 +97,20 @@ func (s *Settings) BlockHostnames(hostnames []string) {
 	s.FqdnHostnames = make([]string, len(hostnames))
 	for i := range hostnames {
 		s.FqdnHostnames[i] = dns.Fqdn(hostnames[i])
+	}
+}
+
+// SetAllowedHostnames transforms the slice of hostnames given to
+// FQDNs and sets these to the settings.
+// If the slice is nil, it sets [Settings.AllowedHostnames] to nil.
+func (s *Settings) SetAllowedHostnames(hostnames []string) {
+	if hostnames == nil {
+		s.AllowedHostnames = nil
+		return
+	}
+	s.AllowedHostnames = make([]string, len(hostnames))
+	for i := range hostnames {
+		s.AllowedHostnames[i] = dns.Fqdn(hostnames[i])
 	}
 }
 
@@ -135,7 +158,7 @@ func (s *Settings) String() string {
 
 func (s *Settings) ToLinesNode() (node *gotree.Node) { //nolint:cyclop
 	if len(s.IPs) == 0 && len(s.FqdnHostnames) == 0 &&
-		len(s.IPPrefixes) == 0 {
+		len(s.IPPrefixes) == 0 && len(s.AllowedHostnames) == 0 {
 		return gotree.New("Filter update: disabled")
 	}
 
@@ -151,6 +174,10 @@ func (s *Settings) ToLinesNode() (node *gotree.Node) { //nolint:cyclop
 
 	if len(s.FqdnHostnames) > 0 {
 		node.Appendf("Hostnames blocked: %d", len(s.FqdnHostnames))
+	}
+
+	if len(s.AllowedHostnames) > 0 {
+		node.Appendf("Hostnames allowed: %d", len(s.AllowedHostnames))
 	}
 
 	if len(s.FqdnExemptFromRebindingProtection) > 0 {

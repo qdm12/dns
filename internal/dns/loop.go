@@ -199,6 +199,7 @@ func (l *Loop) setupAll(ctx context.Context, downloadBlockFiles bool) ( //nolint
 		filterSettings.Update.BlockHostnames(result.BlockedHostnames)
 	}
 	filterSettings.Update.SetRebindingProtectionExempt(l.settings.Block.RebindingProtectionExemptHostnames)
+	filterSettings.Update.SetAllowedHostnames(l.settings.Block.AllowedHosts)
 	filterSettings.Update.SetPublicFQDNsAsLocal(l.settings.LocalDNS.PublicNamesAsLocal)
 
 	filter, err := mapfilter.New(filterSettings)

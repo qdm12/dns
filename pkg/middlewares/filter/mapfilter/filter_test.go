@@ -62,6 +62,109 @@ func Test_Filter(t *testing.T) {
 	}))
 }
 
+func Test_Filter_FilterResponse(t *testing.T) {
+	t.Parallel()
+
+	testCases := map[string]struct {
+		question        string
+		resolvedIP      netip.Addr
+		allowedHosts    []string
+		blockedIPs      []netip.Addr
+		blockedPrefixes []netip.Prefix
+		expectedBlocked bool
+	}{
+		"blocked_ip_not_allowed": {
+			question:        "example.com.",
+			resolvedIP:      netip.AddrFrom4([4]byte{3, 3, 3, 3}),
+			blockedIPs:      []netip.Addr{netip.AddrFrom4([4]byte{3, 3, 3, 3})},
+			expectedBlocked: true,
+		},
+		"blocked_ip_allowed": {
+			question:     "example.com.",
+			resolvedIP:   netip.AddrFrom4([4]byte{3, 3, 3, 3}),
+			allowedHosts: []string{"example.com"},
+			blockedIPs:   []netip.Addr{netip.AddrFrom4([4]byte{3, 3, 3, 3})},
+		},
+		"blocked_ip_subdomain_allowed": {
+			question:     "sub.example.com.",
+			resolvedIP:   netip.AddrFrom4([4]byte{3, 3, 3, 3}),
+			allowedHosts: []string{"example.com"},
+			blockedIPs:   []netip.Addr{netip.AddrFrom4([4]byte{3, 3, 3, 3})},
+		},
+		"blocked_ip_allowed_hostname_different": {
+			question:        "sub.other.com.",
+			resolvedIP:      netip.AddrFrom4([4]byte{3, 3, 3, 3}),
+			allowedHosts:    []string{"example.com"},
+			blockedIPs:      []netip.Addr{netip.AddrFrom4([4]byte{3, 3, 3, 3})},
+			expectedBlocked: true,
+		},
+		"blocked_ip_allowed_case_insensitive": {
+			question:     "Example.Com.",
+			resolvedIP:   netip.AddrFrom4([4]byte{3, 3, 3, 3}),
+			allowedHosts: []string{"example.com"},
+			blockedIPs:   []netip.Addr{netip.AddrFrom4([4]byte{3, 3, 3, 3})},
+		},
+		"blocked_ipv6_allowed": {
+			question:     "example.com.",
+			resolvedIP:   netip.MustParseAddr("2001:db8::1"),
+			allowedHosts: []string{"example.com"},
+			blockedIPs:   []netip.Addr{netip.MustParseAddr("2001:db8::1")},
+		},
+		"blocked_prefix_not_allowed": {
+			question:        "example.com.",
+			resolvedIP:      netip.AddrFrom4([4]byte{3, 3, 3, 3}),
+			blockedPrefixes: []netip.Prefix{netip.MustParsePrefix("3.3.3.0/24")},
+			expectedBlocked: true,
+		},
+		"blocked_prefix_allowed": {
+			question:     "example.com.",
+			resolvedIP:   netip.AddrFrom4([4]byte{3, 3, 3, 3}),
+			allowedHosts: []string{"example.com"},
+			blockedPrefixes: []netip.Prefix{
+				netip.MustParsePrefix("3.3.3.0/24"),
+			},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			settings := Settings{
+				Update: update.Settings{
+					IPs:        testCase.blockedIPs,
+					IPPrefixes: testCase.blockedPrefixes,
+				},
+			}
+			settings.Update.SetAllowedHostnames(testCase.allowedHosts)
+
+			filter, err := New(settings)
+			require.NoError(t, err)
+
+			var answer dns.RR
+			if testCase.resolvedIP.Is4() {
+				answer = &dns.A{
+					Hdr: dns.RR_Header{Rrtype: dns.TypeA},
+					A:   net.IP(testCase.resolvedIP.AsSlice()),
+				}
+			} else {
+				answer = &dns.AAAA{
+					Hdr:  dns.RR_Header{Rrtype: dns.TypeAAAA},
+					AAAA: net.IP(testCase.resolvedIP.AsSlice()),
+				}
+			}
+			response := &dns.Msg{
+				Question: []dns.Question{{Name: testCase.question}},
+				Answer:   []dns.RR{answer},
+			}
+
+			blocked := filter.FilterResponse(response)
+
+			assert.Equal(t, testCase.expectedBlocked, blocked)
+		})
+	}
+}
+
 func Test_Filter_threadSafety(t *testing.T) {
 	t.Parallel()
 

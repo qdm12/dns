@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Settings_BlockHostnames(t *testing.T) {
+func Test_Settings_BlockHostnames(t *testing.T) { //nolint:dupl
 	t.Parallel()
 
 	testCases := map[string]struct {
@@ -45,6 +45,43 @@ func Test_Settings_BlockHostnames(t *testing.T) {
 			settings := testCase.initialSettings
 
 			settings.BlockHostnames(testCase.hostnames)
+
+			assert.Equal(t, testCase.finalSettings, settings)
+		})
+	}
+}
+
+func Test_Settings_SetAllowedHostnames(t *testing.T) { //nolint:dupl
+	t.Parallel()
+
+	testCases := map[string]struct {
+		initialSettings Settings
+		hostnames       []string
+		finalSettings   Settings
+	}{
+		"nil": {},
+		"empty": {
+			hostnames:     []string{},
+			finalSettings: Settings{AllowedHostnames: []string{}},
+		},
+		"insert new first ones": {
+			hostnames:     []string{"abc.com", "def.co.uk"},
+			finalSettings: Settings{AllowedHostnames: []string{"abc.com.", "def.co.uk."}},
+		},
+		"override": {
+			initialSettings: Settings{AllowedHostnames: []string{"01.com.", "abc.com."}},
+			hostnames:       []string{"abc.com", "def.co.uk"},
+			finalSettings:   Settings{AllowedHostnames: []string{"abc.com.", "def.co.uk."}},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			settings := testCase.initialSettings
+
+			settings.SetAllowedHostnames(testCase.hostnames)
 
 			assert.Equal(t, testCase.finalSettings, settings)
 		})
