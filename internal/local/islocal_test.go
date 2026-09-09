@@ -18,6 +18,21 @@ func Test_IsFQDNLocal(t *testing.T) {
 			fqdn:    "localhost.",
 			isLocal: true,
 		},
+		"ipv4_literal": {
+			fqdn: "192.168.1.1.",
+		},
+		"ipv6_literal": {
+			fqdn: "::1.",
+		},
+		"ipv6_literal_bracketed": {
+			fqdn: "[::1].",
+		},
+		"ipv6_unspecified_bracketed": {
+			fqdn: "[::].",
+		},
+		"ipv6_global_bracketed": {
+			fqdn: "[2001:db8::1].",
+		},
 		"common_local_tld": {
 			fqdn:    "x.lan.",
 			isLocal: true,
