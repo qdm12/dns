@@ -10,7 +10,6 @@
     },
     "postCreateCommand": "~/.windows.sh && go mod download",
     "capAdd": [
-        "NET_ADMIN", // Gluetun specific
         "SYS_PTRACE" // for dlv Go debugging
     ],
     "securityOpt": [
@@ -42,6 +41,12 @@
         {
             "source": "/var/run/docker.sock",
             "target": "/var/run/docker.sock",
+            "type": "bind"
+        },
+        // gh directory
+        {
+            "source": "${localEnv:HOME}/.config/gh",
+            "target": "/root/.config/gh",
             "type": "bind"
         }
     ],
