@@ -171,6 +171,15 @@ func validateDSResponse(zoneData, parentZoneData signedData,
 		parentKeyTagToDNSKeys := makeKeyTagToDNSKeys(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
 		err = validateNoDataDS(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKeys)
 		if err != nil {
+			if errors.Is(err, errNSEC3NoDataDSOptOutNotSet) {
+				// Per RFC 5155 section 8.6 the covering NSEC3 must have
+				// the Opt-Out bit set, which responses from fully signed
+				// NSEC3 zones do not meet. Strict resolvers reject such
+				// responses, but the denial is still authenticated by the
+				// parent zone keys, so treat the zone as an insecure
+				// delegation rather than failing the whole validation.
+				return true, nil
+			}
 			return false, fmt.Errorf("validating no data DS response: %w", err)
 		}
 

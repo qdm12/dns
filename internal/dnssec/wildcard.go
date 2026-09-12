@@ -60,14 +60,12 @@ func answerHasWildcardedDNAME(answerRRSets []dnssecRRSet) bool {
 func validateWildcardExpansion(expandedQname string,
 	authoritySection []dnssecRRSet, keyTagToDNSKeys dnsKeysByTag,
 ) (err error) {
-	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
+	nsec3RRs := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
 		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		}
-		globalDebugLogger.Infof("validating wildcard expansion for %s: "+
-			"NSEC3 wildcard: %t", expandedQname, wildcard)
 		return nsec3ValidateWildcard(expandedQname, nsec3RRs)
 	}
 

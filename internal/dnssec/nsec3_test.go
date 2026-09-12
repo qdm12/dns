@@ -39,6 +39,62 @@ func Test_getNextCloser(t *testing.T) {
 	}
 }
 
+func newOisdNSEC3(owner, nextDomain string) *dns.NSEC3 {
+	return &dns.NSEC3{
+		Hdr:        dns.RR_Header{Name: owner, Rrtype: dns.TypeNSEC3, Class: dns.ClassINET},
+		Hash:       dns.SHA1,
+		Flags:      1,
+		Iterations: 0,
+		NextDomain: nextDomain,
+		TypeBitMap: []uint16{dns.TypeA, dns.TypeAAAA, dns.TypeRRSIG},
+	}
+}
+
+func Test_nsec3ValidateWildcard(t *testing.T) {
+	t.Parallel()
+
+	// The NSEC3 RRs are the actual records returned by the oisd.nl.
+	// zone, which uses SHA1 with 0 iterations and an empty salt, making
+	// the hashes deterministic.
+	testCases := map[string]struct {
+		qname      string
+		nsec3RRSet []dns.RR
+		errWrapped error
+	}{
+		"covers_next_closer_small": {
+			qname: "small.oisd.nl.",
+			nsec3RRSet: []dns.RR{newOisdNSEC3("UU303NS3F3NROKRMNQPE83JE6AFONLA5.oisd.nl.",
+				"0AEK26R7AMHP3KLCGN1R0F9IRN4SV46A.oisd.nl.")},
+		},
+		"covers_next_closer_big": {
+			qname: "big.oisd.nl.",
+			nsec3RRSet: []dns.RR{newOisdNSEC3("M614QHO57S65RJHQKG0G26L9IEFOSU2V.oisd.nl.",
+				"TI4IMV94LMGCCTDEA183M3O2S1F7JG1I.oisd.nl.")},
+		},
+		"does_not_cover_next_closer": {
+			qname: "big.oisd.nl.",
+			nsec3RRSet: []dns.RR{newOisdNSEC3("UU303NS3F3NROKRMNQPE83JE6AFONLA5.oisd.nl.",
+				"0AEK26R7AMHP3KLCGN1R0F9IRN4SV46A.oisd.nl.")},
+			errWrapped: errBogus,
+		},
+		"no_nsec3_rrs": {
+			qname:      "small.oisd.nl.",
+			nsec3RRSet: []dns.RR{},
+			errWrapped: errBogus,
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			err := nsec3ValidateWildcard(testCase.qname, testCase.nsec3RRSet)
+
+			assert.ErrorIs(t, err, testCase.errWrapped)
+		})
+	}
+}
+
 func Test_nsec3InitialChecks_IterationPolicy(t *testing.T) {
 	t.Parallel()
 

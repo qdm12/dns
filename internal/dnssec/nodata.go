@@ -20,12 +20,12 @@ func validateNoData(qname string, qtype uint16,
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}
 
-	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
+	nsec3RRs := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
 		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
-		} else if wildcard {
+		} else if nsec3FindMatching(qname, nsec3RRs) == nil {
 			return nsec3ValidateNoDataWildcard(qname, qtype, nsec3RRs)
 		}
 		return nsec3ValidateNoData(qname, qtype, nsec3RRs)
@@ -50,13 +50,11 @@ func validateNoDataDS(qname string,
 		return fmt.Errorf("verifying RRSIGs: %w", err)
 	}
 
-	nsec3RRs, wildcard := extractNSEC3s(authoritySection)
+	nsec3RRs := extractNSEC3s(authoritySection)
 	if len(nsec3RRs) > 0 {
 		nsec3RRs, err = nsec3InitialChecks(nsec3RRs, keyTagToDNSKeys)
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
-		} else if wildcard {
-			return nsec3ValidateNoDataWildcard(qname, dns.TypeDS, nsec3RRs)
 		}
 		return nsec3ValidateNoDataDS(qname, nsec3RRs)
 	}

@@ -272,6 +272,34 @@ func Test_Validator_Validate(t *testing.T) {
 				},
 			},
 		},
+		"wildcard_expanded_nsec3_small.oisd.nl": {
+			// oisd.nl. is an NSEC3 signed zone where the answer is a
+			// wildcard expansion. The authority section only contains the
+			// NSEC3 covering the next closer, per RFC 5155 section 8.8.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "small.oisd.nl.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"wildcard_expanded_nsec3_big.oisd.nl": {
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "big.oisd.nl.", Qtype: dns.TypeA, Qclass: dns.ClassINET},
+				},
+			},
+		},
+		"wildcard_nodata_nsec3_small.oisd.nl": {
+			// The wildcard has A and AAAA records but no TXT record, so
+			// the response is a wildcard NODATA proven by a closest
+			// encloser proof and an NSEC3 matching the wildcard name,
+			// per RFC 5155 section 8.7.
+			request: &dns.Msg{
+				Question: []dns.Question{
+					{Name: "small.oisd.nl.", Qtype: dns.TypeTXT, Qclass: dns.ClassINET},
+				},
+			},
+		},
 	}
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
