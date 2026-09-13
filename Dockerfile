@@ -87,6 +87,7 @@ ENV \
     MIDDLEWARE_LOCALDNS_RESOLVERS= \
     MIDDLEWARE_LOCALDNS_PUBLIC_NAMES_AS_LOCAL= \
     MIDDLEWARE_LOCALDNS_NAMESERVERS_PUBLIC_CIDRS_AS_LOCAL= \
+    DNSSEC_VALIDATION=on \
     CACHE_TYPE=lru \
     CACHE_LRU_MAX_ENTRIES=10000 \
     BLOCK_MALICIOUS=on \
@@ -120,5 +121,4 @@ LABEL \
 COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /entrypoint
 
 # Downloads and install some files
-# TODO once DNSSEC is operational
 # RUN /entrypoint build

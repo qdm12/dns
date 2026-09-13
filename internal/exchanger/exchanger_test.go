@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/miekg/dns"
@@ -179,16 +180,20 @@ func Test_Exchanger_exchangeWithPool(t *testing.T) {
 }
 
 type testHandler struct {
+	mu       sync.Mutex
 	i        int
 	sequence []dns.HandlerFunc
 }
 
 func (h *testHandler) ServeDNS(writer dns.ResponseWriter, request *dns.Msg) {
+	h.mu.Lock()
 	if h.i == len(h.sequence) {
+		h.mu.Unlock()
 		panic("testHandler: no more handlers in sequence")
 	}
 	handler := h.sequence[h.i]
 	h.i++
+	h.mu.Unlock()
 	handler(writer, request)
 }
 
