@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/miekg/dns"
-	"github.com/qdm12/dns/v2/internal/local"
 	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
@@ -26,7 +25,7 @@ func (v *Validator) Validate(request *dns.Msg, handler dns.Handler) (response *d
 	qType := request.Question[0].Qtype
 	qClass := request.Question[0].Qclass
 
-	if local.IsFQDNLocal(desiredZone) {
+	if v.localChecker.IsFQDNLocal(desiredZone) {
 		// Do not perform DNSSEC validation for local zones
 		writer := stateful.NewWriter()
 		handler.ServeDNS(writer, request)
