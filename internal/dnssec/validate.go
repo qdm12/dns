@@ -28,7 +28,8 @@ func validateWithChain(desiredZone string, qType uint16,
 		return fmt.Errorf("applying wildcard chain restriction: %w", err)
 	}
 
-	parentZoneInsecure, err := validateParentChain(chain)
+	delegationName := desiredResponse.delegationName()
+	parentZoneInsecure, err := validateParentChain(chain, delegationName)
 	if err != nil {
 		return fmt.Errorf("validating parent chain: %w", err)
 	}
@@ -109,7 +110,9 @@ func applyWildcardChainRestriction(desiredResponse dnssecResponse,
 	return wildcardName, restrictedChain, nil
 }
 
-func validateParentChain(chain []signedData) (parentZoneInsecure bool, err error) {
+func validateParentChain(chain []signedData,
+	delegationName string,
+) (parentZoneInsecure bool, err error) {
 	for i := 1; i < len(chain); i++ {
 		// Iterate in this order: "com.", "example.com.", "abc.example.com."
 		// Note the chain may not include the desired zone if one of its parent
@@ -119,7 +122,8 @@ func validateParentChain(chain []signedData) (parentZoneInsecure bool, err error
 		zoneData := chain[i]
 		parentZoneData := chain[i-1]
 
-		parentZoneInsecure, err = validateDSResponse(zoneData, parentZoneData)
+		parentZoneInsecure, err = validateDSResponse(zoneData, parentZoneData,
+			delegationName)
 		if err != nil {
 			return false, err
 		}
@@ -143,6 +147,7 @@ func validateParentChain(chain []signedData) (parentZoneInsecure bool, err error
 }
 
 func validateDSResponse(zoneData, parentZoneData signedData,
+	delegationName string,
 ) (parentZoneInsecure bool, err error) {
 	switch {
 	case zoneData.dsResponse.isNXDomain():
@@ -169,7 +174,8 @@ func validateDSResponse(zoneData, parentZoneData signedData,
 		}
 
 		parentKeyTagToDNSKeys := makeKeyTagToDNSKeys(parentZoneData.dnsKeyResponse.onlyAnswerRRSet())
-		err = validateNoDataDS(zoneData.zone, zoneData.dsResponse.authorityRRSets, parentKeyTagToDNSKeys)
+		err = validateNoDataDS(zoneData.zone, zoneData.dsResponse.authorityRRSets,
+			parentKeyTagToDNSKeys, delegationName)
 		if err != nil {
 			if errors.Is(err, errNSEC3NoDataDSOptOutNotSet) {
 				// Per RFC 5155 section 8.6 the covering NSEC3 must have

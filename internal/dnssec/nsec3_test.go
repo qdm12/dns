@@ -50,6 +50,73 @@ func newOisdNSEC3(owner, nextDomain string) *dns.NSEC3 {
 	}
 }
 
+// newMatchingNSEC3 returns an NSEC3 RR of zone whose hashed owner name
+// matches qname, computed with SHA1, no iterations and an empty salt.
+func newMatchingNSEC3(qname, zone string, types ...uint16) *dns.NSEC3 {
+	return &dns.NSEC3{
+		Hdr: dns.RR_Header{
+			Name:   dns.HashName(qname, dns.SHA1, 0, "") + "." + zone,
+			Rrtype: dns.TypeNSEC3,
+			Class:  dns.ClassINET,
+		},
+		Hash:       dns.SHA1,
+		Flags:      0,
+		Iterations: 0,
+		TypeBitMap: types,
+	}
+}
+
+func Test_nsec3ValidateNoDataDS(t *testing.T) {
+	t.Parallel()
+
+	testCases := map[string]struct {
+		qname          string
+		delegationName string
+		types          []uint16
+		errWrapped     error
+	}{
+		"delegation_name_with_ns": {
+			qname:          "sub.example.com.",
+			delegationName: "sub.example.com.",
+			types:          []uint16{dns.TypeNS, dns.TypeA},
+		},
+		"delegation_name_without_ns": {
+			qname:          "sub.example.com.",
+			delegationName: "sub.example.com.",
+			types:          []uint16{dns.TypeA},
+			errWrapped:     errNSEC3NoDataDSNSNotSet,
+		},
+		"not_a_delegation_name_without_ns": {
+			qname: "sub.example.com.",
+			types: []uint16{dns.TypeA},
+		},
+		"other_delegation_name_without_ns": {
+			qname:          "sub.example.com.",
+			delegationName: "other.example.com.",
+			types:          []uint16{dns.TypeA},
+		},
+		"delegation_name_with_ds_type": {
+			qname:          "sub.example.com.",
+			delegationName: "sub.example.com.",
+			types:          []uint16{dns.TypeNS, dns.TypeDS},
+			errWrapped:     errBogus,
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			nsec3RRSet := []dns.RR{newMatchingNSEC3(testCase.qname, "example.com.",
+				testCase.types...)}
+			err := nsec3ValidateNoDataDS(testCase.qname, testCase.delegationName,
+				nsec3RRSet)
+
+			assert.ErrorIs(t, err, testCase.errWrapped)
+		})
+	}
+}
+
 func Test_nsec3ValidateWildcard(t *testing.T) {
 	t.Parallel()
 

@@ -50,6 +50,20 @@ func (d dnssecResponse) onlyAnswerRRSigs() (rrSigs []*dns.RRSIG) {
 	return d.answerRRSets[0].rrSigs
 }
 
+// delegationName returns the owner name of the first NS RRSet in the
+// authority section, i.e. the delegation name of a referral response,
+// or an empty string if there is no NS RRSet in the authority section.
+// See https://datatracker.ietf.org/doc/html/rfc5155#section-8.9
+func (d dnssecResponse) delegationName() (name string) {
+	for _, rrSet := range d.authorityRRSets {
+		if rrSet.qtype() != dns.TypeNS {
+			continue
+		}
+		return rrSet.rrSet[0].Header().Name
+	}
+	return ""
+}
+
 func (d dnssecResponse) toDNSMsg(request *dns.Msg) (response *dns.Msg) {
 	response = new(dns.Msg)
 	response.SetRcode(request, d.rcode)

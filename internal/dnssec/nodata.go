@@ -44,6 +44,7 @@ func validateNoData(qname string, qtype uint16,
 func validateNoDataDS(qname string,
 	authoritySection []dnssecRRSet,
 	keyTagToDNSKeys dnsKeysByTag,
+	delegationName string,
 ) (err error) {
 	err = verifyRRSetsRRSig(authoritySection, keyTagToDNSKeys)
 	if err != nil {
@@ -56,7 +57,7 @@ func validateNoDataDS(qname string,
 		if err != nil {
 			return fmt.Errorf("initial NSEC3 checks: %w", err)
 		}
-		return nsec3ValidateNoDataDS(qname, nsec3RRs)
+		return nsec3ValidateNoDataDS(qname, delegationName, nsec3RRs)
 	}
 
 	nsecRRs := extractNSECs(authoritySection)

@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -38,6 +39,7 @@ var (
 	errNSEC3RRSetDifferentSalts      = errors.New("NSEC3 RRSet contains different salts")
 	errNSEC3IterationsTooHigh        = errors.New("NSEC3 iteration count too high for DNSKEY strength policy")
 	errNSEC3NoDataDSOptOutNotSet     = errors.New("NSEC3 covering the next closer does not have the Opt-Out bit set")
+	errNSEC3NoDataDSNSNotSet         = errors.New("NSEC3 matching the delegation name does not contain the NS type")
 )
 
 func nsec3InitialChecks(nsec3RRSet []dns.RR, keyTagToDNSKeys dnsKeysByTag,
@@ -216,7 +218,10 @@ func nsec3ValidateNoData(qname string, qType uint16,
 	nsec3RRSet []dns.RR,
 ) (err error) {
 	if qType == dns.TypeDS {
-		return nsec3ValidateNoDataDS(qname, nsec3RRSet)
+		// A DS query response is never a referral response, so the
+		// delegation name is empty and only RFC 5155 section 8.6
+		// checks apply.
+		return nsec3ValidateNoDataDS(qname, "", nsec3RRSet)
 	}
 
 	err = nsec3RRSetHasMatchingWithoutTypes(nsec3RRSet,
@@ -227,15 +232,32 @@ func nsec3ValidateNoData(qname string, qType uint16,
 	return nil
 }
 
-// nsec3ValidateNoDataDS is used internally in nsec3VerifyNoData.
+// nsec3ValidateNoDataDS validates a no data response for the DS qtype,
+// i.e. a proof of non-existence of DS RRs.
+// The delegationName argument is the owner name of the NS RRSet in the
+// authority section of a referral response, per RFC 5155 section 8.9,
+// or an empty string if the response is not a referral.
 // See https://datatracker.ietf.org/doc/html/rfc5155#section-8.6
-func nsec3ValidateNoDataDS(qname string, nsec3RRSet []dns.RR) (err error) {
+// and https://datatracker.ietf.org/doc/html/rfc5155#section-8.9
+func nsec3ValidateNoDataDS(qname, delegationName string,
+	nsec3RRSet []dns.RR,
+) (err error) {
 	qnameMatchingNSEC3 := nsec3FindMatching(qname, nsec3RRSet)
 	if qnameMatchingNSEC3 != nil {
 		err = verifyNoDataNsecxTypesDS("NSEC3", qnameMatchingNSEC3.TypeBitMap)
 		if err != nil {
 			return fmt.Errorf("for qname %s: %w", qname, err)
 		}
+
+		// Per RFC 5155 section 8.9, when qname is the delegation name of
+		// a referral response, the NSEC3 matching the delegation name
+		// must contain the NS type, proving the delegation point exists
+		// in the parent zone.
+		if delegationName == qname &&
+			!slices.Contains(qnameMatchingNSEC3.TypeBitMap, dns.TypeNS) {
+			return fmt.Errorf("for qname %s: %w", qname, errNSEC3NoDataDSNSNotSet)
+		}
+
 		return nil
 	}
 
@@ -306,68 +328,6 @@ func nsec3ValidateWildcard(qname string, nsec3RRSet []dns.RR) (err error) {
 	return fmt.Errorf("for qname %s: %w: "+
 		"no NSEC3 covers next closer %s",
 		qname, errBogus, qname)
-}
-
-// The delegationName argument is the owner name of the NS RRSet in the
-// authority section of the response.
-// See https://datatracker.ietf.org/doc/html/rfc5155#section-8.9
-//
-//nolint:unused
-func nsec3ValidateReferralsToUnsignedSubzones(qname, delegationName string,
-	nsec3RRSet []dns.RR,
-) (err error) {
-	matchingNSEC3 := nsec3FindMatching(qname, nsec3RRSet)
-	if matchingNSEC3 != nil {
-		var hasNS bool
-		for _, nsec3Type := range matchingNSEC3.TypeBitMap {
-			switch nsec3Type {
-			case dns.TypeNS:
-				// This implies the absence of a DNAME type
-				hasNS = true
-			case dns.TypeDS:
-				return fmt.Errorf("for qname %s and delegation name %s: %w: "+
-					"NSEC3 matching the delegation name contains DS type",
-					qname, delegationName, errBogus)
-			case dns.TypeSOA:
-				return fmt.Errorf("for qname %s and delegation name %s: %w: "+
-					"NSEC3 matching the delegation name contains SOA type",
-					qname, delegationName, errBogus)
-			}
-		}
-
-		if !hasNS {
-			return fmt.Errorf("for qname %s and delegation name %s: %w: "+
-				"NSEC3 matching the delegation name does not contain NS type",
-				qname, delegationName, errBogus)
-		}
-
-		return nil
-	}
-
-	// No NSEC3 matching the delegation name found
-	closestEncloser, err := nsec3VerifyClosestEncloserProof(
-		delegationName, nsec3RRSet)
-	if err != nil {
-		return fmt.Errorf("for qname %s and delegation name %s: "+
-			"validating closest encloser proof: %w",
-			qname, delegationName, err)
-	}
-
-	nextCloser := getNextCloser(delegationName, closestEncloser)
-	nextCloserCoveringNSEC3 := nsec3FindCovering(nextCloser, nsec3RRSet)
-	if nextCloserCoveringNSEC3 == nil {
-		return fmt.Errorf("for qname %s and delegation name %s: %w: "+
-			"no NSEC3 covers next closer %s",
-			qname, delegationName, errBogus, nextCloser)
-	}
-
-	optOutBitSet := nextCloserCoveringNSEC3.Flags == 1
-	if optOutBitSet {
-		return nil
-	}
-	return fmt.Errorf("for qname %s and delegation name %s: %w: "+
-		"NSEC3 covering next closer %s Opt-Out bit %d is not set",
-		qname, delegationName, errBogus, nextCloser, nextCloserCoveringNSEC3.Flags)
 }
 
 // nsec3VerifyClosestEncloserProof validates a closest encloser proof,
