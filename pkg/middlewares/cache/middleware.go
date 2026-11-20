@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/dnsmsg"
 	"github.com/qdm12/dns/v2/internal/stateful"
 )
 
@@ -45,7 +46,9 @@ type handler struct {
 func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	response := h.cache.Get(r)
 	if response != nil {
-		response.SetReply(r)
+		// Keeps the cached rcode (NXDOMAIN, SERVFAIL, REFUSED, ...),
+		// see dnsmsg.SetReply.
+		dnsmsg.SetReply(response, r)
 		_ = w.WriteMsg(response)
 		return
 	}

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/dnsmsg"
 )
 
 var _ dns.Handler = (*handler)(nil)
@@ -52,7 +53,9 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		}
 	}
 
-	response.SetReply(r)
+	// Keeps the upstream rcode (NXDOMAIN, SERVFAIL, REFUSED, ...),
+	// see dnsmsg.SetReply.
+	dnsmsg.SetReply(response, r)
 	_ = w.WriteMsg(response)
 }
 

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/qdm12/dns/v2/internal/dnsmsg"
 	"github.com/qdm12/dns/v2/internal/exchanger"
 	nooppoolmetrics "github.com/qdm12/dns/v2/internal/pool/metrics/noop"
 )
@@ -145,9 +146,7 @@ func (h *handler) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
-	response := new(dns.Msg)
-	response.SetReply(r)
-	response.SetRcode(r, dns.RcodeNameError)
+	response := new(dns.Msg).SetRcode(r, dns.RcodeNameError)
 	_ = w.WriteMsg(response)
 }
 
@@ -224,7 +223,7 @@ func (h *handler) waitInFlight(inFlight *inFlightExchange, r *dns.Msg) (
 	}
 
 	copiedResponse := inFlight.response.Copy()
-	copiedResponse.SetReply(r)
+	dnsmsg.SetReply(copiedResponse, r)
 	return copiedResponse, nil
 }
 

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -13,7 +12,7 @@ import (
 func Test_newHandler(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	logger := NewMockLogger(nil)
 	exchanger := NewMockexchangerIntf(nil)
 	const timeoutWarn = true
@@ -27,6 +26,20 @@ func Test_newHandler(t *testing.T) {
 		timeoutWarn: timeoutWarn,
 	}
 	assert.Equal(t, expectedHandler, h)
+}
+
+// newNotFoundAuthority returns the authority section of a NXDOMAIN
+// response, as sent by recursive resolvers such as Cloudflare DNS.
+func newNotFoundAuthority() (rrs []dns.RR) {
+	return []dns.RR{&dns.NS{
+		Hdr: dns.RR_Header{
+			Name:   "test.",
+			Rrtype: dns.TypeNS,
+			Class:  dns.ClassINET,
+			Ttl:    300,
+		},
+		Ns: "ns.test.",
+	}}
 }
 
 func Test_Handler_ServeDNS(t *testing.T) {
@@ -44,7 +57,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 					Question: []dns.Question{{Name: "test"}},
 				}
 
-				ctx := context.Background()
+				ctx := t.Context()
 
 				exchanger := NewMockexchangerIntf(ctrl)
 				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
@@ -77,7 +90,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 					Question: []dns.Question{{Name: "test"}},
 				}
 
-				ctx := context.Background()
+				ctx := t.Context()
 
 				exchanger := NewMockexchangerIntf(ctrl)
 				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
@@ -108,7 +121,7 @@ func Test_Handler_ServeDNS(t *testing.T) {
 					Question: []dns.Question{{Name: "test"}},
 				}
 
-				ctx := context.Background()
+				ctx := t.Context()
 
 				exchanger := NewMockexchangerIntf(ctrl)
 				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
@@ -128,6 +141,70 @@ func Test_Handler_ServeDNS(t *testing.T) {
 				},
 				Question: []dns.Question{{Name: "test"}},
 				Answer:   []dns.RR{&dns.A{}},
+			},
+		},
+		// See https://github.com/passteque/gluetun/issues/3552
+		"upstream_nxdomain": {
+			makeHandler: func(t *testing.T, ctrl *gomock.Controller) *handler {
+				t.Helper()
+				expectedRequest := &dns.Msg{
+					Question: []dns.Question{{Name: "test"}},
+				}
+
+				ctx := t.Context()
+
+				exchanger := NewMockexchangerIntf(ctrl)
+				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
+					Return(&dns.Msg{
+						MsgHdr: dns.MsgHdr{Rcode: dns.RcodeNameError},
+						Ns:     newNotFoundAuthority(),
+					}, nil)
+
+				return &handler{
+					ctx:       ctx,
+					exchanger: exchanger,
+				}
+			},
+			request: &dns.Msg{
+				Question: []dns.Question{{Name: "test"}},
+			},
+			response: &dns.Msg{
+				MsgHdr: dns.MsgHdr{
+					Response: true,
+					Rcode:    dns.RcodeNameError,
+				},
+				Question: []dns.Question{{Name: "test"}},
+				Ns:       newNotFoundAuthority(),
+			},
+		},
+		// See https://github.com/passteque/gluetun/issues/3552
+		"upstream_servfail": {
+			makeHandler: func(t *testing.T, ctrl *gomock.Controller) *handler {
+				t.Helper()
+				expectedRequest := &dns.Msg{
+					Question: []dns.Question{{Name: "test"}},
+				}
+
+				ctx := t.Context()
+
+				exchanger := NewMockexchangerIntf(ctrl)
+				exchanger.EXPECT().Exchange(ctx, "udp", expectedRequest).
+					Return(&dns.Msg{MsgHdr: dns.MsgHdr{Rcode: dns.RcodeServerFailure}}, nil)
+
+				return &handler{
+					ctx:       ctx,
+					exchanger: exchanger,
+				}
+			},
+			request: &dns.Msg{
+				Question: []dns.Question{{Name: "test"}},
+			},
+			response: &dns.Msg{
+				MsgHdr: dns.MsgHdr{
+					Response: true,
+					Rcode:    dns.RcodeServerFailure,
+				},
+				Question: []dns.Question{{Name: "test"}},
 			},
 		},
 	}
