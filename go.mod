@@ -1,6 +1,6 @@
 module github.com/qdm12/dns/v2
 
-go 1.26
+go 1.27
 
 require (
 	github.com/breml/rootcerts v0.2.18
