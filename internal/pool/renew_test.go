@@ -65,7 +65,7 @@ func Test_Pool_Renew(t *testing.T) {
 		}
 
 		const network = "tcp"
-		netConn := (net.Conn)(poolConn{
+		netConn := net.Conn(poolConn{
 			Conn:    &noopConn{},
 			created: now.Add(-time.Minute),
 		})

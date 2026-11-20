@@ -3,6 +3,7 @@ package pool
 import (
 	"fmt"
 	"net"
+	"slices"
 )
 
 const (
@@ -137,8 +138,8 @@ func (p *Pool) compact(conns []poolConn) (updated []poolConn, removed uint) {
 	}
 
 	finalLength := 0
-	for i := len(conns) - 1; i >= 0; i-- {
-		if !conns[i].dead {
+	for i, conn := range slices.Backward(conns) {
+		if !conn.dead {
 			finalLength = i + 1
 			break
 		}

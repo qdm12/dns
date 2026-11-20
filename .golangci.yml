@@ -13,6 +13,7 @@ linters:
     rules:
       - linters:
           - err113
+          - goconst
         path: _test\.go
       - linters:
           - err113
@@ -38,6 +39,18 @@ linters:
           - goconst
         path: (pkg/(plain|dot|doh)|internal/setup)/.+\.go
         text: string `ipv(6|4)` has [1-9] occurrences, make it a constant
+      - linters:
+          - goconst
+        path: internal/config/.+\.go
+        text: string `LOG_LEVEL` has [1-9][0-9]* occurrences, make it a constant
+      - linters:
+          - goconst
+        path: internal.+/metrics/.+\.go
+        text: string `(address|outcome)` has [1-9][0-9]* occurrences, make it a constant
+      - linters:
+          - modernize
+        text: "embedlit: embedded field type can be removed from struct literal"
+        source: 'MsgHdr:[ \t]+dns\.MsgHdr{($|.+}(|,|}.+)$)'
     paths:
       - third_party$
       - builtin$

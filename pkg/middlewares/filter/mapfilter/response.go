@@ -3,6 +3,7 @@ package mapfilter
 import (
 	"net"
 	"net/netip"
+	"slices"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -23,7 +24,7 @@ func (m *Filter) FilterResponse(response *dns.Msg) (blocked bool) {
 		_, nameCanBeRebinded = m.allowRebindNames[response.Question[0].Name]
 		if !nameCanBeRebinded && len(m.allowRebindParents) > 0 {
 			labels := dns.SplitDomainName(response.Question[0].Name)
-			for i := len(labels) - 1; i >= 0; i-- {
+			for i := range slices.Backward(labels) {
 				parent := dns.Fqdn(strings.Join(labels[i:], "."))
 				if _, ok := m.allowRebindParents[parent]; ok {
 					nameCanBeRebinded = true
