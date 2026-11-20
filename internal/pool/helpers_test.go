@@ -8,6 +8,7 @@ import (
 	"net"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -51,18 +52,18 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
-				if errors.Is(err, net.ErrClosed) {
-					return
+				if !errors.Is(err, net.ErrClosed) {
+					sendError(runErrorCh, fmt.Errorf("accepting connection: %w", err))
 				}
-				runErrorCh <- fmt.Errorf("accepting connection: %w", err)
 				return
 			}
-			handleConnWg.Add(1)
+			// Registered before the handler goroutine is accounted for, so stop()
+			// cannot sweep the map and miss a connection it then never closes, leaving
+			// handleConnWg.Wait blocked on a handler reading a live connection.
+			connsInFlightMutex.Lock()
+			connsInFlight[conn.RemoteAddr().String()] = conn
+			connsInFlightMutex.Unlock()
 			handleConnWg.Go(func() {
-				defer handleConnWg.Done()
-				connsInFlightMutex.Lock()
-				connsInFlight[conn.RemoteAddr().String()] = conn
-				connsInFlightMutex.Unlock()
 				err := handleConn(conn)
 				if err != nil {
 					select {
@@ -96,17 +97,37 @@ func startLocalTCPServer(t *testing.T, handleConn func(net.Conn) error) (
 	return &testDialer{port: port}, runError
 }
 
-// handleConnCopy echoes back the 4 bytes of data received.
+// sendError reports err without ever blocking, since the test may have stopped
+// reading from the channel; a blocking send here would prevent the accept loop
+// from returning and listenerDone from closing.
+func sendError(runErrorCh chan<- error, err error) {
+	select {
+	case runErrorCh <- err:
+	default:
+	}
+}
+
+// handleConnCopy echoes back the data received, until the peer closes the
+// connection.
+//
+// It reads and writes explicitly instead of calling [io.CopyBuffer] with the
+// same connection as source and destination: net then splices the connection
+// onto itself (same file descriptor in and out), and poll.Splice reports the
+// peer EOF as (0, nil) instead of [io.EOF], which makes the copy loop spin
+// forever on a closed connection instead of returning.
 func handleConnCopy(conn net.Conn) error {
 	const length = 4
 	buffer := make([]byte, length)
 	for {
-		_, err := io.CopyBuffer(conn, conn, buffer)
+		n, err := conn.Read(buffer)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return nil
 			}
-			return fmt.Errorf("copying: %w", err)
+			return fmt.Errorf("reading: %w", err)
+		}
+		if _, err := conn.Write(buffer[:n]); err != nil {
+			return fmt.Errorf("writing: %w", err)
 		}
 	}
 }
@@ -131,6 +152,50 @@ func checkConnCopies(t *testing.T, conn net.Conn) {
 
 	err = conn.Close()
 	assert.NoError(t, err)
+}
+
+// Test_handleConnCopy checks the echo handler terminates once the peer closes
+// the connection, instead of spinning forever on the closed connection.
+func Test_handleConnCopy(t *testing.T) {
+	t.Parallel()
+
+	listener, err := net.ListenTCP("tcp", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = listener.Close() })
+	dialer := &testDialer{port: uint16(listener.Addr().(*net.TCPAddr).Port)} //nolint:gosec,forcetypeassert
+
+	handleConnError := make(chan error, 1)
+	go func() {
+		serverConn, err := listener.Accept()
+		if err != nil {
+			handleConnError <- fmt.Errorf("accepting: %w", err)
+			return
+		}
+		handleConnError <- handleConnCopy(serverConn)
+	}()
+
+	netConn, err := dialer.Dial(context.Background(), "tcp", dialer.Addresses()[0])
+	require.NoError(t, err)
+	// Closes the connection once the 4 bytes have been echoed back.
+	checkConnCopies(t, netConn)
+
+	// Bounded well below the test timeout, so a handler spinning on a closed
+	// connection fails this test instead of hanging the whole test suite.
+	const maxWait = 10 * time.Second
+	wait := maxWait
+	if deadline, ok := t.Deadline(); ok {
+		if remaining := time.Until(deadline); remaining < wait {
+			wait = remaining
+		}
+	}
+	timer := time.NewTimer(wait)
+	defer timer.Stop()
+	select {
+	case err := <-handleConnError:
+		require.NoError(t, err)
+	case <-timer.C:
+		t.Fatal("handleConnCopy did not return after the peer closed the connection")
+	}
 }
 
 type noopConn struct {
